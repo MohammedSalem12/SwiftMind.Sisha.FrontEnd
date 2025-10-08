@@ -1,0 +1,15 @@
+.add-course-page { display:flex; justify-content:center; padding:1.25rem }
+.form-card { width:100%; max-width:720px; border-radius:10px; box-shadow:0 6px 18px rgba(10,10,20,0.06); overflow:hidden }
+.card-header { padding:16px 20px; background:linear-gradient(90deg,#f8f4e6,#fff); }
+.card-header h2 { margin:0 }
+.card-header .subtitle { margin:6px 0 0; color:#666; font-size:0.95rem }
+.card-body { padding:16px 20px; display:flex; flex-direction:column; gap:12px }
+.grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px }
+.field { display:flex; flex-direction:column }
+.field.small { grid-column: span 1 }
+.field label { font-weight:600; margin-bottom:6px }
+.field input { padding:10px 12px; border:1px solid #e6e6e6; border-radius:8px }
+.actions { display:flex; gap:8px; align-items:center; margin-top:6px }
+.btn-primary { background:#a67c00; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer }
+.btn-outline { background:transparent; border:1px solid #ccc; padding:8px 12px; border-radius:8px; cursor:pointer }
+.error { color:#b00020; margin-left:12px }

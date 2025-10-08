@@ -1,0 +1,33 @@
+<div class="page add-teacher-page">
+  <div class="card form-card">
+    <div class="card-header">
+      <h2>Add Teacher</h2>
+      <p class="subtitle">Add a new teacher profile to the system</p>
+    </div>
+
+    <form class="card-body" (ngSubmit)="submit()">
+      <div class="grid">
+        <div class="field">
+          <label>First name</label>
+          <input name="firstName" [ngModel]="model().firstName" (ngModelChange)="setField('firstName', $event)" required />
+        </div>
+
+        <div class="field">
+          <label>Last name</label>
+          <input name="lastName" [ngModel]="model().lastName" (ngModelChange)="setField('lastName', $event)" required />
+        </div>
+
+        <div class="field full">
+          <label>Address</label>
+          <input name="address" [ngModel]="model().address" (ngModelChange)="setField('address', $event)" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" type="submit" [disabled]="saving()">Save Teacher</button>
+        <button type="button" class="btn-outline" (click)="cancel()">Cancel</button>
+        <div class="error" *ngIf="errorMsg()">{{ errorMsg() }}</div>
+      </div>
+    </form>
+  </div>
+</div>

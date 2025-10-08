@@ -1,0 +1,37 @@
+<div class="row mb-3">
+  <!-- Hero header: app name and company -->
+  <div class="col-12">
+    <div class="home-hero card mb-3">
+      <div class="card-body text-center">
+        <div class="logo">
+          <img src="assets/images/logo/logo-light.png" alt="SwiftMind logo" />
+        </div>
+        <div class="app-title">Sesha App</div>
+        <div class="company">SwiftMind</div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Current user info (visible when logged in) -->
+  <div class="col-12" *ngIf="hasLoggedIn">
+    <div class="card user-info-card mb-3">
+      <div class="card-body d-flex align-items-center gap-3">
+        <ng-container *ngIf="user$ | async as user">
+          <div class="avatar">
+            <!-- user.avatar.source may be an icon class or image src; fall back to icon -->
+            <i *ngIf="user?.avatar?.type === 'icon'" [class]="user.avatar.source"></i>
+            <img *ngIf="user?.avatar?.type === 'image'" [src]="user.avatar.source" alt="avatar" />
+          </div>
+          <div class="user-meta">
+            <div class="user-name">{{ user.fullName || user.userName }}</div>
+            <div class="user-email">{{ user.email }}</div>
+          </div>
+          <div class="ms-auto">
+            <button class="btn btn-outline-primary" (click)="manageProfile()">Manage Profile</button>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+

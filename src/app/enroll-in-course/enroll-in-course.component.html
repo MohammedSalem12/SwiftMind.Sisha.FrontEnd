@@ -1,0 +1,44 @@
+<div class="enroll-page">
+  <h2>Enroll Student in Course</h2>
+
+  <form (ngSubmit)="submit()" class="enroll-card card" novalidate>
+    <div class="left">
+      <div class="meta">Enrolling student</div>
+      <div class="student-id">{{ studentId() || '-' }}</div>
+
+      <label class="label">Course</label>
+      <select [ngModel]="model().courseId" (ngModelChange)="setField('courseId',$event)" name="courseId" required>
+        <option value="">-- Select Course --</option>
+        <option *ngFor="let c of courses()" [value]="c.id">{{ c.nameEn || c.nameAr }}</option>
+      </select>
+
+      <div class="label" style="margin-top:12px">Teacher (optional)</div>
+      <div class="teacher-search">
+        <input name="teacherSearch" [ngModel]="teacherQuery()" (ngModelChange)="onTeacherQueryChange($event)" placeholder="Search teacher by name..." />
+        <div class="results" *ngIf="teacherResults().length > 0">
+          <ul>
+            <li *ngFor="let t of teacherResults()" (click)="selectTeacher(t)">
+              <div class="t-left"><div class="t-avatar">{{ (t.firstName||'').charAt(0) }}</div></div>
+              <div class="t-info">{{ t.firstName }} {{ t.lastName }}</div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="selected" *ngIf="selectedTeacher()">
+          <div class="t-avatar small">{{ (selectedTeacher()?.firstName||'').charAt(0) }}</div>
+          <div class="t-info">{{ selectedTeacher()?.firstName }} {{ selectedTeacher()?.lastName }}</div>
+          <button type="button" class="clear" (click)="setField('teacherId',''); selectedTeacher.set(null)">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="actions">
+  <button class="btn-primary" type="submit" (click)="onSubmitClick($event)" [disabled]="saving()">Enroll</button>
+        <button type="button" (click)="cancel()">Cancel</button>
+      </div>
+      <div class="error" *ngIf="error()">{{ error() }}</div>
+    </div>
+
+    </form>
+</div>

@@ -1,0 +1,14 @@
+import * as Attendances from './attendances';
+import * as Courses from './courses';
+import * as Enums from './enums';
+import * as ExamGrades from './exam-grades';
+import * as Feedbacks from './feedbacks';
+import * as Feeds from './feeds';
+import * as Grades from './grades';
+import * as GroupSchedules from './group-schedules';
+import * as Groups from './groups';
+import * as StudentEnrollments from './student-enrollments';
+import * as Students from './students';
+import * as Teachers from './teachers';
+import * as Volo from './volo';
+export { Attendances, Courses, Enums, ExamGrades, Feedbacks, Feeds, Grades, GroupSchedules, Groups, StudentEnrollments, Students, Teachers, Volo };

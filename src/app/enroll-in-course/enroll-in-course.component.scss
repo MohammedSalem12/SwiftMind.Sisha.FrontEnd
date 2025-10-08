@@ -1,0 +1,22 @@
+.enroll-page { padding:16px }
+.enroll-card { display:flex; gap:1rem; padding:16px; border-radius:12px; align-items:flex-start }
+.enroll-card .left { flex:1 }
+.enroll-card .right { width:220px; display:flex; flex-direction:column; gap:12px }
+.meta { color:#6b7280; font-size:13px }
+.student-id { font-weight:700; font-size:18px; margin-bottom:8px }
+.label { margin-top:10px; font-weight:600 }
+select, input { width:100%; padding:8px 10px; border:1px solid #e6eef8; border-radius:8px }
+.teacher-search { position:relative }
+.results { position:absolute; left:0; right:0; top:44px; background:#fff; border-radius:8px; box-shadow:0 8px 20px rgba(2,6,23,0.06); z-index:20 }
+.results ul { list-style:none; margin:0; padding:8px }
+.results li { display:flex; gap:8px; align-items:center; padding:6px; cursor:pointer }
+.t-avatar { width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg,#eef2ff,#fff); display:flex;align-items:center;justify-content:center;font-weight:700 }
+.t-avatar.small { width:28px; height:28px }
+.t-info { color:#0f172a }
+.selected { display:flex; gap:8px; align-items:center; margin-top:8px }
+.clear { background:transparent; border:0; color:#ef4444; cursor:pointer }
+.actions { display:flex; gap:8px; align-items:center }
+.btn-primary { background:#2563eb; color:#fff; border:0; padding:8px 12px; border-radius:8px }
+.error { color:#ef4444; font-size:13px }
+
+@media (max-width:720px){ .enroll-card{ flex-direction:column } .enroll-card .right{ width:100% } }

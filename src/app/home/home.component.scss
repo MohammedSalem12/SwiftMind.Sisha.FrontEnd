@@ -1,0 +1,52 @@
+/* Styles for the home component */
+.card-bg-image {
+  position: absolute;
+  width: 630px;
+  height: auto;
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+}
+.starting-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Hero header styles */
+.home-hero {
+  background: linear-gradient(90deg,#ffffff 0%, #f1f7ff 100%);
+  border-radius: 8px;
+}
+.home-hero .app-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #0b3d91;
+}
+.home-hero .company {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #6b7280;
+}
+.home-hero .logo { margin-bottom: 10px; }
+.home-hero .logo img { height: 86px; width: auto; display: inline-block; }
+
+/* User info card */
+.user-info-card .avatar {
+  width: 64px; height: 64px; border-radius: 50%; overflow: hidden; display:flex; align-items:center; justify-content:center;
+  background: #f3f4f6; color: #374151; font-size: 28px;
+}
+.user-info-card .avatar img { width: 100%; height: auto; }
+.user-info-card .user-meta .user-name { font-weight: 600 }
+.user-info-card .user-meta .user-email { color: #6b7280; font-size: 13px }
+
+@media (min-width: 1199px) {
+  .h-lg-100 {
+    height: 100% !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .h-md-100 {
+    height: 100% !important;
+  }
+}

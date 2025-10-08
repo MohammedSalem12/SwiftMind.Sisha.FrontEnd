@@ -1,0 +1,94 @@
+<div class="attendance-page card">
+  <h2>Mark Attendance / Absences</h2>
+
+  <div class="controls">
+    <div>
+      <label>Teacher</label>
+      <select [ngModel]="selectedTeacherId()" (ngModelChange)="onTeacherChange($event)">
+        <option value="">-- Select Teacher --</option>
+        <option *ngFor="let t of teachers()" [value]="t.id">{{ t.firstName }} {{ t.lastName }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Course</label>
+      <select [ngModel]="selectedCourseId()" (ngModelChange)="onCourseChange($event)">
+        <option value="">-- Select Course --</option>
+        <option *ngFor="let c of courses()" [value]="c.id">{{ (c.nameEn || c.nameAr) + (c.gradeName ? ' - ' + c.gradeName : '') }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Date</label>
+      <input type="date" [ngModel]="attendanceDate()" (ngModelChange)="setDateAndReload($event)" />
+    </div>
+    <div style="flex:1">
+      <label>Note (optional)</label>
+      <textarea [ngModel]="note()" (ngModelChange)="note.set($event)" placeholder="Optional note for this absence" rows="2"></textarea>
+    </div>
+  </div>
+
+  <div class="students-list">
+    <div *ngIf="students().length === 0" class="no-data">No enrolled students found for the selected course</div>
+    <table *ngIf="students().length > 0" class="table table-sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Student</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of students(); let i = index">
+          <td>{{ i + 1 }}</td>
+          <td class="student-cell">
+            <img class="student-avatar" src="/assets/images/avatar-placeholder.png" alt="avatar" />
+            <span>{{ s.studentName }}</span>
+          </td>
+          <td>
+            <button class="btn btn-sm" [class.btn-danger]="!s.alreadyAbsent" [class.btn-secondary]="s.alreadyAbsent" (click)="markAbsent(s.enrollmentId)" [disabled]="saving() || s.alreadyAbsent">
+              {{ s.alreadyAbsent ? 'Absent' : 'Absent' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="absentees-table card mt-3" *ngIf="todaysAbsentees().length > 0">
+    <div class="card-body">
+      <h5 class="mb-3">غائبون اليوم ({{ attendanceDate() }}) <span class="badge bg-light text-dark">{{ todaysAbsentees().length }}</span></h5>
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student</th>
+            <th>Note</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of todaysAbsentees(); let i = index">
+            <td>{{ i + 1 }}</td>
+            <td class="student-cell">
+              <img class="student-avatar" src="/assets/images/avatar-placeholder.png" alt="avatar" />
+              <span>{{ a.studentName }}</span>
+            </td>
+            <td>{{ a.note || '-' }}</td>
+            <td><button class="btn btn-sm btn-outline-danger" (click)="cancelAttendance(a.attendanceId)" [disabled]="deletingAttendanceId() === a.attendanceId">Cancel</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="mark-btn" (click)="markAttendances()" [class.loading]="saving()" [disabled]="saving() || students().length === 0">
+      <svg *ngIf="!saving()" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M9 11l3 3L22 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span *ngIf="!saving()">تسجيل الغياب</span>
+      <span class="spinner" *ngIf="saving()" aria-hidden="true"></span>
+    </button>
+    <div class="message" *ngIf="message()">{{ message() }}</div>
+  </div>
+</div>

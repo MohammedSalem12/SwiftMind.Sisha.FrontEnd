@@ -1,0 +1,12 @@
+<div class="todays-absentees card" *ngIf="absentees?.length > 0">
+  <h4 class="absentees-header">غائبون اليوم ({{ dateLabel }})
+    <span class="absentees-badge">{{ absentees.length }}</span>
+  </h4>
+  <ul class="absentees-list">
+    <li *ngFor="let a of absentees" class="absentee-row">
+      <span class="absentee-name">{{ a.studentName }}</span>
+      <span class="absentee-note">{{ a.note ? ('- ' + a.note) : '' }}</span>
+      <button class="cancel-btn" (click)="cancel.emit(a.attendanceId)" [disabled]="deletingId === a.attendanceId">إلغاء</button>
+    </li>
+  </ul>
+</div>

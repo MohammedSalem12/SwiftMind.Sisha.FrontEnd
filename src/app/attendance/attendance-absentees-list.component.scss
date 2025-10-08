@@ -1,0 +1,8 @@
+.todays-absentees { padding:0 }
+.absentees-header { display:flex; align-items:center; justify-content:space-between; margin:0 0 8px }
+.absentees-badge { background:#fee2e2; color:#b91c1c; padding:4px 8px; border-radius:12px; font-size:12px }
+.absentees-list { list-style:none; padding:0; margin:0 }
+.absentee-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f1f5f9 }
+.absentee-name { flex:1 }
+.absentee-note { color:#6b7280; font-size:12px; margin-left:8px }
+.cancel-btn { margin-left:8px; color:#ef4444; background:none; border:none; cursor:pointer }

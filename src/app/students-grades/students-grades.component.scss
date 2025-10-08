@@ -1,0 +1,69 @@
+.wrapper { padding: 16px; }
+.toolbar {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  .search { min-width: 260px; padding: 6px 8px; }
+  .btn { padding: 6px 12px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; }
+  .spacer { flex: 1; }
+  .pagesize select { margin-inline-start: 6px; }
+}
+.loading, .error { margin: 12px 0; }
+.error { color: #b00020; }
+.students { display: grid; gap: 12px; padding: 0; list-style: none; }
+.student {
+  background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 10px 26px rgba(10,10,20,0.06); position:relative; overflow:hidden;
+  .header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    .name { display: flex; flex-direction: column; }
+    .fullname { font-weight: 600; font-size: 16px; }
+    .meta { color: #666; font-size: 12px; }
+    .code { font-family: monospace; color: #444; }
+  }
+  .grades { margin-top: 8px; }
+  .title { font-weight: 600; margin-bottom: 6px; }
+  .grade-list {
+    display: grid; gap: 6px; padding: 0; list-style: none;
+    li {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px; border: 1px dashed #e5e5e5; border-radius: 10px;
+      .exam { display: flex; flex-direction: column; }
+      .exam-name { font-weight: 500; }
+      .exam-date { color: #666; font-size: 12px; }
+      .score { font-weight: 600; }
+    }
+  }
+  .empty { color: #888; font-style: italic; }
+}
+.pager { margin-top: 12px; display: flex; align-items: center; gap: 12px; }
+
+/* Accent band on the left that uses dynamic colors */
+
+.student .accent { position:absolute; left:0; top:0; bottom:0; width:14px; border-top-right-radius:12px; border-bottom-right-radius:12px; transform: translateX(-2px) }
+
+/* Color variables derived from logo palette */
+:root {
+  --ancient-gold: #b58c00;
+  --lapis: #2b6fb6;
+  --sand: #e6caa3;
+  --teal: #6bb1a8;
+  --maroon: #8c3b3b;
+}
+
+/* Floating Add Student button */
+.fab-add-student {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--ancient-gold);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+  cursor: pointer;
+  font-size: 18px;
+}
+.fab-add-student i { pointer-events: none; }

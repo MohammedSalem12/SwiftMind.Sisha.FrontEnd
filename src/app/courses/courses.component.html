@@ -1,0 +1,49 @@
+<div class="courses-hero">
+  <div>
+    <h1>Courses</h1>
+    <p class="subtitle">Manage courses — quick overview, open details or add a new course.</p>
+  </div>
+  <div class="hero-controls">
+    <input class="search" placeholder="Search by name or code" [ngModel]="filter()" (ngModelChange)="filter.set($event)" />
+    <button class="btn-primary" (click)="onSearch()">Search</button>
+    <button class="btn-outline" (click)="goToAddCourse()">Add course</button>
+  </div>
+</div>
+
+<div *ngIf="loading()" class="loading">Loading courses...</div>
+
+<div class="courses-grid">
+  <div *ngFor="let c of courses(); trackBy: trackById" class="course-card">
+    <div class="card-top">
+      <div class="code">{{ c.code || '-' }}</div>
+      <div class="grade">{{ c.gradeName || ('Grade ' + (c.grade || '-')) }}</div>
+    </div>
+    <div class="card-body">
+      <div class="title">{{ c.nameEn }}</div>
+      <div class="title-ar">{{ c.nameAr }}</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn-outline" (click)="showDetails(c)">Details</button>
+    </div>
+  </div>
+</div>
+
+<!-- Details modal -->
+<div class="modal-backdrop" *ngIf="selected()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>{{ selected()?.nameEn }}</h3>
+      <button class="close" (click)="closeDetails()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div><strong>Code:</strong> {{ selected()?.code || '-' }}</div>
+  <div><strong>Grade:</strong> {{ selected()?.gradeName || gradeName(Number(selected()?.grade)) }}</div>
+      <div><strong>Name (AR):</strong> {{ selected()?.nameAr }}</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" (click)="closeDetails()">Close</button>
+      <button class="btn-outline" (click)="router.navigate(['/courses', selected()?.id, 'groups'])">Groups</button>
+      <button class="btn-primary" (click)="router.navigate(['/courses', selected()?.id, 'edit'])">Edit</button>
+    </div>
+  </div>
+</div>

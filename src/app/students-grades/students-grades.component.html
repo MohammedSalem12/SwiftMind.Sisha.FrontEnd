@@ -1,0 +1,75 @@
+<div class="wrapper">
+  <div class="toolbar">
+    <input
+      type="text"
+      [ngModel]="filter()"
+      (ngModelChange)="filter.set($event)"
+      (keyup.enter)="onSearch()"
+      placeholder="ابحث بالاسم أو كود الطالب..."
+      class="search"
+    />
+    <button class="btn" (click)="onSearch()">بحث</button>
+
+    <div class="spacer"></div>
+
+    <label class="pagesize">
+      حجم الصفحة
+      <select [ngModel]="pageSize()" (ngModelChange)="onPageSizeChange($event)">
+        <option [ngValue]="5">5</option>
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="20">20</option>
+      </select>
+    </label>
+  </div>
+
+  <div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
+
+  <div *ngIf="loading()" class="loading">جارِ التحميل...</div>
+
+  <ul class="students" *ngIf="!loading()">
+    <li class="student" *ngFor="let s of students(); let i = index; trackBy: trackById">
+      <div class="accent" [style.background]="getColor(i)"></div>
+      <div class="header">
+        <div class="name">
+          <span class="fullname">{{ s.firstName }} {{ s.lastName }}</span>
+          <span class="meta">الصف: {{ s.currentGrade }} • المدرسة: {{ s.schoolName }}</span>
+        </div>
+        <div class="code">كود: {{ s.studentCode }}</div>
+      </div>
+
+      <div class="grades">
+        <div class="title">آخر درجتين:</div>
+        <ul class="grade-list" *ngIf="s.lastTwoGrades?.length; else noGrades">
+          <li *ngFor="let g of s.lastTwoGrades">
+            <div class="exam">
+              <span class="exam-name">{{ g.examName }}</span>
+              <span class="exam-date">{{ (g.date | date:'mediumDate') || '-' }}</span>
+            </div>
+            <div class="score">
+              {{ g.grade }} / {{ g.maxGrade }}
+            </div>
+          </li>
+        </ul>
+        <ng-template #noGrades>
+          <div class="empty">لا توجد درجات مسجّلة بعد.</div>
+        </ng-template>
+      </div>
+    </li>
+  </ul>
+
+  <div class="pager" *ngIf="totalCount() > pageSize()">
+
+        <!-- Floating Add Student button -->
+        <button
+          class="fab-add-student"
+          title="Add Student"
+          (click)="goToAddStudent()"
+          aria-label="Add Student"
+        >
+          <i class="fas fa-plus"></i>
+        </button>
+    <button class="btn" [disabled]="page() === 1" (click)="onPageChange(page()-1)">السابق</button>
+    <span class="pinfo">صفحة {{ page() }} من {{ Math.ceil(totalCount()/pageSize()) }}</span>
+    <button class="btn" [disabled]="page() >= Math.ceil(totalCount()/pageSize())" (click)="onPageChange(page()+1)">التالي</button>
+  </div>
+</div>

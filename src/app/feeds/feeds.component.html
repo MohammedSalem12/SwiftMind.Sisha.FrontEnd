@@ -1,0 +1,33 @@
+<div class="feeds-hero">
+  <div class="hero-inner">
+    <h1>News & Updates</h1>
+    <p class="subtitle">Latest announcements and posts for your organization.</p>
+
+    <div class="controls">
+      <input placeholder="Search feeds" [value]="filter()" (input)="filter.set($any($event.target).value)" />
+      <button class="btn-primary" (click)="onSearch()">Search</button>
+    </div>
+  </div>
+</div>
+
+<div class="feeds-container">
+  <div *ngIf="loading()" class="loading">Loading feeds…</div>
+
+  <div class="grid">
+    <div *ngFor="let f of feeds(); trackBy: trackById" class="card" [class.pinned]="f.isPinned">
+      <div class="card-head">
+        <h3>{{ f.title }}</h3>
+        <div class="meta">{{ f.publishDate | date:'medium' }} • {{ f.createdByUserName || '-' }}</div>
+      </div>
+      <div class="card-body">
+        <p>{{ excerpt(f.content) }}</p>
+      </div>
+      <div class="card-footer">
+        <div class="attachments">
+          <a *ngFor="let a of f.attachments" [href]="a.fileUrl" target="_blank">{{ a.fileName }}</a>
+        </div>
+        <a class="read-more" [routerLink]="['/feeds', f.id]">Read more</a>
+      </div>
+    </div>
+  </div>
+</div>

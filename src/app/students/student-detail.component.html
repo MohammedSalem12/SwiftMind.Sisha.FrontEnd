@@ -1,0 +1,108 @@
+<div class="detail">
+  <div *ngIf="loading()" class="loading">Loading student details…</div>
+
+  <div *ngIf="!loading()">
+    <div class="profile-top">
+      <div class="avatar card">
+        <ng-container *ngIf="profilePic(); else initials">
+          <img [src]="profilePic() || ''" alt="avatar" />
+        </ng-container>
+        <ng-template #initials>
+          <div class="initials">{{ (student()?.firstName || '').charAt(0) + (student()?.lastName || '').charAt(0) }}</div>
+        </ng-template>
+      </div>
+
+      <div class="profile-meta">
+        <h1>{{ getFullName() }}</h1>
+        <div class="sub">Grade: {{ student()?.currentGrade ?? '-' }} · Code: {{ student()?.studentCode || '-' }}</div>
+
+        <div class="card stats" style="margin-top:0.75rem; display:flex; gap:1rem; align-items:center">
+          <div class="stat-overall">
+            <div class="big">{{ overallPercent() }}%</div>
+            <div class="meta">متوسط الحضور (آخر 6 أشهر)</div>
+          </div>
+          <div class="stat-counts">
+            <div>حاضر: <strong>{{ totalPresent() }}</strong></div>
+            <div>غائب: <strong>{{ totalAbsent() }}</strong></div>
+            <div>إجمالي: <strong>{{ totalRecords() }}</strong></div>
+          </div>
+          <div style="flex:1">
+            <div class="meta">حضور شهري</div>
+            <div class="attendance-row">
+              <div class="attendance-item" *ngFor="let m of monthlyAttendance()">
+                <svg width="64" height="64" viewBox="0 0 36 36" class="circular-chart">
+                  <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eef2ff" stroke-width="3.5"/>
+                  <path class="circle" [attr.stroke]="strokeColor(m.percent)" stroke-width="3.5" stroke-linecap="round" fill="none"
+                    [attr.stroke-dasharray]="strokeDash(m.percent)" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <text x="18" y="20.35" class="percentage" text-anchor="middle" font-size="6">{{ m.percent }}%</text>
+                </svg>
+                <div class="attendance-label">{{ m.month }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Enrolled Courses</h3>
+        <div *ngIf="enrollments().length === 0" class="no-data">No enrollments found</div>
+        <div *ngIf="enrollments().length > 0">
+          <div *ngFor="let e of enrollments()" class="course-card">
+            <div class="course-thumb">
+              <ng-container *ngIf="getCourse(e.courseId)?.code; else courseInit">
+                <img [src]="''" alt="thumb" />
+              </ng-container>
+              <ng-template #courseInit>
+                <div style="font-weight:600;color:#374151">{{ getCourseInitial(e.courseId) }}</div>
+              </ng-template>
+            </div>
+            <div class="course-info">
+              <div class="course-name">{{ getCourseName(e.courseId) }}</div>
+              <div class="teacher-name">Teacher: {{ teacherDisplayName(e) }}</div>
+            </div>
+            </div>
+              <div class="course-meta">
+                <div class="course-teacher">
+                  <!-- display or edit teacher -->
+                  <ng-container *ngIf="editingEnrollmentId() === e.id; else showTeacher">
+                    <select [ngModel]="editTeacherId()" (ngModelChange)="editTeacherId.set($event)">
+                      <option [ngValue]="null">-- اختر معلم --</option>
+                      <option *ngFor="let t of teachers() | keyvalue" [ngValue]="t.key">{{ t.value?.firstName || '' }} {{ t.value?.lastName || '' }}</option>
+                    </select>
+                  </ng-container>
+                  <ng-template #showTeacher>
+                        {{ teacherDisplayName(e.teacherId) }}
+                      </ng-template>
+                </div>
+              </div>
+              <div class="course-actions">
+                <ng-container *ngIf="editingEnrollmentId() === e.id; else editBtn">
+                  <button class="btn btn-sm btn-success" (click)="saveEdit()" [disabled]="savingEdit()">Save</button>
+                  <button class="btn btn-sm btn-link" (click)="cancelEdit()">Cancel</button>
+                </ng-container>
+                <ng-template #editBtn>
+                  <button class="btn btn-sm btn-outline-primary" (click)="startEdit(e)">Edit</button>
+                </ng-template>
+              </div>
+        </div>
+      </div>
+
+      <div class="card evaluations">
+        <h3>Recent Evaluations</h3>
+        <div *ngIf="lastEvaluations().length === 0" class="no-data">No evaluations yet</div>
+        <div *ngFor="let ev of lastEvaluations()" class="eval-item">
+          <div class="eval-left">
+            <div style="width:44px;height:44px;border-radius:8px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:700">{{ examInitial(ev) }}</div>
+            <div class="eval-meta">
+              <div style="font-weight:600">{{ ev.examName || 'Exam' }}</div>
+              <div style="font-size:12px;color:#6b7280">{{ formatDate(ev.date) }}</div>
+            </div>
+          </div>
+          <div class="grade">{{ ev.grade }} / {{ ev.maxGrade }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

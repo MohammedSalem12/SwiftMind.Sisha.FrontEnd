@@ -1,0 +1,39 @@
+<div class="page add-course-page">
+  <div class="card form-card">
+    <div class="card-header">
+      <h2>Add Course</h2>
+      <p class="subtitle">Create a new course (Arabic and English names supported)</p>
+    </div>
+
+  <form class="card-body" #f="ngForm" (ngSubmit)="submit(f)">
+      <div class="grid">
+        <div class="field">
+          <label>Name (AR)</label>
+          <input [ngModel]="model().nameAr" (ngModelChange)="setField('nameAr', $event)" name="nameAr" #nameAr="ngModel" placeholder="مثال: رياضيات" required />
+          <div class="field-error" *ngIf="nameAr.invalid && (nameAr.dirty || nameAr.touched)">Name (AR) is required</div>
+        </div>
+
+        <div class="field">
+          <label>Name (EN)</label>
+          <input [ngModel]="model().nameEn" (ngModelChange)="setField('nameEn', $event)" name="nameEn" #nameEn="ngModel" placeholder="e.g. Mathematics" required />
+          <div class="field-error" *ngIf="nameEn.invalid && (nameEn.dirty || nameEn.touched)">Name (EN) is required</div>
+        </div>
+
+        <div class="field small">
+          <label>Grade</label>
+          <select class="form-select" [ngModel]="model().gradeId" (ngModelChange)="setField('gradeId', $event)" name="grade" #gradeField="ngModel" required>
+            <option [ngValue]="''" disabled>Select grade...</option>
+            <option *ngFor="let g of grades()" [ngValue]="g.id">{{ g.name || ('Grade ' + g.id) }}</option>
+          </select>
+          <div class="field-error" *ngIf="gradeField.invalid && (gradeField.dirty || gradeField.touched)">Grade is required</div>
+        </div>
+      </div>
+
+  <div class="actions">
+    <button class="btn-primary" type="submit" [disabled]="saving() || f.invalid">Save Course</button>
+    <button type="button" class="btn-outline" (click)="cancel()">Cancel</button>
+        <div class="error" *ngIf="errorMsg()">{{ errorMsg() }}</div>
+      </div>
+    </form>
+  </div>
+</div>

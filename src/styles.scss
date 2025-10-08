@@ -1,0 +1,155 @@
+/* You can add global styles to this file, and also import other style files */
+
+@keyframes donut-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+:root {
+  --lpx-logo: url('/assets/images/logo/logo-light.png');
+  --lpx-logo-icon: url('/assets/images/logo/logo-light-thumbnail.png');
+}
+.donut {
+  display: inline-block;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #7983ff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: donut-spin 1.2s linear infinite;
+
+  &.centered {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.abp-logo {
+  background-repeat: no-repeat;
+}
+
+.abp-support {
+  width: 178px;
+  height: 30px;
+  background-image: url('/assets/images/getting-started/abp-support.svg');
+}
+
+.abp-community {
+  width: 215px;
+  height: 30px;
+  background-image: url('/assets/images/getting-started/abp-community.svg');
+}
+
+.abp-blog {
+  width: 142px;
+  height: 30px;
+  background-image: url('/assets/images/getting-started/abp-blog.svg');
+}
+
+.logo-x {
+  width: 20px;
+  height: 20px;
+  background-image: url('/assets/images/getting-started/x.svg');
+}
+
+/* === Ancient Egyptian themed variables and base styles === */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Noto+Sans:wght@400;700&display=swap');
+
+:root {
+  /* primary palette inspired by ancient Egyptian art */
+  --ancient-gold: #d4af37; /* gold */
+  --ancient-gold-2: #c99f2a;
+  --lapis: #0b3b5c; /* deep lapis/blue */
+  --sand: #f5e7c6; /* papyrus paper */
+  --charcoal: #1f2933;
+  --muted: #6b7280;
+  --card-bg: #fffaf0;
+  --accent: var(--ancient-gold);
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Noto Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  color: var(--charcoal);
+  background: radial-gradient(circle at 10% 10%, rgba(11,59,92,0.08), transparent 20%), linear-gradient(180deg, #f9f6ef 0%, #f3ead0 100%);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* subtle papyrus texture on large screens if available */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url('/assets/images/patterns/papyrus.png');
+  background-repeat: repeat;
+  opacity: 0.04;
+  z-index: 0;
+}
+
+/* Headings with a slightly more classical serif for titles */
+h1, h2, h3, h4 {
+  font-family: 'Cormorant Garamond', 'Noto Sans', serif;
+  color: var(--lapis);
+}
+
+/* Links */
+a { color: var(--lapis); text-decoration: none; }
+a:hover { color: var(--ancient-gold-2); text-decoration: underline; }
+
+/* Buttons */
+.btn-primary, .btn-primary:active {
+  background: linear-gradient(180deg, var(--ancient-gold), var(--ancient-gold-2));
+  color: #111;
+  border: none;
+  box-shadow: 0 6px 14px rgba(11, 59, 92, 0.12);
+  border-radius: 8px;
+}
+.btn-outline { border: 1px solid rgba(11,59,92,0.08); background: transparent; color: var(--lapis); }
+
+/* Cards */
+.card, .modal-card {
+  background: linear-gradient(180deg, var(--card-bg), #fff);
+  border-radius: 10px;
+  box-shadow: 0 8px 26px rgba(11, 59, 92, 0.06);
+  border: 1px solid rgba(11,59,92,0.04);
+}
+
+/* Inputs */
+input, textarea, select {
+  border: 1px solid rgba(11,59,92,0.08);
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.9);
+}
+
+/* Header/logo area adjustments */
+.home-hero, .teachers-hero, .courses-hero, .feeds-hero {
+  box-shadow: inset 0 -40px 60px rgba(11,59,92,0.06);
+}
+
+/* Make ABP logo use the themed logo if provided */
+.abp-logo { background-image: var(--lpx-logo); background-size: contain; background-repeat: no-repeat; }
+
+/* Small utility to use gold accent for highlights */
+.accent { color: var(--accent); }
+
+/* Ensure main app content sits above papyrus texture */
+app-root, #root, .app-root { position: relative; z-index: 1; }
+
+/* Accessibility: focus styles */
+button:focus, a:focus, input:focus { outline: 3px solid rgba(212,175,55,0.18); outline-offset: 2px; }
+
+/* Responsive tweaks */
+@media (prefers-color-scheme: dark) {
+  :root { --card-bg: #0b1620; }
+  body { background: linear-gradient(180deg, #08121a 0%, #071224 100%); color: #e6eef8; }
+  a { color: #9dd3ff; }
+}
+

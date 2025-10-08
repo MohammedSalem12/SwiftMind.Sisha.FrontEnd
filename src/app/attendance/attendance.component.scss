@@ -1,0 +1,27 @@
+.attendance-page { padding:16px }
+.controls { display:flex; gap:12px; align-items:flex-end }
+.controls label { display:block; font-weight:600; margin-bottom:6px }
+select, input[type=date] { padding:8px; border-radius:8px; border:1px solid #e6eef8 }
+.students-list { margin-top:12px }
+.students-list ul { list-style:none; padding:0 }
+.students-list li { padding:8px 0; border-bottom:1px solid #f1f5f9 }
+.actions { margin-top:12px }
+.message { margin-top:8px; color:#10b981 }
+.no-data { color:#9ca3af }
+
+textarea { width:100%; padding:8px; border-radius:8px; border:1px solid #e6eef8 }
+
+.mark-btn {
+	display:inline-flex; align-items:center; gap:8px; padding:8px 12px; background:linear-gradient(90deg,#ef4444,#dc2626);
+	color:#fff; border:none; border-radius:10px; cursor:pointer; font-weight:700; transition:transform .12s ease, box-shadow .12s ease;
+}
+.mark-btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(220,38,38,0.18) }
+.mark-btn[disabled], .mark-btn.loading { opacity:0.7; cursor:not-allowed; transform:none; box-shadow:none }
+.mark-btn svg { display:block }
+.spinner { width:18px; height:18px; border-radius:50%; border:2px solid rgba(255,255,255,0.35); border-top-color:#fff; animation:spin .9s linear infinite }
+@keyframes spin { to { transform:rotate(360deg) } }
+
+.student-cell { display:flex; align-items:center; gap:8px }
+.student-avatar { width:28px; height:28px; border-radius:50%; object-fit:cover; background:#f3f4f6 }
+.absentees-table .card-body { padding:12px }
+.table td, .table th { vertical-align:middle }

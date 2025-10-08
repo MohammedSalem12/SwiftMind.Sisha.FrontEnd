@@ -1,0 +1,79 @@
+<div class="page course-groups-page">
+  <div class="header d-flex justify-content-between align-items-center">
+    <div>
+      <h2>Course Groups</h2>
+      <div class="muted">Groups and schedule for course: {{ courseId() }}</div>
+    </div>
+    <div>
+      <button class="btn-outline" (click)="goBack()">Back</button>
+      <button class="btn-primary ms-2" (click)="onCreateGroup()">Create Group</button>
+    </div>
+  </div>
+
+  <div class="filters my-3 d-flex gap-2 align-items-center">
+    <label class="muted small">Filter by teacher:</label>
+    <select [ngModel]="selectedTeacherId()" (ngModelChange)="onTeacherChange($event)">
+      <option [ngValue]="null">All teachers</option>
+      <option *ngFor="let t of teachers()" [ngValue]="t.id">{{ t.firstName }} {{ t.lastName }}</option>
+    </select>
+    <button *ngIf="selectedTeacherId()" class="btn-outline ms-2" (click)="onTeacherChange(null)">Clear filter</button>
+  </div>
+
+  <div *ngIf="loading()" class="py-3">Loading groups...</div>
+
+  <div *ngIf="!loading() && groups().length === 0" class="empty-state py-4 text-center">
+    <div class="empty-illustration">🧩</div>
+    <h5>No groups found</h5>
+    <p class="muted">Create a new group for this course.</p>
+    <button class="btn-primary" (click)="onCreateGroup()">Create Group</button>
+  </div>
+
+  <div *ngIf="!loading() && groups().length > 0" class="groups-list">
+    <div *ngFor="let g of groups()" class="group-card card mb-3">
+      <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h5 class="mb-0">{{ g.name }}</h5>
+                <div class="muted small">Code: {{ g.code || (g.id | slice:0:8) }} • Course: {{ g.courseName || courseId() || '-' }}</div>
+                <div class="muted small">Teacher: {{ g.teacher || '-' }}</div>
+              </div>
+              <div class="text-end">
+                <div class="muted small">Group id: {{ g.id | slice:0:8 }}</div>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <h6>Schedule</h6>
+              <ul>
+                <li *ngFor="let s of g.schedule; let i = index" class="d-flex align-items-center justify-content-between">
+                  <div class="flex-grow-1">
+                    <div *ngIf="!isEditing(g.id, i)">{{ s.day }} — {{ s.from }} to {{ s.to }}</div>
+                    <app-group-schedule-edit *ngIf="isEditing(g.id, i)"
+                      [model]="getEdit(g.id,i)"
+                      [saving]="isSaving(g.id,i)"
+                      [deleting]="isDeleting(g.id,i)"
+                      (save)="onChildSave($event, g.id, i)"
+                      (cancel)="cancelEdit(g.id,i)"
+                      (delete)="onChildDelete($event, g.id, i)">
+                    </app-group-schedule-edit>
+                  </div>
+
+                  <div class="ms-3 text-end" *ngIf="!isEditing(g.id,i)">
+                    <button class="btn-link" (click)="startEdit(g.id, i)">Edit</button>
+                    <button class="btn-link text-danger" (click)="confirmDeleteQuick(g.id,i)">Delete</button>
+                  </div>
+                </li>
+              </ul>
+              <div class="mt-2">
+                <button class="btn-outline btn-sm" (click)="startCreateSchedule(g.id)">Add schedule</button>
+                <button class="btn-link btn-sm ms-2" (click)="editGroupName(g.id)">Edit group</button>
+              </div>
+
+              <div *ngIf="creatingMap[g.id]" class="mt-2">
+                <app-group-schedule-edit [model]="createBuffer[g.id]" (save)="onCreateSchedule($event, g.id)" (cancel)="cancelCreate(g.id)"></app-group-schedule-edit>
+              </div>
+            </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,58 @@
+<div class="login-wrapper fancier">
+  <div class="decor-left"></div>
+  <div class="decor-right"></div>
+
+  <div class="login-card">
+    <div class="logo-badge">
+      <img src="/assets/images/logo/logo.png" alt="Logo" class="logo" />
+    </div>
+
+    <div class="card-inner">
+      <div class="brand-row">
+        <h1 class="brand-name">SwiftMind</h1>
+        <p class="brand-tag">Learning, reimagined</p>
+      </div>
+
+      <h2 class="title">تسجيل الدخول</h2>
+
+      <div *ngIf="error()" class="error-box">{{ error() }}</div>
+
+      <form class="login-form" (ngSubmit)="submit()">
+        <div class="input-row">
+          <label class="sr-only">اسم المستخدم أو الايميل</label>
+          <div class="input-ghost">
+            <span class="icon user">👤</span>
+            <input name="user" placeholder="اسم المستخدم أو الايميل" [(ngModel)]="model().userNameOrEmailAddress" required />
+          </div>
+        </div>
+
+        <div class="input-row">
+          <label class="sr-only">كلمة المرور</label>
+          <div class="input-ghost">
+            <span class="icon lock">🔒</span>
+            <input name="password" type="password" placeholder="كلمة المرور" [(ngModel)]="model().password" required />
+          </div>
+        </div>
+
+        <div class="options-row">
+          <label class="remember">
+            <input type="checkbox" [(ngModel)]="model().rememberMe" name="remember" />
+            تذكرني
+          </label>
+          <a class="forgot" routerLink="/forgot-password">نسيت كلمة المرور؟</a>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn-animated" type="submit" [disabled]="loading()">
+            <span class="label">{{ loading() ? 'جارٍ...' : 'دخول' }}</span>
+            <span *ngIf="loading()" class="spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+      </form>
+
+      <div class="signup-hint">
+        ليس لديك حساب؟ <a routerLink="/register">إنشاء حساب</a>
+      </div>
+    </div>
+  </div>
+</div>

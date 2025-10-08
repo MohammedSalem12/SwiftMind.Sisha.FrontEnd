@@ -1,0 +1,28 @@
+<div class="feed-detail">
+  <div *ngIf="loading()" class="loading">Loading…</div>
+
+  <div *ngIf="!loading() && feed()" class="card">
+    <div class="card-head">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem">
+        <button class="btn btn-sm btn-outline-secondary" (click)="goBack()">← Back</button>
+        <h1 style="margin:0">{{ feed()?.title }}</h1>
+      </div>
+      <div class="meta">{{ feed()?.publishDate | date:'medium' }} • {{ feed()?.createdByUserName || '-' }}</div>
+    </div>
+
+    <div class="card-body">
+      <div class="content" [innerHTML]="safeContent()"></div>
+    </div>
+
+    <div class="card-footer" *ngIf="(feed()?.attachments?.length ?? 0) > 0">
+      <h4>Attachments</h4>
+      <ul>
+        <li *ngFor="let a of feed()?.attachments; trackBy: trackByIdx">
+          <a [href]="a.fileUrl" target="_blank">{{ a.fileName }}</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div *ngIf="!loading() && !feed()" class="empty">Feed not found.</div>
+</div>

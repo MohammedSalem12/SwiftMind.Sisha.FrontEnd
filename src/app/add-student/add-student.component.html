@@ -1,0 +1,57 @@
+<div class="add-student-hero">
+  <div>
+    <h1>Add Student</h1>
+    <p class="subtitle">Create a new student record. The student code will be generated automatically.</p>
+  </div>
+  <div>
+    <button class="btn-outline" (click)="returnToStudents()">Back to students</button>
+  </div>
+</div>
+
+<div class="form-card">
+  <form (ngSubmit)="submit()">
+    <div class="row two-cols">
+      <div class="form-row">
+        <label>First name</label>
+        <input name="firstName" [ngModel]="model().firstName" (ngModelChange)="setField('firstName', $event)" required />
+      </div>
+      <div class="form-row">
+        <label>Middle name</label>
+        <input name="middleName" [ngModel]="model().middleName" (ngModelChange)="setField('middleName', $event)" />
+      </div>
+    </div>
+
+    <div class="row two-cols">
+      <div class="form-row">
+        <label>Last name</label>
+        <input name="lastName" [ngModel]="model().lastName" (ngModelChange)="setField('lastName', $event)" required />
+      </div>
+      <div class="form-row">
+        <label>Current grade</label>
+        <input type="number" min="1" max="12" name="currentGrade" [ngModel]="model().currentGrade" (ngModelChange)="setField('currentGrade', $event)" required />
+      </div>
+    </div>
+
+    <div class="row two-cols">
+      <div class="form-row">
+        <label>School name</label>
+        <input name="schoolName" [ngModel]="model().schoolName" (ngModelChange)="setField('schoolName', $event)" />
+      </div>
+      <div class="form-row">
+        <label>Teacher student code</label>
+        <input name="teacherStudentCode" [ngModel]="model().teacherStudentCode" (ngModelChange)="setField('teacherStudentCode', $event)" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>Address</label>
+      <input name="address" [ngModel]="model().address" (ngModelChange)="setField('address', $event)" />
+    </div>
+
+    <div class="actions">
+      <button class="btn" type="submit" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Create student' }}</button>
+      <button class="btn-outline" type="button" (click)="returnToStudents()">Cancel</button>
+      <span class="error" *ngIf="errorMsg()">{{ errorMsg() }}</span>
+    </div>
+  </form>
+</div>

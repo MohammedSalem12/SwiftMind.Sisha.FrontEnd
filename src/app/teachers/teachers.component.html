@@ -1,0 +1,30 @@
+<div class="teachers-hero">
+  <div>
+    <h1>Teachers</h1>
+    <p class="subtitle">List of teachers. Click a teacher to see details.</p>
+  </div>
+  <div class="hero-controls">
+    <input class="search" placeholder="Search by name" [ngModel]="filter()" (ngModelChange)="filter.set($event)" />
+    <button class="btn-primary" (click)="onSearch()">Search</button>
+    <button class="btn-primary" (click)="goToAddTeacher()">Add teacher</button>
+  </div>
+</div>
+
+<div *ngIf="loading()" class="loading">Loading...</div>
+
+<div class="teachers-list">
+  <div *ngFor="let t of teachers(); trackBy: trackById" class="teacher-row">
+    <div class="left">
+      <div class="avatar">{{ (t.firstName?.[0]||'') + (t.lastName?.[0]||'') }}</div>
+      <div class="info">
+        <div class="name">{{ t.firstName }} {{ t.lastName }}</div>
+        <div class="meta small muted">{{ t.address || '-' }}</div>
+      </div>
+    </div>
+    <div class="right">
+      <button class="btn-outline me-2" (click)="showDetails(t)">Details</button>
+      <button class="btn-outline me-2" (click)="router.navigate(['/teachers', t.id, 'courses'])">Courses</button>
+      <button class="btn-primary" (click)="router.navigate(['/teachers', t.id, 'enroll'])">Enroll</button>
+    </div>
+  </div>
+</div>
