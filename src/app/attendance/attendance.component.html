@@ -21,8 +21,7 @@
       <input type="date" [ngModel]="attendanceDate()" (ngModelChange)="setDateAndReload($event)" />
     </div>
     <div style="flex:1">
-      <label>Note (optional)</label>
-      <textarea [ngModel]="note()" (ngModelChange)="note.set($event)" placeholder="Optional note for this absence" rows="2"></textarea>
+  <!-- Note removed from UI; notes are fixed to "--" -->
     </div>
   </div>
 
@@ -72,7 +71,7 @@
               <img class="student-avatar" src="/assets/images/avatar-placeholder.png" alt="avatar" />
               <span>{{ a.studentName }}</span>
             </td>
-            <td>{{ a.note || '-' }}</td>
+            <td>{{ '--' }}</td>
             <td><button class="btn btn-sm btn-outline-danger" (click)="cancelAttendance(a.attendanceId)" [disabled]="deletingAttendanceId() === a.attendanceId">Cancel</button></td>
           </tr>
         </tbody>

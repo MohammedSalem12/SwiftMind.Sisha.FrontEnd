@@ -6,10 +6,12 @@ import { lastValueFrom } from 'rxjs';
 
 import type { CreateUpdateEnrollmentDto } from '@proxy/student-enrollments/dtos';
 import { StudentEnrollmentService as EnrollmentService } from '@proxy/student-enrollments';
-import type { CourseDto } from '@proxy/courses/dtos';
+import type { CourseSimpleDto } from '@proxy/courses/models';
 import { CourseService } from '@proxy/courses';
-import type { TeacherDto } from '@proxy/teachers/models';
+import type { TeacherDto, TeacherAutocompleteDto } from '@proxy/teachers/models';
 import { TeacherService } from '@proxy/teachers';
+import { StudentService } from '@proxy/students';
+import type { StudentDto } from '@proxy/students/models';
 import type { PagedResultDto } from '@abp/ng.core';
 
 @Component({
@@ -25,12 +27,19 @@ export class EnrollInCourseComponent implements OnInit {
   private readonly enrollmentSvc = inject(EnrollmentService);
   private readonly courseSvc = inject(CourseService);
   private readonly teacherSvc = inject(TeacherService);
+  private readonly studentSvc = inject(StudentService);
 
   studentId = signal<string | null>(null);
-  courses = signal<CourseDto[]>([]);
+  // student display info
+  student = signal<StudentDto | null>(null);
+  studentNameAr = signal<string | null>(null);
+  studentNameEn = signal<string | null>(null);
+  studentCode = signal<string | null>(null);
+  studentGrade = signal<number | null>(null);
+  courses = signal<CourseSimpleDto[]>([]);
   // teacher search
   teacherQuery = signal('');
-  teacherResults = signal<TeacherDto[]>([]);
+  teacherResults = signal<TeacherAutocompleteDto[]>([]);
   private teacherSearchTimer: any = null;
   selectedTeacher = signal<TeacherDto | null>(null);
 
@@ -49,13 +58,33 @@ export class EnrollInCourseComponent implements OnInit {
     if (id) {
       this.studentId.set(id);
       this.model.update(m => ({ ...m, studentId: id } as CreateUpdateEnrollmentDto));
+      void this.loadStudent(id);
     }
     this.loadCourses();
   }
 
-  async loadCourses() {
+  private async loadStudent(id: string) {
     try {
-      const res = await lastValueFrom(this.courseSvc.getList({ skipCount: 0, maxResultCount: 999, sorting: 'name' } as any));
+      const s = await lastValueFrom(this.studentSvc.get(id));
+      this.student.set(s ?? null);
+      if (s) {
+        const parts = [s.firstName, s.middleName, s.lastName].filter(Boolean as any);
+        const full = parts.length ? parts.join(' ') : null;
+        // no separate Arabic fields in DTO; set both to the same value
+        this.studentNameAr.set(full);
+        this.studentNameEn.set(full);
+        this.studentCode.set((s.studentCode ?? s.teacherStudentCode) ?? null);
+        this.studentGrade.set(s.currentGrade ?? null);
+      }
+    } catch (err) {
+      console.error('Failed to load student', err);
+    }
+  }
+
+  async loadCourses(search?: string) {
+    try {
+      const res: any = await lastValueFrom(this.courseSvc.getSimpleCourses(search ?? ''));
+      // getSimpleCourses returns a ListResultDto<CourseSimpleDto>
       this.courses.set(res.items ?? []);
     } catch (e) {
       console.error(e);
@@ -78,10 +107,16 @@ export class EnrollInCourseComponent implements OnInit {
       return;
     }
     try {
-  const res = await lastValueFrom(this.teacherSvc.getList({ skipCount: 0, maxResultCount: 10, sorting: 'lastName' } as any)) as PagedResultDto<TeacherDto>;
-  // naive client-side filter on name if server doesn't support filter param
-  const items = (res.items ?? []).filter(t => ((t.firstName ?? '') + ' ' + (t.lastName ?? '')).toLowerCase().includes(q.toLowerCase()));
-  this.teacherResults.set(items);
+      const courseId = this.model().courseId || '';
+      let items: TeacherAutocompleteDto[] = [];
+      if (courseId) {
+        // Use optimized API that returns teacher autocomplete entries for a given course
+        items = await lastValueFrom(this.teacherSvc.getTeachersByCourse(courseId, q, 10)) as TeacherAutocompleteDto[];
+      } else {
+        // fallback to general search when no course selected
+        items = await lastValueFrom(this.teacherSvc.getTeachersBySearch(q, 10)) as TeacherAutocompleteDto[];
+      }
+      this.teacherResults.set(items ?? []);
     } catch (e) {
       console.error(e);
     }

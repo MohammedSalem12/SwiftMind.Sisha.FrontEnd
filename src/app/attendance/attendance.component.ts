@@ -1,17 +1,17 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AttendanceAbsenteesListComponent } from './attendance-absentees-list.component';
 import { lastValueFrom } from 'rxjs';
 import { StudentEnrollmentService as EnrollmentService } from '@proxy/student-enrollments';
 import { CourseService } from '@proxy/courses';
 import { StudentService } from '@proxy/students';
 import { TeacherService } from '@proxy/teachers';
 import { AttendanceService } from '@proxy/attendances';
+import { RestService } from '@abp/ng.core';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AttendanceAbsenteesListComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './attendance.component.html',
   styleUrls: ['./attendance.component.scss']
 })
@@ -21,6 +21,7 @@ export class AttendanceComponent implements OnInit {
   private readonly studentSvc = inject(StudentService);
   private readonly teacherSvc = inject(TeacherService);
   private readonly attendanceSvc = inject(AttendanceService);
+  private readonly rest = inject(RestService);
 
   loading = signal(false);
   teachers = signal<any[]>([]);
@@ -148,8 +149,20 @@ export class AttendanceComponent implements OnInit {
       for (const m of matches) {
         const enr = enrolls.find(e => e.id === m.enrollmentId);
         let name = m.enrollmentId;
+        // try to get richer report via new student-attendance-report endpoint, fallback to studentSvc.get
         if (enr) {
-          try { const st: any = await lastValueFrom(this.studentSvc.get(enr.studentId)); name = `${st.firstName || ''} ${st.lastName || ''}`.trim(); } catch {}
+          try {
+            const report = await this.fetchStudentAttendanceReport(enr.id, enr.studentId);
+            // prefer explicit studentName fields from report, otherwise fall back
+            if (report && (report.studentName || report.name)) {
+              name = report.studentName ?? report.name;
+            } else {
+              const st: any = await lastValueFrom(this.studentSvc.get(enr.studentId));
+              name = `${st.firstName || ''} ${st.lastName || ''}`.trim();
+            }
+          } catch (err) {
+            try { const st: any = await lastValueFrom(this.studentSvc.get(enr.studentId)); name = `${st.firstName || ''} ${st.lastName || ''}`.trim(); } catch {}
+          }
         }
         absList.push({ attendanceId: m.id, enrollmentId: m.enrollmentId, studentName: name, date: m.date, note: m.note });
       }
@@ -194,6 +207,33 @@ export class AttendanceComponent implements OnInit {
   setDateAndReload(dateStr: string) {
     this.attendanceDate.set(dateStr);
     void this.loadTodaysAbsentees();
+  }
+
+  // Try to fetch a student attendance report using several likely endpoint patterns.
+  // Returns any report object or throws if none found.
+  private async fetchStudentAttendanceReport(enrollmentId: string, studentId?: string) {
+    const date = new Date(this.attendanceDate()).toISOString();
+    const candidates = [
+      // common patterns: by enrollmentId or by studentId
+      `/api/app/attendance/student-attendance-report/${enrollmentId}`,
+      `/api/app/attendance/student-attendance-report?enrollmentId=${enrollmentId}`,
+      `/api/app/attendance/student-attendance-report?studentId=${studentId}`,
+      `/api/app/attendance/report/student/${enrollmentId}`,
+      `/api/app/attendance/report/student?enrollmentId=${enrollmentId}`,
+      `/api/app/attendance/report/student?studentId=${studentId}`,
+    ];
+
+    for (const url of candidates) {
+      if (!url) continue;
+      try {
+        const res = await lastValueFrom(this.rest.request<any, any>({ method: 'GET', url } as any, { apiName: 'Default' }));
+        if (res) return res;
+      } catch (e) {
+        // ignore and try next
+      }
+    }
+    // if none matched, throw so callers fall back
+    throw new Error('student attendance report not found');
   }
 
   async loadStudentsForCourse(courseId: string, teacherId?: string | null) {
@@ -254,7 +294,7 @@ export class AttendanceComponent implements OnInit {
     this.saving.set(true); this.message.set(null);
     try {
       const date = this.attendanceDate();
-      const note = this.note();
+        const note = '--';
       for (const s of selected) {
         const payload = { enrollmentId: s.enrollmentId, date: new Date(date).toISOString(), isAbsent: true, note } as any;
         try { await lastValueFrom(this.attendanceSvc.create(payload)); } catch (e) { console.error('create attendance failed', e); }
@@ -274,7 +314,7 @@ export class AttendanceComponent implements OnInit {
     if (!enrollmentId) return;
     this.saving.set(true);
     try {
-      const payload = { enrollmentId, gradeId : '11111111-1111-1111-1111-111111111104' , date: new Date(this.attendanceDate()).toISOString(), isAbsent: true, note: this.note() } as any;
+        const payload = { enrollmentId, gradeId : '11111111-1111-1111-1111-111111111104' , date: new Date(this.attendanceDate()).toISOString(), isAbsent: true, note: '--' } as any;
       await lastValueFrom(this.attendanceSvc.create(payload));
       // refresh lists
       await this.loadTodaysAbsentees();

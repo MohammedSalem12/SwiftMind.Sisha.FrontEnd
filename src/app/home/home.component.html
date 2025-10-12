@@ -1,37 +1,76 @@
-<div class="row mb-3">
-  <!-- Hero header: app name and company -->
-  <div class="col-12">
-    <div class="home-hero card mb-3">
-      <div class="card-body text-center">
-        <div class="logo">
-          <img src="assets/images/logo/logo-light.png" alt="SwiftMind logo" />
+<div class="home-landing">
+  <div class="landing-grid">
+    <div class="left-col">
+      <div class="hero card mb-3">
+        <div class="card-body text-center">
+          <div class="logo small">
+            <img src="assets/images/logo/logo-light.png" alt="SwiftMind logo" />
+          </div>
+          <div class="app-title">Sesha App</div>
+          <div class="company">SwiftMind</div>
         </div>
-        <div class="app-title">Sesha App</div>
-        <div class="company">SwiftMind</div>
+      </div>
+
+      <div class="stats card mb-3">
+        <div class="card-body stats-grid">
+          <div class="stat">
+            <div class="stat-value">{{ studentsCount() === null ? '-' : studentsCount() }}</div>
+            <div class="stat-label">All Students</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{ teachersCount() === null ? '-' : teachersCount() }}</div>
+            <div class="stat-label">All Teachers</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{ parentsCount() === null ? '-' : parentsCount() }}</div>
+            <div class="stat-label">All Parents</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="services card">
+        <div class="card-body">
+          <h4>Services</h4>
+          <div class="services-grid tight">
+            <a class="service-box" routerLink="/students"><span class="icon">🎓</span> Students</a>
+            <a class="service-box" routerLink="/teachers"><span class="icon">🧑‍🏫</span> Teachers</a>
+            <a class="service-box" routerLink="/courses"><span class="icon">📚</span> Courses</a>
+            <a class="service-box" routerLink="/enroll"><span class="icon">✍️</span> Enrollments</a>
+            <a class="service-box" routerLink="/attendance"><span class="icon">📋</span> Attendance</a>
+            <a class="service-box" routerLink="/feeds"><span class="icon">📢</span> Feeds</a>
+            <a class="service-box" routerLink="/exam-grade"><span class="icon">📝</span> Exam Grades</a>
+            <a class="service-box" routerLink="/add-student"><span class="icon">➕</span> Add Student</a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+
+    <div class="right-col">
+      <div class="ads card mb-3">
+        <div class="card-body">
+          <h5>Ads</h5>
+          <div *ngFor="let a of ads()" class="ad">
+            <div class="ad-title">{{ a.title }}</div>
+            <div class="ad-text">{{ a.text }}</div>
+            <a class="ad-action" [routerLink]="a.action">Learn more</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="suggested card">
+        <div class="card-body">
+          <h5>Suggested for teachers</h5>
+          <ul class="suggested-list">
+            <li *ngFor="let s of suggestedForTeachers()">
+              <div class="s-title">{{ s.title }}</div>
+              <div class="s-text">{{ s.text }}</div>
+              <a [routerLink]="s.action">Open</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Current user info (visible when logged in) -->
-  <div class="col-12" *ngIf="hasLoggedIn">
-    <div class="card user-info-card mb-3">
-      <div class="card-body d-flex align-items-center gap-3">
-        <ng-container *ngIf="user$ | async as user">
-          <div class="avatar">
-            <!-- user.avatar.source may be an icon class or image src; fall back to icon -->
-            <i *ngIf="user?.avatar?.type === 'icon'" [class]="user.avatar.source"></i>
-            <img *ngIf="user?.avatar?.type === 'image'" [src]="user.avatar.source" alt="avatar" />
-          </div>
-          <div class="user-meta">
-            <div class="user-name">{{ user.fullName || user.userName }}</div>
-            <div class="user-email">{{ user.email }}</div>
-          </div>
-          <div class="ms-auto">
-            <button class="btn btn-outline-primary" (click)="manageProfile()">Manage Profile</button>
-          </div>
-        </ng-container>
-      </div>
-    </div>
-  </div>
+</div>
 

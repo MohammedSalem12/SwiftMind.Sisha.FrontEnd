@@ -62,6 +62,14 @@ function configureRoutes(routesService: RoutesService) {
         layout: eLayoutType.application,
       },
       {
+        path: '/exam-grade',
+        name: 'درجات الاختبار',
+        iconClass: 'fas fa-clipboard-list',
+        order: 4,
+        layout: eLayoutType.application,
+        visible: () => hasToken(),
+      },
+      {
         path: '/attendance',
         name: 'الحضور',
         iconClass: 'fas fa-user-check',

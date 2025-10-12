@@ -4,12 +4,18 @@
   <form (ngSubmit)="submit()" class="enroll-card card" novalidate>
     <div class="left">
       <div class="meta">Enrolling student</div>
-      <div class="student-id">{{ studentId() || '-' }}</div>
+      <div class="student-id">
+        <div *ngIf="student()">
+          <div class="student-name">{{ studentNameAr() || studentNameEn() }}</div>
+          <div class="student-meta">Code: {{ studentCode() || '-' }} | Grade: {{ studentGrade() ?? '-' }}</div>
+        </div>
+        <div *ngIf="!student()">{{ studentId() || '-' }}</div>
+      </div>
 
       <label class="label">Course</label>
       <select [ngModel]="model().courseId" (ngModelChange)="setField('courseId',$event)" name="courseId" required>
         <option value="">-- Select Course --</option>
-        <option *ngFor="let c of courses()" [value]="c.id">{{ c.nameEn || c.nameAr }}</option>
+  <option *ngFor="let c of courses()" [value]="c.id">{{ c.name || c.code }}</option>
       </select>
 
       <div class="label" style="margin-top:12px">Teacher (optional)</div>
@@ -18,15 +24,15 @@
         <div class="results" *ngIf="teacherResults().length > 0">
           <ul>
             <li *ngFor="let t of teacherResults()" (click)="selectTeacher(t)">
-              <div class="t-left"><div class="t-avatar">{{ (t.firstName||'').charAt(0) }}</div></div>
-              <div class="t-info">{{ t.firstName }} {{ t.lastName }}</div>
+              <div class="t-left"><div class="t-avatar">{{ (t.displayName||'').charAt(0) }}</div></div>
+              <div class="t-info">{{ t.displayName }}</div>
             </li>
           </ul>
         </div>
 
         <div class="selected" *ngIf="selectedTeacher()">
-          <div class="t-avatar small">{{ (selectedTeacher()?.firstName||'').charAt(0) }}</div>
-          <div class="t-info">{{ selectedTeacher()?.firstName }} {{ selectedTeacher()?.lastName }}</div>
+          <div class="t-avatar small">{{ (selectedTeacher()?.displayName||'').charAt(0) }}</div>
+          <div class="t-info">{{ selectedTeacher()?.displayName }}</div>
           <button type="button" class="clear" (click)="setField('teacherId',''); selectedTeacher.set(null)">Clear</button>
         </div>
       </div>

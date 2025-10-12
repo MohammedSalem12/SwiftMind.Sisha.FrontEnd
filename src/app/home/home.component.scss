@@ -30,6 +30,37 @@
 .home-hero .logo { margin-bottom: 10px; }
 .home-hero .logo img { height: 86px; width: auto; display: inline-block; }
 
+/* Landing layout additions */
+.home-landing .hero .app-title { font-size:32px; font-weight:800; color:#0b3d91; }
+.home-landing .hero .company { color:#6b7280; margin-top:6px }
+
+.landing-grid { display:flex; gap:16px }
+.left-col { flex:1 }
+.right-col { width:320px }
+
+.stats-grid { display:flex; gap:12px; justify-content:space-between }
+.stat { flex:1; text-align:center; padding:12px }
+.stat-value { font-size:24px; font-weight:700; color:#0b3d91 }
+.stat-label { color:#6b7280 }
+
+.services-grid { display:grid; grid-template-columns: repeat(2,1fr); gap:6px; margin-top:12px }
+.services-grid.tight { gap:4px }
+.service-box { display:flex; gap:8px; align-items:center; padding:12px; background:#ffffff; border:1px solid #e6eef9; border-radius:8px; text-align:left; text-decoration:none; color:#0b3d91; font-weight:600 }
+.service-box .icon { font-size:18px; width:26px; display:inline-block }
+.service-box:hover { background:#f6fbff }
+
+.logo.small img { height:56px; width:auto }
+
+.ads .ad { padding:8px 0; border-bottom:1px solid #f1f5f9 }
+.ad-title { font-weight:700 }
+.ad-text { color:#6b7280; margin:6px 0 }
+.ad-action { color:#0b3d91 }
+
+.suggested-list { list-style:none; padding:0; margin:0 }
+.suggested-list li { padding:8px 0; border-bottom:1px dashed #eef3fb }
+.s-title { font-weight:700 }
+.s-text { color:#6b7280 }
+
 /* User info card */
 .user-info-card .avatar {
   width: 64px; height: 64px; border-radius: 50%; overflow: hidden; display:flex; align-items:center; justify-content:center;

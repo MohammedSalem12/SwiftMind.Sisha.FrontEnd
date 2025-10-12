@@ -65,6 +65,10 @@ export const appRoutes: Routes = [
     loadChildren: () => import('./feeds/feeds.routes').then(m => m.feedsRoutes),
   },
   {
+    path: 'exam-grade',
+    loadChildren: () => import('./exam-grade/exam-grade.routes').then(m => m.examGradeRoutes),
+  },
+  {
     path: 'attendance',
     loadChildren: () => import('./attendance/attendance.routes').then(m => m.attendanceRoutes),
   },

@@ -1,0 +1,94 @@
+<div class="exam-grade-page card">
+  <h2>درجات الاختبار</h2>
+  <div class="toolbar" style="display:flex; gap:8px; margin-bottom:8px">
+    <button class="btn-primary" type="button" (click)="openAddExam()">Add Exam</button>
+    <button class="btn-outline" type="button" (click)="loadStudents()">Refresh</button>
+  </div>
+
+  <div class="filters" style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+    <label style="display:flex; flex-direction:column;">
+      Teacher
+      <select [(ngModel)]="selectedTeacherModel">
+        <option [ngValue]="null">--</option>
+        <option *ngFor="let t of teachers()" [value]="t.id">{{ t.name }}</option>
+      </select>
+    </label>
+    <label style="display:flex; flex-direction:column;">
+      Course
+      <select [(ngModel)]="selectedCourseModel">
+        <option [ngValue]="null">--</option>
+        <option *ngFor="let c of courses()" [value]="c.id">{{ c.name }}</option>
+      </select>
+    </label>
+    <label style="display:flex; flex-direction:column;">
+      Student Code
+      <input type="text" [(ngModel)]="studentCodeFilterModel" placeholder="search code" />
+    </label>
+  </div>
+
+  <div *ngIf="loading()" class="loading">Loading...</div>
+
+  <table *ngIf="!loading()" class="table table-sm">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>الاسم</th>
+        <th>الرمز</th>
+        <th>الصف</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of students(); let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ s.name }}</td>
+        <td>{{ s.code }}</td>
+        <td>{{ s.grade }}</td>
+        <td><button class="btn btn-sm" (click)="openAddGrades(s)">Add Grade</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+<!-- Add Exam Modal -->
+<div class="modal-backdrop" *ngIf="showAddExamModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>New Exam</h3>
+      <button class="close" (click)="closeAddExam()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>Exam name</label>
+      <input [(ngModel)]="addExamModel.name" />
+      <label>Date</label>
+      <input type="date" [(ngModel)]="addExamModel.date" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" (click)="submitAddExam()">Create</button>
+      <button class="btn-outline" (click)="closeAddExam()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Grades Modal -->
+<div class="modal-backdrop" *ngIf="showAddGradesModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Add Grade</h3>
+      <button class="close" (click)="closeAddGrades()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="selectedStudent">
+        <div><strong>{{ selectedStudent?.name }}</strong></div>
+        <div>Code: {{ selectedStudent?.code }}</div>
+      </div>
+      <label>Grade</label>
+      <input type="number" [(ngModel)]="newGrade" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" (click)="submitAddGrade()">Save Grade</button>
+      <button class="btn-outline" (click)="closeAddGrades()">Cancel</button>
+    </div>
+  </div>
+</div>

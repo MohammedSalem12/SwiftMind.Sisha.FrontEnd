@@ -5,7 +5,7 @@
   <ul class="absentees-list">
     <li *ngFor="let a of absentees" class="absentee-row">
       <span class="absentee-name">{{ a.studentName }}</span>
-      <span class="absentee-note">{{ a.note ? ('- ' + a.note) : '' }}</span>
+  <span class="absentee-note">{{ '--' }}</span>
       <button class="cancel-btn" (click)="cancel.emit(a.attendanceId)" [disabled]="deletingId === a.attendanceId">إلغاء</button>
     </li>
   </ul>

@@ -1,4 +1,4 @@
-import type { CreateUpdateTeacherDto, TeacherDto } from './models';
+import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherDto, TeacherEnrollmentResultDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -29,7 +29,7 @@ export class TeacherService {
   
 
   enrollTeacherInCourses = (teacherId: string, courseIds: string[], config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
+    this.restService.request<any, TeacherEnrollmentResultDto>({
       method: 'POST',
       url: `/api/app/teacher/enroll-teacher-in-courses/${teacherId}`,
       body: courseIds,
@@ -58,6 +58,24 @@ export class TeacherService {
     this.restService.request<any, CourseDto[]>({
       method: 'GET',
       url: `/api/app/teacher/teacher-courses/${teacherId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getTeachersByCourse = (courseId: string, searchPrefix?: string, maxResults: number = 10, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherAutocompleteDto[]>({
+      method: 'GET',
+      url: `/api/app/teacher/teachers-by-course/${courseId}`,
+      params: { searchPrefix, maxResults },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getTeachersBySearch = (searchPrefix: string, maxResults: number = 10, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherAutocompleteDto[]>({
+      method: 'GET',
+      url: '/api/app/teacher/teachers-by-search',
+      params: { searchPrefix, maxResults },
     },
     { apiName: this.apiName,...config });
   
