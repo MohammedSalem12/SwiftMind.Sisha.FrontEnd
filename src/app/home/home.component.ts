@@ -73,7 +73,7 @@ export class HomeComponent implements OnInit {
       this.teachersCount.set(teaResp?.totalCount ?? null);
 
       // parents: derive from enrollments parentId fields (unique)
-      const enrollResp: any = await lastValueFrom(this.enrollmentSvc.getList({ skipCount: 0, maxResultCount: 10000 } as any));
+      const enrollResp: any = await lastValueFrom(this.enrollmentSvc.getList({ skipCount: 0, maxResultCount: 100 } as any));
       const enrolls = enrollResp?.items ?? [];
       const parentIds = new Set(enrolls.filter((e: any) => e.parentId).map((e: any) => e.parentId));
       this.parentsCount.set(parentIds.size);

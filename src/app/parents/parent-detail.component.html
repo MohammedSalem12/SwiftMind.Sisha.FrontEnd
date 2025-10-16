@@ -1,0 +1,178 @@
+<div class="parent-detail-page card" *ngIf="!loading()">
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">← Back to Parents</button>
+    <h2>Parent Details</h2>
+  </div>
+
+  <div *ngIf="parent()" class="parent-info">
+    <!-- Parent Basic Info -->
+    <div class="info-section">
+      <h3>Basic Information</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <label>Full Name</label>
+          <div class="value">{{ parent().fullName || (parent().firstName + ' ' + parent().lastName) }}</div>
+        </div>
+        <div class="info-item">
+          <label>Parent Code</label>
+          <div class="value">
+            <span class="parent-code">{{ parent().parentCode || 'N/A' }}</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <label>Email</label>
+          <div class="value">{{ parent().email || 'N/A' }}</div>
+        </div>
+        <div class="info-item">
+          <label>Phone Number</label>
+          <div class="value">{{ parent().phoneNumber || 'N/A' }}</div>
+        </div>
+        <div class="info-item">
+          <label>Address</label>
+          <div class="value">{{ parent().address || 'N/A' }}</div>
+        </div>
+        <div class="info-item">
+          <label>Occupation</label>
+          <div class="value">{{ parent().occupation || 'N/A' }}</div>
+        </div>
+        <div class="info-item">
+          <label>Emergency Contact</label>
+          <div class="value">{{ parent().emergencyContact || 'N/A' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Children Section -->
+    <div class="info-section">
+      <div class="section-header">
+        <h3>Children ({{ children().length }})</h3>
+        <button class="btn-primary" (click)="openEnrollModal()">+ Enroll Child</button>
+      </div>
+
+      <div *ngIf="childrenLoading()" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading children...</p>
+      </div>
+
+      <div *ngIf="!childrenLoading()">
+        <div *ngIf="children().length === 0" class="no-data">
+          <div class="no-data-icon">👨‍👩‍👧‍👦</div>
+          <h4>No Children Enrolled</h4>
+          <p>This parent has no children enrolled yet.</p>
+          <button class="btn-primary" (click)="openEnrollModal()">Enroll First Child</button>
+        </div>
+
+        <div *ngIf="children().length > 0" class="children-list">
+          <div *ngFor="let child of children()" class="child-card">
+            <div class="child-info">
+              <div class="child-name">{{ child.studentName }}</div>
+              <div class="child-details">
+                <span class="student-code">{{ child.studentCode }}</span>
+                <span class="relationship">{{ child.relationshipType }}</span>
+              </div>
+              <div class="child-permissions">
+                <span *ngIf="child.isEmergencyContact" class="badge badge-emergency">Emergency Contact</span>
+                <span *ngIf="child.canPickUp" class="badge badge-pickup">Can Pick Up</span>
+              </div>
+              <div *ngIf="child.notes" class="child-notes">
+                <strong>Notes:</strong> {{ child.notes }}
+              </div>
+            </div>
+            <div class="child-actions">
+              <button 
+                class="btn btn-danger btn-sm" 
+                (click)="removeChild(child)"
+                title="Remove Child">
+                🗑️ Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="loading()" class="loading-page">
+  <div class="spinner"></div>
+  <p>Loading parent details...</p>
+</div>
+
+<!-- Enroll Child Modal -->
+<div *ngIf="showEnrollModal()" class="modal-backdrop">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Enroll Child</h3>
+      <button class="close" (click)="closeEnrollModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="student">Select Student *</label>
+        <select 
+          id="student" 
+          [(ngModel)]="enrollForm.studentId" 
+          class="form-control" 
+          required>
+          <option value="">Select a student</option>
+          <option *ngFor="let student of availableStudents()" [value]="student.id">
+            {{ student.firstName }} {{ student.lastName }} ({{ student.studentCode }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="relationship">Relationship *</label>
+        <select 
+          id="relationship" 
+          [(ngModel)]="enrollForm.relationshipType" 
+          class="form-control" 
+          required>
+          <option value="Parent">Parent</option>
+          <option value="Guardian">Guardian</option>
+          <option value="Grandparent">Grandparent</option>
+          <option value="Uncle/Aunt">Uncle/Aunt</option>
+          <option value="Sibling">Sibling</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="enrollForm.isEmergencyContact">
+          Emergency Contact
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="enrollForm.canPickUp">
+          Authorized for Pickup
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea 
+          id="notes" 
+          [(ngModel)]="enrollForm.notes" 
+          rows="3"
+          placeholder="Additional notes..."
+          class="form-control"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button 
+        class="btn-primary" 
+        (click)="submitEnrollChild()"
+        [disabled]="!enrollForm.studentId">
+        Enroll Child
+      </button>
+      <button class="btn-outline" (click)="closeEnrollModal()">Cancel</button>
+    </div>
+  </div>
+</div>

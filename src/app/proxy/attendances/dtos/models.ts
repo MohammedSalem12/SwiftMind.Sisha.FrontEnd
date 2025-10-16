@@ -1,4 +1,4 @@
-import type { ExtensibleAuditedEntityDto } from '@abp/ng.core';
+import type { ExtensibleAuditedEntityDto, ExtensibleEntityDto, PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 
 export interface AttendanceDto extends ExtensibleAuditedEntityDto<string> {
   enrollmentId?: string;
@@ -8,7 +8,10 @@ export interface AttendanceDto extends ExtensibleAuditedEntityDto<string> {
   gradeId?: string;
 }
 
-export interface  CreateUpdateAttendanceDto {
+export interface AttendanceReportResultDto extends PagedResultDto<StudentAttendanceReportDto> {
+}
+
+export interface CreateUpdateAttendanceDto {
   enrollmentId: string;
   date: string;
   isAbsent: boolean;
@@ -18,8 +21,8 @@ export interface  CreateUpdateAttendanceDto {
 
 export interface GetAttendanceReportInput extends PagedAndSortedResultRequestDto {
   date?: string;
-  courseId?: string | null;
-  studentId?: string | null;
+  courseId?: string;
+  studentId?: string;
   search?: string;
 }
 
@@ -28,12 +31,13 @@ export interface StudentAttendanceReportDto extends ExtensibleEntityDto<string> 
   studentCode?: string;
   studentNameAr?: string;
   studentNameEn?: string;
-  totalDays?: number;
-  presentDays?: number;
-  absentDays?: number;
+  displayName?: string;
+  courseId?: string;
+  courseNameAr?: string;
+  courseNameEn?: string;
+  courseCode?: string;
+  totalDaysInMonth: number;
+  attendedDays: number;
+  absentDays: number;
+  attendancePercentage: number;
 }
-
-export interface AttendanceReportResultDto extends PagedResultDto<StudentAttendanceReportDto> {}
-
-// Helper base types used above
-import type { PagedResultDto, PagedAndSortedResultRequestDto, ExtensibleEntityDto } from '@abp/ng.core';

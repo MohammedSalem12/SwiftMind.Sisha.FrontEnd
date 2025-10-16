@@ -1,0 +1,208 @@
+<div class="register-page">
+  <div class="register-card">
+    <div class="register-header">
+      <h2>Create Account</h2>
+      <p>Register for Sesha App</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #regForm="ngForm">
+      <!-- User Type Selection -->
+      <div class="form-group">
+        <label for="userType">Account Type *</label>
+        <select 
+          id="userType" 
+          name="userType" 
+          [(ngModel)]="registerForm.userType" 
+          required
+          class="form-control">
+          <option [ngValue]="null">Select account type</option>
+          <option *ngFor="let type of userTypes()" [ngValue]="type.type">
+            {{ type.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Basic Information -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name *</label>
+          <input 
+            type="text" 
+            id="firstName" 
+            name="firstName" 
+            [(ngModel)]="registerForm.firstName" 
+            required
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="middleName">Middle Name</label>
+          <input 
+            type="text" 
+            id="middleName" 
+            name="middleName" 
+            [(ngModel)]="registerForm.middleName" 
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name *</label>
+          <input 
+            type="text" 
+            id="lastName" 
+            name="lastName" 
+            [(ngModel)]="registerForm.lastName" 
+            required
+            class="form-control">
+        </div>
+      </div>
+
+      <!-- Login Credentials -->
+      <div class="form-group">
+        <label for="userName">Username *</label>
+        <input 
+          type="text" 
+          id="userName" 
+          name="userName" 
+          [(ngModel)]="registerForm.userName" 
+          required
+          class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          [(ngModel)]="registerForm.email" 
+          required
+          class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="phoneNumber">Phone Number</label>
+        <input 
+          type="tel" 
+          id="phoneNumber" 
+          name="phoneNumber" 
+          [(ngModel)]="registerForm.phoneNumber" 
+          class="form-control">
+      </div>
+
+      <!-- Password -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">Password *</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            [(ngModel)]="registerForm.password" 
+            required
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password *</label>
+          <input 
+            type="password" 
+            id="confirmPassword" 
+            name="confirmPassword" 
+            [(ngModel)]="registerForm.confirmPassword" 
+            required
+            class="form-control">
+        </div>
+      </div>
+
+      <!-- Additional Information -->
+      <div class="form-group">
+        <label for="address">Address</label>
+        <textarea 
+          id="address" 
+          name="address" 
+          [(ngModel)]="registerForm.address" 
+          rows="2"
+          class="form-control"></textarea>
+      </div>
+
+      <!-- Student-specific fields -->
+      <div *ngIf="isFieldVisible('grade')" class="form-group">
+        <label for="grade">Grade {{ isFieldRequired('grade') ? '*' : '' }}</label>
+        <input 
+          type="text" 
+          id="grade" 
+          name="grade" 
+          [(ngModel)]="registerForm.grade" 
+          [required]="isFieldRequired('grade')"
+          class="form-control">
+      </div>
+
+      <div *ngIf="isFieldVisible('parentContact')" class="form-group">
+        <label for="parentContact">Parent Contact {{ isFieldRequired('parentContact') ? '*' : '' }}</label>
+        <input 
+          type="text" 
+          id="parentContact" 
+          name="parentContact" 
+          [(ngModel)]="registerForm.parentContact" 
+          [required]="isFieldRequired('parentContact')"
+          class="form-control">
+      </div>
+
+      <!-- Teacher-specific fields -->
+      <div *ngIf="isFieldVisible('department')" class="form-group">
+        <label for="department">Department {{ isFieldRequired('department') ? '*' : '' }}</label>
+        <input 
+          type="text" 
+          id="department" 
+          name="department" 
+          [(ngModel)]="registerForm.department" 
+          [required]="isFieldRequired('department')"
+          class="form-control">
+      </div>
+
+      <div *ngIf="isFieldVisible('qualification')" class="form-group">
+        <label for="qualification">Qualification {{ isFieldRequired('qualification') ? '*' : '' }}</label>
+        <input 
+          type="text" 
+          id="qualification" 
+          name="qualification" 
+          [(ngModel)]="registerForm.qualification" 
+          [required]="isFieldRequired('qualification')"
+          class="form-control">
+      </div>
+
+      <!-- Parent-specific fields -->
+      <div *ngIf="isFieldVisible('occupation')" class="form-group">
+        <label for="occupation">Occupation {{ isFieldRequired('occupation') ? '*' : '' }}</label>
+        <input 
+          type="text" 
+          id="occupation" 
+          name="occupation" 
+          [(ngModel)]="registerForm.occupation" 
+          [required]="isFieldRequired('occupation')"
+          class="form-control">
+      </div>
+
+      <div *ngIf="isFieldVisible('emergencyContact')" class="form-group">
+        <label for="emergencyContact">Emergency Contact {{ isFieldRequired('emergencyContact') ? '*' : '' }}</label>
+        <input 
+          type="text" 
+          id="emergencyContact" 
+          name="emergencyContact" 
+          [(ngModel)]="registerForm.emergencyContact" 
+          [required]="isFieldRequired('emergencyContact')"
+          class="form-control">
+      </div>
+
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="btn-primary" 
+          [disabled]="registering() || !regForm.form.valid">
+          <span *ngIf="registering()">Creating Account...</span>
+          <span *ngIf="!registering()">Create Account</span>
+        </button>
+        <a routerLink="/login" class="btn-link">Already have an account? Sign in</a>
+      </div>
+    </form>
+  </div>
+</div>

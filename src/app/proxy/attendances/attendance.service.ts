@@ -1,4 +1,4 @@
-import type { AttendanceDto, CreateUpdateAttendanceDto, GetAttendanceReportInput, AttendanceReportResultDto } from './dtos';
+import type { AttendanceDto, AttendanceReportResultDto, CreateUpdateAttendanceDto, GetAttendanceReportInput } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';

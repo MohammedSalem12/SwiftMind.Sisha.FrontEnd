@@ -48,7 +48,43 @@
 
 .spinner { width:16px; height:16px; border-radius:50%; border:2px solid rgba(255,255,255,0.28); border-top-color:rgba(255,255,255,0.9); animation:spin 1s linear infinite; display:inline-block; margin-left:8px }
 
-.signup-hint { margin-top:14px; font-size:13px; color:#556 }
+.auth-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.signup-hint { 
+  font-size: 13px; 
+  color: #556;
+  margin: 0;
+}
+
+.btn-register {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 2px solid #6b9fd6;
+  background: transparent;
+  color: #6b9fd6;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-register:hover {
+  background: #6b9fd6;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(107, 159, 214, 0.3);
+}
 
 @keyframes spin { to { transform: rotate(360deg); } }
 

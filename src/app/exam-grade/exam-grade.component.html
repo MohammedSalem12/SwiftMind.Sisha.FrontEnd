@@ -17,7 +17,14 @@
       Course
       <select [(ngModel)]="selectedCourseModel">
         <option [ngValue]="null">--</option>
-        <option *ngFor="let c of courses()" [value]="c.id">{{ c.name }}</option>
+        <option *ngFor="let c of courses()" [value]="c.id">{{ c.nameAr }}</option>
+      </select>
+    </label>
+    <label style="display:flex; flex-direction:column;">
+      Exam
+      <select [(ngModel)]="selectedExamModel">
+        <option [ngValue]="null">--</option>
+        <option *ngFor="let e of exams()" [value]="e.id">{{ e.name }}</option>
       </select>
     </label>
     <label style="display:flex; flex-direction:column;">
@@ -52,17 +59,20 @@
 </div>
 
 <!-- Add Exam Modal -->
-<div class="modal-backdrop" *ngIf="showAddExamModal">
-  <div class="modal-card">
+<div class="modal-backdrop" *ngIf="showAddExamModal" [@fadeInOut]>
+  <div class="modal-card" [@slideInOut]>
     <div class="modal-header">
       <h3>New Exam</h3>
       <button class="close" (click)="closeAddExam()">✕</button>
     </div>
     <div class="modal-body">
       <label>Exam name</label>
-      <input [(ngModel)]="addExamModel.name" />
-      <label>Date</label>
-      <input type="date" [(ngModel)]="addExamModel.date" />
+      <input [(ngModel)]="addExamModel.name" placeholder="Enter exam name" />
+      <label>Course</label>
+      <select [(ngModel)]="addExamModel.courseId">
+        <option [ngValue]="null">Select Course</option>
+        <option *ngFor="let c of courses()" [value]="c.id">{{ c.nameAr }}</option>
+      </select>
     </div>
     <div class="modal-actions">
       <button class="btn-primary" (click)="submitAddExam()">Create</button>
@@ -72,22 +82,27 @@
 </div>
 
 <!-- Add Grades Modal -->
-<div class="modal-backdrop" *ngIf="showAddGradesModal">
-  <div class="modal-card">
+<div class="modal-backdrop" *ngIf="showAddGradesModal" [@fadeInOut]>
+  <div class="modal-card" [@slideInOut]>
     <div class="modal-header">
       <h3>Add Grade</h3>
       <button class="close" (click)="closeAddGrades()">✕</button>
     </div>
     <div class="modal-body">
-      <div *ngIf="selectedStudent">
+      <div *ngIf="selectedStudent" class="student-info">
         <div><strong>{{ selectedStudent?.name }}</strong></div>
         <div>Code: {{ selectedStudent?.code }}</div>
       </div>
+      <div *ngIf="!selectedExam()" class="warning">
+        Please select an exam first
+      </div>
       <label>Grade</label>
-      <input type="number" [(ngModel)]="newGrade" />
+      <input type="number" [(ngModel)]="newGrade" placeholder="Enter grade" min="0" [max]="maxGrade || 100" />
+      <label>Max Grade</label>
+      <input type="number" [(ngModel)]="maxGrade" placeholder="100" min="1" />
     </div>
     <div class="modal-actions">
-      <button class="btn-primary" (click)="submitAddGrade()">Save Grade</button>
+      <button class="btn-primary" (click)="submitAddGrade()" [disabled]="!selectedExam()">Save Grade</button>
       <button class="btn-outline" (click)="closeAddGrades()">Cancel</button>
     </div>
   </div>

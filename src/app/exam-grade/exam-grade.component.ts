@@ -1,9 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 import { StudentService } from '@proxy/students';
 import { TeacherService } from '@proxy/teachers';
 import { StudentEnrollmentService } from '@proxy/student-enrollments';
+import { ExamService } from '@proxy/exams';
+import { ExamGradeService } from '@proxy/exam-grades';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
@@ -11,18 +14,42 @@ import { lastValueFrom } from 'rxjs';
   selector: 'app-exam-grade',
   imports: [CommonModule, FormsModule],
   templateUrl: './exam-grade.component.html',
-  styleUrls: ['./exam-grade.component.scss']
+  styleUrls: ['./exam-grade.component.scss'],
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease-in', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-out', style({ opacity: 0 }))
+      ])
+    ]),
+    trigger('slideInOut', [
+      transition(':enter', [
+        style({ transform: 'translateY(-20px) scale(0.95)', opacity: 0 }),
+        animate('250ms ease-out', style({ transform: 'translateY(0) scale(1)', opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ transform: 'translateY(-20px) scale(0.95)', opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class ExamGradeComponent implements OnInit {
   private readonly studentSvc = inject(StudentService);
   private readonly teacherSvc = inject(TeacherService);
   private readonly enrollmentSvc = inject(StudentEnrollmentService);
+  private readonly examSvc = inject(ExamService);
+  private readonly examGradeSvc = inject(ExamGradeService);
   students = signal<any[]>([]);
   loading = signal(false);
   teachers = signal<any[]>([]);
   courses = signal<any[]>([]);
+  exams = signal<any[]>([]);
   selectedTeacher = signal<string | null>(null);
   selectedCourse = signal<string | null>(null);
+  selectedExam = signal<string | null>(null);
   studentCodeFilter = signal<string>('');
 
   // getters/setters to work with template-driven ngModel
@@ -46,20 +73,29 @@ export class ExamGradeComponent implements OnInit {
   set studentCodeFilterModel(v: string) {
     this.onStudentCodeFilterChange(v);
   }
+
+  get selectedExamModel() {
+    return this.selectedExam();
+  }
+  set selectedExamModel(v: string | null) {
+    void this.onExamChange(v);
+  }
   // modal states (plain fields for ngModel two-way binding)
   showAddExamModal = false;
-  addExamModel: { name?: string; date?: string } = {};
+  addExamModel: { name?: string; date?: string; courseId?: string } = {};
 
   showAddGradesModal = false;
   selectedStudent: any | null = null;
+  selectedStudentEnrollment: any | null = null;
   newGrade: number | null = null;
+  maxGrade: number | null = null;
 
   ngOnInit(): void {
     void Promise.all([this.loadTeachers(), this.loadStudents()]);
   }
 
   openAddExam() {
-    this.addExamModel = {};
+    this.addExamModel = { courseId: this.selectedCourse() || undefined };
     this.showAddExamModal = true;
   }
 
@@ -67,29 +103,69 @@ export class ExamGradeComponent implements OnInit {
     this.showAddExamModal = false;
   }
 
-  submitAddExam() {
-    // Placeholder: call backend to create an exam when API available
-    console.log('Add exam', this.addExamModel);
-    this.closeAddExam();
+  async submitAddExam() {
+    try {
+      const courseId = this.addExamModel.courseId || this.selectedCourse();
+      const teacherId = this.selectedTeacher();
+      if (!courseId || !teacherId || !this.addExamModel.name) {
+        alert('Please fill in all required fields');
+        return;
+      }
+      
+      await lastValueFrom(this.examSvc.create({
+        examName: this.addExamModel.name,
+        courseId,
+        teacherId
+      }));
+      
+      this.closeAddExam();
+      await this.loadExams(); // refresh exams list
+    } catch (e) {
+      console.error('Failed to create exam', e);
+      alert('Failed to create exam');
+    }
   }
 
   openAddGrades(student: any) {
     this.selectedStudent = student;
+    this.selectedStudentEnrollment = student.enrollment;
     this.newGrade = null;
+    this.maxGrade = 100; // default max grade
     this.showAddGradesModal = true;
   }
 
   closeAddGrades() {
     this.showAddGradesModal = false;
     this.selectedStudent = null;
+    this.selectedStudentEnrollment = null;
   }
 
-  submitAddGrade() {
-    const student = this.selectedStudent;
-    const grade = this.newGrade;
-    console.log('Add grade for', student, 'grade', grade);
-    // Placeholder: call backend to save grade when API available
-    this.closeAddGrades();
+  async submitAddGrade() {
+    try {
+      const examId = this.selectedExam();
+      const enrollmentId = this.selectedStudentEnrollment?.id;
+      const grade = this.newGrade;
+      const maxGrade = this.maxGrade || 100;
+
+      if (!examId || !enrollmentId || grade === null) {
+        alert('Please select an exam and enter a grade');
+        return;
+      }
+
+      await lastValueFrom(this.examGradeSvc.create({
+        examId,
+        enrollmentId,
+        grade,
+        maxGrade,
+        date: new Date().toISOString().split('T')[0]
+      }));
+
+      this.closeAddGrades();
+      await this.loadStudents(); // refresh to show updated grades
+    } catch (e) {
+      console.error('Failed to save grade', e);
+      alert('Failed to save grade');
+    }
   }
 
   async loadStudents() {
@@ -102,7 +178,7 @@ export class ExamGradeComponent implements OnInit {
 
       if (courseId) {
         // load enrollments and then fetch students for those enrollments
-        const enrollmentsResp: any = await lastValueFrom(this.enrollmentSvc.getList({ skipCount: 0, maxResultCount: 10000 } as any));
+        const enrollmentsResp: any = await lastValueFrom(this.enrollmentSvc.getList({ skipCount: 0, maxResultCount: 100 } as any));
         const enrollments = (enrollmentsResp.items ?? []).filter((e: any) => {
           if (e.courseId !== courseId) return false;
           if (teacherId && e.teacherId !== teacherId) return false;
@@ -114,17 +190,22 @@ export class ExamGradeComponent implements OnInit {
           return;
         }
         // fetch students in bulk then filter by code
-        const all: any = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 10000 } as any));
+        const all: any = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 100 } as any));
         const byId = new Map((all.items ?? []).map((s: any) => [s.id, s]));
-        const rows = studentIds.map((id: string) => byId.get(id)).filter(Boolean).map((s: any) => ({
-          id: s.id,
-          name: `${s.firstName || ''} ${s.middleName || ''} ${s.lastName || ''}`.replace(/\s+/g, ' ').trim(),
-          code: s.studentCode ?? s.teacherStudentCode ?? '-',
-          grade: s.currentGrade ?? '-',
-        }));
+        const rows = studentIds.map((id: string) => {
+          const student: any = byId.get(id);
+          const enrollment = enrollments.find((e: any) => e.studentId === id);
+          return student ? {
+            id: student.id,
+            name: `${student.firstName || ''} ${student.middleName || ''} ${student.lastName || ''}`.replace(/\s+/g, ' ').trim(),
+            code: student.studentCode ?? student.teacherStudentCode ?? '-',
+            grade: student.currentGrade ?? '-',
+            enrollment
+          } : null;
+        }).filter(Boolean);
         this.students.set(codeFilter ? rows.filter(r => (r.code || '').toString().includes(codeFilter)) : rows);
       } else {
-        const all: any = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 10000 } as any));
+        const all: any = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 100 } as any));
         const rows = (all.items ?? []).map((s: any) => ({
           id: s.id,
           name: `${s.firstName || ''} ${s.middleName || ''} ${s.lastName || ''}`.replace(/\s+/g, ' ').trim(),
@@ -169,7 +250,32 @@ export class ExamGradeComponent implements OnInit {
 
   async onCourseChange(courseId?: string | null) {
     this.selectedCourse.set(courseId || null);
+    this.exams.set([]);
+    this.selectedExam.set(null);
+    if (courseId) {
+      await this.loadExams();
+    }
     void this.loadStudents();
+  }
+
+  async onExamChange(examId?: string | null) {
+    this.selectedExam.set(examId || null);
+    void this.loadStudents();
+  }
+
+  async loadExams() {
+    const courseId = this.selectedCourse();
+    if (!courseId) {
+      this.exams.set([]);
+      return;
+    }
+    try {
+      const resp: any = await lastValueFrom(this.examSvc.getExamsByCourse(courseId, { skipCount: 0, maxResultCount: 100 }));
+      this.exams.set((resp.items ?? []).map((e: any) => ({ id: e.id, name: e.examName, code: e.examCode })));
+    } catch (e) {
+      console.error('Failed to load exams for course', e);
+      this.exams.set([]);
+    }
   }
 
   onStudentCodeFilterChange(value: string) {

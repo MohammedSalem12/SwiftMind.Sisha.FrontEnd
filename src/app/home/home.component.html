@@ -1,5 +1,50 @@
 <div class="home-landing">
-  <div class="landing-grid">
+  
+  <!-- Content for unauthenticated users -->
+  <div *ngIf="!hasLoggedIn" class="guest-welcome">
+    <div class="welcome-card">
+      <div class="card-body text-center">
+        <div class="logo large">
+          <img src="assets/images/logo/logo-light.png" alt="SwiftMind logo" />
+        </div>
+        <h1 class="welcome-title">مرحباً بكم في Sesha App</h1>
+        <p class="welcome-description">نظام إدارة المدارس الشامل من SwiftMind</p>
+        <div class="welcome-actions">
+          <button class="btn btn-primary" routerLink="/login">تسجيل الدخول</button>
+          <button class="btn btn-outline" routerLink="/register">إنشاء حساب جديد</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="features-preview">
+      <h3>ميزات النظام</h3>
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">🎓</div>
+          <h4>إدارة الطلاب</h4>
+          <p>نظام شامل لإدارة بيانات الطلاب والدرجات</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">👨‍🏫</div>
+          <h4>إدارة المعلمين</h4>
+          <p>متابعة أداء المعلمين وجدولة المواد</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">👨‍👩‍👧‍👦</div>
+          <h4>تواصل أولياء الأمور</h4>
+          <p>منصة تواصل مباشرة مع أولياء الأمور</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📚</div>
+          <h4>إدارة المقررات</h4>
+          <p>تنظيم المناهج والمواد التعليمية</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content for authenticated users -->
+  <div *ngIf="hasLoggedIn" class="landing-grid">
     <div class="left-col">
       <div class="hero card mb-3">
         <div class="card-body text-center">
@@ -34,12 +79,12 @@
           <div class="services-grid tight">
             <a class="service-box" routerLink="/students"><span class="icon">🎓</span> Students</a>
             <a class="service-box" routerLink="/teachers"><span class="icon">🧑‍🏫</span> Teachers</a>
+            <a class="service-box" routerLink="/parents"><span class="icon">�‍👩‍👧‍👦</span> Parents</a>
             <a class="service-box" routerLink="/courses"><span class="icon">📚</span> Courses</a>
-            <a class="service-box" routerLink="/enroll"><span class="icon">✍️</span> Enrollments</a>
             <a class="service-box" routerLink="/attendance"><span class="icon">📋</span> Attendance</a>
             <a class="service-box" routerLink="/feeds"><span class="icon">📢</span> Feeds</a>
             <a class="service-box" routerLink="/exam-grade"><span class="icon">📝</span> Exam Grades</a>
-            <a class="service-box" routerLink="/add-student"><span class="icon">➕</span> Add Student</a>
+            <a class="service-box" routerLink="/register"><span class="icon">📝</span> Register</a>
           </div>
         </div>
       </div>
@@ -71,6 +116,7 @@
       </div>
     </div>
   </div>
+  <!-- End of authenticated user content -->
 
 </div>
 

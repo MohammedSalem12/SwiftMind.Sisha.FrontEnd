@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,7 +20,7 @@ interface LoginModel {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private readonly loginSvc = inject(LoginService);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
@@ -29,6 +29,14 @@ export class LoginComponent {
   model = signal<LoginModel>({ userNameOrEmailAddress: '', password: '', rememberMe: false });
   loading = signal(false);
   error = signal<string | null>(null);
+
+  ngOnInit(): void {
+    // If user is already authenticated, redirect to home
+    if (this.authService.isAuthenticated) {
+      this.router.navigate(['/']);
+      return;
+    }
+  }
 
   async submit() {
     this.error.set(null);

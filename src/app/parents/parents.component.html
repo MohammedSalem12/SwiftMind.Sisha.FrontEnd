@@ -1,0 +1,135 @@
+<div class="parents-page card">
+  <div class="page-header">
+    <h2>Parents Management</h2>
+    <div class="page-actions">
+      <button class="btn-primary" routerLink="/register">Add Parent</button>
+      <button class="btn-outline" (click)="loadParents()">Refresh</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-row">
+    <div class="filter-group">
+      <label>Search</label>
+      <input 
+        type="text" 
+        [(ngModel)]="searchFilter" 
+        (ngModelChange)="onSearchChange()" 
+        placeholder="Search by name or parent code"
+        class="form-control">
+    </div>
+    <div class="filter-group">
+      <label>Email</label>
+      <input 
+        type="email" 
+        [(ngModel)]="emailFilter" 
+        (ngModelChange)="onSearchChange()" 
+        placeholder="Filter by email"
+        class="form-control">
+    </div>
+    <div class="filter-group">
+      <label>Phone</label>
+      <input 
+        type="tel" 
+        [(ngModel)]="phoneFilter" 
+        (ngModelChange)="onSearchChange()" 
+        placeholder="Filter by phone"
+        class="form-control">
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading parents...</p>
+  </div>
+
+  <!-- Parents Table -->
+  <div *ngIf="!loading()" class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Parent Code</th>
+          <th>Full Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Children Count</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let parent of parents(); let i = index">
+          <td>{{ (currentPage() * pageSize()) + i + 1 }}</td>
+          <td>
+            <span class="parent-code">{{ parent.parentCode || '-' }}</span>
+          </td>
+          <td>
+            <button 
+              class="name-button" 
+              (click)="viewParentDetails(parent)">
+              {{ parent.fullName || (parent.firstName + ' ' + parent.lastName) }}
+            </button>
+          </td>
+          <td>{{ parent.email || '-' }}</td>
+          <td>{{ parent.phoneNumber || '-' }}</td>
+          <td>
+            <span class="children-count">{{ parent.parentStudents?.length || 0 }}</span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button 
+                class="btn btn-sm btn-info" 
+                (click)="viewChildren(parent)"
+                title="View Children">
+                👥 Children
+              </button>
+              <button 
+                class="btn btn-sm btn-success" 
+                (click)="enrollChild(parent)"
+                title="Enroll Child">
+                ➕ Enroll
+              </button>
+              <button 
+                class="btn btn-sm btn-primary" 
+                (click)="viewParentDetails(parent)"
+                title="View Details">
+                👁️ Details
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- No Data State -->
+    <div *ngIf="parents().length === 0" class="no-data">
+      <div class="no-data-icon">👨‍👩‍👧‍👦</div>
+      <h3>No Parents Found</h3>
+      <p>No parents match your current filters.</p>
+      <button class="btn-primary" routerLink="/register">Add First Parent</button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading() && getTotalPages() > 1" class="pagination">
+    <button 
+      class="btn-outline" 
+      [disabled]="currentPage() === 0" 
+      (click)="onPageChange(currentPage() - 1)">
+      Previous
+    </button>
+    
+    <span class="page-info">
+      Page {{ currentPage() + 1 }} of {{ getTotalPages() }}
+      ({{ totalCount() }} total)
+    </span>
+    
+    <button 
+      class="btn-outline" 
+      [disabled]="currentPage() >= getTotalPages() - 1" 
+      (click)="onPageChange(currentPage() + 1)">
+      Next
+    </button>
+  </div>
+</div>
