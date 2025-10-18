@@ -91,4 +91,68 @@ export class LoginComponent implements OnInit {
       console.error(err);
     }
   }
+
+  async loginWithGoogle() {
+    try {
+      this.loading.set(true);
+      this.error.set(null);
+      
+      // TODO: Implement Google OAuth integration
+      // This will typically involve redirecting to Google OAuth endpoint
+      // or using Google Sign-In JavaScript SDK
+      console.log('Google login requested');
+      
+      // Placeholder implementation - replace with actual Google OAuth
+      // Example: window.location.href = '/api/account/external-login?provider=Google&returnUrl=/';
+      
+      this.error.set('تسجيل الدخول بـ Google غير متاح حالياً');
+    } catch (error) {
+      console.error('Google login error:', error);
+      this.error.set('فشل في تسجيل الدخول بـ Google');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async loginWithFacebook() {
+    try {
+      this.loading.set(true);
+      this.error.set(null);
+      
+      // TODO: Implement Facebook OAuth integration
+      // This will typically involve using Facebook SDK or redirecting to Facebook OAuth
+      console.log('Facebook login requested');
+      
+      // Placeholder implementation - replace with actual Facebook OAuth
+      // Example: window.location.href = '/api/account/external-login?provider=Facebook&returnUrl=/';
+      
+      this.error.set('تسجيل الدخول بـ Facebook غير متاح حالياً');
+    } catch (error) {
+      console.error('Facebook login error:', error);
+      this.error.set('فشل في تسجيل الدخول بـ Facebook');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async loginWithApple() {
+    try {
+      this.loading.set(true);
+      this.error.set(null);
+      
+      // TODO: Implement Apple Sign-In integration
+      // This will typically involve using Apple Sign-In JavaScript SDK
+      console.log('Apple login requested');
+      
+      // Placeholder implementation - replace with actual Apple Sign-In
+      // Example: window.location.href = '/api/account/external-login?provider=Apple&returnUrl=/';
+      
+      this.error.set('تسجيل الدخول بـ Apple غير متاح حالياً');
+    } catch (error) {
+      console.error('Apple login error:', error);
+      this.error.set('فشل في تسجيل الدخول بـ Apple');
+    } finally {
+      this.loading.set(false);
+    }
+  }
 }

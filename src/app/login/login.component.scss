@@ -65,6 +65,33 @@
 .auth-divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #e5e7eb; }
 .auth-divider span { background: white; padding: 0 1rem; position: relative; z-index: 1; }
 
+.social-login {
+  margin-bottom: 2rem;
+  .social-btn {
+    display: flex; align-items: center; justify-content: center; width: 100%; padding: 0.875rem 1rem; margin-bottom: 0.75rem; border-radius: 12px; font-size: 0.95rem; font-weight: 600; text-decoration: none; border: 2px solid; cursor: pointer; transition: all 0.2s ease; gap: 0.75rem; min-height: 48px;
+    &:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+    &:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    &:last-child { margin-bottom: 0; }
+    i { font-size: 1.1rem; width: 20px; text-align: center; }
+  }
+  
+  .google-btn {
+    background: #ffffff; color: #757575; border-color: #dadce0;
+    &:hover:not(:disabled) { background: #f8f9fa; border-color: #dadce0; }
+    i { color: #4285f4; }
+  }
+  
+  .facebook-btn {
+    background: #1877f2; color: white; border-color: #1877f2;
+    &:hover:not(:disabled) { background: #166fe5; border-color: #166fe5; }
+  }
+  
+  .apple-btn {
+    background: #000000; color: white; border-color: #000000;
+    &:hover:not(:disabled) { background: #333333; border-color: #333333; }
+  }
+}
+
 .auth-switch { text-align: center; }
 .auth-switch p { color: #6b7280; margin: 0 0 1rem; font-size: 0.9rem; }
 .auth-switch .btn { width: 100%; }

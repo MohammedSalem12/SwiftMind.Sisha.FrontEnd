@@ -99,6 +99,24 @@
           <span>أو</span>
         </div>
 
+        <!-- Social Media Login Buttons -->
+        <div class="social-login">
+          <button class="social-btn google-btn" (click)="loginWithGoogle()" [disabled]="loading()">
+            <i class="fab fa-google"></i>
+            <span>تسجيل الدخول بـ Google</span>
+          </button>
+          
+          <button class="social-btn facebook-btn" (click)="loginWithFacebook()" [disabled]="loading()">
+            <i class="fab fa-facebook-f"></i>
+            <span>تسجيل الدخول بـ Facebook</span>
+          </button>
+          
+          <button class="social-btn apple-btn" (click)="loginWithApple()" [disabled]="loading()">
+            <i class="fab fa-apple"></i>
+            <span>تسجيل الدخول بـ Apple</span>
+          </button>
+        </div>
+
         <div class="auth-switch">
           <p>ليس لديك حساب؟</p>
           <a routerLink="/register" class="btn btn-outline">

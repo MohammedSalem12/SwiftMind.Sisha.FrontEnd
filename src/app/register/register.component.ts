@@ -151,4 +151,65 @@ export class RegisterComponent implements OnInit {
     const required = ['userType', 'userName', 'email', 'password', 'firstName', 'lastName'];
     return required.every(field => this.registerForm[field as keyof typeof this.registerForm]);
   }
+
+  async registerWithGoogle() {
+    try {
+      this.registering.set(true);
+      
+      // TODO: Implement Google OAuth registration
+      // This will typically involve redirecting to Google OAuth endpoint
+      // or using Google Sign-In JavaScript SDK
+      console.log('Google registration requested');
+      
+      // Placeholder implementation - replace with actual Google OAuth
+      // Example: window.location.href = '/api/account/external-register?provider=Google&returnUrl=/';
+      
+      alert('التسجيل بـ Google غير متاح حالياً');
+    } catch (error) {
+      console.error('Google registration error:', error);
+      alert('فشل في التسجيل بـ Google');
+    } finally {
+      this.registering.set(false);
+    }
+  }
+
+  async registerWithFacebook() {
+    try {
+      this.registering.set(true);
+      
+      // TODO: Implement Facebook OAuth registration
+      // This will typically involve using Facebook SDK or redirecting to Facebook OAuth
+      console.log('Facebook registration requested');
+      
+      // Placeholder implementation - replace with actual Facebook OAuth
+      // Example: window.location.href = '/api/account/external-register?provider=Facebook&returnUrl=/';
+      
+      alert('التسجيل بـ Facebook غير متاح حالياً');
+    } catch (error) {
+      console.error('Facebook registration error:', error);
+      alert('فشل في التسجيل بـ Facebook');
+    } finally {
+      this.registering.set(false);
+    }
+  }
+
+  async registerWithApple() {
+    try {
+      this.registering.set(true);
+      
+      // TODO: Implement Apple Sign-In registration
+      // This will typically involve using Apple Sign-In JavaScript SDK
+      console.log('Apple registration requested');
+      
+      // Placeholder implementation - replace with actual Apple Sign-In
+      // Example: window.location.href = '/api/account/external-register?provider=Apple&returnUrl=/';
+      
+      alert('التسجيل بـ Apple غير متاح حالياً');
+    } catch (error) {
+      console.error('Apple registration error:', error);
+      alert('فشل في التسجيل بـ Apple');
+    } finally {
+      this.registering.set(false);
+    }
+  }
 }
