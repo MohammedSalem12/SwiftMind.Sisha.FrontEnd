@@ -7,6 +7,7 @@ import { CourseService } from '@proxy/courses';
 import { StudentService } from '@proxy/students';
 import { TeacherService } from '@proxy/teachers';
 import { AttendanceService } from '@proxy/attendances';
+import { CurrentUserInfoService } from '@proxy/common';
 import { RestService } from '@abp/ng.core';
 
 @Component({
@@ -21,10 +22,12 @@ export class AttendanceComponent implements OnInit {
   private readonly studentSvc = inject(StudentService);
   private readonly teacherSvc = inject(TeacherService);
   private readonly attendanceSvc = inject(AttendanceService);
+  private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
   private readonly rest = inject(RestService);
 
   loading = signal(false);
   teachers = signal<any[]>([]);
+  currentUserId = signal<string | null>(null);
   selectedTeacherId = signal<string | null>(null);
 
   courses = signal<any[]>([]);
@@ -39,9 +42,44 @@ export class AttendanceComponent implements OnInit {
   saving = signal(false);
   message = signal<string | null>(null);
   note = signal<string>('');
+  absentCount = signal<number>(0);
 
   ngOnInit(): void {
-    void this.loadTeachers();
+    void this.initializeComponent();
+  }
+
+  async initializeComponent() {
+    try {
+      // Get current user's actor_id from token
+      const currentUser = await lastValueFrom(this.currentUserInfoSvc.getCurrentUserActorInfo());
+      if (currentUser?.actorId) {
+        this.currentUserId.set(currentUser.actorId);
+        this.selectedTeacherId.set(currentUser.actorId);
+        // Load courses for the current teacher
+        await this.loadCoursesForCurrentTeacher();
+      } else {
+        console.error('Unable to get current user actorId');
+      }
+    } catch (error) {
+      console.error('Failed to initialize component:', error);
+    }
+  }
+
+  async loadCoursesForCurrentTeacher() {
+    const teacherId = this.currentUserId();
+    if (!teacherId) return;
+    
+    this.loading.set(true);
+    try {
+      const res: any[] = await lastValueFrom(this.teacherSvc.getTeacherCourses(teacherId));
+      const normalized = (res ?? []).map(c => ({ ...c, gradeId: c.gradeId ?? null, gradeName: c.gradeName ?? '' }));
+      this.courses.set(normalized);
+    } catch (e) {
+      console.error('Failed to load courses for current teacher', e);
+      this.courses.set([]);
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   async loadTeachers() {
@@ -75,7 +113,7 @@ export class AttendanceComponent implements OnInit {
       if (found) {
         this.selectedCourseId.set(prevCourse);
         await this.loadStudentsForCourse(prevCourse, newTeacher);
-        await this.loadTodaysAbsentees();
+        // await this.loadTodaysAbsentees();
         return;
       } else {
         this.selectedCourseId.set(null);
@@ -99,101 +137,96 @@ export class AttendanceComponent implements OnInit {
   async onCourseChange(courseId?: string) {
     this.selectedCourseId.set(courseId || null);
     this.students.set([]);
-    this.todaysAbsentees.set([]);
+    // this.todaysAbsentees.set([]);
+    this.absentCount.set(0);
     if (!courseId) return;
-    await this.loadStudentsForCourse(courseId, this.selectedTeacherId());
+    await this.loadStudentsForCourse(courseId, this.currentUserId());
     // after students loaded, load today's absentees for this selection
-    await this.loadTodaysAbsentees();
+    //await this.loadTodaysAbsentees();
   }
 
   async loadTodaysAbsentees() {
     const courseId = this.selectedCourseId();
-    const teacherId = this.selectedTeacherId();
-    if (!courseId) { this.todaysAbsentees.set([]); return; }
+    const teacherId = this.currentUserId();
+    if (!courseId || !teacherId) { 
+      //this.todaysAbsentees.set([]); 
+      return; 
+    }
+    
     this.loading.set(true);
     try {
-      // find enrollments for this course (and teacher) to get enrollmentIds
-      const enrolls: any[] = [];
-      let skip = 0; const page = 1000;
-      while (true) {
-        const r: any = await lastValueFrom(this.enrollmentSvc.getList({ skipCount: skip, maxResultCount: page } as any));
-        const items = r.items ?? [];
-        enrolls.push(...items.filter((e: any) => e.courseId === courseId && (!teacherId || e.teacherId === teacherId)));
-        if (items.length < page) break;
-        skip += page;
-      }
-      const enrollmentIds = enrolls.map(e => e.id).filter(Boolean);
+      const targetDate = new Date(this.attendanceDate()).toISOString().slice(0, 10);
+      
+      // Use the new API to get student attendance status and filter for absent students
+      const response: any = await lastValueFrom(
+        this.attendanceSvc.getStudentAttendanceStatus({
+          courseId: courseId,
+          teacherId: teacherId,
+          date: targetDate,
+          skipCount: 0,
+          maxResultCount: 1000
+        })
+      );
 
-      // fetch attendance in pages and filter by enrollmentIds and date
-      const targetDate = new Date(this.attendanceDate()).toISOString().slice(0,10);
-      const matches: any[] = [];
-      skip = 0;
-      while (true) {
-        const r: any = await lastValueFrom(this.attendanceSvc.getList({ skipCount: skip, maxResultCount: page } as any));
-        const items = r.items ?? [];
-        for (const it of items) {
-          if (!it.enrollmentId) continue;
-          if (!enrollmentIds.includes(it.enrollmentId)) continue;
-          if (!it.date) continue;
-          const d = new Date(it.date).toISOString().slice(0,10);
-          if (d !== targetDate) continue;
-          if (!it.isAbsent) continue;
-          matches.push(it);
-        }
-        if (items.length < page) break;
-        skip += page;
-      }
+      // Filter only absent students and map to the expected format
+      const absentStudents = (response.items ?? [])
+        .filter((item: any) => item.isAbsent)
+        .map((item: any) => ({
+          // Note: We need to find the attendanceId from the attendance records
+          // since the new API doesn't provide it directly
+          attendanceId: undefined, // Will be set below if needed
+          enrollmentId: item.enrollmentId,
+          studentName: item.fullName || `${item.firstName || ''} ${item.middleName || ''} ${item.lastName || ''}`.replace(/\s+/g, ' ').trim(),
+          date: item.date,
+          note: item.note || '--'
+        }));
 
-      // map to student names by fetching students for matched enrollmentIds
-      const absList: { attendanceId?: string; enrollmentId: string; studentName: string; date: string; note?: string }[] = [];
-      for (const m of matches) {
-        const enr = enrolls.find(e => e.id === m.enrollmentId);
-        let name = m.enrollmentId;
-        // try to get richer report via new student-attendance-report endpoint, fallback to studentSvc.get
-        if (enr) {
-          try {
-            const report = await this.fetchStudentAttendanceReport(enr.id, enr.studentId);
-            // prefer explicit studentName fields from report, otherwise fall back
-            if (report && (report.studentName || report.name)) {
-              name = report.studentName ?? report.name;
-            } else {
-              const st: any = await lastValueFrom(this.studentSvc.get(enr.studentId));
-              name = `${st.firstName || ''} ${st.lastName || ''}`.trim();
-            }
-          } catch (err) {
-            try { const st: any = await lastValueFrom(this.studentSvc.get(enr.studentId)); name = `${st.firstName || ''} ${st.lastName || ''}`.trim(); } catch {}
-          }
-        }
-        absList.push({ attendanceId: m.id, enrollmentId: m.enrollmentId, studentName: name, date: m.date, note: m.note });
-      }
-
-      this.todaysAbsentees.set(absList);
+      // If we need attendance IDs for cancellation, we could fetch them separately
+      // For now, we'll rely on the enrollmentId and date for cancellation
+      this.todaysAbsentees.set(absentStudents);
     } catch (e) {
-      console.error('Failed to load today\'s absentees', e);
-      this.todaysAbsentees.set([]);
-    } finally { this.loading.set(false); }
+      console.error('Failed to load today\'s absentees:', e);
+     // this.todaysAbsentees.set([]);
+    } finally { 
+      this.loading.set(false); 
+    }
   }
 
-  async cancelAttendance(attendanceId?: string) {
-    if (!attendanceId) return;
-    // find enrollmentId associated with this attendance (if any) so we can update students list after delete
-    const rec = this.todaysAbsentees().find(x => x.attendanceId === attendanceId);
-    const affectedEnrollmentId = rec?.enrollmentId;
-    this.deletingAttendanceId.set(attendanceId);
+  async cancelAttendance(attendanceId?: string, enrollmentId?: string) {
+    // If we don't have attendanceId, we need to find it by enrollmentId and date
+    if (!attendanceId && !enrollmentId) return;
+    
+    this.deletingAttendanceId.set(attendanceId || enrollmentId || '');
     try {
-      await lastValueFrom(this.attendanceSvc.delete(attendanceId));
-      // optimistically remove the deleted attendance from today's list so UI updates immediately
-      this.todaysAbsentees.set(this.todaysAbsentees().filter(x => x.attendanceId !== attendanceId));
-      // reload todays absentees and students list to ensure full sync
-      await this.loadTodaysAbsentees();
-      if (this.selectedCourseId()) {
-        await this.loadStudentsForCourse(this.selectedCourseId() as string, this.selectedTeacherId());
-        // ensure the affected student is not selected anymore (safety)
-        if (affectedEnrollmentId) {
-          const newStudents = this.students().map(s => s.enrollmentId === affectedEnrollmentId ? { ...s, selected: false } : s);
-          this.students.set(newStudents);
+      if (attendanceId) {
+        // Direct deletion if we have the attendance ID
+        await lastValueFrom(this.attendanceSvc.delete(attendanceId));
+      } else if (enrollmentId) {
+        // Find the attendance record by enrollmentId and date, then delete it
+        const targetDate = new Date(this.attendanceDate()).toISOString().slice(0, 10);
+        const attendanceResponse: any = await lastValueFrom(
+          this.attendanceSvc.getList({ skipCount: 0, maxResultCount: 1000 })
+        );
+        
+        const attendanceRecord = (attendanceResponse.items ?? []).find((item: any) => 
+          item.enrollmentId === enrollmentId && 
+          new Date(item.date).toISOString().slice(0, 10) === targetDate &&
+          item.isAbsent
+        );
+        
+        if (attendanceRecord?.id) {
+          await lastValueFrom(this.attendanceSvc.delete(attendanceRecord.id));
+        } else {
+          throw new Error('Attendance record not found');
         }
       }
+
+      // Refresh both lists to show updated data
+      await this.loadTodaysAbsentees();
+      if (this.selectedCourseId()) {
+        await this.loadStudentsForCourse(this.selectedCourseId() as string, this.currentUserId());
+      }
+      
       this.message.set('تم إلغاء الحضور/الغياب');
     } catch (e) {
       console.error('Failed to cancel attendance', e);
@@ -206,82 +239,54 @@ export class AttendanceComponent implements OnInit {
   // helper used from template to set date and reload today's absentees
   setDateAndReload(dateStr: string) {
     this.attendanceDate.set(dateStr);
-    void this.loadTodaysAbsentees();
+    void this.loadStudentsForCourse(this.selectedCourseId() as string, this.currentUserId() );
   }
 
-  // Try to fetch a student attendance report using several likely endpoint patterns.
-  // Returns any report object or throws if none found.
-  private async fetchStudentAttendanceReport(enrollmentId: string, studentId?: string) {
-    const date = new Date(this.attendanceDate()).toISOString();
-    const candidates = [
-      // common patterns: by enrollmentId or by studentId
-      `/api/app/attendance/student-attendance-report/${enrollmentId}`,
-      `/api/app/attendance/student-attendance-report?enrollmentId=${enrollmentId}`,
-      `/api/app/attendance/student-attendance-report?studentId=${studentId}`,
-      `/api/app/attendance/report/student/${enrollmentId}`,
-      `/api/app/attendance/report/student?enrollmentId=${enrollmentId}`,
-      `/api/app/attendance/report/student?studentId=${studentId}`,
-    ];
 
-    for (const url of candidates) {
-      if (!url) continue;
-      try {
-        const res = await lastValueFrom(this.rest.request<any, any>({ method: 'GET', url } as any, { apiName: 'Default' }));
-        if (res) return res;
-      } catch (e) {
-        // ignore and try next
-      }
-    }
-    // if none matched, throw so callers fall back
-    throw new Error('student attendance report not found');
-  }
 
   async loadStudentsForCourse(courseId: string, teacherId?: string | null) {
     this.loading.set(true);
+    this.students.set([]);
+
     try {
-      // fetch enrollments and filter by courseId (and teacherId when provided)
-      const enrolls: any[] = [];
-      let skip = 0; const page = 1000;
-      while (true) {
-        const r: any = await lastValueFrom(this.enrollmentSvc.getList({ skipCount: skip, maxResultCount: page } as any));
-        const items = r.items ?? [];
-        enrolls.push(...items.filter((e: any) => e.courseId === courseId && (!teacherId || e.teacherId === teacherId)));
-        if (items.length < page) break;
-        skip += page;
+      const targetDate = new Date(this.attendanceDate()).toISOString().slice(0, 10);
+      const currentTeacherId = teacherId || this.currentUserId();
+      
+      if (!currentTeacherId) {
+        console.error('Teacher ID is required for loading students');
+        return;
       }
-      // fetch attendances for the selected date and build a set of absent enrollmentIds
-      const targetDate = new Date(this.attendanceDate()).toISOString().slice(0,10);
-      const absentEnrollmentIds = new Set<string>();
-      skip = 0;
-      while (true) {
-        const r: any = await lastValueFrom(this.attendanceSvc.getList({ skipCount: skip, maxResultCount: page } as any));
-        const items = r.items ?? [];
-        for (const it of items) {
-          if (!it.enrollmentId) continue;
-          if (!it.date) continue;
-          const d = new Date(it.date).toISOString().slice(0,10);
-          if (d !== targetDate) continue;
-          if (!it.isAbsent) continue;
-          absentEnrollmentIds.add(it.enrollmentId);
-        }
-        if (items.length < page) break;
-        skip += page;
-      }
-      // fetch student info for each enrollment
-      const sList: any[] = [];
-      for (const e of enrolls) {
-        try {
-          const st: any = await lastValueFrom(this.studentSvc.get(e.studentId));
-          sList.push({ enrollmentId: e.id, studentId: e.studentId, studentName: `${st.firstName || ''} ${st.lastName || ''}`.trim(), selected: false, alreadyAbsent: absentEnrollmentIds.has(e.id) });
-        } catch {
-          sList.push({ enrollmentId: e.id, studentId: e.studentId, studentName: e.studentId, selected: false, alreadyAbsent: absentEnrollmentIds.has(e.id) });
-        }
-      }
-      this.students.set(sList);
+      
+      // Use the new API to get student attendance status directly
+      const response: any = await lastValueFrom(
+        this.attendanceSvc.getStudentAttendanceStatus({
+          courseId: courseId,
+          teacherId: currentTeacherId,
+          date: targetDate,
+          skipCount: 0,
+          maxResultCount: 1000
+        })
+      );
+
+      const students = (response.items ?? []).map((item: any) => ({
+        enrollmentId: item.enrollmentId,
+        studentId: item.studentId,
+        studentName: item.fullName || `${item.firstName || ''} ${item.middleName || ''} ${item.lastName || ''}`.replace(/\s+/g, ' ').trim(),
+        selected: false,
+        alreadyAbsent: item.isAbsent
+      }));
+
+   //   alert(JSON.stringify(students));
+      this.students.set(students);
+      // Update absent counter
+      this.absentCount.set(students.filter(s => s.alreadyAbsent).length);
     } catch (e) {
-      console.error(e);
+      console.error('Failed to load students for course:', e);
       this.students.set([]);
-    } finally { this.loading.set(false); }
+      this.absentCount.set(0);
+    } finally { 
+      this.loading.set(false); 
+    }
   }
 
   toggleStudent(i: number) {
@@ -302,12 +307,47 @@ export class AttendanceComponent implements OnInit {
       // reload today's absentees after marking
       await this.loadTodaysAbsentees();
       // reload students list so UI reflects state
-      if (this.selectedCourseId()) await this.loadStudentsForCourse(this.selectedCourseId() as string, this.selectedTeacherId());
+      if (this.selectedCourseId()) await this.loadStudentsForCourse(this.selectedCourseId() as string, this.currentUserId());
   this.message.set('Attendances recorded');
     } catch (e) {
       console.error(e);
   this.message.set('Failed to record attendances');
     } finally { this.saving.set(false); }
+  }
+
+  async toggleAttendance(enrollmentId: string, isCurrentlyAbsent: boolean) {
+    if (!enrollmentId) return;
+    this.saving.set(true);
+    
+    try {
+      if (isCurrentlyAbsent) {
+
+          await lastValueFrom(this.attendanceSvc.delete(enrollmentId));
+
+          
+      } else {
+        // Mark as absent - create new attendance record
+        const payload = { 
+          enrollmentId, 
+          date: new Date(this.attendanceDate()).toLocaleDateString(), 
+          isAbsent: true, 
+          note: '--' 
+        } as any;
+        await lastValueFrom(this.attendanceSvc.create(payload));
+        this.message.set('تم تسجيل الغياب');
+      }
+      
+      // Refresh lists to update UI
+      await this.loadTodaysAbsentees();
+      if (this.selectedCourseId()) {
+        await this.loadStudentsForCourse(this.selectedCourseId() as string, this.currentUserId());
+      }
+    } catch (e) {
+      console.error('Failed to toggle attendance', e);
+      this.message.set(isCurrentlyAbsent ? 'فشل إلغاء الغياب' : 'فشل تسجيل الغياب');
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   async markAbsent(enrollmentId: string) {
@@ -318,7 +358,7 @@ export class AttendanceComponent implements OnInit {
       await lastValueFrom(this.attendanceSvc.create(payload));
       // refresh lists
       await this.loadTodaysAbsentees();
-      if (this.selectedCourseId()) await this.loadStudentsForCourse(this.selectedCourseId() as string, this.selectedTeacherId());
+      if (this.selectedCourseId()) await this.loadStudentsForCourse(this.selectedCourseId() as string, this.currentUserId());
       this.message.set('تم تسجيل الغياب');
     } catch (e) {
       console.error('Failed to mark absent', e);

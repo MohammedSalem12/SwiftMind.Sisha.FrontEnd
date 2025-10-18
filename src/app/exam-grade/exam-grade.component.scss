@@ -13,6 +13,53 @@
   font-size: 14px;
 }
 
+// Grade display styling
+.grade-display {
+  background: #d4edda;
+  color: #155724;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  display: inline-block;
+  min-width: 60px;
+  text-align: center;
+}
+
+.no-grade {
+  background: #f8f9fa;
+  color: #6c757d;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: inline-block;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: 1px solid #6c757d;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+  border-color: #545b62;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+.info-message {
+  background: #d1ecf1;
+  border: 1px solid #bee5eb;
+  color: #0c5460;
+  padding: 15px;
+  border-radius: 6px;
+  margin: 15px 0;
+  text-align: center;
+}
+
 // Modal improvements
 .modal-backdrop {
   position: fixed;

@@ -1,62 +1,111 @@
-<div class="login-wrapper fancier">
-  <div class="decor-left"></div>
-  <div class="decor-right"></div>
+<div class="auth-container">
+  <!-- Background Elements -->
+  <div class="bg-elements">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="grid-pattern"></div>
+  </div>
 
-  <div class="login-card">
-    <div class="logo-badge">
-      <img src="/assets/images/logo/logo.png" alt="Logo" class="logo" />
-    </div>
-
-    <div class="card-inner">
-      <div class="brand-row">
-        <h1 class="brand-name">SwiftMind</h1>
-        <p class="brand-tag">Learning, reimagined</p>
+  <!-- Main Content -->
+  <div class="auth-content">
+    <div class="auth-card login-card">
+      <!-- Header Section -->
+      <div class="auth-header">
+        <div class="logo-container">
+          <div class="logo-circle">
+            <img src="/assets/images/logo/logo.png" alt="SwiftMind Logo" class="logo" />
+          </div>
+        </div>
+        <div class="brand-info">
+          <h1 class="brand-name">SwiftMind</h1>
+          <p class="brand-tagline">نظام إدارة التعليم الذكي</p>
+        </div>
+        <div class="page-title">
+          <h2>مرحباً بعودتك</h2>
+          <p>سجل دخولك للمتابعة</p>
+        </div>
       </div>
 
-      <h2 class="title">تسجيل الدخول</h2>
+      <!-- Form Section -->
+      <div class="auth-form">
+        <div *ngIf="error()" class="alert alert-error">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>{{ error() }}</span>
+        </div>
 
-      <div *ngIf="error()" class="error-box">{{ error() }}</div>
-
-      <form class="login-form" (ngSubmit)="submit()">
-        <div class="input-row">
-          <label class="sr-only">اسم المستخدم أو الايميل</label>
-          <div class="input-ghost">
-            <span class="icon user">👤</span>
-            <input name="user" placeholder="اسم المستخدم أو الايميل" [(ngModel)]="model().userNameOrEmailAddress" required />
+        <form (ngSubmit)="submit()" #loginForm="ngForm">
+          <div class="input-group">
+            <label for="userInput">اسم المستخدم أو البريد الإلكتروني</label>
+            <div class="input-wrapper">
+              <i class="fas fa-user input-icon"></i>
+              <input
+                id="userInput"
+                name="userNameOrEmailAddress"
+                type="text"
+                placeholder="أدخل اسم المستخدم أو البريد الإلكتروني"
+                [(ngModel)]="model().userNameOrEmailAddress"
+                required
+                class="form-input"
+                autocomplete="username"
+              />
+            </div>
           </div>
-        </div>
 
-        <div class="input-row">
-          <label class="sr-only">كلمة المرور</label>
-          <div class="input-ghost">
-            <span class="icon lock">🔒</span>
-            <input name="password" type="password" placeholder="كلمة المرور" [(ngModel)]="model().password" required />
+          <div class="input-group">
+            <label for="passwordInput">كلمة المرور</label>
+            <div class="input-wrapper">
+              <i class="fas fa-lock input-icon"></i>
+              <input
+                id="passwordInput"
+                name="password"
+                type="password"
+                placeholder="أدخل كلمة المرور"
+                [(ngModel)]="model().password"
+                required
+                class="form-input"
+                autocomplete="current-password"
+              />
+            </div>
           </div>
-        </div>
 
-        <div class="options-row">
-          <label class="remember">
-            <input type="checkbox" [(ngModel)]="model().rememberMe" name="remember" />
-            تذكرني
-          </label>
-          <a class="forgot" routerLink="/forgot-password">نسيت كلمة المرور؟</a>
-        </div>
+          <div class="form-options">
+            <label class="checkbox-wrapper">
+              <input
+                type="checkbox"
+                [(ngModel)]="model().rememberMe"
+                name="rememberMe"
+              />
+              <span class="checkmark"></span>
+              <span class="checkbox-label">تذكر دخولي</span>
+            </label>
+            <a routerLink="/forgot-password" class="forgot-link">نسيت كلمة المرور؟</a>
+          </div>
 
-        <div class="actions-row">
-          <button class="btn-animated" type="submit" [disabled]="loading()">
-            <span class="label">{{ loading() ? 'جارٍ...' : 'دخول' }}</span>
-            <span *ngIf="loading()" class="spinner" aria-hidden="true"></span>
+          <button 
+            type="submit" 
+            class="btn btn-primary btn-large"
+            [disabled]="loading() || !loginForm.valid"
+            [class.loading]="loading()"
+          >
+            <span *ngIf="!loading()">تسجيل الدخول</span>
+            <span *ngIf="loading()" class="loading-content">
+              <i class="fas fa-spinner fa-spin"></i>
+              جارٍ تسجيل الدخول...
+            </span>
           </button>
-        </div>
-      </form>
+        </form>
 
-      <div class="auth-actions">
-        <div class="signup-hint">
-          ليس لديك حساب؟ 
+        <div class="auth-divider">
+          <span>أو</span>
         </div>
-        <button class="btn-register" routerLink="/register" type="button">
-          إنشاء حساب جديد
-        </button>
+
+        <div class="auth-switch">
+          <p>ليس لديك حساب؟</p>
+          <a routerLink="/register" class="btn btn-outline">
+            <i class="fas fa-user-plus"></i>
+            إنشاء حساب جديد
+          </a>
+        </div>
       </div>
     </div>
   </div>

@@ -1,4 +1,43 @@
 .attendance-page { padding:16px }
+
+// Absent Counter Styling
+.absent-counter {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.counter-card {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.counter-label {
+  font-size: 16px;
+}
+
+.counter-value {
+  font-size: 24px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px 15px;
+  border-radius: 8px;
+  min-width: 50px;
+  text-align: center;
+}
+
+.counter-total {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
 .controls { display:flex; gap:12px; align-items:flex-end }
 .controls label { display:block; font-weight:600; margin-bottom:6px }
 select, input[type=date] { padding:8px; border-radius:8px; border:1px solid #e6eef8 }
@@ -8,6 +47,67 @@ select, input[type=date] { padding:8px; border-radius:8px; border:1px solid #e6e
 .actions { margin-top:12px }
 .message { margin-top:8px; color:#10b981 }
 .no-data { color:#9ca3af }
+
+// Info message styling
+.info-message {
+  background: #d1ecf1;
+  border: 1px solid #bee5eb;
+  color: #0c5460;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+// Status badges
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-absent {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.status-present {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+// Row styling for absent students
+.absent-row {
+  background-color: #fef2f2;
+}
+
+// Button styling
+.btn-success {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #15803d;
+  border-color: #15803d;
+}
+
+.btn-danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
 
 textarea { width:100%; padding:8px; border-radius:8px; border:1px solid #e6eef8 }
 

@@ -1,208 +1,384 @@
-<div class="register-page">
-  <div class="register-card">
-    <div class="register-header">
-      <h2>Create Account</h2>
-      <p>Register for Sesha App</p>
+<div class="auth-container">
+  <!-- Background Elements -->
+  <div class="bg-elements">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="grid-pattern"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="auth-content">
+    <div class="auth-card register-card">
+      <!-- Header Section -->
+      <div class="auth-header">
+        <div class="logo-container">
+          <div class="logo-circle">
+            <img src="/assets/images/logo/logo.png" alt="SwiftMind Logo" class="logo" />
+          </div>
+        </div>
+        <div class="brand-info">
+          <h1 class="brand-name">SwiftMind</h1>
+          <p class="brand-tagline">انضم إلى منصة التعليم الذكي</p>
+        </div>
+        <div class="page-title">
+          <h2>إنشاء حساب جديد</h2>
+          <p>املأ البيانات أدناه لإنشاء حسابك</p>
+        </div>
+      </div>
+
+      <!-- Form Section -->
+      <div class="auth-form">
+        <form (ngSubmit)="onSubmit()" #regForm="ngForm">
+          <!-- Step 1: User Type & Basic Info -->
+          <div class="form-step">
+            <div class="step-header">
+              <h3>المعلومات الأساسية</h3>
+              <div class="step-indicator">
+                <span class="step-number">1</span>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label for="userType">نوع الحساب *</label>
+              <div class="select-wrapper">
+                <i class="fas fa-users input-icon"></i>
+                <select
+                  id="userType"
+                  name="userType"
+                  [(ngModel)]="registerForm.userType"
+                  required
+                  class="form-select"
+                >
+                  <option [ngValue]="null">اختر نوع الحساب</option>
+                  <option *ngFor="let type of userTypes()" [ngValue]="type.type">
+                    {{ type.name }}
+                  </option>
+                </select>
+                <i class="fas fa-chevron-down select-arrow"></i>
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label for="firstName">الاسم الأول *</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-user input-icon"></i>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    placeholder="الاسم الأول"
+                    [(ngModel)]="registerForm.firstName"
+                    required
+                    class="form-input"
+                    autocomplete="given-name"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="middleName">الاسم الأوسط</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-user input-icon"></i>
+                  <input
+                    id="middleName"
+                    name="middleName"
+                    type="text"
+                    placeholder="الاسم الأوسط"
+                    [(ngModel)]="registerForm.middleName"
+                    class="form-input"
+                    autocomplete="additional-name"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="lastName">اسم العائلة *</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-user input-icon"></i>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    placeholder="اسم العائلة"
+                    [(ngModel)]="registerForm.lastName"
+                    required
+                    class="form-input"
+                    autocomplete="family-name"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label for="userName">اسم المستخدم *</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-at input-icon"></i>
+                  <input
+                    id="userName"
+                    name="userName"
+                    type="text"
+                    placeholder="اسم المستخدم"
+                    [(ngModel)]="registerForm.userName"
+                    required
+                    class="form-input"
+                    autocomplete="username"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="email">البريد الإلكتروني *</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-envelope input-icon"></i>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="البريد الإلكتروني"
+                    [(ngModel)]="registerForm.email"
+                    required
+                    class="form-input"
+                    autocomplete="email"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Security & Contact -->
+          <div class="form-step">
+            <div class="step-header">
+              <h3>الأمان والتواصل</h3>
+              <div class="step-indicator">
+                <span class="step-number">2</span>
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label for="password">كلمة المرور *</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-lock input-icon"></i>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="كلمة المرور"
+                    [(ngModel)]="registerForm.password"
+                    required
+                    class="form-input"
+                    autocomplete="new-password"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="confirmPassword">تأكيد كلمة المرور *</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-lock input-icon"></i>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="تأكيد كلمة المرور"
+                    [(ngModel)]="registerForm.confirmPassword"
+                    required
+                    class="form-input"
+                    autocomplete="new-password"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label for="phoneNumber">رقم الهاتف</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-phone input-icon"></i>
+                  <input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="tel"
+                    placeholder="رقم الهاتف"
+                    [(ngModel)]="registerForm.phoneNumber"
+                    class="form-input"
+                    autocomplete="tel"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="address">العنوان</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-map-marker-alt input-icon"></i>
+                  <textarea
+                    id="address"
+                    name="address"
+                    placeholder="العنوان"
+                    [(ngModel)]="registerForm.address"
+                    rows="2"
+                    class="form-textarea"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Role-specific Information -->
+          <div class="form-step" *ngIf="registerForm.userType">
+            <div class="step-header">
+              <h3>معلومات إضافية</h3>
+              <div class="step-indicator">
+                <span class="step-number">3</span>
+              </div>
+            </div>
+
+            <!-- Student Fields -->
+            <div *ngIf="isFieldVisible('grade') || isFieldVisible('parentContact')" class="role-fields student-fields">
+              <div class="input-row">
+                <div *ngIf="isFieldVisible('grade')" class="input-group">
+                  <label for="grade">الصف الدراسي {{ isFieldRequired('grade') ? '*' : '' }}</label>
+                  <div class="input-wrapper">
+                    <i class="fas fa-graduation-cap input-icon"></i>
+                    <input
+                      id="grade"
+                      name="grade"
+                      type="text"
+                      placeholder="الصف الدراسي"
+                      [(ngModel)]="registerForm.grade"
+                      [required]="isFieldRequired('grade')"
+                      class="form-input"
+                    />
+                  </div>
+                </div>
+
+                <div *ngIf="isFieldVisible('parentContact')" class="input-group">
+                  <label for="parentContact">تواصل ولي الأمر {{ isFieldRequired('parentContact') ? '*' : '' }}</label>
+                  <div class="input-wrapper">
+                    <i class="fas fa-users input-icon"></i>
+                    <input
+                      id="parentContact"
+                      name="parentContact"
+                      type="text"
+                      placeholder="تواصل ولي الأمر"
+                      [(ngModel)]="registerForm.parentContact"
+                      [required]="isFieldRequired('parentContact')"
+                      class="form-input"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Teacher Fields -->
+            <div *ngIf="isFieldVisible('department') || isFieldVisible('qualification')" class="role-fields teacher-fields">
+              <div class="input-row">
+                <div *ngIf="isFieldVisible('department')" class="input-group">
+                  <label for="department">القسم {{ isFieldRequired('department') ? '*' : '' }}</label>
+                  <div class="input-wrapper">
+                    <i class="fas fa-building input-icon"></i>
+                    <input
+                      id="department"
+                      name="department"
+                      type="text"
+                      placeholder="القسم"
+                      [(ngModel)]="registerForm.department"
+                      [required]="isFieldRequired('department')"
+                      class="form-input"
+                    />
+                  </div>
+                </div>
+
+                <div *ngIf="isFieldVisible('qualification')" class="input-group">
+                  <label for="qualification">المؤهل {{ isFieldRequired('qualification') ? '*' : '' }}</label>
+                  <div class="input-wrapper">
+                    <i class="fas fa-certificate input-icon"></i>
+                    <input
+                      id="qualification"
+                      name="qualification"
+                      type="text"
+                      placeholder="المؤهل العلمي"
+                      [(ngModel)]="registerForm.qualification"
+                      [required]="isFieldRequired('qualification')"
+                      class="form-input"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Parent Fields -->
+            <div *ngIf="isFieldVisible('occupation') || isFieldVisible('emergencyContact')" class="role-fields parent-fields">
+              <div class="input-row">
+                <div *ngIf="isFieldVisible('occupation')" class="input-group">
+                  <label for="occupation">المهنة {{ isFieldRequired('occupation') ? '*' : '' }}</label>
+                  <div class="input-wrapper">
+                    <i class="fas fa-briefcase input-icon"></i>
+                    <input
+                      id="occupation"
+                      name="occupation"
+                      type="text"
+                      placeholder="المهنة"
+                      [(ngModel)]="registerForm.occupation"
+                      [required]="isFieldRequired('occupation')"
+                      class="form-input"
+                    />
+                  </div>
+                </div>
+
+                <div *ngIf="isFieldVisible('emergencyContact')" class="input-group">
+                  <label for="emergencyContact">جهة الاتصال الطارئة {{ isFieldRequired('emergencyContact') ? '*' : '' }}</label>
+                  <div class="input-wrapper">
+                    <i class="fas fa-phone-alt input-icon"></i>
+                    <input
+                      id="emergencyContact"
+                      name="emergencyContact"
+                      type="text"
+                      placeholder="جهة الاتصال الطارئة"
+                      [(ngModel)]="registerForm.emergencyContact"
+                      [required]="isFieldRequired('emergencyContact')"
+                      class="form-input"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Section -->
+          <div class="form-submit">
+            <button 
+              type="submit" 
+              class="btn btn-primary btn-large"
+              [disabled]="registering() || !regForm.form.valid"
+              [class.loading]="registering()"
+            >
+              <span *ngIf="!registering()">
+                <i class="fas fa-user-plus"></i>
+                إنشاء الحساب
+              </span>
+              <span *ngIf="registering()" class="loading-content">
+                <i class="fas fa-spinner fa-spin"></i>
+                جارٍ إنشاء الحساب...
+              </span>
+            </button>
+          </div>
+        </form>
+
+        <div class="auth-divider">
+          <span>أو</span>
+        </div>
+
+        <div class="auth-switch">
+          <p>لديك حساب بالفعل؟</p>
+          <a routerLink="/login" class="btn btn-outline">
+            <i class="fas fa-sign-in-alt"></i>
+            تسجيل الدخول
+          </a>
+        </div>
+      </div>
     </div>
-
-    <form (ngSubmit)="onSubmit()" #regForm="ngForm">
-      <!-- User Type Selection -->
-      <div class="form-group">
-        <label for="userType">Account Type *</label>
-        <select 
-          id="userType" 
-          name="userType" 
-          [(ngModel)]="registerForm.userType" 
-          required
-          class="form-control">
-          <option [ngValue]="null">Select account type</option>
-          <option *ngFor="let type of userTypes()" [ngValue]="type.type">
-            {{ type.name }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Basic Information -->
-      <div class="form-row">
-        <div class="form-group">
-          <label for="firstName">First Name *</label>
-          <input 
-            type="text" 
-            id="firstName" 
-            name="firstName" 
-            [(ngModel)]="registerForm.firstName" 
-            required
-            class="form-control">
-        </div>
-        <div class="form-group">
-          <label for="middleName">Middle Name</label>
-          <input 
-            type="text" 
-            id="middleName" 
-            name="middleName" 
-            [(ngModel)]="registerForm.middleName" 
-            class="form-control">
-        </div>
-        <div class="form-group">
-          <label for="lastName">Last Name *</label>
-          <input 
-            type="text" 
-            id="lastName" 
-            name="lastName" 
-            [(ngModel)]="registerForm.lastName" 
-            required
-            class="form-control">
-        </div>
-      </div>
-
-      <!-- Login Credentials -->
-      <div class="form-group">
-        <label for="userName">Username *</label>
-        <input 
-          type="text" 
-          id="userName" 
-          name="userName" 
-          [(ngModel)]="registerForm.userName" 
-          required
-          class="form-control">
-      </div>
-
-      <div class="form-group">
-        <label for="email">Email *</label>
-        <input 
-          type="email" 
-          id="email" 
-          name="email" 
-          [(ngModel)]="registerForm.email" 
-          required
-          class="form-control">
-      </div>
-
-      <div class="form-group">
-        <label for="phoneNumber">Phone Number</label>
-        <input 
-          type="tel" 
-          id="phoneNumber" 
-          name="phoneNumber" 
-          [(ngModel)]="registerForm.phoneNumber" 
-          class="form-control">
-      </div>
-
-      <!-- Password -->
-      <div class="form-row">
-        <div class="form-group">
-          <label for="password">Password *</label>
-          <input 
-            type="password" 
-            id="password" 
-            name="password" 
-            [(ngModel)]="registerForm.password" 
-            required
-            class="form-control">
-        </div>
-        <div class="form-group">
-          <label for="confirmPassword">Confirm Password *</label>
-          <input 
-            type="password" 
-            id="confirmPassword" 
-            name="confirmPassword" 
-            [(ngModel)]="registerForm.confirmPassword" 
-            required
-            class="form-control">
-        </div>
-      </div>
-
-      <!-- Additional Information -->
-      <div class="form-group">
-        <label for="address">Address</label>
-        <textarea 
-          id="address" 
-          name="address" 
-          [(ngModel)]="registerForm.address" 
-          rows="2"
-          class="form-control"></textarea>
-      </div>
-
-      <!-- Student-specific fields -->
-      <div *ngIf="isFieldVisible('grade')" class="form-group">
-        <label for="grade">Grade {{ isFieldRequired('grade') ? '*' : '' }}</label>
-        <input 
-          type="text" 
-          id="grade" 
-          name="grade" 
-          [(ngModel)]="registerForm.grade" 
-          [required]="isFieldRequired('grade')"
-          class="form-control">
-      </div>
-
-      <div *ngIf="isFieldVisible('parentContact')" class="form-group">
-        <label for="parentContact">Parent Contact {{ isFieldRequired('parentContact') ? '*' : '' }}</label>
-        <input 
-          type="text" 
-          id="parentContact" 
-          name="parentContact" 
-          [(ngModel)]="registerForm.parentContact" 
-          [required]="isFieldRequired('parentContact')"
-          class="form-control">
-      </div>
-
-      <!-- Teacher-specific fields -->
-      <div *ngIf="isFieldVisible('department')" class="form-group">
-        <label for="department">Department {{ isFieldRequired('department') ? '*' : '' }}</label>
-        <input 
-          type="text" 
-          id="department" 
-          name="department" 
-          [(ngModel)]="registerForm.department" 
-          [required]="isFieldRequired('department')"
-          class="form-control">
-      </div>
-
-      <div *ngIf="isFieldVisible('qualification')" class="form-group">
-        <label for="qualification">Qualification {{ isFieldRequired('qualification') ? '*' : '' }}</label>
-        <input 
-          type="text" 
-          id="qualification" 
-          name="qualification" 
-          [(ngModel)]="registerForm.qualification" 
-          [required]="isFieldRequired('qualification')"
-          class="form-control">
-      </div>
-
-      <!-- Parent-specific fields -->
-      <div *ngIf="isFieldVisible('occupation')" class="form-group">
-        <label for="occupation">Occupation {{ isFieldRequired('occupation') ? '*' : '' }}</label>
-        <input 
-          type="text" 
-          id="occupation" 
-          name="occupation" 
-          [(ngModel)]="registerForm.occupation" 
-          [required]="isFieldRequired('occupation')"
-          class="form-control">
-      </div>
-
-      <div *ngIf="isFieldVisible('emergencyContact')" class="form-group">
-        <label for="emergencyContact">Emergency Contact {{ isFieldRequired('emergencyContact') ? '*' : '' }}</label>
-        <input 
-          type="text" 
-          id="emergencyContact" 
-          name="emergencyContact" 
-          [(ngModel)]="registerForm.emergencyContact" 
-          [required]="isFieldRequired('emergencyContact')"
-          class="form-control">
-      </div>
-
-      <!-- Submit Button -->
-      <div class="form-actions">
-        <button 
-          type="submit" 
-          class="btn-primary" 
-          [disabled]="registering() || !regForm.form.valid">
-          <span *ngIf="registering()">Creating Account...</span>
-          <span *ngIf="!registering()">Create Account</span>
-        </button>
-        <a routerLink="/login" class="btn-link">Already have an account? Sign in</a>
-      </div>
-    </form>
   </div>
 </div>

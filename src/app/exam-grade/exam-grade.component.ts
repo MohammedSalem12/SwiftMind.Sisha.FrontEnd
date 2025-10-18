@@ -7,6 +7,7 @@ import { TeacherService } from '@proxy/teachers';
 import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import { ExamService } from '@proxy/exams';
 import { ExamGradeService } from '@proxy/exam-grades';
+import { CurrentUserInfoService } from '@proxy/common';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
@@ -42,24 +43,20 @@ export class ExamGradeComponent implements OnInit {
   private readonly enrollmentSvc = inject(StudentEnrollmentService);
   private readonly examSvc = inject(ExamService);
   private readonly examGradeSvc = inject(ExamGradeService);
+  private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
+  
   students = signal<any[]>([]);
   loading = signal(false);
   teachers = signal<any[]>([]);
   courses = signal<any[]>([]);
   exams = signal<any[]>([]);
+  currentUserId = signal<string | null>(null);
   selectedTeacher = signal<string | null>(null);
   selectedCourse = signal<string | null>(null);
   selectedExam = signal<string | null>(null);
   studentCodeFilter = signal<string>('');
 
   // getters/setters to work with template-driven ngModel
-  get selectedTeacherModel() {
-    return this.selectedTeacher();
-  }
-  set selectedTeacherModel(v: string | null) {
-    void this.onTeacherChange(v);
-  }
-
   get selectedCourseModel() {
     return this.selectedCourse();
   }
@@ -91,7 +88,37 @@ export class ExamGradeComponent implements OnInit {
   maxGrade: number | null = null;
 
   ngOnInit(): void {
-    void Promise.all([this.loadTeachers(), this.loadStudents()]);
+    void this.initializeComponent();
+  }
+
+  async initializeComponent() {
+    try {
+      // Get current user's actor_id from token
+      const currentUser = await lastValueFrom(this.currentUserInfoSvc.getCurrentUserActorInfo());
+      if (currentUser?.actorId) {
+        this.currentUserId.set(currentUser.actorId);
+        this.selectedTeacher.set(currentUser.actorId);
+        // Load courses for the current teacher
+        await this.loadCoursesForCurrentTeacher();
+      } else {
+        console.error('Unable to get current user actorId');
+      }
+    } catch (error) {
+      console.error('Failed to initialize component:', error);
+    }
+  }
+
+  async loadCoursesForCurrentTeacher() {
+    const teacherId = this.currentUserId();
+    if (!teacherId) return;
+    
+    try {
+      const resp: any = await lastValueFrom(this.teacherSvc.getTeacherCourses(teacherId));
+      this.courses.set((resp ?? []).map((c: any) => ({ id: c.id, name: c.name, nameAr: c.nameAr })));
+    } catch (e) {
+      console.error('Failed to load courses for current teacher', e);
+      this.courses.set([]);
+    }
   }
 
   openAddExam() {
@@ -105,8 +132,9 @@ export class ExamGradeComponent implements OnInit {
 
   async submitAddExam() {
     try {
+      debugger ;
       const courseId = this.addExamModel.courseId || this.selectedCourse();
-      const teacherId = this.selectedTeacher();
+      const teacherId = this.currentUserId(); // Use current user's actor_id
       if (!courseId || !teacherId || !this.addExamModel.name) {
         alert('Please fill in all required fields');
         return;
@@ -129,8 +157,16 @@ export class ExamGradeComponent implements OnInit {
   openAddGrades(student: any) {
     this.selectedStudent = student;
     this.selectedStudentEnrollment = student.enrollment;
-    this.newGrade = null;
-    this.maxGrade = 100; // default max grade
+    
+    // Pre-populate with existing grade if available
+    if (student.examGrade?.hasGrade) {
+      this.newGrade = student.examGrade.grade;
+      this.maxGrade = student.examGrade.maxGrade;
+    } else {
+      this.newGrade = null;
+      this.maxGrade = 100; // default max grade
+    }
+    
     this.showAddGradesModal = true;
   }
 
@@ -146,19 +182,28 @@ export class ExamGradeComponent implements OnInit {
       const enrollmentId = this.selectedStudentEnrollment?.id;
       const grade = this.newGrade;
       const maxGrade = this.maxGrade || 100;
+      const existingGradeId = this.selectedStudent?.examGrade?.id;
 
       if (!examId || !enrollmentId || grade === null) {
         alert('Please select an exam and enter a grade');
         return;
       }
 
-      await lastValueFrom(this.examGradeSvc.create({
+      const gradeData = {
         examId,
         enrollmentId,
         grade,
         maxGrade,
         date: new Date().toISOString().split('T')[0]
-      }));
+      };
+
+      if (existingGradeId) {
+        // Update existing grade
+        await lastValueFrom(this.examGradeSvc.update(existingGradeId, gradeData));
+      } else {
+        // Create new grade
+        await lastValueFrom(this.examGradeSvc.create(gradeData));
+      }
 
       this.closeAddGrades();
       await this.loadStudents(); // refresh to show updated grades
@@ -169,51 +214,74 @@ export class ExamGradeComponent implements OnInit {
   }
 
   async loadStudents() {
+    const courseId = this.selectedCourse();
+    const teacherId = this.currentUserId();
+    const examId = this.selectedExam();
+    
+    // Don't load students until a course is selected
+    if (!courseId) {
+      this.students.set([]);
+      return;
+    }
+
     this.loading.set(true);
     try {
-      // If a course filter is selected, load enrollments for that course and map students from enrollments
       const codeFilter = this.studentCodeFilter();
-      const courseId = this.selectedCourse();
-      const teacherId = this.selectedTeacher();
 
-      if (courseId) {
-        // load enrollments and then fetch students for those enrollments
-        const enrollmentsResp: any = await lastValueFrom(this.enrollmentSvc.getList({ skipCount: 0, maxResultCount: 100 } as any));
-        const enrollments = (enrollmentsResp.items ?? []).filter((e: any) => {
-          if (e.courseId !== courseId) return false;
-          if (teacherId && e.teacherId !== teacherId) return false;
-          return true;
-        });
-        const studentIds = Array.from(new Set(enrollments.map((e: any) => e.studentId))).filter(Boolean);
-        if (studentIds.length === 0) {
-          this.students.set([]);
-          return;
-        }
-        // fetch students in bulk then filter by code
-        const all: any = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 100 } as any));
-        const byId = new Map((all.items ?? []).map((s: any) => [s.id, s]));
-        const rows = studentIds.map((id: string) => {
-          const student: any = byId.get(id);
-          const enrollment = enrollments.find((e: any) => e.studentId === id);
-          return student ? {
-            id: student.id,
-            name: `${student.firstName || ''} ${student.middleName || ''} ${student.lastName || ''}`.replace(/\s+/g, ' ').trim(),
-            code: student.studentCode ?? student.teacherStudentCode ?? '-',
-            grade: student.currentGrade ?? '-',
-            enrollment
-          } : null;
-        }).filter(Boolean);
-        this.students.set(codeFilter ? rows.filter(r => (r.code || '').toString().includes(codeFilter)) : rows);
-      } else {
-        const all: any = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 100 } as any));
-        const rows = (all.items ?? []).map((s: any) => ({
-          id: s.id,
-          name: `${s.firstName || ''} ${s.middleName || ''} ${s.lastName || ''}`.replace(/\s+/g, ' ').trim(),
-          code: s.studentCode ?? s.teacherStudentCode ?? '-',
-          grade: s.currentGrade ?? '-',
-        }));
-        this.students.set(codeFilter ? rows.filter(r => (r.code || '').toString().includes(codeFilter)) : rows);
+      // Load enrollments for the selected course and current teacher
+      const enrollmentsResp: any = await lastValueFrom(this.enrollmentSvc.getList({ skipCount: 0, maxResultCount: 100 } as any));
+      const enrollments = (enrollmentsResp.items ?? []).filter((e: any) => {
+        if (e.courseId !== courseId) return false;
+        if (teacherId && e.teacherId !== teacherId) return false;
+        return true;
+      });
+      
+      const studentIds = Array.from(new Set(enrollments.map((e: any) => e.studentId))).filter(Boolean);
+      if (studentIds.length === 0) {
+        this.students.set([]);
+        return;
       }
+
+      // Load exam grades if an exam is selected
+      let examGrades: any[] = [];
+      if (examId) {
+        try {
+          const gradesResp: any = await lastValueFrom(this.examGradeSvc.getList({ skipCount: 0, maxResultCount: 1000 } as any));
+          examGrades = (gradesResp.items ?? []).filter((g: any) => g.examId === examId);
+        } catch (e) {
+          console.warn('Failed to load exam grades', e);
+        }
+      }
+      
+      // Fetch students in bulk then filter by code
+      const all: any = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 100 } as any));
+      const byId = new Map((all.items ?? []).map((s: any) => [s.id, s]));
+      const rows = studentIds.map((id: string) => {
+        const student: any = byId.get(id);
+        const enrollment = enrollments.find((e: any) => e.studentId === id);
+        const examGrade = examGrades.find((g: any) => g.enrollmentId === enrollment?.id);
+        
+        return student ? {
+          id: student.id,
+          name: `${student.firstName || ''} ${student.middleName || ''} ${student.lastName || ''}`.replace(/\s+/g, ' ').trim(),
+          code: student.studentCode ?? student.teacherStudentCode ?? '-',
+          grade: student.currentGrade ?? '-',
+          enrollment,
+          examGrade: examGrade ? {
+            id: examGrade.id,
+            grade: examGrade.grade,
+            maxGrade: examGrade.maxGrade,
+            hasGrade: true
+          } : {
+            id: null,
+            grade: null,
+            maxGrade: null,
+            hasGrade: false
+          }
+        } : null;
+      }).filter(Boolean);
+      
+      this.students.set(codeFilter ? rows.filter(r => (r.code || '').toString().includes(codeFilter)) : rows);
     } catch (e) {
       console.error('Failed to load students', e);
       this.students.set([]);
@@ -230,22 +298,6 @@ export class ExamGradeComponent implements OnInit {
       console.error('Failed to load teachers', e);
       this.teachers.set([]);
     }
-  }
-
-  async onTeacherChange(teacherId?: string | null) {
-    this.selectedTeacher.set(teacherId || null);
-    this.courses.set([]);
-    this.selectedCourse.set(null);
-    if (!teacherId) return;
-    try {
-      const resp: any = await lastValueFrom(this.teacherSvc.getTeacherCourses(teacherId));
-      this.courses.set((resp ?? []).map((c: any) => ({ id: c.id, name: c.name })));
-    } catch (e) {
-      console.error('Failed to load courses for teacher', e);
-      this.courses.set([]);
-    }
-    // reload students constrained by new teacher/course
-    void this.loadStudents();
   }
 
   async onCourseChange(courseId?: string | null) {

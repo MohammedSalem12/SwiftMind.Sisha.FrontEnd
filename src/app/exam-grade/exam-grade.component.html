@@ -1,47 +1,46 @@
 <div class="exam-grade-page card">
   <h2>درجات الاختبار</h2>
   <div class="toolbar" style="display:flex; gap:8px; margin-bottom:8px">
-    <button class="btn-primary" type="button" (click)="openAddExam()">Add Exam</button>
-    <button class="btn-outline" type="button" (click)="loadStudents()">Refresh</button>
+    <button class="btn-primary" type="button" (click)="openAddExam()" [disabled]="!selectedCourse()">Add Exam</button>
+    <button class="btn-outline" type="button" (click)="loadStudents()" [disabled]="!selectedCourse()">Refresh</button>
   </div>
 
   <div class="filters" style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
     <label style="display:flex; flex-direction:column;">
-      Teacher
-      <select [(ngModel)]="selectedTeacherModel">
-        <option [ngValue]="null">--</option>
-        <option *ngFor="let t of teachers()" [value]="t.id">{{ t.name }}</option>
-      </select>
-    </label>
-    <label style="display:flex; flex-direction:column;">
       Course
       <select [(ngModel)]="selectedCourseModel">
-        <option [ngValue]="null">--</option>
-        <option *ngFor="let c of courses()" [value]="c.id">{{ c.nameAr }}</option>
+        <option [ngValue]="null">-- اختر المقرر --</option>
+        <option *ngFor="let c of courses()" [value]="c.id">{{ c.nameAr || c.name }}</option>
       </select>
     </label>
     <label style="display:flex; flex-direction:column;">
       Exam
-      <select [(ngModel)]="selectedExamModel">
-        <option [ngValue]="null">--</option>
+      <select [(ngModel)]="selectedExamModel" [disabled]="!selectedCourse()">
+        <option [ngValue]="null">-- اختر الاختبار --</option>
         <option *ngFor="let e of exams()" [value]="e.id">{{ e.name }}</option>
       </select>
     </label>
     <label style="display:flex; flex-direction:column;">
       Student Code
-      <input type="text" [(ngModel)]="studentCodeFilterModel" placeholder="search code" />
+      <input type="text" [(ngModel)]="studentCodeFilterModel" placeholder="search code" [disabled]="!selectedCourse()" />
     </label>
   </div>
 
   <div *ngIf="loading()" class="loading">Loading...</div>
 
-  <table *ngIf="!loading()" class="table table-sm">
+  <div *ngIf="!loading() && !selectedCourse()" class="info-message" style="text-align: center; padding: 20px; color: #666; background-color: #f8f9fa; border-radius: 5px; margin: 20px 0;">
+    <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+    يرجى اختيار مقرر لعرض الطلاب المسجلين
+  </div>
+
+  <table *ngIf="!loading() && selectedCourse()" class="table table-sm">
     <thead>
       <tr>
         <th>#</th>
         <th>الاسم</th>
         <th>الرمز</th>
         <th>الصف</th>
+        <th *ngIf="selectedExam()">درجة الاختبار</th>
         <th></th>
       </tr>
     </thead>
@@ -51,7 +50,36 @@
         <td>{{ s.name }}</td>
         <td>{{ s.code }}</td>
         <td>{{ s.grade }}</td>
-        <td><button class="btn btn-sm" (click)="openAddGrades(s)">Add Grade</button></td>
+        <td *ngIf="selectedExam()">
+          <span *ngIf="s.examGrade?.hasGrade" class="grade-display">
+            {{ s.examGrade.grade }}/{{ s.examGrade.maxGrade }}
+          </span>
+          <span *ngIf="!s.examGrade?.hasGrade" class="no-grade" style="color: #999; font-style: italic;">
+            لم يتم تقييمه
+          </span>
+        </td>
+        <td>
+          <button 
+            *ngIf="selectedExam() && !s.examGrade?.hasGrade" 
+            class="btn btn-sm btn-primary" 
+            (click)="openAddGrades(s)">
+            Add Grade
+          </button>
+          <button 
+            *ngIf="selectedExam() && s.examGrade?.hasGrade" 
+            class="btn btn-sm btn-secondary" 
+            (click)="openAddGrades(s)">
+            Edit Grade
+          </button>
+          <span *ngIf="!selectedExam()" class="text-muted" style="font-size: 12px;">
+            اختر اختبار
+          </span>
+        </td>
+      </tr>
+      <tr *ngIf="students().length === 0">
+        <td [attr.colspan]="selectedExam() ? 6 : 5" style="text-align: center; padding: 20px; color: #666;">
+          لا يوجد طلاب مسجلين في هذا المقرر
+        </td>
       </tr>
     </tbody>
   </table>
@@ -81,11 +109,11 @@
   </div>
 </div>
 
-<!-- Add Grades Modal -->
+<!-- Add/Edit Grades Modal -->
 <div class="modal-backdrop" *ngIf="showAddGradesModal" [@fadeInOut]>
   <div class="modal-card" [@slideInOut]>
     <div class="modal-header">
-      <h3>Add Grade</h3>
+      <h3>{{ selectedStudent?.examGrade?.hasGrade ? 'تعديل الدرجة' : 'إضافة درجة' }}</h3>
       <button class="close" (click)="closeAddGrades()">✕</button>
     </div>
     <div class="modal-body">
@@ -102,7 +130,9 @@
       <input type="number" [(ngModel)]="maxGrade" placeholder="100" min="1" />
     </div>
     <div class="modal-actions">
-      <button class="btn-primary" (click)="submitAddGrade()" [disabled]="!selectedExam()">Save Grade</button>
+      <button class="btn-primary" (click)="submitAddGrade()" [disabled]="!selectedExam()">
+        {{ selectedStudent?.examGrade?.hasGrade ? 'تحديث الدرجة' : 'حفظ الدرجة' }}
+      </button>
       <button class="btn-outline" (click)="closeAddGrades()">Cancel</button>
     </div>
   </div>

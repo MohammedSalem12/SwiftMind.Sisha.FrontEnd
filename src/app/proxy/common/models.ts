@@ -1,5 +1,16 @@
 import type { UserRegistrationType } from '../domain/shared/enums/user-registration-type.enum';
 
+export interface CurrentUserActorDto {
+  actorId?: string;
+  actorType?: string;
+  actorName?: string;
+  actorCode?: string;
+  userRoles: string[];
+  userId?: string;
+  userName?: string;
+  email?: string;
+}
+
 export interface RegisterUserDto {
   userType: UserRegistrationType;
   userName: string;

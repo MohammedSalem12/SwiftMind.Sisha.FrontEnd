@@ -67,6 +67,11 @@ export const appRoutes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'teacher-groups',
+    loadChildren: () => import('./teacher-groups/teacher-groups.routes'),
+    canActivate: [authGuard]
+  },
+  {
     path: 'add-course',
     loadChildren: () => import('./add-course/add-course.routes').then(m => m.addCourseRoutes),
     canActivate: [authGuard]
