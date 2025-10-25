@@ -102,6 +102,11 @@ export const appRoutes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'secretaries',
+    loadChildren: () => import('./secretaries/secretaries.routes').then(m => m.secretariesRoutes),
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     redirectTo: '/'
   }

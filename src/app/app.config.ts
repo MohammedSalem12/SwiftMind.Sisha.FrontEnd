@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { appRoutes } from './app.routes';
@@ -17,6 +17,7 @@ import { ThemeLeptonXModule } from '@abp/ng.theme.lepton-x';
 import { provideSideMenuLayout, SideMenuLayoutModule } from '@abp/ng.theme.lepton-x/layouts';
 import { AccountLayoutModule } from '@abp/ng.theme.lepton-x/account';
 import { ThemeSharedModule, withHttpErrorConfig, withValidationBluePrint, provideAbpThemeShared } from '@abp/ng.theme.shared';
+import { provideServiceWorker } from '@angular/service-worker';
 export const appConfig: ApplicationConfig = {
     providers: [
     provideRouter(appRoutes),
@@ -35,6 +36,9 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideLogo(withEnvironmentOptions(environment)), importProvidersFrom(ThemeLeptonXModule.forRoot(), SideMenuLayoutModule.forRoot(), AccountLayoutModule.forRoot(), ThemeSharedModule), provideAbpThemeShared(withValidationBluePrint({
         wrongPassword: 'Please choose 1q2w3E*'
-    }))
+    })), provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          })
 ],
 };

@@ -1,4 +1,4 @@
-@import '../shared/styles/auth-shared.scss';
+@use '../shared/styles/auth-shared.scss' as *;
 
 .auth-container {
   @include auth-container;

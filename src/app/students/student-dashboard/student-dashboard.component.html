@@ -1,0 +1,244 @@
+<div class="container-fluid">
+  <div *ngIf="loading()" class="text-center p-5">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Loading your dashboard...</p>
+  </div>
+
+  <div *ngIf="!loading() && dashboard()" class="row">
+    <!-- Header -->
+    <div class="col-12 mb-4">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h3 class="card-title text-white mb-1">Welcome back!</h3>
+              <p class="mb-0 opacity-75">{{ dashboard()!.student.firstName }} {{ dashboard()!.student.lastName }}</p>
+              <small class="opacity-75">Student Code: {{ dashboard()!.student.studentCode }}</small>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <div class="d-flex flex-column align-items-md-end">
+                <div class="fs-2 fw-bold">{{ dashboard()!.currentGPA.toFixed(2) }}</div>
+                <small class="opacity-75">Current GPA</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h4 class="mb-0">{{ dashboard()!.totalCourses }}</h4>
+              <p class="mb-0">Total Courses</p>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-book fa-2x opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h4 class="mb-0">{{ dashboard()!.totalExams }}</h4>
+              <p class="mb-0">Total Exams</p>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-file-alt fa-2x opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="card bg-warning text-dark">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h4 class="mb-0">{{ dashboard()!.attendanceRate.toFixed(1) }}%</h4>
+              <p class="mb-0">Attendance Rate</p>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-user-check fa-2x opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="card bg-secondary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h4 class="mb-0">{{ dashboard()!.presentDays }}/{{ dashboard()!.totalAttendanceDays }}</h4>
+              <p class="mb-0">Present Days</p>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-calendar-check fa-2x opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Grades -->
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Recent Grades</h5>
+          <button class="btn btn-sm btn-outline-primary" (click)="goToGrades()">View All</button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="dashboard()!.recentGrades.length === 0" class="text-center text-muted p-4">
+            <i class="fas fa-graduation-cap fa-3x mb-3 opacity-50"></i>
+            <p class="mb-0">No recent grades</p>
+          </div>
+          
+          <div *ngIf="dashboard()!.recentGrades.length > 0" class="list-group list-group-flush">
+            <div *ngFor="let grade of dashboard()!.recentGrades" 
+                 class="list-group-item px-0 py-3 border-bottom">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="flex-grow-1">
+                  <h6 class="mb-1">{{ grade.examName }}</h6>
+                  <small class="text-muted">{{ grade.date | date:'mediumDate' }}</small>
+                </div>
+                <div class="text-end">
+                  <div class="fs-5 fw-bold" [class]="getGradeColor(grade.percentage)">
+                    {{ grade.grade }}/{{ grade.maxGrade }}
+                  </div>
+                  <small class="text-muted">{{ grade.percentage.toFixed(1) }}%</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Exams -->
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Upcoming Exams</h5>
+          <button class="btn btn-sm btn-outline-primary" (click)="goToSchedule()">View Schedule</button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="dashboard()!.upcomingExams.length === 0" class="text-center text-muted p-4">
+            <i class="fas fa-calendar-alt fa-3x mb-3 opacity-50"></i>
+            <p class="mb-0">No upcoming exams</p>
+          </div>
+          
+          <div *ngIf="dashboard()!.upcomingExams.length > 0" class="list-group list-group-flush">
+            <div *ngFor="let exam of dashboard()!.upcomingExams" 
+                 class="list-group-item px-0 py-3 border-bottom">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <h6 class="mb-1">{{ exam.examName }}</h6>
+                  <p class="mb-1 text-primary">{{ exam.courseName }} ({{ exam.courseCode }})</p>
+                  <small class="text-muted">{{ exam.examDate | date:'fullDate' }}</small>
+                  <div *ngIf="exam.description" class="mt-1">
+                    <small class="text-muted">{{ exam.description }}</small>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="badge" 
+                        [class.bg-danger]="exam.daysUntilExam <= 3" 
+                        [class.bg-warning]="exam.daysUntilExam > 3 && exam.daysUntilExam <= 7"
+                        [class.bg-info]="exam.daysUntilExam > 7">
+                    {{ exam.daysUntilExam }} day{{ exam.daysUntilExam !== 1 ? 's' : '' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Notifications -->
+    <div class="col-12 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Recent Notifications</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="dashboard()!.recentNotifications.length === 0" class="text-center text-muted p-4">
+            <i class="fas fa-bell fa-3x mb-3 opacity-50"></i>
+            <p class="mb-0">No recent notifications</p>
+          </div>
+          
+          <div *ngIf="dashboard()!.recentNotifications.length > 0" class="row">
+            <div *ngFor="let notification of dashboard()!.recentNotifications" class="col-md-4 mb-3">
+              <div class="card border-start border-4" 
+                   [class.border-danger]="notification.priority === 'High'"
+                   [class.border-warning]="notification.priority === 'Medium'"
+                   [class.border-info]="notification.priority === 'Low'"
+                   [class.bg-light]="!notification.isRead">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-title mb-0">{{ notification.title }}</h6>
+                    <span class="badge" [class]="getPriorityBadgeClass(notification.priority)">
+                      {{ notification.priority }}
+                    </span>
+                  </div>
+                  <p class="card-text text-muted small">{{ notification.content }}</p>
+                  <small class="text-muted">{{ notification.createdDate | date:'short' }}</small>
+                  <span *ngIf="!notification.isRead" class="badge bg-primary ms-2">New</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <button class="btn btn-outline-primary w-100" (click)="goToGrades()">
+                <i class="fas fa-graduation-cap me-2"></i>
+                View All Grades
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-success w-100" (click)="goToAttendance()">
+                <i class="fas fa-user-check me-2"></i>
+                Check Attendance
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-info w-100" (click)="goToSchedule()">
+                <i class="fas fa-calendar-alt me-2"></i>
+                View Schedule
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-warning w-100">
+                <i class="fas fa-file-download me-2"></i>
+                Download Transcript
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

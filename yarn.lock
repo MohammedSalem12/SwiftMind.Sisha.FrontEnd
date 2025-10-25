@@ -489,6 +489,13 @@
   dependencies:
     tslib "^2.3.0"
 
+"@angular/service-worker@^20.0.0", "@angular/service-worker@~20.0.0":
+  version "20.0.7"
+  resolved "https://registry.npmjs.org/@angular/service-worker/-/service-worker-20.0.7.tgz"
+  integrity sha512-T67wpDQiTzCsH9dR5ibvH1Iryu9RYJTfN786GKkAUDVJLCV/nVyggyP4Lo/MwO3XL6gDaUVdPbgDz815u1Lfiw==
+  dependencies:
+    tslib "^2.3.0"
+
 "@ant-design/colors@^7.0.0":
   version "7.2.1"
   resolved "https://registry.npmjs.org/@ant-design/colors/-/colors-7.2.1.tgz"

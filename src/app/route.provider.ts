@@ -86,6 +86,40 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       }
     };
 
+    // Helper to check if current user is a parent
+    const isParent = () => {
+      if (!authService.isAuthenticated) {
+        return false;
+      }
+      
+      try {
+        const currentUser = configStateService.getOne('currentUser') as any;
+        
+        // Check multiple possible properties where roles might be stored
+        const roles = currentUser?.roles || 
+                     currentUser?.roleNames || 
+                     currentUser?.userRoles || 
+                     [];
+        
+        // Check if user has parent role (case-insensitive)
+        const isParentRole = Array.isArray(roles) 
+          ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'parent')
+          : false;
+          
+        // Also check if there's a userType property for custom user types
+        const userType = currentUser?.userType || currentUser?.type;
+        const isParentType = userType === 'Parent' || userType === 'parent' || userType === 5; // Assuming Parent = 5
+        
+        const result = isParentRole || isParentType;
+        console.log('Is parent check result:', result, { roles, userType, isParentRole, isParentType });
+        
+        return result;
+      } catch (error) {
+        console.warn('Error checking parent role:', error);
+        return false;
+      }
+    };
+
     // Helper to check if current user is either teacher or secretary
     const isTeacherOrSecretary = () => {
       return isTeacher() || isSecretary();
@@ -109,10 +143,26 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         visible: () => isAuthenticated() && isTeacher(),
       },
       {
+        path: '/students/dashboard',
+        name: 'لوحة الطالب',
+        iconClass: 'fas fa-tachometer-alt',
+        order: 3,
+        layout: eLayoutType.application,
+        visible: () => isAuthenticated(), // All authenticated users can access their own dashboard
+      },
+      {
+        path: '/parents/dashboard',
+        name: 'لوحة ولي الأمر',
+        iconClass: 'fas fa-user-friends',
+        order: 4,
+        layout: eLayoutType.application,
+        visible: () => isAuthenticated() && isParent(),
+      },
+      {
         path: '/teacher-groups',
         name: 'مجموعاتي',
         iconClass: 'fas fa-layer-group',
-        order: 3,
+        order: 5,
         layout: eLayoutType.application,
         visible: () => isAuthenticated() && isTeacherOrSecretary(),
       },
@@ -120,7 +170,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         path: '/students-grades',
         name: 'درجات الطلاب',
         iconClass: 'fas fa-user-graduate',
-        order: 4,
+        order: 6,
         layout: eLayoutType.application,
         visible: () => isAuthenticated() && isTeacher(),
       },
@@ -128,7 +178,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         path: '/teachers',
         name: 'المعلمين',
         iconClass: 'fas fa-chalkboard-teacher',
-        order: 5,
+        order: 7,
         layout: eLayoutType.application,
         visible: () => isAuthenticated(),
       },
@@ -136,7 +186,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         path: '/parents',
         name: 'أولياء الأمور',
         iconClass: 'fas fa-users-cog',
-        order: 6,
+        order: 8,
         layout: eLayoutType.application,
         visible: () => isAuthenticated(),
       },
@@ -144,7 +194,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         path: '/courses',
         name: 'المقررات',
         iconClass: 'fas fa-book',
-        order: 7,
+        order: 9,
         layout: eLayoutType.application,
         visible: () => isAuthenticated(),
       },
@@ -152,7 +202,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         path: '/attendance',
         name: 'الحضور',
         iconClass: 'fas fa-user-check',
-        order: 8,
+        order: 10,
         layout: eLayoutType.application,
         visible: () => isAuthenticated() && isTeacher(),
       },
@@ -160,7 +210,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         path: '/exam-grade',
         name: 'درجات الاختبار',
         iconClass: 'fas fa-clipboard-list',
-        order: 9,
+        order: 11,
         layout: eLayoutType.application,
         visible: () => isAuthenticated() && isTeacher(),
       },
@@ -168,9 +218,17 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         path: '/feeds',
         name: 'النشرات',
         iconClass: 'fas fa-rss',
-        order: 10,
+        order: 12,
         layout: eLayoutType.application,
         visible: () => isAuthenticated(),
+      },
+      {
+        path: '/secretaries',
+        name: 'السكرتارية',
+        iconClass: 'fas fa-user-tie',
+        order: 13,
+        layout: eLayoutType.application,
+        visible: () => isAuthenticated() && (isSecretary() || isTeacher()), // Secretaries and teachers can access
       },
     ];
 
@@ -181,14 +239,14 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         path: '/login',
         name: 'تسجيل الدخول',
         iconClass: 'fas fa-sign-in-alt',
-        order: 10,
+        order: 13,
         layout: eLayoutType.account,
       });
       menuItems.push({
         path: '/register',
         name: 'إنشاء حساب',
         iconClass: 'fas fa-user-plus',
-        order: 11,
+        order: 14,
         layout: eLayoutType.account,
       });
     } else {
@@ -197,7 +255,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         path: '/account/manage',
         name: 'ملفي الشخصي',
         iconClass: 'fas fa-user-cog',
-        order: 10,
+        order: 13,
         layout: eLayoutType.application,
       });
     }
