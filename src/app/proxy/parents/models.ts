@@ -104,104 +104,62 @@ export interface UpdateParentStudentDto {
   notes?: string;
 }
 
-// Dashboard DTOs
 export interface ParentDashboardDto {
   parent: ParentDto;
-  students: StudentProgressDto[];
   totalChildren: number;
-  averageGPA: number;
-  overallAttendanceRate: number;
-  recentNotifications: NotificationDto[];
+  students: ParentStudentDto[];
   upcomingExams: UpcomingExamDto[];
+  recentNotifications: NotificationDto[];
+  studentsComparison: StudentComparisonDto[];
 }
 
 export interface StudentProgressDto {
-  student: any; // StudentDto from students module
-  averageGrade: number;
-  attendanceRate: number;
-  recentGrades: RecentGradeDto[];
-  upcomingExams: UpcomingExamDto[];
-  totalCourses: number;
-  completedExams: number;
-  totalAttendanceDays: number;
-  presentDays: number;
-}
-
-export interface RecentGradeDto {
-  id: string;
-  examId: string;
-  examName: string;
-  courseName: string;
-  grade: number;
-  maxGrade: number;
-  date: string;
-  percentage: number;
+  studentId?: string;
+  studentName?: string;
+  studentCode?: string;
+  currentGrade: number;
+  overallGrade: number;
+  attendancePercentage: number;
+  coursesProgress: CourseProgressDto[];
 }
 
 export interface NotificationDto {
-  id: string;
-  title: string;
-  message: string;
-  content: string;
-  type: string;
-  createdAt: string;
-  createdDate: string;
+  id?: string;
+  title?: string;
+  message?: string;
+  notificationType?: string;
   isRead: boolean;
+  createdAt?: string;
+  studentId?: string;
+  studentName?: string;
 }
 
 export interface UpcomingExamDto {
-  id: string;
-  examId: string;
-  examName: string;
-  courseName: string;
-  studentName: string;
-  examDate: string;
-  studentIds: string[];
-  daysUntilExam: number;
-}
-
-export interface StudentDetailedReportDto {
-  student: any; // StudentDto from students module
-  enrolledCourses: number;
-  totalExams: number;
-  averageGrade: number;
-  highestGrade: number;
-  lowestGrade: number;
-  totalAttendanceDays: number;
-  presentDays: number;
-  absentDays: number;
-  attendancePercentage: number;
-  gradesByMonth: MonthlyGradeDto[];
-  attendanceByMonth: MonthlyAttendanceDto[];
-}
-
-export interface MonthlyGradeDto {
-  year: number;
-  month: number;
-  averageGrade: number;
-  examCount: number;
-  monthName: string;
-}
-
-export interface MonthlyAttendanceDto {
-  year: number;
-  month: number;
-  totalDays: number;
-  presentDays: number;
-  attendanceRate: number;
-  monthName: string;
+  id?: string;
+  examName?: string;
+  courseName?: string;
+  courseCode?: string;
+  examDate?: string;
+  examType?: string;
+  studentId?: string;
+  studentName?: string;
 }
 
 export interface StudentComparisonDto {
-  studentId: string;
-  studentName: string;
-  className: string;
-  currentGPA: number;
-  averageGrade: number;
-  attendanceRate: number;
-  totalCourses: number;
-  completedExams: number;
-  performanceLevel: string;
-  performanceStatus: string;
-  recentGrades: RecentGradeDto[];
+  studentId?: string;
+  studentName?: string;
+  studentCode?: string;
+  overallGrade: number;
+  attendancePercentage: number;
+  rank: number;
+  totalStudents: number;
+}
+
+export interface CourseProgressDto {
+  courseId?: string;
+  courseName?: string;
+  courseCode?: string;
+  currentGrade: number;
+  attendancePercentage: number;
+  lastExamGrade?: number;
 }

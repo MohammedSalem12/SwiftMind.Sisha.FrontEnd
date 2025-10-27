@@ -1,25 +1,7 @@
-import type { 
-  CreateParentDto, 
-  CreateParentStudentDto, 
-  GetParentsInput, 
-  ParentDto, 
-  ParentLookupDto, 
-  ParentRegistrationResultDto, 
-  ParentStudentDto, 
-  RegisterParentDto, 
-  UpdateParentDto, 
-  UpdateParentStudentDto,
-  ParentDashboardDto,
-  StudentProgressDto,
-  NotificationDto,
-  UpcomingExamDto,
-  StudentDetailedReportDto,
-  StudentComparisonDto
-} from './models';
+import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, UpdateParentDto, UpdateParentStudentDto, ParentDashboardDto, StudentComparisonDto, NotificationDto, UpcomingExamDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -192,49 +174,35 @@ export class ParentService {
     },
     { apiName: this.apiName,...config });
 
-  // Dashboard methods
-  getDashboard = (config?: Partial<Rest.Config>): Observable<ParentDashboardDto> =>
+  getDashboard = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, ParentDashboardDto>({
       method: 'GET',
-      url: '/api/app/parent-dashboard',
-      ...config,
-    }, { apiName: this.apiName, ...config });
+      url: '/api/app/parent/dashboard',
+    },
+    { apiName: this.apiName,...config });
 
-  getStudentProgress = (studentId: string, config?: Partial<Rest.Config>): Observable<StudentProgressDto> =>
-    this.restService.request<any, StudentProgressDto>({
-      method: 'GET',
-      url: `/api/app/parent-dashboard/student-progress/${studentId}`,
-      ...config,
-    }, { apiName: this.apiName, ...config });
-
-  getRecentNotifications = (parentId: string, config?: Partial<Rest.Config>): Observable<NotificationDto[]> =>
-    this.restService.request<any, NotificationDto[]>({
-      method: 'GET',
-      url: `/api/app/parent-dashboard/${parentId}/notifications`,
-      ...config,
-    }, { apiName: this.apiName, ...config });
-
-  getUpcomingExams = (studentIds: string[], config?: Partial<Rest.Config>): Observable<UpcomingExamDto[]> =>
-    this.restService.request<any, UpcomingExamDto[]>({
-      method: 'POST',
-      url: '/api/app/parent-dashboard/upcoming-exams',
-      body: studentIds,
-      ...config,
-    }, { apiName: this.apiName, ...config });
-
-  getStudentDetailedReport = (studentId: string, config?: Partial<Rest.Config>): Observable<StudentDetailedReportDto> =>
-    this.restService.request<any, StudentDetailedReportDto>({
-      method: 'GET',
-      url: `/api/app/parent-dashboard/student-detailed-report/${studentId}`,
-      ...config,
-    }, { apiName: this.apiName, ...config });
-
-  getStudentsComparison = (config?: Partial<Rest.Config>): Observable<StudentComparisonDto[]> =>
+  getStudentsComparison = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, StudentComparisonDto[]>({
       method: 'GET',
-      url: '/api/app/parent-dashboard/students-comparison',
-      ...config,
-    }, { apiName: this.apiName, ...config });
+      url: '/api/app/parent/students-comparison',
+    },
+    { apiName: this.apiName,...config });
+
+  getRecentNotifications = (parentId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, NotificationDto[]>({
+      method: 'GET',
+      url: '/api/app/parent/recent-notifications',
+      params: { parentId },
+    },
+    { apiName: this.apiName,...config });
+
+  getUpcomingExams = (studentIds: string[], config?: Partial<Rest.Config>) =>
+    this.restService.request<any, UpcomingExamDto[]>({
+      method: 'GET',
+      url: '/api/app/parent/upcoming-exams',
+      params: { studentIds },
+    },
+    { apiName: this.apiName,...config });
 
   constructor(private restService: RestService) {}
 }

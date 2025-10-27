@@ -358,7 +358,7 @@ export class ParentDashboardComponent implements OnInit {
   }
 
   private loadAdditionalData(dashboard: ParentDashboardDto) {
-    const studentIds = dashboard.students?.map(student => student.student?.id) || [];
+    const studentIds = dashboard.students?.map(student => student.studentId) || [];
 
     // Load students comparison
     this.parentService.getStudentsComparison().subscribe({
