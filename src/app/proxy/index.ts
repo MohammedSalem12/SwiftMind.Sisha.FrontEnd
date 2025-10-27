@@ -1,4 +1,5 @@
 import * as Attendances from './attendances';
+import * as Authentication from './authentication';
 import * as Common from './common';
 import * as Controllers from './controllers';
 import * as Courses from './courses';
@@ -12,10 +13,11 @@ import * as Grades from './grades';
 import * as GroupSchedules from './group-schedules';
 import * as Groups from './groups';
 import * as Home from './home';
+import * as Microsoft from './microsoft';
 import * as Parents from './parents';
 import * as Secretaries from './secretaries';
 import * as StudentEnrollments from './student-enrollments';
 import * as Students from './students';
 import * as Teachers from './teachers';
 import * as Volo from './volo';
-export { Attendances, Common, Controllers, Courses, Domain, Enums, ExamGrades, Exams, Feedbacks, Feeds, Grades, GroupSchedules, Groups, Home, Parents, Secretaries, StudentEnrollments, Students, Teachers, Volo };
+export { Attendances, Authentication, Common, Controllers, Courses, Domain, Enums, ExamGrades, Exams, Feedbacks, Feeds, Grades, GroupSchedules, Groups, Home, Microsoft, Parents, Secretaries, StudentEnrollments, Students, Teachers, Volo };

@@ -1,4 +1,4 @@
-import type { CreateUpdateStudentDto, StudentDto, StudentDashboardDto, StudentScheduleDto } from './models';
+import type { CreateUpdateStudentDto, StudentDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -49,20 +49,6 @@ export class StudentService {
       method: 'PUT',
       url: `/api/app/student/${id}`,
       body: input,
-    },
-    { apiName: this.apiName,...config });
-
-  getDashboard = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, StudentDashboardDto>({
-      method: 'GET',
-      url: '/api/app/student/dashboard',
-    },
-    { apiName: this.apiName,...config });
-
-  getSchedule = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, StudentScheduleDto>({
-      method: 'GET',
-      url: '/api/app/student/schedule',
     },
     { apiName: this.apiName,...config });
 

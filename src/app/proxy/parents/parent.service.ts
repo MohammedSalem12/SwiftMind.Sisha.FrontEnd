@@ -1,4 +1,4 @@
-import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, UpdateParentDto, UpdateParentStudentDto, ParentDashboardDto, StudentComparisonDto, NotificationDto, UpcomingExamDto } from './models';
+import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, UpdateParentDto, UpdateParentStudentDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -171,36 +171,6 @@ export class ParentService {
       url: '/api/app/parent/parent-student-relationship',
       params: { parentId, studentId },
       body: input,
-    },
-    { apiName: this.apiName,...config });
-
-  getDashboard = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ParentDashboardDto>({
-      method: 'GET',
-      url: '/api/app/parent/dashboard',
-    },
-    { apiName: this.apiName,...config });
-
-  getStudentsComparison = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, StudentComparisonDto[]>({
-      method: 'GET',
-      url: '/api/app/parent/students-comparison',
-    },
-    { apiName: this.apiName,...config });
-
-  getRecentNotifications = (parentId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, NotificationDto[]>({
-      method: 'GET',
-      url: '/api/app/parent/recent-notifications',
-      params: { parentId },
-    },
-    { apiName: this.apiName,...config });
-
-  getUpcomingExams = (studentIds: string[], config?: Partial<Rest.Config>) =>
-    this.restService.request<any, UpcomingExamDto[]>({
-      method: 'GET',
-      url: '/api/app/parent/upcoming-exams',
-      params: { studentIds },
     },
     { apiName: this.apiName,...config });
 

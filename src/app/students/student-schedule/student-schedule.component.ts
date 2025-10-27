@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import type { StudentScheduleDto } from '../../proxy/students/models';
-import { StudentService } from '../../proxy/students/student.service';
+import { StudentDashboardService } from '../../proxy/students/student-dashboard.service';
 
 @Component({
   selector: 'app-student-schedule',
@@ -69,7 +69,7 @@ import { StudentService } from '../../proxy/students/student.service';
   `,
 })
 export class StudentScheduleComponent implements OnInit {
-  private readonly studentService = inject(StudentService);
+  private readonly studentDashboardService = inject(StudentDashboardService);
   private readonly router = inject(Router);
 
   schedule = signal<StudentScheduleDto | null>(null);
@@ -82,7 +82,7 @@ export class StudentScheduleComponent implements OnInit {
   private async loadSchedule() {
     this.loading.set(true);
     try {
-      const schedule = await this.studentService.getSchedule().toPromise();
+      const schedule = await this.studentDashboardService.getSchedule().toPromise();
       this.schedule.set(schedule!);
     } catch (error) {
       console.error('Error loading student schedule:', error);

@@ -1,88 +1,105 @@
-import type { ExtensibleAuditedEntityDto, ExtensibleEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
+import type { EntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
 export interface CreateUpdateSecretaryDto {
+  userId?: string;
   firstName: string;
   middleName?: string;
   lastName: string;
-  email: string;
-  phoneNumber: string;
   address?: string;
+  phoneNumber: string;
+  email: string;
   department?: string;
+  jobTitle?: string;
+  hireDate?: string;
+}
+
+export interface CreateUpdateTeacherSecretaryDelegationDto {
+  teacherId: string;
+  secretaryId: string;
+  startDate: string;
+  endDate?: string;
+  canManageExams: boolean;
+  canManageGrades: boolean;
+  canManageAttendance: boolean;
+  canManageGroups: boolean;
+  canViewReports: boolean;
   notes?: string;
 }
 
-export interface SecretaryDto extends ExtensibleAuditedEntityDto<string> {
-  userId?: string;
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  email?: string;
-  phoneNumber?: string;
-  address?: string;
-  department?: string;
-  notes?: string;
-  secretaryCode?: string;
-  fullName?: string;
-  isActive: boolean;
-  hireDate?: string;
-  jobTitle?: string;
+export interface DelegationPermissionUpdateDto {
+  delegationId: string;
+  canManageExams: boolean;
+  canManageGrades: boolean;
+  canManageAttendance: boolean;
+  canManageGroups: boolean;
+  canViewReports: boolean;
 }
 
 export interface GetSecretariesInput extends PagedAndSortedResultRequestDto {
-  filter?: string;
   keyword?: string;
-  secretaryCode?: string;
-  email?: string;
-  phoneNumber?: string;
   department?: string;
   isActive?: boolean;
-}
-
-export interface SecretaryDashboardDto {
-  secretary: SecretaryDto;
-  totalStudents: number;
-  totalTeachers: number;
-  totalCourses: number;
-  totalParents: number;
-  pendingEnrollments: number;
-  activeStudents: number;
-  recentActivities: RecentActivityDto[];
-  upcomingEvents: UpcomingEventDto[];
-}
-
-export interface RecentActivityDto {
-  id?: string;
-  activityType?: string;
-  description?: string;
-  timestamp?: string;
   userId?: string;
-  userName?: string;
-}
-
-export interface UpcomingEventDto {
-  id?: string;
-  title?: string;
-  description?: string;
-  eventDate?: string;
-  eventType?: string;
-}
-
-export interface TeacherSecretaryDelegationDto extends ExtensibleEntityDto<string> {
-  teacherId?: string;
-  secretaryId?: string;
-  delegationType?: string;
-  startDate?: string;
-  endDate?: string;
-  isActive: boolean;
-  notes?: string;
-  teacherName?: string;
-  secretaryName?: string;
 }
 
 export interface GetTeacherSecretaryDelegationsInput extends PagedAndSortedResultRequestDto {
   teacherId?: string;
   secretaryId?: string;
-  delegationType?: string;
-  keyword?: string;
   isActive?: boolean;
+  startDate?: string;
+  endDate?: string;
+  keyword?: string;
+}
+
+export interface SecretaryDashboardDto {
+  secretary: SecretaryDto;
+  activeDelegations: TeacherSecretaryDelegationDto[];
+  totalTeachersAssisted: number;
+  activeExamsManaged: number;
+  gradesEntered: number;
+  attendanceRecordsManaged: number;
+}
+
+export interface SecretaryDto extends EntityDto<string> {
+  userId?: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  address?: string;
+  phoneNumber: string;
+  email: string;
+  secretaryCode?: string;
+  department?: string;
+  jobTitle?: string;
+  hireDate?: string;
+  isActive: boolean;
+  fullName?: string;
+  activeDelegations: TeacherSecretaryDelegationDto[];
+}
+
+export interface SecretaryLookupDto extends EntityDto<string> {
+  firstName?: string;
+  lastName?: string;
+  secretaryCode?: string;
+  fullName?: string;
+  department?: string;
+  isActive: boolean;
+}
+
+export interface TeacherSecretaryDelegationDto extends EntityDto<string> {
+  teacherId?: string;
+  secretaryId?: string;
+  startDate?: string;
+  endDate?: string;
+  isActive: boolean;
+  canManageExams: boolean;
+  canManageGrades: boolean;
+  canManageAttendance: boolean;
+  canManageGroups: boolean;
+  canViewReports: boolean;
+  notes?: string;
+  teacherName?: string;
+  secretaryName?: string;
+  teacherCode?: string;
+  secretaryCode?: string;
 }

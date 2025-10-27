@@ -1,4 +1,5 @@
 import type { EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
+import type { StudentDto } from '../students/models';
 
 export interface CreateParentDto {
   userId?: string;
@@ -28,6 +29,40 @@ export interface GetParentsInput extends PagedAndSortedResultRequestDto {
   email?: string;
   phoneNumber?: string;
   studentId?: string;
+}
+
+export interface MonthlyAttendanceDto {
+  year: number;
+  month: number;
+  totalDays: number;
+  presentDays: number;
+  attendanceRate: number;
+  monthName?: string;
+}
+
+export interface MonthlyGradeDto {
+  year: number;
+  month: number;
+  averageGrade: number;
+  examCount: number;
+  monthName?: string;
+}
+
+export interface NotificationDto {
+  id?: string;
+  title?: string;
+  content?: string;
+  createdDate?: string;
+  isRead: boolean;
+}
+
+export interface ParentDashboardDto {
+  parent: ParentDto;
+  students: StudentProgressDto[];
+  totalChildren: number;
+  overallAttendanceRate: number;
+  recentNotifications: NotificationDto[];
+  upcomingExams: UpcomingExamDto[];
 }
 
 export interface ParentDto extends FullAuditedEntityDto<string> {
@@ -73,6 +108,15 @@ export interface ParentStudentDto extends FullAuditedEntityDto {
   studentCode?: string;
 }
 
+export interface RecentGradeDto {
+  examId?: string;
+  examName?: string;
+  grade: number;
+  maxGrade: number;
+  date?: string;
+  percentage: number;
+}
+
 export interface RegisterParentDto {
   userName: string;
   email: string;
@@ -84,6 +128,52 @@ export interface RegisterParentDto {
   address?: string;
   occupation?: string;
   emergencyContact?: string;
+}
+
+export interface StudentComparisonDto {
+  studentId?: string;
+  studentName?: string;
+  averageGrade: number;
+  attendanceRate: number;
+  totalCourses: number;
+  completedExams: number;
+  performanceLevel?: string;
+}
+
+export interface StudentDetailedReportDto {
+  student: StudentDto;
+  enrolledCourses: number;
+  totalExams: number;
+  averageGrade: number;
+  highestGrade: number;
+  lowestGrade: number;
+  totalAttendanceDays: number;
+  presentDays: number;
+  absentDays: number;
+  attendancePercentage: number;
+  gradesByMonth: MonthlyGradeDto[];
+  attendanceByMonth: MonthlyAttendanceDto[];
+}
+
+export interface StudentProgressDto {
+  student: StudentDto;
+  averageGrade: number;
+  attendanceRate: number;
+  recentGrades: RecentGradeDto[];
+  upcomingExams: UpcomingExamDto[];
+  totalCourses: number;
+  completedExams: number;
+  totalAttendanceDays: number;
+  presentDays: number;
+}
+
+export interface UpcomingExamDto {
+  examId?: string;
+  examName?: string;
+  courseName?: string;
+  examDate?: string;
+  studentIds: string[];
+  daysUntilExam: number;
 }
 
 export interface UpdateParentDto {
@@ -102,64 +192,4 @@ export interface UpdateParentStudentDto {
   isEmergencyContact: boolean;
   canPickUp: boolean;
   notes?: string;
-}
-
-export interface ParentDashboardDto {
-  parent: ParentDto;
-  totalChildren: number;
-  students: ParentStudentDto[];
-  upcomingExams: UpcomingExamDto[];
-  recentNotifications: NotificationDto[];
-  studentsComparison: StudentComparisonDto[];
-}
-
-export interface StudentProgressDto {
-  studentId?: string;
-  studentName?: string;
-  studentCode?: string;
-  currentGrade: number;
-  overallGrade: number;
-  attendancePercentage: number;
-  coursesProgress: CourseProgressDto[];
-}
-
-export interface NotificationDto {
-  id?: string;
-  title?: string;
-  message?: string;
-  notificationType?: string;
-  isRead: boolean;
-  createdAt?: string;
-  studentId?: string;
-  studentName?: string;
-}
-
-export interface UpcomingExamDto {
-  id?: string;
-  examName?: string;
-  courseName?: string;
-  courseCode?: string;
-  examDate?: string;
-  examType?: string;
-  studentId?: string;
-  studentName?: string;
-}
-
-export interface StudentComparisonDto {
-  studentId?: string;
-  studentName?: string;
-  studentCode?: string;
-  overallGrade: number;
-  attendancePercentage: number;
-  rank: number;
-  totalStudents: number;
-}
-
-export interface CourseProgressDto {
-  courseId?: string;
-  courseName?: string;
-  courseCode?: string;
-  currentGrade: number;
-  attendancePercentage: number;
-  lastExamGrade?: number;
 }

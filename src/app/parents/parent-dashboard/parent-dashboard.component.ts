@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ParentService } from '../../proxy/parents/parent.service';
+import { ParentDashboardService } from '../../proxy/parents/parent-dashboard.service';
 import { ParentDashboardDto, StudentProgressDto, NotificationDto, UpcomingExamDto, StudentComparisonDto } from '../../proxy/parents/models';
 
 @Component({
@@ -333,7 +333,7 @@ export class ParentDashboardComponent implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
 
-  constructor(private parentService: ParentService) {}
+  constructor(private parentDashboardService: ParentDashboardService) {}
 
   ngOnInit() {
     this.loadDashboardData();
@@ -344,7 +344,7 @@ export class ParentDashboardComponent implements OnInit {
     this.error.set(null);
 
     // Load dashboard overview
-    this.parentService.getDashboard().subscribe({
+    this.parentDashboardService.getDashboard().subscribe({
       next: (data) => {
         this.dashboard.set(data);
         this.loadAdditionalData(data);
@@ -358,17 +358,17 @@ export class ParentDashboardComponent implements OnInit {
   }
 
   private loadAdditionalData(dashboard: ParentDashboardDto) {
-    const studentIds = dashboard.students?.map(student => student.studentId) || [];
+    const studentIds = dashboard.students?.map(student => student.student?.id) || [];
 
     // Load students comparison
-    this.parentService.getStudentsComparison().subscribe({
+    this.parentDashboardService.getStudentsComparison().subscribe({
       next: (data) => this.studentsComparison.set(data),
       error: (error) => console.error('Students comparison loading error:', error)
     });
 
     // Load recent notifications
     if (dashboard.parent?.id) {
-      this.parentService.getRecentNotifications(dashboard.parent.id).subscribe({
+      this.parentDashboardService.getRecentNotifications(dashboard.parent.id).subscribe({
         next: (data) => this.recentNotifications.set(data),
         error: (error) => console.error('Notifications loading error:', error)
       });
@@ -376,7 +376,7 @@ export class ParentDashboardComponent implements OnInit {
 
     // Load upcoming exams
     if (studentIds.length > 0) {
-      this.parentService.getUpcomingExams(studentIds).subscribe({
+      this.parentDashboardService.getUpcomingExams(studentIds).subscribe({
         next: (data) => this.upcomingExams.set(data),
         error: (error) => console.error('Upcoming exams loading error:', error)
       });

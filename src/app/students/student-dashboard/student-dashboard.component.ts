@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import type { StudentDashboardDto } from '../../proxy/students/models';
-import { StudentService } from '../../proxy/students/student.service';
+import { StudentDashboardService } from '../../proxy/students/student-dashboard.service';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -12,7 +12,7 @@ import { StudentService } from '../../proxy/students/student.service';
   styleUrls: ['./student-dashboard.component.scss'],
 })
 export class StudentDashboardComponent implements OnInit {
-  private readonly studentService = inject(StudentService);
+  private readonly studentDashboardService = inject(StudentDashboardService);
   private readonly router = inject(Router);
 
   dashboard = signal<StudentDashboardDto | null>(null);
@@ -25,7 +25,7 @@ export class StudentDashboardComponent implements OnInit {
   private async loadDashboard() {
     this.loading.set(true);
     try {
-      const dashboard = await this.studentService.getDashboard().toPromise();
+      const dashboard = await this.studentDashboardService.getDashboard().toPromise();
       this.dashboard.set(dashboard!);
     } catch (error) {
       console.error('Error loading student dashboard:', error);
