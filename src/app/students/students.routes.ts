@@ -1,4 +1,5 @@
 import type { Routes } from '@angular/router';
+import { studentDashboardGuard } from '../shared/role-guards';
 
 export const studentsRoutes: Routes = [
   {
@@ -9,6 +10,7 @@ export const studentsRoutes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () => import('./student-dashboard/student-dashboard.component').then(c => c.StudentDashboardComponent),
+    canActivate: [studentDashboardGuard],
   },
   {
     path: 'schedule',

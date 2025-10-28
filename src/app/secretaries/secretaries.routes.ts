@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { secretaryDashboardGuard } from '../shared/role-guards';
 
 export const secretariesRoutes: Routes = [
   {
@@ -16,6 +17,7 @@ export const secretariesRoutes: Routes = [
   {
     path: 'dashboard/:id',
     loadComponent: () => import('./secretary-dashboard/secretary-dashboard.component').then(m => m.SecretaryDashboardComponent),
+    canActivate: [secretaryDashboardGuard],
   },
   {
     path: 'delegations',

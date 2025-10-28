@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import type { StudentDashboardDto } from '../../proxy/students/models';
 import { StudentDashboardService } from '../../proxy/students/student-dashboard.service';
+import { RoleBasedUIService } from '../../shared/role-based-ui.service';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -14,11 +15,19 @@ import { StudentDashboardService } from '../../proxy/students/student-dashboard.
 export class StudentDashboardComponent implements OnInit {
   private readonly studentDashboardService = inject(StudentDashboardService);
   private readonly router = inject(Router);
+  private readonly roleService = inject(RoleBasedUIService);
 
   dashboard = signal<StudentDashboardDto | null>(null);
   loading = signal(false);
+  accessDenied = signal(false);
 
   async ngOnInit() {
+    // Check if user has permission to view student dashboard
+    if (!this.roleService.isStudent()) {
+      this.accessDenied.set(true);
+      return;
+    }
+    
     await this.loadDashboard();
   }
 

@@ -5,6 +5,7 @@ import { AuthService, ConfigStateService } from '@abp/ng.core';
 import { CurrentUserInfoService } from '@proxy/common';
 import { GroupService } from '@proxy/groups';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
+import { RoleBasedUIService } from '../shared/role-based-ui.service';
 
 @Component({
   selector: 'app-teacher-groups',
@@ -12,12 +13,38 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
   imports: [CommonModule],
   template: `
     <div class="teacher-groups">
-      <div class="header mb-4">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <h2 class="mb-1">مجموعاتي</h2>
-            <p class="text-muted mb-0">المجموعات المخصصة لي كمعلم</p>
+      <!-- Access Denied Message -->
+      <div *ngIf="accessDenied()" class="text-center p-5">
+        <div class="card border-danger">
+          <div class="card-body">
+            <i class="fas fa-exclamation-triangle text-danger fa-3x mb-3"></i>
+            <h4 class="text-danger">Access Denied</h4>
+            <p class="text-muted mb-3">This teacher dashboard is only accessible by teachers.</p>
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+              <button *ngIf="roleService.isStudent()" class="btn btn-primary" (click)="router.navigate(['/students/dashboard'])">
+                <i class="fas fa-user-graduate me-1"></i> Go to Student Dashboard
+              </button>
+              <button *ngIf="roleService.isParent()" class="btn btn-info" (click)="router.navigate(['/parents/dashboard'])">
+                <i class="fas fa-user-friends me-1"></i> Go to Parent Dashboard
+              </button>
+              <button *ngIf="roleService.isSecretary()" class="btn btn-success" (click)="router.navigate(['/secretaries'])">
+                <i class="fas fa-user-tie me-1"></i> Go to Secretary Dashboard
+              </button>
+              <button class="btn btn-outline-secondary" (click)="router.navigate(['/'])">
+                <i class="fas fa-home me-1"></i> Go to Home
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
+
+      <div *ngIf="!accessDenied()">
+        <div class="header mb-4">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h2 class="mb-1">مجموعاتي</h2>
+              <p class="text-muted mb-0">المجموعات المخصصة لي كمعلم</p>
+            </div>
           <div class="teacher-info" *ngIf="teacherName()">
             <div class="text-end">
               <div class="fw-bold">{{ teacherName() }}</div>
@@ -122,6 +149,7 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
           تحديث
         </button>
       </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -210,11 +238,13 @@ export class TeacherGroupsComponent implements OnInit {
   private currentUserService = inject(CurrentUserInfoService);
   private groupService = inject(GroupService);
   private router = inject(Router);
+  private roleService = inject(RoleBasedUIService);
 
   // Component state
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
   groups = signal<GroupWithSchedulesDto[]>([]);
+  accessDenied = signal<boolean>(false);
   
   // Teacher info
   teacherName = signal<string | null>(null);
@@ -227,6 +257,13 @@ export class TeacherGroupsComponent implements OnInit {
   ];
 
   ngOnInit() {
+    // Check if user has teacher role
+    if (!this.roleService.isTeacher()) {
+      this.accessDenied.set(true);
+      this.loading.set(false);
+      return;
+    }
+    
     this.loadCurrentUserAndGroups();
   }
 

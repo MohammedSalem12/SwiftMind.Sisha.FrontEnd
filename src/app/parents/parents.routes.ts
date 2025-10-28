@@ -1,4 +1,5 @@
 import type { Routes } from '@angular/router';
+import { parentDashboardGuard } from '../shared/role-guards';
 
 export const parentsRoutes: Routes = [
   { 
@@ -7,7 +8,8 @@ export const parentsRoutes: Routes = [
   },
   {
     path: 'dashboard',
-    loadComponent: () => import('./parent-dashboard/parent-dashboard.component').then(c => c.ParentDashboardComponent)
+    loadComponent: () => import('./parent-dashboard/parent-dashboard.component').then(c => c.ParentDashboardComponent),
+    canActivate: [parentDashboardGuard],
   },
   { 
     path: ':id', 

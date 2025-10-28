@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ParentDashboardService } from '../../proxy/parents/parent-dashboard.service';
 import { ParentDashboardDto, StudentProgressDto, NotificationDto, UpcomingExamDto, StudentComparisonDto } from '../../proxy/parents/models';
+import { RoleBasedUIService } from '../../shared/role-based-ui.service';
 
 @Component({
   selector: 'app-parent-dashboard',
@@ -10,14 +11,44 @@ import { ParentDashboardDto, StudentProgressDto, NotificationDto, UpcomingExamDt
   imports: [CommonModule, RouterModule],
   template: `
     <div class="container-fluid py-4">
-      <div class="row">
-        <div class="col-12">
-          <h1 class="h3 mb-3">Parent Dashboard</h1>
+      <!-- Access Denied Message -->
+      @if (accessDenied()) {
+        <div class="row">
+          <div class="col-12">
+            <div class="card border-danger">
+              <div class="card-body text-center p-5">
+                <i class="fas fa-exclamation-triangle text-danger fa-3x mb-3"></i>
+                <h4 class="text-danger">Access Denied</h4>
+                <p class="text-muted mb-3">This parent dashboard is only accessible by parents.</p>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                  <button *ngIf="roleService.isStudent()" class="btn btn-primary" (click)="router.navigate(['/students/dashboard'])">
+                    <i class="fas fa-user-graduate me-1"></i> Go to Student Dashboard
+                  </button>
+                  <button *ngIf="roleService.isTeacher()" class="btn btn-success" (click)="router.navigate(['/teacher-groups'])">
+                    <i class="fas fa-chalkboard-teacher me-1"></i> Go to Teacher Groups
+                  </button>
+                  <button *ngIf="roleService.isSecretary()" class="btn btn-info" (click)="router.navigate(['/secretaries'])">
+                    <i class="fas fa-user-tie me-1"></i> Go to Secretary Dashboard
+                  </button>
+                  <button class="btn btn-outline-secondary" (click)="router.navigate(['/'])">
+                    <i class="fas fa-home me-1"></i> Go to Home
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      }
+      
+      @if (!accessDenied()) {
+        <div class="row">
+          <div class="col-12">
+            <h1 class="h3 mb-3">Parent Dashboard</h1>
+          </div>
+        </div>
 
-      <!-- Dashboard Statistics -->
-      @if (dashboard(); as data) {
+        <!-- Dashboard Statistics -->
+        @if (dashboard(); as data) {
         <div class="row mb-4">
           <div class="col-md-3">
             <div class="card bg-primary text-white">
@@ -288,6 +319,7 @@ import { ParentDashboardDto, StudentProgressDto, NotificationDto, UpcomingExamDt
           </div>
         </div>
       </div>
+      }
     </div>
   `,
   styles: [`
@@ -326,16 +358,26 @@ import { ParentDashboardDto, StudentProgressDto, NotificationDto, UpcomingExamDt
   `]
 })
 export class ParentDashboardComponent implements OnInit {
+  private readonly parentDashboardService = inject(ParentDashboardService);
+  private readonly roleService = inject(RoleBasedUIService);
+  private readonly router = inject(Router);
+
   dashboard = signal<ParentDashboardDto | null>(null);
   studentsComparison = signal<StudentComparisonDto[]>([]);
   recentNotifications = signal<NotificationDto[]>([]);
   upcomingExams = signal<UpcomingExamDto[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
-
-  constructor(private parentDashboardService: ParentDashboardService) {}
+  accessDenied = signal(false);
 
   ngOnInit() {
+    // Check if user has permission to view parent dashboard
+    if (!this.roleService.isParent()) {
+      this.accessDenied.set(true);
+      this.loading.set(false);
+      return;
+    }
+    
     this.loadDashboardData();
   }
 

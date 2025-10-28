@@ -1,12 +1,37 @@
 <div class="container-fluid">
-  <div *ngIf="loading()" class="text-center p-5">
+  <!-- Access Denied Message -->
+  <div *ngIf="accessDenied()" class="text-center p-5">
+    <div class="card border-danger">
+      <div class="card-body">
+        <i class="fas fa-exclamation-triangle text-danger fa-3x mb-3"></i>
+        <h4 class="text-danger">Access Denied</h4>
+        <p class="text-muted mb-3">This student dashboard is only accessible by students.</p>
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+          <button *ngIf="roleService.isParent()" class="btn btn-primary" (click)="router.navigate(['/parents/dashboard'])">
+            <i class="fas fa-user-friends me-1"></i> Go to Parent Dashboard
+          </button>
+          <button *ngIf="roleService.isTeacher()" class="btn btn-success" (click)="router.navigate(['/teacher-groups'])">
+            <i class="fas fa-chalkboard-teacher me-1"></i> Go to Teacher Groups
+          </button>
+          <button *ngIf="roleService.isSecretary()" class="btn btn-info" (click)="router.navigate(['/secretaries'])">
+            <i class="fas fa-user-tie me-1"></i> Go to Secretary Dashboard
+          </button>
+          <button class="btn btn-outline-secondary" (click)="router.navigate(['/'])">
+            <i class="fas fa-home me-1"></i> Go to Home
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading() && !accessDenied()" class="text-center p-5">
     <div class="spinner-border" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
     <p class="mt-2 text-muted">Loading your dashboard...</p>
   </div>
 
-  <div *ngIf="!loading() && dashboard()" class="row">
+  <div *ngIf="!loading() && !accessDenied() && dashboard()" class="row">
     <!-- Header -->
     <div class="col-12 mb-4">
       <div class="card bg-primary text-white">
