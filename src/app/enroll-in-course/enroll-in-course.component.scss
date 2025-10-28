@@ -19,4 +19,22 @@ select, input { width:100%; padding:8px 10px; border:1px solid #e6eef8; border-r
 .btn-primary { background:#2563eb; color:#fff; border:0; padding:8px 12px; border-radius:8px }
 .error { color:#ef4444; font-size:13px }
 
+// Role-based UI styles
+.role-indicator {
+  font-size: 12px;
+  color: #059669;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+input.disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.selected.disabled {
+  opacity: 0.7;
+}
+
 @media (max-width:720px){ .enroll-card{ flex-direction:column } .enroll-card .right{ width:100% } }

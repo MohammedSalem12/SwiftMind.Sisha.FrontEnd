@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ParentService } from '@proxy/parents';
 import { StudentService } from '@proxy/students';
 import { lastValueFrom } from 'rxjs';
+import { RoleBasedUIService } from '../shared/role-based-ui.service';
 
 @Component({
   standalone: true,
@@ -18,6 +19,7 @@ export class ParentDetailComponent implements OnInit {
   private readonly studentSvc = inject(StudentService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly roleService = inject(RoleBasedUIService);
 
   parent = signal<any>(null);
   children = signal<any[]>([]);
@@ -34,6 +36,15 @@ export class ParentDetailComponent implements OnInit {
     canPickUp: true,
     notes: ''
   };
+  
+  // Role-based UI
+  isParent = computed(() => this.roleService.isParent());
+  isViewingSelf = computed(() => {
+    const currentParent = this.parent();
+    const currentActorId = this.roleService.getCurrentActorId();
+    return this.isParent() && currentParent && currentActorId && currentParent.id === currentActorId;
+  });
+  studentSelectDisabled = computed(() => this.isViewingSelf());
 
   ngOnInit(): void {
     const parentId = this.route.snapshot.paramMap.get('id');
@@ -74,10 +85,30 @@ export class ParentDetailComponent implements OnInit {
 
   async openEnrollModal() {
     try {
-      // Load available students (not already linked to this parent)
-      const allStudents = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 100 }));
-      const linkedStudentIds = this.children().map(c => c.studentId);
-      const available = (allStudents.items || []).filter((s: any) => !linkedStudentIds.includes(s.id));
+      let available: any[] = [];
+      
+      if (this.isViewingSelf()) {
+        // If current user is viewing their own profile, only show their existing linked students
+        // This is primarily for updating relationships or adding new permissions
+        const linkedStudentIds = this.children().map(c => c.studentId);
+        if (linkedStudentIds.length > 0) {
+          const linkedStudentsResp = await lastValueFrom(
+            this.studentSvc.getList({ skipCount: 0, maxResultCount: 100 })
+          );
+          available = (linkedStudentsResp.items || []).filter((s: any) => 
+            linkedStudentIds.includes(s.id)
+          );
+        } else {
+          // Show message that they need to contact administration
+          alert('Please contact school administration to register your children.');
+          return;
+        }
+      } else {
+        // Load available students (not already linked to this parent)
+        const allStudents = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 100 }));
+        const linkedStudentIds = this.children().map(c => c.studentId);
+        available = (allStudents.items || []).filter((s: any) => !linkedStudentIds.includes(s.id));
+      }
       
       this.availableStudents.set(available);
       this.showEnrollModal.set(true);

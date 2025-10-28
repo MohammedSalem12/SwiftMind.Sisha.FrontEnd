@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { TeacherService } from '@proxy/teachers';
 import { StudentService } from '@proxy/students';
 import type { StudentDto } from '@proxy/students/models';
 import type { PagedResultDto } from '@abp/ng.core';
+import { RoleBasedUIService } from '../shared/role-based-ui.service';
 
 @Component({
   selector: 'app-enroll-in-course',
@@ -28,6 +29,7 @@ export class EnrollInCourseComponent implements OnInit {
   private readonly courseSvc = inject(CourseService);
   private readonly teacherSvc = inject(TeacherService);
   private readonly studentSvc = inject(StudentService);
+  private readonly roleService = inject(RoleBasedUIService);
 
   studentId = signal<string | null>(null);
   // student display info
@@ -42,6 +44,11 @@ export class EnrollInCourseComponent implements OnInit {
   teacherResults = signal<TeacherAutocompleteDto[]>([]);
   private teacherSearchTimer: any = null;
   selectedTeacher = signal<TeacherDto | null>(null);
+  
+  // Role-based UI
+  isTeacher = computed(() => this.roleService.isTeacher());
+  teacherSearchDisabled = computed(() => this.isTeacher());
+  currentTeacherSelected = signal(false);
 
   model = signal<CreateUpdateEnrollmentDto>({
     studentId: '',
@@ -61,6 +68,31 @@ export class EnrollInCourseComponent implements OnInit {
       void this.loadStudent(id);
     }
     this.loadCourses();
+    this.initializeRoleBasedDefaults();
+  }
+
+  private initializeRoleBasedDefaults(): void {
+    // If current user is a teacher, auto-select them and disable teacher selection
+    if (this.roleService.isTeacher()) {
+      const currentActorId = this.roleService.getCurrentActorId();
+      if (currentActorId) {
+        this.setField('teacherId', currentActorId);
+        // Load the current teacher's info for display
+        this.loadCurrentTeacherInfo(currentActorId);
+        this.currentTeacherSelected.set(true);
+      }
+    }
+  }
+
+  private async loadCurrentTeacherInfo(teacherId: string): Promise<void> {
+    try {
+      const teacher = await lastValueFrom(this.teacherSvc.get(teacherId));
+      if (teacher) {
+        this.selectedTeacher.set(teacher);
+      }
+    } catch (error) {
+      console.error('Failed to load current teacher info:', error);
+    }
   }
 
   private async loadStudent(id: string) {
@@ -123,6 +155,11 @@ export class EnrollInCourseComponent implements OnInit {
   }
 
   selectTeacher(t: TeacherDto) {
+    // Don't allow teacher selection if current user is a teacher and auto-selected
+    if (this.teacherSearchDisabled()) {
+      return;
+    }
+    
     this.setField('teacherId', t.id as any);
     this.selectedTeacher.set(t);
     this.teacherResults.set([]);

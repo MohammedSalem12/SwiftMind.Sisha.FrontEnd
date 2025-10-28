@@ -46,7 +46,9 @@
     <div class="info-section">
       <div class="section-header">
         <h3>Children ({{ children().length }})</h3>
-        <button class="btn-primary" (click)="openEnrollModal()">+ Enroll Child</button>
+        <button class="btn-primary" (click)="openEnrollModal()">
+          {{ isViewingSelf() ? '+ Manage My Children' : '+ Enroll Child' }}
+        </button>
       </div>
 
       <div *ngIf="childrenLoading()" class="loading-state">
@@ -59,7 +61,9 @@
           <div class="no-data-icon">👨‍👩‍👧‍👦</div>
           <h4>No Children Enrolled</h4>
           <p>This parent has no children enrolled yet.</p>
-          <button class="btn-primary" (click)="openEnrollModal()">Enroll First Child</button>
+          <button class="btn-primary" (click)="openEnrollModal()">
+            {{ isViewingSelf() ? 'Contact Administration' : 'Enroll First Child' }}
+          </button>
         </div>
 
         <div *ngIf="children().length > 0" class="children-list">
@@ -103,22 +107,29 @@
 <div *ngIf="showEnrollModal()" class="modal-backdrop">
   <div class="modal-card">
     <div class="modal-header">
-      <h3>Enroll Child</h3>
+      <h3>{{ isViewingSelf() ? 'Manage My Children' : 'Enroll Child' }}</h3>
       <button class="close" (click)="closeEnrollModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label for="student">Select Student *</label>
+        <label for="student">Select Student *
+          <span *ngIf="isViewingSelf()" class="role-indicator">(Your registered children)</span>
+        </label>
         <select 
           id="student" 
           [(ngModel)]="enrollForm.studentId" 
           class="form-control" 
           required>
-          <option value="">Select a student</option>
+          <option value="">
+            {{ isViewingSelf() ? 'Select your child' : 'Select a student' }}
+          </option>
           <option *ngFor="let student of availableStudents()" [value]="student.id">
             {{ student.firstName }} {{ student.lastName }} ({{ student.studentCode }})
           </option>
         </select>
+        <div *ngIf="isViewingSelf() && availableStudents().length === 0" class="info-message">
+          No children registered yet. Please contact school administration to register your children.
+        </div>
       </div>
 
       <div class="form-group">

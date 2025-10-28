@@ -18,10 +18,19 @@
   <option *ngFor="let c of courses()" [value]="c.id">{{ c.name || c.code }}</option>
       </select>
 
-      <div class="label" style="margin-top:12px">Teacher (optional)</div>
+      <div class="label" style="margin-top:12px">
+        Teacher (optional)
+        <span *ngIf="teacherSearchDisabled()" class="role-indicator">(Auto-selected - You are the teacher)</span>
+      </div>
       <div class="teacher-search">
-        <input name="teacherSearch" [ngModel]="teacherQuery()" (ngModelChange)="onTeacherQueryChange($event)" placeholder="Search teacher by name..." />
-        <div class="results" *ngIf="teacherResults().length > 0">
+        <input 
+          name="teacherSearch" 
+          [ngModel]="teacherQuery()" 
+          (ngModelChange)="onTeacherQueryChange($event)" 
+          placeholder="Search teacher by name..." 
+          [disabled]="teacherSearchDisabled()"
+          [class.disabled]="teacherSearchDisabled()" />
+        <div class="results" *ngIf="teacherResults().length > 0 && !teacherSearchDisabled()">
           <ul>
             <li *ngFor="let t of teacherResults()" (click)="selectTeacher(t)">
               <div class="t-left"><div class="t-avatar">{{ (t.displayName||'').charAt(0) }}</div></div>
@@ -33,7 +42,12 @@
         <div class="selected" *ngIf="selectedTeacher()">
           <div class="t-avatar small">{{ (selectedTeacher()?.displayName||'').charAt(0) }}</div>
           <div class="t-info">{{ selectedTeacher()?.displayName }}</div>
-          <button type="button" class="clear" (click)="setField('teacherId',''); selectedTeacher.set(null)">Clear</button>
+          <button 
+            type="button" 
+            class="clear" 
+            (click)="setField('teacherId',''); selectedTeacher.set(null)"
+            [disabled]="teacherSearchDisabled()"
+            [style.display]="teacherSearchDisabled() ? 'none' : 'block'">Clear</button>
         </div>
       </div>
     </div>
