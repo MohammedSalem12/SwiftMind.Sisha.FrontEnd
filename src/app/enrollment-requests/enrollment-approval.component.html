@@ -1,0 +1,115 @@
+﻿<div class="container mt-4">
+  <div class="card">
+    <div class="card-header">
+      <h3>Pending Enrollment Requests</h3>
+    </div>
+    <div class="card-body">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      } @else if (error()) {
+        <div class="alert alert-danger">{{ error() }}</div>
+      } @else if (requests().length === 0) {
+        <div class="alert alert-info">No pending enrollment requests.</div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Course</th>
+                <th>Parent Approval</th>
+                <th>Group</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of requests(); track req.id) {
+                <tr>
+                  <td>{{ req.studentName }}</td>
+                  <td>{{ req.courseName }}</td>
+                  <td>
+                    @if (req.isParentApproved) {
+                      <span class="badge bg-success">Approved</span>
+                    } @else {
+                      <span class="badge bg-warning">Pending</span>
+                    }
+                  </td>
+                  <td>
+                    @if (req.groupName) {
+                      <span>{{ req.groupName }}</span>
+                    } @else {
+                      <select 
+                        class="form-select form-select-sm" 
+                        [disabled]="processingId() === req.id"
+                        (change)="selectedGroupId.set(\.target.value)">
+                        <option value="">Auto-assign</option>
+                        @for (group of getFilteredGroups(req); track group.id) {
+                          <option [value]="group.id">{{ group.name }}</option>
+                        }
+                      </select>
+                    }
+                  </td>
+                  <td>{{ req.creationTime | date:'short' }}</td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <button 
+                        class="btn btn-sm btn-success" 
+                        (click)="approve(req)"
+                        [disabled]="processingId() === req.id">
+                        @if (processingId() === req.id) {
+                          <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Approve
+                      </button>
+                      <button 
+                        class="btn btn-sm btn-danger" 
+                        (click)="openRejectModal(req)"
+                        [disabled]="processingId() === req.id">
+                        Reject
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+@if (showRejectModal()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Reject Enrollment Request</h5>
+          <button type="button" class="btn-close" (click)="closeRejectModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="rejectionReason" class="form-label">Rejection Reason (Optional)</label>
+            <textarea 
+              id="rejectionReason"
+              class="form-control" 
+              rows="3"
+              [(ngModel)]="rejectionReason"
+              (ngModelChange)="rejectionReason.set(\)"
+              placeholder="Enter reason for rejection..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeRejectModal()">Cancel</button>
+          <button type="button" class="btn btn-danger" (click)="confirmReject()">Confirm Reject</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

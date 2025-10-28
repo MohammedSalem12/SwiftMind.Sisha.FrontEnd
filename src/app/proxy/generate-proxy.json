@@ -10126,7 +10126,89 @@
           "isIntegrationService": false,
           "apiVersion": null,
           "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestAppService",
-          "interfaces": [],
+          "interfaces": [
+            {
+              "type": "SwiftMind.Sesha.Application.Contracts.Enrollments.IEnrollmentRequestAppService",
+              "name": "IEnrollmentRequestAppService",
+              "methods": [
+                {
+                  "name": "CreateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestCreateDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestCreateDto",
+                      "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto",
+                    "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto"
+                  }
+                },
+                {
+                  "name": "ApproveAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestApproveDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestApproveDto",
+                      "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestApproveDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto",
+                    "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto"
+                  }
+                },
+                {
+                  "name": "RejectAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto",
+                      "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetListAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto>",
+                    "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto]"
+                  }
+                },
+                {
+                  "name": "GetMyRequestsAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto>",
+                    "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto]"
+                  }
+                },
+                {
+                  "name": "GetPendingRequestsForTeacherAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto>",
+                    "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto]"
+                  }
+                }
+              ]
+            }
+          ],
           "actions": {
             "CreateAsyncByInput": {
               "uniqueName": "CreateAsyncByInput",
@@ -10163,7 +10245,7 @@
                 "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto"
               },
               "allowAnonymous": null,
-              "implementFrom": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestAppService"
+              "implementFrom": "SwiftMind.Sesha.Application.Contracts.Enrollments.IEnrollmentRequestAppService"
             },
             "ApproveAsyncByInput": {
               "uniqueName": "ApproveAsyncByInput",
@@ -10200,35 +10282,35 @@
                 "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto"
               },
               "allowAnonymous": null,
-              "implementFrom": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestAppService"
+              "implementFrom": "SwiftMind.Sesha.Application.Contracts.Enrollments.IEnrollmentRequestAppService"
             },
-            "RejectAsyncByRequestId": {
-              "uniqueName": "RejectAsyncByRequestId",
+            "RejectAsyncByInput": {
+              "uniqueName": "RejectAsyncByInput",
               "name": "RejectAsync",
               "httpMethod": "POST",
-              "url": "api/app/enrollment-request/reject/{requestId}",
+              "url": "api/app/enrollment-request/reject",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "requestId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto",
+                  "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "requestId",
-                  "name": "requestId",
+                  "nameOnMethod": "input",
+                  "name": "input",
                   "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
+                  "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto",
+                  "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto",
                   "isOptional": false,
                   "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
                   "descriptorName": ""
                 }
               ],
@@ -10237,7 +10319,7 @@
                 "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
-              "implementFrom": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestAppService"
+              "implementFrom": "SwiftMind.Sesha.Application.Contracts.Enrollments.IEnrollmentRequestAppService"
             },
             "GetListAsync": {
               "uniqueName": "GetListAsync",
@@ -10252,7 +10334,37 @@
                 "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto]"
               },
               "allowAnonymous": null,
-              "implementFrom": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestAppService"
+              "implementFrom": "SwiftMind.Sesha.Application.Contracts.Enrollments.IEnrollmentRequestAppService"
+            },
+            "GetMyRequestsAsync": {
+              "uniqueName": "GetMyRequestsAsync",
+              "name": "GetMyRequestsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/enrollment-request/my-requests",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Application.Contracts.Enrollments.IEnrollmentRequestAppService"
+            },
+            "GetPendingRequestsForTeacherAsync": {
+              "uniqueName": "GetPendingRequestsForTeacherAsync",
+              "name": "GetPendingRequestsForTeacherAsync",
+              "httpMethod": "GET",
+              "url": "api/app/enrollment-request/pending-requests-for-teacher",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Application.Contracts.Enrollments.IEnrollmentRequestAppService"
             }
           }
         },
@@ -14165,6 +14277,173 @@
       "rootPath": "sesha",
       "remoteServiceName": "Default",
       "controllers": {
+        "SwiftMind.Sesha.Controllers.EnrollmentRequestController": {
+          "controllerName": "EnrollmentRequest",
+          "controllerGroupName": "EnrollmentRequest",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "SwiftMind.Sesha.Controllers.EnrollmentRequestController",
+          "interfaces": [],
+          "actions": {
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/enrollment-requests",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestCreateDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestCreateDto",
+                  "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestCreateDto",
+                  "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto",
+                "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Controllers.EnrollmentRequestController"
+            },
+            "ApproveAsyncByInput": {
+              "uniqueName": "ApproveAsyncByInput",
+              "name": "ApproveAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/enrollment-requests/approve",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestApproveDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestApproveDto",
+                  "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestApproveDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestApproveDto",
+                  "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestApproveDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto",
+                "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Controllers.EnrollmentRequestController"
+            },
+            "RejectAsyncByInput": {
+              "uniqueName": "RejectAsyncByInput",
+              "name": "RejectAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/enrollment-requests/reject",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto",
+                  "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto",
+                  "typeSimple": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Controllers.EnrollmentRequestController"
+            },
+            "GetListAsync": {
+              "uniqueName": "GetListAsync",
+              "name": "GetListAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/enrollment-requests",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Controllers.EnrollmentRequestController"
+            },
+            "GetMyRequestsAsync": {
+              "uniqueName": "GetMyRequestsAsync",
+              "name": "GetMyRequestsAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/enrollment-requests/my-requests",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Controllers.EnrollmentRequestController"
+            },
+            "GetPendingRequestsForTeacherAsync": {
+              "uniqueName": "GetPendingRequestsForTeacherAsync",
+              "name": "GetPendingRequestsForTeacherAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/enrollment-requests/pending-for-teacher",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Controllers.EnrollmentRequestController"
+            }
+          }
+        },
         "SwiftMind.Sesha.Controllers.Parents.ParentController": {
           "controllerName": "Parent",
           "controllerGroupName": "Parent",
@@ -17625,11 +17904,13 @@
       "isEnum": true,
       "enumNames": [
         "Student",
-        "Parent"
+        "Parent",
+        "Teacher"
       ],
       "enumValues": [
         0,
-        1
+        1,
+        2
       ],
       "genericArguments": null,
       "properties": null
@@ -22644,6 +22925,18 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "GroupId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -22748,10 +23041,34 @@
           "regex": null
         },
         {
+          "name": "StudentName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "ParentId",
           "jsonName": null,
           "type": "System.Guid?",
           "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ParentName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -22772,9 +23089,57 @@
           "regex": null
         },
         {
+          "name": "CourseName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "TeacherId",
           "jsonName": null,
           "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TeacherName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "GroupId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "GroupName",
+          "jsonName": null,
+          "type": "System.String",
           "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
@@ -22824,6 +23189,63 @@
           "jsonName": null,
           "type": "System.Boolean",
           "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RejectionReason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestRejectDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "RequestId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Reason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

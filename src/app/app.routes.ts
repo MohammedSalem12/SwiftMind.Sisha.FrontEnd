@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 import { authGuard } from './shared/guards/auth.guard';
 
 export const appRoutes: Routes = [
@@ -102,6 +102,10 @@ export const appRoutes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'enrollment-requests',
+    loadChildren: () => import('./enrollment-requests/enrollment-requests.routes').then(m => m.enrollmentRequestRoutes),
+    canActivate: [authGuard]
+  },  {
     path: 'secretaries',
     loadChildren: () => import('./secretaries/secretaries.routes').then(m => m.secretariesRoutes),
     canActivate: [authGuard]
@@ -111,3 +115,4 @@ export const appRoutes: Routes = [
     redirectTo: '/'
   }
 ];
+

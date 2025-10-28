@@ -1,0 +1,56 @@
+﻿<div class="container mt-4">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h3>My Enrollment Requests</h3>
+      <button class="btn btn-primary" (click)="createNew()">
+        <i class="bi bi-plus-circle me-2"></i>New Request
+      </button>
+    </div>
+    <div class="card-body">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      } @else if (error()) {
+        <div class="alert alert-danger">{{ error() }}</div>
+      } @else if (requests().length === 0) {
+        <div class="alert alert-info">No enrollment requests found.</div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Course</th>
+                <th>Teacher</th>
+                <th>Student</th>
+                <th>Group</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Rejection Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of requests(); track req.id) {
+                <tr>
+                  <td>{{ req.courseName }}</td>
+                  <td>{{ req.teacherName }}</td>
+                  <td>{{ req.studentName }}</td>
+                  <td>{{ req.groupName || 'Not Assigned' }}</td>
+                  <td>
+                    <span [class]="getStatusBadgeClass(req.status)">
+                      {{ getStatusText(req.status) }}
+                    </span>
+                  </td>
+                  <td>{{ req.creationTime | date:'short' }}</td>
+                  <td>{{ req.rejectionReason || '-' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>

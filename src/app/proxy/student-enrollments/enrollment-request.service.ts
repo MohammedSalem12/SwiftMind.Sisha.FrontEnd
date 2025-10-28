@@ -1,4 +1,4 @@
-import type { EnrollmentRequestApproveDto, EnrollmentRequestCreateDto, EnrollmentRequestDto } from './models';
+import type { EnrollmentRequestApproveDto, EnrollmentRequestCreateDto, EnrollmentRequestDto, EnrollmentRequestRejectDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -35,10 +35,27 @@ export class EnrollmentRequestService {
     { apiName: this.apiName,...config });
   
 
-  reject = (requestId: string, config?: Partial<Rest.Config>) =>
+  getMyRequests = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, EnrollmentRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/enrollment-request/my-requests',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPendingRequestsForTeacher = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, EnrollmentRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/enrollment-request/pending-requests-for-teacher',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  reject = (input: EnrollmentRequestRejectDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/enrollment-request/reject/${requestId}`,
+      url: '/api/app/enrollment-request/reject',
+      body: input,
     },
     { apiName: this.apiName,...config });
 
