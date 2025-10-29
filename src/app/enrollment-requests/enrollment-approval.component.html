@@ -1,4 +1,4 @@
-﻿<div class="container mt-4">
+<div class="container mt-4">
   <div class="card">
     <div class="card-header">
       <h3>Pending Enrollment Requests</h3>
@@ -46,7 +46,7 @@
                       <select 
                         class="form-select form-select-sm" 
                         [disabled]="processingId() === req.id"
-                        (change)="selectedGroupId.set(\.target.value)">
+                        (change)="selectedGroupId.set($event.target.value)">
                         <option value="">Auto-assign</option>
                         @for (group of getFilteredGroups(req); track group.id) {
                           <option [value]="group.id">{{ group.name }}</option>
@@ -101,7 +101,7 @@
               class="form-control" 
               rows="3"
               [(ngModel)]="rejectionReason"
-              (ngModelChange)="rejectionReason.set(\)"
+              (ngModelChange)="rejectionReason.set($event)"
               placeholder="Enter reason for rejection..."></textarea>
           </div>
         </div>
@@ -113,3 +113,4 @@
     </div>
   </div>
 }
+

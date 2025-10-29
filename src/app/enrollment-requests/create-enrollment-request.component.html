@@ -1,4 +1,4 @@
-﻿<div class="container mt-4">
+<div class="container mt-4">
   <div class="card">
     <div class="card-header">
       <h3>Create Enrollment Request</h3>
@@ -15,7 +15,7 @@
             id="course" 
             class="form-select" 
             [(ngModel)]="model().courseId"
-            (ngModelChange)="model.update(m => ({ ...m, courseId: \ }))"
+            (ngModelChange)="model.update(m => ({ ...m, courseId: $event }))"
             name="courseId"
             required>
             <option value="">Select a course</option>
@@ -32,7 +32,7 @@
             id="teacher"
             class="form-control"
             [(ngModel)]="teacherQuery"
-            (ngModelChange)="onTeacherQueryChange(\)"
+            (ngModelChange)="onTeacherQueryChange($event)"
             name="teacherQuery"
             placeholder="Search for teacher..."
             autocomplete="off"
@@ -64,3 +64,4 @@
     </div>
   </div>
 </div>
+

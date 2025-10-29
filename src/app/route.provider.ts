@@ -1,13 +1,5 @@
-﻿import { RoutesService, eLayoutType, AuthService, ConfigStateService } from '@abp/ng.core';
-import { APP_INITIALIZER } 
-      {
-        path: '/enrollment-requests',
-        name: 'طلبات التسجيل',
-        iconClass: 'fas fa-file-import',
-        order: 14,
-        layout: eLayoutType.application,
-        visible: () => isAuthenticated(),
-      },from '@angular/core';
+import { RoutesService, eLayoutType, AuthService, ConfigStateService } from '@abp/ng.core';
+import { APP_INITIALIZER } from '@angular/core';
 
 export const APP_ROUTE_PROVIDER = [
   { provide: APP_INITIALIZER, useFactory: configureRoutes, deps: [RoutesService, AuthService, ConfigStateService], multi: true },
@@ -136,7 +128,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
     const menuItems: any[] = [
       {
         path: '/',
-        name: 'Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©',
+        name: 'الرئيسية',
         iconClass: 'fas fa-home',
         order: 1,
         layout: eLayoutType.application,
@@ -144,7 +136,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       // All other menu items only visible when authenticated
       {
         path: '/students',
-        name: 'Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø·Ù„Ø§Ø¨',
+        name: 'قائمة الطلاب',
         iconClass: 'fas fa-users',
         order: 2,
         layout: eLayoutType.application,
@@ -152,7 +144,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/students/dashboard',
-        name: 'Ù„ÙˆØ­Ø© Ø§Ù„Ø·Ø§Ù„Ø¨',
+        name: 'لوحة الطالب',
         iconClass: 'fas fa-tachometer-alt',
         order: 3,
         layout: eLayoutType.application,
@@ -160,7 +152,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/parents/dashboard',
-        name: 'Ù„ÙˆØ­Ø© ÙˆÙ„ÙŠ Ø§Ù„Ø£Ù…Ø±',
+        name: 'لوحة ولي الأمر',
         iconClass: 'fas fa-user-friends',
         order: 4,
         layout: eLayoutType.application,
@@ -168,7 +160,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/teacher-groups',
-        name: 'Ù…Ø¬Ù…ÙˆØ¹Ø§ØªÙŠ',
+        name: 'مجموعاتي',
         iconClass: 'fas fa-layer-group',
         order: 5,
         layout: eLayoutType.application,
@@ -176,7 +168,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/students-grades',
-        name: 'Ø¯Ø±Ø¬Ø§Øª Ø§Ù„Ø·Ù„Ø§Ø¨',
+        name: 'درجات الطلاب',
         iconClass: 'fas fa-user-graduate',
         order: 6,
         layout: eLayoutType.application,
@@ -184,7 +176,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/teachers',
-        name: 'Ø§Ù„Ù…Ø¹Ù„Ù…ÙŠÙ†',
+        name: 'المعلمين',
         iconClass: 'fas fa-chalkboard-teacher',
         order: 7,
         layout: eLayoutType.application,
@@ -192,7 +184,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/parents',
-        name: 'Ø£ÙˆÙ„ÙŠØ§Ø¡ Ø§Ù„Ø£Ù…ÙˆØ±',
+        name: 'أولياء الأمور',
         iconClass: 'fas fa-users-cog',
         order: 8,
         layout: eLayoutType.application,
@@ -200,7 +192,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/courses',
-        name: 'Ø§Ù„Ù…Ù‚Ø±Ø±Ø§Øª',
+        name: 'المقررات',
         iconClass: 'fas fa-book',
         order: 9,
         layout: eLayoutType.application,
@@ -208,7 +200,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/attendance',
-        name: 'Ø§Ù„Ø­Ø¶ÙˆØ±',
+        name: 'الحضور',
         iconClass: 'fas fa-user-check',
         order: 10,
         layout: eLayoutType.application,
@@ -216,7 +208,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/exam-grade',
-        name: 'Ø¯Ø±Ø¬Ø§Øª Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±',
+        name: 'درجات الاختبار',
         iconClass: 'fas fa-clipboard-list',
         order: 11,
         layout: eLayoutType.application,
@@ -224,7 +216,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/feeds',
-        name: 'Ø§Ù„Ù†Ø´Ø±Ø§Øª',
+        name: 'النشرات',
         iconClass: 'fas fa-rss',
         order: 12,
         layout: eLayoutType.application,
@@ -232,7 +224,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       },
       {
         path: '/secretaries',
-        name: 'Ø§Ù„Ø³ÙƒØ±ØªØ§Ø±ÙŠØ©',
+        name: 'السكرتارية',
         iconClass: 'fas fa-user-tie',
         order: 13,
         layout: eLayoutType.application,
@@ -245,14 +237,14 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       // Show login and register for unauthenticated users
       menuItems.push({
         path: '/login',
-        name: 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„',
+        name: 'تسجيل الدخول',
         iconClass: 'fas fa-sign-in-alt',
         order: 13,
         layout: eLayoutType.account,
       });
       menuItems.push({
         path: '/register',
-        name: 'Ø¥Ù†Ø´Ø§Ø¡ Ø­Ø³Ø§Ø¨',
+        name: 'إنشاء حساب',
         iconClass: 'fas fa-user-plus',
         order: 14,
         layout: eLayoutType.account,
@@ -261,7 +253,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
       // Show profile management for authenticated users
       menuItems.push({
         path: '/account/manage',
-        name: 'Ù…Ù„ÙÙŠ Ø§Ù„Ø´Ø®ØµÙŠ',
+        name: 'ملفي الشخصي',
         iconClass: 'fas fa-user-cog',
         order: 13,
         layout: eLayoutType.application,
@@ -271,4 +263,5 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
     routesService.add(menuItems);
   };
 }
+
 
