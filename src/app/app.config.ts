@@ -1,6 +1,8 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { RouteReuseStrategy } from '@angular/router';
+import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { appRoutes } from './app.routes';
 import { APP_ROUTE_PROVIDER } from './route.provider';
 import { provideAbpCore, withOptions } from '@abp/ng.core';
@@ -21,6 +23,7 @@ export const appConfig: ApplicationConfig = {
     providers: [
     provideRouter(appRoutes),
     APP_ROUTE_PROVIDER,
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideAbpCore(withOptions({
         environment,
         registerLocaleFn: registerLocale(),
@@ -33,7 +36,18 @@ export const appConfig: ApplicationConfig = {
     provideTenantManagementConfig(),
     provideFeatureManagementConfig(),
     provideAnimations(),
-    provideLogo(withEnvironmentOptions(environment)), importProvidersFrom(ThemeLeptonXModule.forRoot(), SideMenuLayoutModule.forRoot(), AccountLayoutModule.forRoot(), ThemeSharedModule), provideAbpThemeShared(withValidationBluePrint({
+    provideLogo(withEnvironmentOptions(environment)), 
+    importProvidersFrom(
+        IonicModule.forRoot({
+            mode: 'md',
+            rippleEffect: true,
+        }),
+        ThemeLeptonXModule.forRoot(), 
+        SideMenuLayoutModule.forRoot(), 
+        AccountLayoutModule.forRoot(), 
+        ThemeSharedModule
+    ), 
+    provideAbpThemeShared(withValidationBluePrint({
         wrongPassword: 'Please choose 1q2w3E*'
     }))
 ],

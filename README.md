@@ -2,6 +2,27 @@
 
 This is a startup project based on the ABP framework. For more information, visit <a href="https://abp.io/" target="_blank">abp.io</a>
 
+## 📱 Mobile App Support
+
+This project now supports **iOS and Android** mobile applications using **Ionic Framework** and **Capacitor**!
+
+### Quick Start for Mobile
+```bash
+# Run the quick start script
+./mobile-quickstart.ps1
+
+# Or use npm scripts
+npm run android:build  # Build and open Android Studio
+npm run ios:build      # Build and open Xcode
+npm run mobile:dev     # Build and sync both platforms
+```
+
+### 📚 Mobile Documentation
+- **[MOBILE_README.md](MOBILE_README.md)** - Complete mobile setup guide
+- **[IONIC_CONVERSION_GUIDE.md](IONIC_CONVERSION_GUIDE.md)** - Convert components to Ionic UI
+- **[APP_STORE_DEPLOYMENT.md](APP_STORE_DEPLOYMENT.md)** - Publish to app stores
+- **[MOBILE_WEB_STRATEGY.md](MOBILE_WEB_STRATEGY.md)** - Web & mobile coexistence approach
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.

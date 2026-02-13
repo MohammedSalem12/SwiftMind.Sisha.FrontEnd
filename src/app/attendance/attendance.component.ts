@@ -329,7 +329,7 @@ export class AttendanceComponent implements OnInit {
         // Mark as absent - create new attendance record
         const payload = { 
           enrollmentId, 
-          date: new Date(this.attendanceDate()).toLocaleDateString(), 
+          date: new Date(this.attendanceDate()).toISOString(), 
           isAbsent: true, 
           note: '--' 
         } as any;
@@ -354,7 +354,7 @@ export class AttendanceComponent implements OnInit {
     if (!enrollmentId) return;
     this.saving.set(true);
     try {
-        const payload = { enrollmentId, gradeId : '11111111-1111-1111-1111-111111111104' , date: new Date(this.attendanceDate()).toISOString(), isAbsent: true, note: '--' } as any;
+        const payload = { enrollmentId, date: new Date(this.attendanceDate()).toISOString(), isAbsent: true, note: '--' } as any;
       await lastValueFrom(this.attendanceSvc.create(payload));
       // refresh lists
       await this.loadTodaysAbsentees();

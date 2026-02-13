@@ -11,6 +11,11 @@ import { ToastContainerComponent } from './shared/toast-container.component';
     <abp-internet-status />
     <app-toasts />
   `,
-  imports: [LoaderBarComponent, DynamicLayoutComponent, InternetConnectionStatusComponent, ToastContainerComponent],
+  imports: [
+    LoaderBarComponent, 
+    DynamicLayoutComponent, 
+    InternetConnectionStatusComponent, 
+    ToastContainerComponent
+  ],
 })
 export class AppComponent {}

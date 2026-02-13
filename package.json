@@ -8,7 +8,14 @@
     "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:sync:prod": "npm run build:prod && npx cap sync",
+    "android:build": "npm run build && npx cap sync && npx cap open android",
+    "android:run": "npm run build && npx cap run android",
+    "ios:build": "npm run build && npx cap sync && npx cap open ios",
+    "ios:run": "npm run build && npx cap run ios",
+    "mobile:dev": "npm run build && npx cap sync"
   },
   "private": true,
   "dependencies": {
@@ -30,6 +37,11 @@
     "@angular/platform-browser": "~20.0.0",
     "@angular/platform-browser-dynamic": "~20.0.0",
     "@angular/router": "~20.0.0",
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
+    "@capacitor/ios": "^8.1.0",
+    "@ionic/angular": "^8.7.17",
     "bootstrap-icons": "~1.8.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.0.0",
