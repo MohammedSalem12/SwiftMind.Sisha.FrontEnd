@@ -1,4 +1,5 @@
 import type { ExtensibleAuditedEntityDto, ExtensibleEntityDto, PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
+import type { StudentAttendanceReportDto } from './models';
 
 export interface AttendanceDto extends ExtensibleAuditedEntityDto<string> {
   enrollmentId?: string;
@@ -60,4 +61,3 @@ export interface StudentAttendanceStatusDto {
   isAbsent: boolean;
   note?: string;
 }
-

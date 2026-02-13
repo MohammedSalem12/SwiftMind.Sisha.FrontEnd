@@ -61,6 +61,11 @@ export class EnrollmentApprovalComponent implements OnInit {
     }
   }
 
+  onGroupSelect(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.selectedGroupId.set(target.value || undefined);
+  }
+
   async approve(req: EnrollmentRequestDto) {
     if (!confirm('Are you sure you want to approve this enrollment request?')) {
       return;
