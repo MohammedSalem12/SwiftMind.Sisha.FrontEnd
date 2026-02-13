@@ -17,4 +17,9 @@ export const homeRoutes: Routes = [
     loadComponent: () => import('./parent-home.component').then(m => m.ParentHomeComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'teacher',
+    loadComponent: () => import('./teacher-home.component').then(m => m.TeacherHomeComponent),
+    canActivate: [authGuard]
+  },
 ];

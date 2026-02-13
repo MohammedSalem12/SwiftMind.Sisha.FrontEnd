@@ -81,10 +81,16 @@ export class HomeComponent implements OnInit {
         ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'parent')
         : false;
 
+      const isTeacher = Array.isArray(roles)
+        ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'teacher')
+        : false;
+
       if (isStudent) {
         this.router.navigate(['/student']);
       } else if (isParent) {
         this.router.navigate(['/parent']);
+      } else if (isTeacher) {
+        this.router.navigate(['/teacher']);
       }
     } catch (error) {
       console.error('Error checking user role:', error);

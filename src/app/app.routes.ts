@@ -19,6 +19,11 @@ export const appRoutes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'teacher',
+    loadComponent: () => import('./home/teacher-home.component').then(m => m.TeacherHomeComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'account',
     loadChildren: () => import('@abp/ng.account').then(m => m.createRoutes()),
   },
