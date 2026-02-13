@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ListService, PagedResultDto } from '@abp/ng.core';
+import { ListService, PagedResultDto, ConfigStateService, AuthService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
 import type { CourseDto } from '@proxy/courses/dtos';
 import { CourseService } from '@proxy/courses';
+import { StudentService } from '@proxy/students';
 
 @Component({
   selector: 'app-courses',
@@ -19,6 +20,9 @@ import { CourseService } from '@proxy/courses';
 export class CoursesComponent implements OnInit {
   private readonly list = inject(ListService);
   private readonly svc = inject(CourseService);
+  private readonly studentService = inject(StudentService);
+  private readonly authService = inject(AuthService);
+  private readonly configStateService = inject(ConfigStateService);
   readonly router = inject(Router);
 
   courses = signal<CourseDto[]>([]);
@@ -28,9 +32,38 @@ export class CoursesComponent implements OnInit {
   selected = signal<CourseDto | null>(null);
   page = signal(1);
   pageSize = signal(10);
+  currentStudentGrade = signal<number | null>(null);
+  isStudent = signal(false);
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.checkIfStudent();
     this.hookList();
+  }
+
+  private async checkIfStudent(): Promise<void> {
+    if (!this.authService.isAuthenticated) {
+      return;
+    }
+
+    try {
+      const currentUser = this.configStateService.getOne('currentUser') as any;
+      const roles = currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [];
+      
+      const isStudentRole = Array.isArray(roles)
+        ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'student')
+        : false;
+
+      if (isStudentRole) {
+        this.isStudent.set(true);
+        // Fetch student's current grade
+        const student = await lastValueFrom(this.studentService.getCurrentStudent());
+        if (student) {
+          this.currentStudentGrade.set(student.currentGrade);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking student status:', error);
+    }
   }
 
   hookList(): void {
@@ -46,11 +79,27 @@ export class CoursesComponent implements OnInit {
     }).subscribe({
       next: (res: PagedResultDto<CourseDto>) => {
         this.totalCount.set(res.totalCount ?? 0);
-        const items = (res.items ?? []).filter(c => {
+        let items = (res.items ?? []).filter(c => {
           const f = this.filter()?.trim().toLowerCase();
           if (!f) return true;
           return (c.nameAr ?? '').toLowerCase().includes(f) || (c.nameEn ?? '').toLowerCase().includes(f);
         });
+
+        // Filter by student's current grade if user is a student
+        // Note: Comparing student's currentGrade (number) with course's gradeName by parsing
+        if (this.isStudent() && this.currentStudentGrade() !== null) {
+          const studentGrade = this.currentStudentGrade()!;
+          items = items.filter(c => {
+            // Try to extract grade number from gradeName (e.g., "Grade 1" -> 1, "1" -> 1)
+            const gradeMatch = c.gradeName?.match(/\d+/);
+            if (gradeMatch) {
+              const courseGradeNumber = parseInt(gradeMatch[0], 10);
+              return courseGradeNumber === studentGrade;
+            }
+            return false;
+          });
+        }
+
         this.courses.set(items);
         this.loading.set(false);
       },

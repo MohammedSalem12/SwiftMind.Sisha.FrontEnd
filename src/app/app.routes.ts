@@ -1,11 +1,22 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './shared/guards/auth.guard';
+import { roleGuard } from './shared/guards/role.guard';
 
 export const appRoutes: Routes = [
   {
     path: '',
     pathMatch: 'full',
     loadChildren: () => import('./home/home.routes').then(m => m.homeRoutes),
+  },
+  {
+    path: 'student',
+    loadComponent: () => import('./home/student-home.component').then(m => m.StudentHomeComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'parent',
+    loadComponent: () => import('./home/parent-home.component').then(m => m.ParentHomeComponent),
+    canActivate: [authGuard]
   },
   {
     path: 'account',
@@ -39,27 +50,32 @@ export const appRoutes: Routes = [
   {
     path: 'students-grades',
     loadChildren: () => import('./students-grades/students-grades.routes').then(m => m.studentsGradesRoutes),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
   {
     path: 'students',
     loadChildren: () => import('./students/students.routes').then(m => m.studentsRoutes),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
   {
     path: 'enroll',
     loadChildren: () => import('./enroll-in-course/enroll-in-course.routes').then(m => m.enrollInCourseRoutes),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
   {
     path: 'add-student',
     loadChildren: () => import('./add-student/add-student.routes').then(m => m.addStudentRoutes),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN', 'SECRETARY'] }
   },
   {
     path: 'add-teacher',
     loadChildren: () => import('./add-teacher/add-teacher.routes').then(m => m.addTeacherRoutes),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
   },
   {
     path: 'teachers',
@@ -69,7 +85,8 @@ export const appRoutes: Routes = [
   {
     path: 'teacher-groups',
     loadChildren: () => import('./teacher-groups/teacher-groups.routes'),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
   {
     path: 'add-course',
@@ -89,12 +106,14 @@ export const appRoutes: Routes = [
   {
     path: 'exam-grade',
     loadChildren: () => import('./exam-grade/exam-grade.routes').then(m => m.examGradeRoutes),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
   {
     path: 'attendance',
     loadChildren: () => import('./attendance/attendance.routes').then(m => m.attendanceRoutes),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
   {
     path: 'parents',

@@ -35,6 +35,14 @@ export class StudentService {
     { apiName: this.apiName,...config });
   
 
+  getCurrentStudent = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentDto>({
+      method: 'GET',
+      url: '/api/app/student/current-student',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<StudentDto>>({
       method: 'GET',

@@ -98,6 +98,7 @@ function configureRoutes(routesService: RoutesService, authService: AuthService,
         iconClass: 'fas fa-home',
         order: 1,
         layout: eLayoutType.application,
+        visible: () => isAuthenticated(),
       },
       // All other menu items only visible when authenticated
       {

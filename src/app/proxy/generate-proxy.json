@@ -5435,6 +5435,43 @@
             }
           ],
           "actions": {
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/parent",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Parents.CreateParentDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Parents.CreateParentDto",
+                  "typeSimple": "SwiftMind.Sesha.Parents.CreateParentDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Parents.CreateParentDto",
+                  "typeSimple": "SwiftMind.Sesha.Parents.CreateParentDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Parents.ParentDto",
+                "typeSimple": "SwiftMind.Sesha.Parents.ParentDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<SwiftMind.Sesha.Parents.ParentDto,SwiftMind.Sesha.Parents.CreateParentDto>"
+            },
             "GetByUserIdAsyncByUserId": {
               "uniqueName": "GetByUserIdAsyncByUserId",
               "name": "GetByUserIdAsync",
@@ -6137,43 +6174,6 @@
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Parents.IParentAppService"
             },
-            "CreateAsyncByInput": {
-              "uniqueName": "CreateAsyncByInput",
-              "name": "CreateAsync",
-              "httpMethod": "POST",
-              "url": "api/app/parent",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "SwiftMind.Sesha.Parents.CreateParentDto, SwiftMind.Sesha.Application.Contracts",
-                  "type": "SwiftMind.Sesha.Parents.CreateParentDto",
-                  "typeSimple": "SwiftMind.Sesha.Parents.CreateParentDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "SwiftMind.Sesha.Parents.CreateParentDto",
-                  "typeSimple": "SwiftMind.Sesha.Parents.CreateParentDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "SwiftMind.Sesha.Parents.ParentDto",
-                "typeSimple": "SwiftMind.Sesha.Parents.ParentDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<SwiftMind.Sesha.Parents.ParentDto,SwiftMind.Sesha.Parents.CreateParentDto>"
-            },
             "UpdateAsyncByIdAndInput": {
               "uniqueName": "UpdateAsyncByIdAndInput",
               "name": "UpdateAsync",
@@ -6611,6 +6611,67 @@
               "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto,SwiftMind.Sesha.StudentEnrollments.Dtos.CreateUpdateEnrollmentDto>"
             },
+            "GetListAsyncByInput": {
+              "uniqueName": "GetListAsyncByInput",
+              "name": "GetListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/student-enrollment",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
+                  "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "Sorting",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto>"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto,SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
+            },
             "UpdateAsyncByIdAndInput": {
               "uniqueName": "UpdateAsyncByIdAndInput",
               "name": "UpdateAsync",
@@ -6741,67 +6802,6 @@
               },
               "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto,SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
-            },
-            "GetListAsyncByInput": {
-              "uniqueName": "GetListAsyncByInput",
-              "name": "GetListAsync",
-              "httpMethod": "GET",
-              "url": "api/app/student-enrollment",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
-                  "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
-                  "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "Sorting",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SkipCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "MaxResultCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.PagedResultDto<SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto>"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto,SwiftMind.Sesha.StudentEnrollments.Dtos.EnrollmentDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
             }
           }
         },
@@ -6814,6 +6814,21 @@
           "type": "SwiftMind.Sesha.Students.StudentAppService",
           "interfaces": [],
           "actions": {
+            "GetCurrentStudentAsync": {
+              "uniqueName": "GetCurrentStudentAsync",
+              "name": "GetCurrentStudentAsync",
+              "httpMethod": "GET",
+              "url": "api/app/student/current-student",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.StudentAppService"
+            },
             "CreateAsyncByInput": {
               "uniqueName": "CreateAsyncByInput",
               "name": "CreateAsync",
@@ -7254,6 +7269,43 @@
             }
           ],
           "actions": {
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/teacher",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto",
+                  "typeSimple": "SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto",
+                  "typeSimple": "SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Teachers.TeacherDto",
+                "typeSimple": "SwiftMind.Sesha.Teachers.TeacherDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<SwiftMind.Sesha.Teachers.TeacherDto,SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto>"
+            },
             "EnrollTeacherInCoursesAsyncByTeacherIdAndCourseIds": {
               "uniqueName": "EnrollTeacherInCoursesAsyncByTeacherIdAndCourseIds",
               "name": "EnrollTeacherInCoursesAsync",
@@ -7481,43 +7533,6 @@
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
-            },
-            "CreateAsyncByInput": {
-              "uniqueName": "CreateAsyncByInput",
-              "name": "CreateAsync",
-              "httpMethod": "POST",
-              "url": "api/app/teacher",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto, SwiftMind.Sesha.Application.Contracts",
-                  "type": "SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto",
-                  "typeSimple": "SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto",
-                  "typeSimple": "SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "SwiftMind.Sesha.Teachers.TeacherDto",
-                "typeSimple": "SwiftMind.Sesha.Teachers.TeacherDto"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<SwiftMind.Sesha.Teachers.TeacherDto,SwiftMind.Sesha.Teachers.CreateUpdateTeacherDto>"
             },
             "UpdateAsyncByIdAndInput": {
               "uniqueName": "UpdateAsyncByIdAndInput",

@@ -1,0 +1,311 @@
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { AuthService, ConfigStateService } from '@abp/ng.core';
+import { lastValueFrom } from 'rxjs';
+
+import { ParentService } from '@proxy/parents';
+import type { ParentDto, ParentStudentDto } from '@proxy/parents/models';
+
+@Component({
+  selector: 'app-parent-home',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <div class="parent-home">
+      <div class="container py-4">
+        <!-- Welcome Header -->
+        <div class="welcome-section mb-4">
+          <h1 class="mb-2">مرحباً بك</h1>
+          <p class="text-muted">لوحة التحكم لولي الأمر</p>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading()" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">جاري التحميل...</span>
+          </div>
+        </div>
+
+        <!-- Children Grid -->
+        <div *ngIf="!loading()">
+          <div class="section-header mb-3">
+            <h2 class="h4">أبنائي</h2>
+          </div>
+
+          <div *ngIf="children().length === 0" class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            لا توجد بيانات للأبناء حالياً
+          </div>
+
+          <div class="row g-4">
+            <div class="col-md-6 col-lg-4" *ngFor="let child of children(); trackBy: trackById">
+              <div class="child-card">
+                <div class="child-card-header">
+                  <div class="student-avatar">
+                    <i class="fas fa-user-graduate"></i>
+                  </div>
+                </div>
+                <div class="child-card-body">
+                  <h3 class="student-name">{{ child.studentName }}</h3>
+                  <div class="student-info">
+                    <div class="info-item">
+                      <i class="fas fa-id-card"></i>
+                      <span>{{ child.studentCode }}</span>
+                    </div>
+                    <div class="info-item">
+                      <i class="fas fa-heart"></i>
+                      <span>{{ child.relationshipType }}</span>
+                    </div>
+                    <div class="info-item" *ngIf="child.isEmergencyContact">
+                      <i class="fas fa-phone-alt"></i>
+                      <span>جهة اتصال طوارئ</span>
+                    </div>
+                  </div>
+                  <button class="btn btn-primary btn-sm w-100 mt-3" (click)="viewChildDetails(child)">
+                    <i class="fas fa-eye me-1"></i>
+                    عرض التفاصيل
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions mt-5">
+          <h3 class="mb-3">روابط سريعة</h3>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <button class="action-btn w-100" (click)="goToFeeds()">
+                <i class="fas fa-rss"></i>
+                <span>النشرات</span>
+              </button>
+            </div>
+            <div class="col-md-4">
+              <button class="action-btn w-100" (click)="goToParents()">
+                <i class="fas fa-users"></i>
+                <span>أولياء الأمور</span>
+              </button>
+            </div>
+            <div class="col-md-4">
+              <button class="action-btn w-100" (click)="goToProfile()">
+                <i class="fas fa-user"></i>
+                <span>حسابي</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .parent-home {
+      min-height: calc(100vh - 200px);
+      background: #f8f9fa;
+    }
+
+    .welcome-section {
+      padding: 2rem;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .welcome-section h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .section-header h2 {
+      font-weight: 600;
+      color: #1a202c;
+    }
+
+    .child-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      height: 100%;
+    }
+
+    .child-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .child-card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .student-avatar {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .student-avatar i {
+      font-size: 2rem;
+      color: white;
+    }
+
+    .child-card-body {
+      padding: 1.5rem;
+    }
+
+    .student-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .student-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .info-item i {
+      color: #667eea;
+      width: 20px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #5568d3 0%, #6a4190 100%);
+    }
+
+    .quick-actions h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1a202c;
+    }
+
+    .action-btn {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+      border-color: #f093fb;
+      background: #fef3ff;
+      transform: translateY(-2px);
+    }
+
+    .action-btn i {
+      font-size: 2rem;
+      color: #f093fb;
+    }
+
+    .action-btn span {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #1a202c;
+    }
+
+    @media (max-width: 768px) {
+      .welcome-section h1 {
+        font-size: 1.5rem;
+      }
+      
+      .child-card-body {
+        padding: 1rem;
+      }
+    }
+  `],
+})
+export class ParentHomeComponent implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly configStateService = inject(ConfigStateService);
+  private readonly router = inject(Router);
+  private readonly parentService = inject(ParentService);
+
+  children = signal<ParentStudentDto[]>([]);
+  loading = signal(false);
+  currentParent = signal<ParentDto | null>(null);
+
+  async ngOnInit(): Promise<void> {
+    await this.loadParentChildren();
+  }
+
+  private async loadParentChildren(): Promise<void> {
+    this.loading.set(true);
+    try {
+      // Get current parent info using the user ID
+      const currentUserId = this.configStateService.getOne('currentUser')?.id;
+      if (!currentUserId) {
+        console.error('No user ID found');
+        return;
+      }
+
+      // Get parent by user ID
+      const parent = await lastValueFrom(this.parentService.getByUserId(currentUserId));
+      if (parent) {
+        this.currentParent.set(parent);
+
+        // Get parent's students
+        const students = await lastValueFrom(this.parentService.getLinkedStudentsByParentId(parent.id!));
+        this.children.set(students as ParentStudentDto[]);
+      }
+    } catch (error) {
+      console.error('Error loading parent children:', error);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  viewChildDetails(child: ParentStudentDto): void {
+    // Navigate to student details or courses page
+    this.router.navigate(['/courses']);
+  }
+
+  goToFeeds(): void {
+    this.router.navigate(['/feeds']);
+  }
+
+  goToParents(): void {
+    this.router.navigate(['/parents']);
+  }
+
+  goToProfile(): void {
+    this.router.navigate(['/account/manage']);
+  }
+
+  trackById = (_: number, item: ParentStudentDto) => item.studentId;
+}

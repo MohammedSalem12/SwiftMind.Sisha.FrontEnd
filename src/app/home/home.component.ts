@@ -1,4 +1,4 @@
-import {AuthService} from '@abp/ng.core';
+import {AuthService, ConfigStateService} from '@abp/ng.core';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import {CommonModule} from "@angular/common";
 import { Router, RouterModule } from '@angular/router';
@@ -17,6 +17,7 @@ import { lastValueFrom } from 'rxjs';
 })
 export class HomeComponent implements OnInit {
   private authService = inject(AuthService);
+  private configStateService = inject(ConfigStateService);
   private router = inject(Router);
   private userProfileService = inject(UserProfileService);
   private studentSvc = inject(StudentService);
@@ -60,7 +61,34 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Check if user is a student and redirect to student home
+    if (this.authService.isAuthenticated) {
+      this.checkUserRoleAndRedirect();
+    }
     void this.loadCounts();
+  }
+
+  private checkUserRoleAndRedirect(): void {
+    try {
+      const currentUser = this.configStateService.getOne('currentUser') as any;
+      const roles = currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [];
+      
+      const isStudent = Array.isArray(roles)
+        ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'student')
+        : false;
+
+      const isParent = Array.isArray(roles)
+        ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'parent')
+        : false;
+
+      if (isStudent) {
+        this.router.navigate(['/student']);
+      } else if (isParent) {
+        this.router.navigate(['/parent']);
+      }
+    } catch (error) {
+      console.error('Error checking user role:', error);
+    }
   }
 
   async loadCounts() {
