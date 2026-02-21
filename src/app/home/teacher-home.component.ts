@@ -1,11 +1,11 @@
+import { AuthService, ConfigStateService } from '@abp/ng.core';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { AuthService, ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
-import { GroupService } from '@proxy/groups';
-import type { GroupDto } from '@proxy/groups/models';
+import { CourseService } from '@proxy/courses';
+import type { CourseDto } from '@proxy/courses/dtos/models';
 
 @Component({
   selector: 'app-teacher-home',
@@ -34,13 +34,13 @@ import type { GroupDto } from '@proxy/groups/models';
             <p class="text-muted">المجموعات والدورات المسندة إليك</p>
           </div>
 
-          <div *ngIf="groups().length === 0" class="alert alert-info">
+          <div *ngIf="courses().length === 0" class="alert alert-info">
             <i class="fas fa-info-circle me-2"></i>
             لا توجد مجموعات مسندة إليك حالياً
           </div>
 
           <div class="row g-4">
-            <div class="col-md-6 col-lg-4" *ngFor="let group of groups(); trackBy: trackById">
+            <div class="col-md-6 col-lg-4" *ngFor="let course of courses(); trackBy: trackById">
               <div class="course-card">
                 <div class="course-card-header">
                   <div class="course-icon">
@@ -48,25 +48,25 @@ import type { GroupDto } from '@proxy/groups/models';
                   </div>
                 </div>
                 <div class="course-card-body">
-                  <h3 class="course-title">{{ group.courseName }}</h3>
+                  <h3 class="course-title">{{ course.nameAr }} / {{ course.nameEn }}</h3>
                   <div class="group-info">
                     <div class="info-item">
-                      <i class="fas fa-users"></i>
-                      <span>{{ group.name }}</span>
+                      <i class="fas fa-code"></i>
+                      <span>{{ course.code }}</span>
                     </div>
                     <div class="info-item">
-                      <i class="fas fa-code"></i>
-                      <span>{{ group.groupCode }}</span>
+                      <i class="fas fa-graduation-cap"></i>
+                      <span>{{ course.gradeName }}</span>
                     </div>
                   </div>
                   <div class="action-buttons mt-3">
-                    <button class="btn btn-primary btn-sm" (click)="viewGroupDetails(group)">
+                    <button class="btn btn-primary btn-sm" (click)="viewCourseDetails(course)">
                       <i class="fas fa-eye me-1"></i>
-                      عرض المجموعة
+                      عرض التفاصيل
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm" (click)="takeAttendance(group)">
-                      <i class="fas fa-clipboard-check me-1"></i>
-                      الحضور
+                    <button class="btn btn-outline-secondary btn-sm" (click)="goToGroups()">
+                      <i class="fas fa-users me-1"></i>
+                      المجموعات
                     </button>
                   </div>
                 </div>
@@ -79,6 +79,12 @@ import type { GroupDto } from '@proxy/groups/models';
         <div class="quick-actions mt-5">
           <h3 class="mb-3">روابط سريعة</h3>
           <div class="row g-3">
+            <div class="col-md-3">
+              <button class="action-btn w-100" (click)="goToEnrollmentRequests()">
+                <i class="fas fa-inbox"></i>
+                <span>طلبات التسجيل</span>
+              </button>
+            </div>
             <div class="col-md-3">
               <button class="action-btn w-100" (click)="goToGroups()">
                 <i class="fas fa-users"></i>
@@ -95,6 +101,14 @@ import type { GroupDto } from '@proxy/groups/models';
               <button class="action-btn w-100" (click)="goToFeeds()">
                 <i class="fas fa-rss"></i>
                 <span>النشرات</span>
+              </button>
+            </div>
+          </div>
+          <div class="row g-3 mt-2">
+            <div class="col-md-3">
+              <button class="action-btn w-100" (click)="goToSelfEnroll()">
+                <i class="fas fa-plus-circle"></i>
+                <span>التسجيل في مقررات</span>
               </button>
             </div>
             <div class="col-md-3">
@@ -290,40 +304,41 @@ export class TeacherHomeComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly configStateService = inject(ConfigStateService);
   private readonly router = inject(Router);
-  private readonly groupService = inject(GroupService);
+  private readonly courseService = inject(CourseService);
 
-  groups = signal<GroupDto[]>([]);
+  courses = signal<CourseDto[]>([]);
   loading = signal(false);
 
   async ngOnInit(): Promise<void> {
-    await this.loadTeacherGroups();
+    await this.loadTeacherCourses();
   }
 
-  private async loadTeacherGroups(): Promise<void> {
+  private async loadTeacherCourses(): Promise<void> {
     this.loading.set(true);
     try {
-      // Get teacher's groups - the backend will filter by current teacher
-      const response = await lastValueFrom(
-        this.groupService.getList({ skipCount: 0, maxResultCount: 100 } as any)
+      // Get teacher's courses - the backend filters by teacher's assigned groups
+      const courses = await lastValueFrom(
+        this.courseService.getCoursesForTeacher()
       );
-      this.groups.set((response as any)?.items || []);
+      this.courses.set(courses || []);
     } catch (error) {
-      console.error('Error loading teacher groups:', error);
+      console.error('Error loading teacher courses:', error);
     } finally {
       this.loading.set(false);
     }
   }
 
-  viewGroupDetails(group: GroupDto): void {
-    this.router.navigate(['/teacher-groups']);
-  }
-
-  takeAttendance(group: GroupDto): void {
-    this.router.navigate(['/attendance']);
+  viewCourseDetails(course: CourseDto): void {
+    // Navigate to courses page or specific course details
+    this.router.navigate(['/courses']);
   }
 
   goToGroups(): void {
     this.router.navigate(['/teacher-groups']);
+  }
+
+  goToEnrollmentRequests(): void {
+    this.router.navigate(['/enrollment-requests']);
   }
 
   goToAttendance(): void {
@@ -334,9 +349,13 @@ export class TeacherHomeComponent implements OnInit {
     this.router.navigate(['/feeds']);
   }
 
+  goToSelfEnroll(): void {
+    this.router.navigate(['/teacher/enroll']);
+  }
+
   goToProfile(): void {
     this.router.navigate(['/account/manage']);
   }
 
-  trackById = (_: number, item: GroupDto) => item.id;
+  trackById = (_: number, item: CourseDto) => item.id;
 }

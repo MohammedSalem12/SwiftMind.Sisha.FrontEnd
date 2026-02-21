@@ -1,0 +1,163 @@
+<div class="student-edit-page">
+  <div class="page-header">
+    <div class="back-nav">
+      <button class="btn-back" routerLink="/students/{{ studentId() }}">
+        <i class="fas fa-arrow-left"></i> Back to Profile
+      </button>
+    </div>
+    <h1>Edit Student Profile</h1>
+    <p class="subtitle" *ngIf="student()">{{ getFullName() }}</p>
+  </div>
+
+  <div *ngIf="loading()" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading student information...</p>
+  </div>
+
+  <div *ngIf="!loading()" class="edit-form-container">
+    <form (ngSubmit)="onSubmit()" class="student-form card">
+      <div class="form-section">
+        <h3 class="section-title">Personal Information</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name *</label>
+            <input
+              id="firstName"
+              name="firstName"
+              type="text"
+              class="form-input"
+              placeholder="Enter first name"
+              [ngModel]="form().firstName"
+              (ngModelChange)="updateField('firstName', $event)"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="middleName">Middle Name</label>
+            <input
+              id="middleName"
+              name="middleName"
+              type="text"
+              class="form-input"
+              placeholder="Enter middle name"
+              [ngModel]="form().middleName"
+              (ngModelChange)="updateField('middleName', $event)"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Last Name *</label>
+            <input
+              id="lastName"
+              name="lastName"
+              type="text"
+              class="form-input"
+              placeholder="Enter last name"
+              [ngModel]="form().lastName"
+              (ngModelChange)="updateField('lastName', $event)"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label for="address">Address</label>
+            <input
+              id="address"
+              name="address"
+              type="text"
+              class="form-input"
+              placeholder="Enter address"
+              [ngModel]="form().address"
+              (ngModelChange)="updateField('address', $event)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="section-title">Academic Information</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="currentGrade">Current Grade *</label>
+            <select
+              id="currentGrade"
+              name="currentGrade"
+              class="form-select"
+              [ngModel]="form().currentGrade"
+              (ngModelChange)="updateField('currentGrade', +$event)"
+              required
+            >
+              <option *ngFor="let grade of gradeOptions" [value]="grade">
+                Grade {{ grade }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="schoolName">School Name</label>
+            <input
+              id="schoolName"
+              name="schoolName"
+              type="text"
+              class="form-input"
+              placeholder="Enter school name"
+              [ngModel]="form().schoolName"
+              (ngModelChange)="updateField('schoolName', $event)"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="teacherStudentCode">Student Code</label>
+            <input
+              id="teacherStudentCode"
+              name="teacherStudentCode"
+              type="text"
+              class="form-input"
+              placeholder="Enter student code"
+              [ngModel]="form().teacherStudentCode"
+              (ngModelChange)="updateField('teacherStudentCode', $event)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="error()">
+        <i class="fas fa-exclamation-circle"></i>
+        {{ error() }}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="saving()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          <span *ngIf="!saving()">
+            <i class="fas fa-save"></i> Save Changes
+          </span>
+          <span *ngIf="saving()">
+            <i class="fas fa-spinner fa-spin"></i> Saving...
+          </span>
+        </button>
+      </div>
+    </form>
+
+    <div class="info-card card">
+      <h3>About Profile Updates</h3>
+      <ul>
+        <li><strong>Personal Information:</strong> Update your name and address details</li>
+        <li><strong>Current Grade:</strong> Select your current academic grade level (1-12)</li>
+        <li><strong>Student Code:</strong> Your unique identifier in the system</li>
+        <li><strong>School Name:</strong> The name of your school</li>
+      </ul>
+      <p class="note">
+        <i class="fas fa-info-circle"></i>
+        Note: Some fields like Student Code may be managed by administrators
+      </p>
+    </div>
+  </div>
+</div>

@@ -6,6 +6,7 @@ import { lastValueFrom } from 'rxjs';
 
 import { ParentService } from '@proxy/parents';
 import type { ParentDto, ParentStudentDto } from '@proxy/parents/models';
+import { NotificationService, NotificationDto } from '@proxy/notifications';
 
 @Component({
   selector: 'app-parent-home',
@@ -53,6 +54,10 @@ import type { ParentDto, ParentStudentDto } from '@proxy/parents/models';
                       <i class="fas fa-id-card"></i>
                       <span>{{ child.studentCode }}</span>
                     </div>
+                    <div class="info-item" *ngIf="child.gradeName">
+                      <i class="fas fa-graduation-cap"></i>
+                      <span>{{ child.gradeName }}</span>
+                    </div>
                     <div class="info-item">
                       <i class="fas fa-heart"></i>
                       <span>{{ child.relationshipType }}</span>
@@ -72,23 +77,48 @@ import type { ParentDto, ParentStudentDto } from '@proxy/parents/models';
           </div>
         </div>
 
+        <!-- Recent Notifications -->
+        <div *ngIf="!loading() && recentNotifications().length > 0" class="mt-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4">آخر الأحداث</h2>
+            <button class="btn btn-link" (click)="goToNotifications()">عرض الكل →</button>
+          </div>
+          <div class="list-group">
+            <div *ngFor="let n of recentNotifications()" class="list-group-item" [class.bg-light]="!n.isRead">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="mb-1">{{ n.title }}</h6>
+                  <p class="mb-0 text-muted small">{{ n.message }}</p>
+                </div>
+                <small class="text-muted">{{ n.creationTime | date:'short' }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Quick Actions -->
         <div class="quick-actions mt-5">
           <h3 class="mb-3">روابط سريعة</h3>
           <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
+              <button class="action-btn w-100" (click)="goToEnrollmentApproval()">
+                <i class="fas fa-clipboard-check"></i>
+                <span>طلبات التسجيل</span>
+              </button>
+            </div>
+            <div class="col-md-3">
               <button class="action-btn w-100" (click)="goToFeeds()">
                 <i class="fas fa-rss"></i>
                 <span>النشرات</span>
               </button>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <button class="action-btn w-100" (click)="goToParents()">
                 <i class="fas fa-users"></i>
                 <span>أولياء الأمور</span>
               </button>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <button class="action-btn w-100" (click)="goToProfile()">
                 <i class="fas fa-user"></i>
                 <span>حسابي</span>
@@ -255,13 +285,27 @@ export class ParentHomeComponent implements OnInit {
   private readonly configStateService = inject(ConfigStateService);
   private readonly router = inject(Router);
   private readonly parentService = inject(ParentService);
+  private readonly notificationService = inject(NotificationService);
 
   children = signal<ParentStudentDto[]>([]);
+  recentNotifications = signal<NotificationDto[]>([]);
   loading = signal(false);
   currentParent = signal<ParentDto | null>(null);
 
   async ngOnInit(): Promise<void> {
-    await this.loadParentChildren();
+    await Promise.all([
+      this.loadParentChildren(),
+      this.loadRecentNotifications()
+    ]);
+  }
+
+  private async loadRecentNotifications(): Promise<void> {
+    try {
+      const notifications = await lastValueFrom(this.notificationService.getMyNotifications());
+      this.recentNotifications.set(notifications.slice(0, 5));
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
   }
 
   private async loadParentChildren(): Promise<void> {
@@ -293,6 +337,14 @@ export class ParentHomeComponent implements OnInit {
   viewChildDetails(child: ParentStudentDto): void {
     // Navigate to student details or courses page
     this.router.navigate(['/courses']);
+  }
+
+  goToNotifications(): void {
+    this.router.navigate(['/notifications']);
+  }
+
+  goToEnrollmentApproval(): void {
+    this.router.navigate(['/parent-enrollment-approval']);
   }
 
   goToFeeds(): void {

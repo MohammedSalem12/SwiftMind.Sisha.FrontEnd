@@ -1,14 +1,14 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { RestService } from '@abp/ng.core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { lastValueFrom } from 'rxjs';
-import { StudentEnrollmentService as EnrollmentService } from '@proxy/student-enrollments';
-import { CourseService } from '@proxy/courses';
-import { StudentService } from '@proxy/students';
-import { TeacherService } from '@proxy/teachers';
 import { AttendanceService } from '@proxy/attendances';
 import { CurrentUserInfoService } from '@proxy/common';
-import { RestService } from '@abp/ng.core';
+import { CourseService } from '@proxy/courses';
+import { StudentEnrollmentService as EnrollmentService } from '@proxy/student-enrollments';
+import { StudentService } from '@proxy/students';
+import { TeacherService } from '@proxy/teachers';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   standalone: true,

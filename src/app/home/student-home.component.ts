@@ -1,12 +1,13 @@
+import { AuthService, ConfigStateService, ListService } from '@abp/ng.core';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { AuthService, ConfigStateService, ListService, PagedResultDto } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
-import type { CourseDto } from '@proxy/courses/dtos';
 import { CourseService } from '@proxy/courses';
-import { StudentService } from '@proxy/students';
+import type { CourseDto } from '@proxy/courses/dtos';
+import { ParentService } from '@proxy/parents';
+import type { ParentStudentDto } from '@proxy/parents/models';
 
 @Component({
   selector: 'app-student-home',
@@ -18,7 +19,7 @@ import { StudentService } from '@proxy/students';
         <!-- Welcome Header -->
         <div class="welcome-section mb-4">
           <h1 class="mb-2">مرحباً بك في SwiftMind</h1>
-          <p class="text-muted">المقررات الدراسية للصف {{ currentGrade() }}</p>
+          <p class="text-muted">المقررات الدراسية الخاصة بك</p>
         </div>
 
         <!-- Loading State -->
@@ -49,6 +50,26 @@ import { StudentService } from '@proxy/students';
                     <span class="badge bg-secondary">{{ course.gradeName }}</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pending Parent Link Requests -->
+        <div *ngIf="pendingParentLinks().length > 0" class="mt-4">
+          <h2 class="h4 mb-3">طلبات ربط ولي أمر</h2>
+          <div class="list-group">
+            <div *ngFor="let link of pendingParentLinks()" class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ link.relationshipType }}</strong> يطلب ربط حسابه بك
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-success btn-sm" (click)="confirmParentLink(link)">
+                  <i class="fas fa-check"></i> موافقة
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="rejectParentLink(link)">
+                  <i class="fas fa-times"></i> رفض
+                </button>
               </div>
             </div>
           </div>
@@ -213,46 +234,55 @@ export class StudentHomeComponent implements OnInit {
   private readonly configStateService = inject(ConfigStateService);
   private readonly router = inject(Router);
   private readonly courseService = inject(CourseService);
-  private readonly studentService = inject(StudentService);
+  private readonly parentService = inject(ParentService);
 
   courses = signal<CourseDto[]>([]);
+  pendingParentLinks = signal<ParentStudentDto[]>([]);
   loading = signal(false);
-  currentGrade = signal<number | null>(null);
 
   async ngOnInit(): Promise<void> {
-    await this.loadStudentCourses();
+    await Promise.all([
+      this.loadStudentCourses(),
+      this.loadPendingParentLinks()
+    ]);
+  }
+
+  private async loadPendingParentLinks(): Promise<void> {
+    try {
+      const links = await lastValueFrom(this.parentService.getPendingLinksForCurrentStudent());
+      this.pendingParentLinks.set(links || []);
+    } catch (error) {
+      console.error('Error loading pending parent links:', error);
+    }
+  }
+
+  async confirmParentLink(link: ParentStudentDto): Promise<void> {
+    try {
+      await lastValueFrom(this.parentService.confirmParentStudentLink(link.parentId!, link.studentId!));
+      await this.loadPendingParentLinks();
+    } catch (error) {
+      console.error('Error confirming parent link:', error);
+    }
+  }
+
+  async rejectParentLink(link: ParentStudentDto): Promise<void> {
+    if (!confirm('هل أنت متأكد من رفض ربط ولي الأمر؟')) return;
+    try {
+      await lastValueFrom(this.parentService.rejectParentStudentLink(link.parentId!, link.studentId!));
+      await this.loadPendingParentLinks();
+    } catch (error) {
+      console.error('Error rejecting parent link:', error);
+    }
   }
 
   private async loadStudentCourses(): Promise<void> {
     this.loading.set(true);
     try {
-      // Get student info
-      const student = await lastValueFrom(this.studentService.getCurrentStudent());
-      if (student && student.currentGrade) {
-        this.currentGrade.set(student.currentGrade);
-
-        // Load all courses
-        const coursesResult = await lastValueFrom(
-          this.courseService.getList({
-            skipCount: 0,
-            maxResultCount: 100,
-          } as any)
-        );
-
-        // Filter courses by student's grade
-        const allCourses = coursesResult.items || [];
-        const studentGrade = student.currentGrade;
-        const filteredCourses = allCourses.filter(course => {
-          const gradeMatch = course.gradeName?.match(/\d+/);
-          if (gradeMatch) {
-            const courseGradeNumber = parseInt(gradeMatch[0], 10);
-            return courseGradeNumber === studentGrade;
-          }
-          return false;
-        });
-
-        this.courses.set(filteredCourses);
-      }
+      // Get courses for current student - backend filters by grade from token
+      const courses = await lastValueFrom(
+        this.courseService.getCoursesForCurrentStudent()
+      );
+      this.courses.set(courses || []);
     } catch (error) {
       console.error('Error loading student courses:', error);
     } finally {
@@ -261,8 +291,8 @@ export class StudentHomeComponent implements OnInit {
   }
 
   viewCourseDetails(course: CourseDto): void {
-    // Navigate to courses page with the specific course
-    this.router.navigate(['/courses']);
+    // Navigate to course teachers page
+    this.router.navigate(['/courses', course.id, 'teachers']);
   }
 
   goToCourses(): void {

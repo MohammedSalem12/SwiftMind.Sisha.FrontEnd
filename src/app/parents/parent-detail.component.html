@@ -108,17 +108,27 @@
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label for="student">Select Student *</label>
-        <select 
-          id="student" 
-          [(ngModel)]="enrollForm.studentId" 
-          class="form-control" 
-          required>
-          <option value="">Select a student</option>
-          <option *ngFor="let student of availableStudents()" [value]="student.id">
-            {{ student.firstName }} {{ student.lastName }} ({{ student.studentCode }})
-          </option>
-        </select>
+        <label for="studentCode">البحث بكود الطالب *</label>
+        <div class="d-flex gap-2">
+          <input
+            id="studentCode"
+            type="text"
+            class="form-control"
+            placeholder="أدخل كود الطالب..."
+            [ngModel]="studentSearchCode()"
+            (ngModelChange)="studentSearchCode.set($event)"
+            (keyup.enter)="searchStudentByCode()">
+          <button class="btn btn-primary" (click)="searchStudentByCode()" [disabled]="searching()">
+            <span *ngIf="!searching()">بحث</span>
+            <span *ngIf="searching()">جاري البحث...</span>
+          </button>
+        </div>
+        <div *ngIf="searchError()" class="text-danger mt-1">{{ searchError() }}</div>
+        <div *ngIf="searchedStudent()" class="alert alert-success mt-2 mb-0">
+          <strong>{{ searchedStudent().firstName }} {{ searchedStudent().lastName }}</strong>
+          <br>
+          <small>كود الطالب: {{ searchedStudent().studentCode }}</small>
+        </div>
       </div>
 
       <div class="form-group">
@@ -166,11 +176,11 @@
       </div>
     </div>
     <div class="modal-actions">
-      <button 
-        class="btn-primary" 
+      <button
+        class="btn-primary"
         (click)="submitEnrollChild()"
-        [disabled]="!enrollForm.studentId">
-        Enroll Child
+        [disabled]="!searchedStudent()">
+        ربط الطالب
       </button>
       <button class="btn-outline" (click)="closeEnrollModal()">Cancel</button>
     </div>

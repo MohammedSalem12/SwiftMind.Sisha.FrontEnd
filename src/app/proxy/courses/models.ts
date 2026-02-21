@@ -4,3 +4,8 @@ export interface CourseSimpleDto {
   name?: string;
   code?: string;
 }
+
+export interface TeacherSimpleDto {
+  id?: string;
+  fullName?: string;
+}

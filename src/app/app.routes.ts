@@ -24,6 +24,12 @@ export const appRoutes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'teacher/enroll',
+    loadComponent: () => import('./home/teacher-self-enroll.component').then(m => m.TeacherSelfEnrollComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER'] }
+  },
+  {
     path: 'account',
     loadChildren: () => import('@abp/ng.account').then(m => m.createRoutes()),
   },
@@ -101,6 +107,29 @@ export const appRoutes: Routes = [
   {
     path: 'courses',
     loadChildren: () => import('./courses/courses.routes').then(m => m.coursesRoutes),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'courses/:id/enroll',
+    loadComponent: () => import('./courses/course-enrollment.component').then(m => m.CourseEnrollmentComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'enrollment-requests',
+    loadComponent: () => import('./enrollment-requests/enrollment-requests.component').then(m => m.EnrollmentRequestsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
+  },
+  {
+    path: 'parent-enrollment-approval',
+    loadComponent: () => import('./parent-enrollment-approval/parent-enrollment-approval.component').then(m => m.ParentEnrollmentApprovalComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
+    path: 'notifications',
+    loadComponent: () => import('./notifications/notifications.component').then(m => m.NotificationsComponent),
     canActivate: [authGuard]
   },
   {

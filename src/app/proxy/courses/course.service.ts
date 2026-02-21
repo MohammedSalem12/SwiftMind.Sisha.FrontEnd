@@ -1,5 +1,5 @@
 import type { CourseDto, CreateUpdateCourseDto } from './dtos/models';
-import type { CourseSimpleDto } from './models';
+import type { CourseSimpleDto, TeacherSimpleDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { ListResultDto, PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -36,6 +36,31 @@ export class CourseService {
     { apiName: this.apiName,...config });
   
 
+  getCoursesByGrade = (gradeNumber: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CourseDto[]>({
+      method: 'GET',
+      url: '/api/app/course/courses-by-grade',
+      params: { gradeNumber },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getCoursesForCurrentStudent = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CourseDto[]>({
+      method: 'GET',
+      url: '/api/app/course/courses-for-current-student',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getCoursesForTeacher = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CourseDto[]>({
+      method: 'GET',
+      url: '/api/app/course/courses-for-teacher',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<CourseDto>>({
       method: 'GET',
@@ -50,6 +75,14 @@ export class CourseService {
       method: 'GET',
       url: '/api/app/course/simple-courses',
       params: { search },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getTeachersForCourse = (courseId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherSimpleDto[]>({
+      method: 'GET',
+      url: `/api/app/course/teachers-for-course/${courseId}`,
     },
     { apiName: this.apiName,...config });
   

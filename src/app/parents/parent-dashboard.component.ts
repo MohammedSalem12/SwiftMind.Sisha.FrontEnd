@@ -1,10 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
 import { AuthService, RestService } from '@abp/ng.core';
-import { UserProfileService } from '@volo/ngx-lepton-x.core';
+import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { FeedService } from '@proxy/feeds';
 import { ParentService } from '@proxy/parents';
+import { UserProfileService } from '@volo/ngx-lepton-x.core';
 import { lastValueFrom } from 'rxjs';
 
 interface StudentProgressDto {

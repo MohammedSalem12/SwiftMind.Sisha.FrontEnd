@@ -45,5 +45,32 @@
 .profile-meta h1 { letter-spacing:0.2px }
 .course-card .course-info .course-name { font-size:15px }
 
+/* Edit Profile Button */
+.btn-edit-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    background: #f9fafb;
+    border-color: #3b82f6;
+    color: #3b82f6;
+  }
+
+  i {
+    font-size: 0.875rem;
+  }
+}
+
 
 @media (max-width:920px){ .grid{ grid-template-columns:1fr } .profile-top{ flex-direction:column; align-items:flex-start } }

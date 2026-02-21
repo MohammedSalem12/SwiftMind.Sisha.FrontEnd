@@ -13,8 +13,15 @@
       </div>
 
       <div class="profile-meta">
-        <h1>{{ getFullName() }}</h1>
-        <div class="sub">Grade: {{ student()?.currentGrade ?? '-' }} · Code: {{ student()?.studentCode || '-' }}</div>
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+          <div>
+            <h1>{{ getFullName() }}</h1>
+            <div class="sub">Grade: {{ student()?.currentGrade ?? '-' }} · Code: {{ student()?.studentCode || '-' }}</div>
+          </div>
+          <a class="btn-edit-profile" [routerLink]="['/students', studentId(), 'edit']">
+            <i class="fas fa-edit"></i> Edit Profile
+          </a>
+        </div>
 
         <div class="card stats" style="margin-top:0.75rem; display:flex; gap:1rem; align-items:center">
           <div class="stat-overall">

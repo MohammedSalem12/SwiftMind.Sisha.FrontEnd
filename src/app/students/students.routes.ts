@@ -7,6 +7,10 @@ export const studentsRoutes: Routes = [
     loadComponent: () => import('./students.component').then(c => c.StudentsComponent),
   },
   {
+    path: ':id/edit',
+    loadComponent: () => import('./student-edit.component').then(c => c.StudentEditComponent),
+  },
+  {
     path: ':id',
     loadComponent: () => import('./student-detail.component').then(c => c.StudentDetailComponent),
   },

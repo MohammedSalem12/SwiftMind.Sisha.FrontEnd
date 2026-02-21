@@ -11,6 +11,7 @@ export interface EnrollmentRequestCreateDto {
   parentId?: string;
   courseId?: string;
   teacherId?: string;
+  groupId?: string;
   initiator?: EnrollmentRequestInitiator;
 }
 
@@ -20,8 +21,15 @@ export interface EnrollmentRequestDto {
   parentId?: string;
   courseId?: string;
   teacherId?: string;
+  groupId?: string;
   initiator?: EnrollmentRequestInitiator;
   status?: EnrollmentRequestStatus;
   isParentApproved: boolean;
   isTeacherApproved: boolean;
+  studentName?: string;
+  studentCode?: string;
+  courseName?: string;
+  courseCode?: string;
+  teacherName?: string;
+  groupName?: string;
 }

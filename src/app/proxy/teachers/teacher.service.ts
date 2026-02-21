@@ -80,6 +80,15 @@ export class TeacherService {
     { apiName: this.apiName,...config });
   
 
+  selfEnrollInCourses = (courseIds: string[], config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherEnrollmentResultDto>({
+      method: 'POST',
+      url: '/api/app/teacher/self-enroll-in-courses',
+      body: courseIds,
+    },
+    { apiName: this.apiName,...config });
+  
+
   update = (id: string, input: CreateUpdateTeacherDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TeacherDto>({
       method: 'PUT',

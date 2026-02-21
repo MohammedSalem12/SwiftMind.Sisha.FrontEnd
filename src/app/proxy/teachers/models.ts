@@ -1,9 +1,23 @@
-import type { ExtensibleAuditedEntityDto } from '@abp/ng.core';
+import type { CreationAuditedEntityDto, ExtensibleAuditedEntityDto } from '@abp/ng.core';
+
+export interface CreateSecretaryTeacherDto {
+  secretaryUserId?: string;
+  teacherId?: string;
+}
 
 export interface CreateUpdateTeacherDto {
   firstName: string;
   lastName: string;
   address?: string;
+  email?: string;
+  phoneNumber?: string;
+  password?: string;
+}
+
+export interface SecretaryTeacherDto extends CreationAuditedEntityDto<string> {
+  secretaryUserId?: string;
+  teacherId?: string;
+  teacherName?: string;
 }
 
 export interface TeacherAutocompleteDto {
@@ -18,6 +32,9 @@ export interface TeacherDto extends ExtensibleAuditedEntityDto<string> {
   firstName?: string;
   lastName?: string;
   address?: string;
+  email?: string;
+  phoneNumber?: string;
+  teacherCode?: string;
 }
 
 export interface TeacherEnrollmentResultDto {

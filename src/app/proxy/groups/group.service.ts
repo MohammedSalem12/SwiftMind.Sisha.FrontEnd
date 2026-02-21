@@ -29,6 +29,14 @@ export class GroupService {
     { apiName: this.apiName,...config });
   
 
+  delete = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/group/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   deleteSchedule = (scheduleId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',
@@ -42,6 +50,15 @@ export class GroupService {
       method: 'GET',
       url: '/api/app/group/groups-by-course-and-teacher',
       params: { courseId, teacherId },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getGroupsForTeacherAndCourse = (teacherId: string, courseId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, GroupWithSchedulesDto[]>({
+      method: 'GET',
+      url: '/api/app/group/groups-for-teacher-and-course',
+      params: { teacherId, courseId },
     },
     { apiName: this.apiName,...config });
   

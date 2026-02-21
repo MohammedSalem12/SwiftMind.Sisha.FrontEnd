@@ -1,7 +1,8 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { AuthService, ConfigStateService } from '@abp/ng.core';
+import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { GroupService } from '@proxy/groups';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
@@ -9,7 +10,7 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 @Component({
   selector: 'app-teacher-groups',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="teacher-groups">
       <!-- Modern Header with Gradient Background -->
@@ -26,6 +27,12 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
                 إدارة وتنظيم المجموعات المخصصة لك
               </p>
             </div>
+          </div>
+          <div class="header-actions">
+            <button class="btn-create-group" routerLink="create">
+              <i class="fas fa-plus me-2"></i>
+              إنشاء مجموعة
+            </button>
           </div>
           <div class="teacher-info-card" *ngIf="teacherName()">
             <div class="teacher-avatar">
@@ -120,19 +127,29 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
                 </div>
                 <div class="schedules-list">
                   <div *ngFor="let schedule of group.schedules" class="schedule-card">
-                    <div class="schedule-day">
-                      <i class="fas fa-calendar-day me-1"></i>
-                      {{ getDayName(schedule.dayOfWeek) }}
+                    <div class="schedule-main">
+                      <div class="schedule-day">
+                        <i class="fas fa-calendar-day me-1"></i>
+                        {{ getDayName(schedule.dayOfWeek) }}
+                      </div>
+                      <div class="schedule-details">
+                        <div class="schedule-time">
+                          <i class="far fa-clock me-1"></i>
+                          {{ formatTime(schedule.startTime) }} - {{ formatTime(schedule.endTime) }}
+                        </div>
+                        <div class="schedule-location" *ngIf="schedule.location">
+                          <i class="fas fa-map-marker-alt me-1"></i>
+                          {{ schedule.location }}
+                        </div>
+                      </div>
                     </div>
-                    <div class="schedule-details">
-                      <div class="schedule-time">
-                        <i class="far fa-clock me-1"></i>
-                        {{ formatTime(schedule.startTime) }} - {{ formatTime(schedule.endTime) }}
-                      </div>
-                      <div class="schedule-location" *ngIf="schedule.location">
-                        <i class="fas fa-map-marker-alt me-1"></i>
-                        {{ schedule.location }}
-                      </div>
+                    <div class="schedule-actions">
+                      <button class="btn-icon btn-icon-edit" [routerLink]="['edit-schedule', schedule.id]" [queryParams]="{groupId: group.groupId}" title="تعديل">
+                        <i class="fas fa-pen"></i>
+                      </button>
+                      <button class="btn-icon btn-icon-delete" (click)="deleteSchedule(schedule.id!, group)" title="حذف">
+                        <i class="fas fa-trash"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -142,20 +159,25 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
                 <i class="fas fa-calendar-times me-2"></i>
                 لم يتم تحديد جدول زمني بعد
               </div>
-            </div>
-            
-            <div class="card-footer-modern">
-              <button class="action-btn btn-view" (click)="viewGroupDetails(group)">
-                <i class="fas fa-info-circle me-1"></i>
-                <span>التفاصيل</span>
+
+              <button class="btn-add-schedule" [routerLink]="['add-schedule', group.groupId]">
+                <i class="fas fa-plus me-1"></i>
+                إضافة موعد
               </button>
-              <button class="action-btn btn-attendance" (click)="takeAttendance(group)">
+            </div>
+
+            <div class="card-footer-modern">
+              <button class="action-btn btn-view" (click)="takeAttendance(group)">
                 <i class="fas fa-clipboard-check me-1"></i>
                 <span>الحضور</span>
               </button>
-              <button class="action-btn btn-students" (click)="viewStudents(group)">
-                <i class="fas fa-user-graduate me-1"></i>
-                <span>الطلاب</span>
+              <button class="action-btn btn-edit" [routerLink]="['edit', group.groupId]">
+                <i class="fas fa-edit me-1"></i>
+                <span>تعديل</span>
+              </button>
+              <button class="action-btn btn-delete" (click)="deleteGroup(group)">
+                <i class="fas fa-trash me-1"></i>
+                <span>حذف</span>
               </button>
             </div>
           </div>
@@ -175,525 +197,77 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
     </div>
   `,
   styles: [`
-    .teacher-groups {
-      padding: 2rem;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      min-height: 100vh;
-    }
-
-    /* Header Styles */
-    .header-wrapper {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 20px;
-      padding: 2rem;
-      box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .header-wrapper::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-      animation: pulse 15s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.1); opacity: 0.3; }
-    }
-
-    .header-content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 2rem;
-    }
-
-    .header-title-section {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      color: white;
-    }
-
-    .icon-wrapper {
-      width: 70px;
-      height: 70px;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .main-title {
-      font-size: 2rem;
-      font-weight: 700;
-      margin: 0;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .subtitle {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 1rem;
-    }
-
-    .teacher-info-card {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px);
-      padding: 1.2rem 1.5rem;
-      border-radius: 15px;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      min-width: 250px;
-    }
-
-    .teacher-avatar {
-      width: 50px;
-      height: 50px;
-      background: white;
-      color: #667eea;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .teacher-details {
-      color: white;
-    }
-
-    .teacher-name {
-      font-weight: 600;
-      font-size: 1.1rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .teacher-code {
-      font-size: 0.85rem;
-      opacity: 0.9;
-    }
-
-    /* Loading State */
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 400px;
-    }
-
-    .loading-spinner {
-      text-align: center;
-    }
-
-    .loading-text {
-      color: #667eea;
-      font-size: 1.1rem;
-      font-weight: 500;
-      margin-top: 1rem;
-    }
-
-    /* Modern Alert */
-    .modern-alert {
-      border-radius: 15px;
-      border: none;
-      box-shadow: 0 5px 20px rgba(220, 53, 69, 0.2);
-      animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    /* Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 4rem 2rem;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-    }
-
-    .empty-animation {
-      position: relative;
-      margin-bottom: 2rem;
-    }
-
-    .empty-icon-wrapper {
-      position: relative;
-      display: inline-block;
-      animation: float 3s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-20px); }
-    }
-
-    .empty-icon-wrapper i {
-      color: #e0e0e0;
-      filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
-    }
-
-    .empty-icon-shadow {
-      position: absolute;
-      bottom: -30px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100px;
-      height: 20px;
-      background: radial-gradient(ellipse, rgba(0, 0, 0, 0.15), transparent);
-      border-radius: 50%;
-      animation: shadow 3s ease-in-out infinite;
-    }
-
-    @keyframes shadow {
-      0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.3; }
-      50% { transform: translateX(-50%) scale(0.8); opacity: 0.15; }
-    }
-
-    .empty-title {
-      color: #333;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    .empty-description {
-      color: #666;
-      font-size: 1.05rem;
-      line-height: 1.6;
-    }
-
-    /* Groups Grid */
-    .groups-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .group-card {
-      animation: fadeInUp 0.5s ease forwards;
-      opacity: 0;
-    }
-
-    @keyframes fadeInUp {
-      from { 
-        opacity: 0; 
-        transform: translateY(30px); 
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0); 
-      }
-    }
-
-    .modern-card {
-      border: none;
-      border-radius: 20px;
-      overflow: hidden;
-      background: white;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .modern-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
-    }
-
-    /* Card Header */
-    .card-header-modern {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 1.5rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .header-decoration {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 150px;
-      height: 150px;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-      border-radius: 50%;
-      transform: translate(30%, -30%);
-    }
-
-    .card-header-content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .group-icon {
-      width: 50px;
-      height: 50px;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      color: white;
-    }
-
-    .group-header-info {
-      flex: 1;
-      color: white;
-    }
-
-    .group-title {
-      margin: 0;
-      font-weight: 700;
-      font-size: 1.3rem;
-    }
-
-    .group-code-badge {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.25);
-      padding: 0.3rem 0.8rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      backdrop-filter: blur(10px);
-    }
-
-    /* Card Body */
-    .card-body {
-      padding: 1.5rem;
-    }
-
-    .section-label {
-      color: #667eea;
-      font-weight: 600;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.75rem;
-    }
-
-    .course-section {
-      padding: 1rem;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
-      border-radius: 12px;
-      border-left: 4px solid #667eea;
-    }
-
-    .course-name {
-      color: #333;
-      font-weight: 600;
-      font-size: 1.1rem;
-    }
-
-    .schedules-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .schedule-card {
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-      border-radius: 12px;
-      padding: 1rem;
-      border-left: 3px solid #28a745;
-      transition: all 0.2s ease;
-    }
-
-    .schedule-card:hover {
-      transform: translateX(-5px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .schedule-day {
-      font-weight: 700;
-      color: #28a745;
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .schedule-details {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-    }
-
-    .schedule-time {
-      color: #555;
-      font-family: 'Courier New', monospace;
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    .schedule-location {
-      color: #777;
-      font-size: 0.9rem;
-    }
-
-    .no-schedule-message {
-      text-align: center;
-      padding: 2rem;
-      color: #999;
-      font-style: italic;
-      background: #f8f9fa;
-      border-radius: 12px;
-      border: 2px dashed #dee2e6;
-    }
-
-    /* Card Footer */
-    .card-footer-modern {
-      padding: 1.25rem;
-      background: #f8f9fa;
-      border-top: 1px solid #e9ecef;
-      display: flex;
-      gap: 0.75rem;
-      justify-content: space-between;
-    }
-
-    .action-btn {
-      flex: 1;
-      padding: 0.75rem 1rem;
-      border: none;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-
-    .btn-view {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-
-    .btn-view:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-attendance {
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-      color: white;
-    }
-
-    .btn-attendance:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-    }
-
-    .btn-students {
-      background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-      color: white;
-    }
-
-    .btn-students:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
-    }
-
-    /* Refresh Section */
-    .refresh-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-      margin-top: 2rem;
-    }
-
-    .btn-refresh {
-      border-radius: 10px;
-      padding: 0.75rem 1.5rem;
-      font-weight: 600;
-      transition: all 0.2s ease;
-    }
-
-    .btn-refresh:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-    }
-
-    .groups-count {
-      color: #667eea;
-      font-size: 1.1rem;
-      font-weight: 500;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 992px) {
-      .groups-grid {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
-      }
-    }
-
+    .teacher-groups { padding: 2rem; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+    .header-wrapper { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; padding: 2rem; box-shadow: 0 10px 40px rgba(102,126,234,0.3); position: relative; overflow: hidden; }
+    .header-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .header-title-section { display: flex; align-items: center; gap: 1rem; color: white; }
+    .icon-wrapper { width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+    .main-title { font-size: 1.75rem; font-weight: 700; margin: 0; }
+    .subtitle { color: rgba(255,255,255,0.9); font-size: 0.9rem; }
+    .teacher-info-card { background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 12px; display: flex; align-items: center; gap: 0.75rem; border: 1px solid rgba(255,255,255,0.2); }
+    .teacher-avatar { width: 44px; height: 44px; background: white; color: #667eea; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .teacher-details { color: white; }
+    .teacher-name { font-weight: 600; font-size: 1rem; }
+    .teacher-code { font-size: 0.8rem; opacity: 0.9; }
+    .header-actions { display: flex; align-items: center; }
+    .btn-create-group { background: white; color: #667eea; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; }
+    .loading-container { display: flex; justify-content: center; align-items: center; min-height: 300px; }
+    .loading-spinner { text-align: center; }
+    .loading-text { color: #667eea; font-weight: 500; margin-top: 1rem; }
+    .modern-alert { border-radius: 12px; border: none; box-shadow: 0 4px 15px rgba(220,53,69,0.2); }
+    .empty-state { text-align: center; padding: 3rem 2rem; background: white; border-radius: 16px; }
+    .empty-animation { margin-bottom: 1.5rem; }
+    .empty-icon-wrapper { display: inline-block; }
+    .empty-icon-wrapper i { color: #e0e0e0; }
+    .empty-icon-shadow { display: none; }
+    .empty-title { color: #333; font-weight: 600; }
+    .empty-description { color: #666; line-height: 1.6; }
+    .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .group-card { opacity: 1; }
+    .modern-card { border: none; border-radius: 16px; overflow: hidden; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; }
+    .modern-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(102,126,234,0.15); }
+    .card-header-modern { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.25rem; position: relative; }
+    .header-decoration { display: none; }
+    .card-header-content { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.75rem; }
+    .group-icon { width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white; }
+    .group-header-info { flex: 1; color: white; }
+    .group-title { margin: 0; font-weight: 700; font-size: 1.2rem; }
+    .group-code-badge { display: inline-block; background: rgba(255,255,255,0.25); padding: 0.2rem 0.6rem; border-radius: 16px; font-size: 0.8rem; font-weight: 600; }
+    .card-body { padding: 1.25rem; }
+    .section-label { color: #667eea; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+    .course-section { padding: 0.75rem; background: #f5f7fa; border-radius: 10px; border-left: 4px solid #667eea; }
+    .course-name { color: #333; font-weight: 600; }
+    .schedules-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .schedule-card { background: #f8f9fa; border-radius: 10px; padding: 0.75rem; border-left: 3px solid #28a745; display: flex; justify-content: space-between; align-items: center; }
+    .schedule-main { flex: 1; }
+    .schedule-day { font-weight: 700; color: #28a745; margin-bottom: 0.25rem; }
+    .schedule-details { display: flex; flex-direction: column; gap: 0.2rem; }
+    .schedule-time { color: #555; font-family: monospace; font-weight: 600; font-size: 0.9rem; }
+    .schedule-location { color: #777; font-size: 0.85rem; }
+    .schedule-actions { display: flex; gap: 0.25rem; }
+    .btn-icon { width: 30px; height: 30px; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    .btn-icon-edit { background: #fff3cd; color: #856404; }
+    .btn-icon-edit:hover { background: #ffc107; color: white; }
+    .btn-icon-delete { background: #f8d7da; color: #721c24; }
+    .btn-icon-delete:hover { background: #dc3545; color: white; }
+    .no-schedule-message { text-align: center; padding: 1.5rem; color: #999; font-style: italic; background: #f8f9fa; border-radius: 10px; border: 2px dashed #dee2e6; }
+    .btn-add-schedule { width: 100%; padding: 0.5rem; background: #f0fff4; border: 2px dashed #28a745; border-radius: 8px; color: #28a745; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+    .btn-add-schedule:hover { background: #d4edda; }
+    .card-footer-modern { padding: 1rem; background: #f8f9fa; border-top: 1px solid #e9ecef; display: flex; gap: 0.5rem; }
+    .action-btn { flex: 1; padding: 0.6rem; border: none; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.3rem; }
+    .btn-view { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+    .btn-edit { background: linear-gradient(135deg, #ffc107, #e0a800); color: #333; }
+    .btn-delete { background: linear-gradient(135deg, #dc3545, #c82333); color: white; }
+    .refresh-section { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: white; border-radius: 12px; margin-top: 1.5rem; }
+    .btn-refresh { border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 600; }
+    .groups-count { color: #667eea; font-weight: 500; }
     @media (max-width: 768px) {
-      .teacher-groups {
-        padding: 1rem;
-      }
-
-      .header-content {
-        flex-direction: column;
-        gap: 1.5rem;
-      }
-
-      .header-title-section {
-        flex-direction: column;
-        text-align: center;
-      }
-
-      .teacher-info-card {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .groups-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .card-footer-modern {
-        flex-direction: column;
-      }
-
-      .action-btn {
-        width: 100%;
-      }
-
-      .refresh-section {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-      }
-
-      .main-title {
-        font-size: 1.5rem;
-      }
+      .teacher-groups { padding: 1rem; }
+      .header-content { flex-direction: column; }
+      .groups-grid { grid-template-columns: 1fr; }
+      .card-footer-modern { flex-direction: column; }
+      .refresh-section { flex-direction: column; gap: 0.75rem; }
+      .main-title { font-size: 1.3rem; }
     }
   `],
 })
@@ -834,9 +408,37 @@ export class TeacherGroupsComponent implements OnInit {
     }
   }
 
-  viewGroupDetails(group: GroupWithSchedulesDto) {
-    // Navigate to group details page
-    this.router.navigate(['/groups', group.groupId]);
+  async deleteGroup(group: GroupWithSchedulesDto) {
+    if (!confirm(`هل تريد حذف المجموعة "${group.name}"؟ سيتم حذف جميع المواعيد المرتبطة.`)) {
+      return;
+    }
+    try {
+      await lastValueFrom(this.groupService.delete(group.groupId!));
+      await this.loadTeacherGroups();
+    } catch (err) {
+      console.error('Error deleting group:', err);
+      this.error.set('حدث خطأ أثناء حذف المجموعة');
+    }
+  }
+
+  async deleteSchedule(scheduleId: string, group: GroupWithSchedulesDto) {
+    if (!confirm('هل تريد حذف هذا الموعد؟')) {
+      return;
+    }
+    try {
+      await lastValueFrom(this.groupService.deleteSchedule(scheduleId));
+      // Remove from local state
+      this.groups.update(groups =>
+        groups.map(g =>
+          g.groupId === group.groupId
+            ? { ...g, schedules: g.schedules.filter(s => s.id !== scheduleId) }
+            : g
+        )
+      );
+    } catch (err) {
+      console.error('Error deleting schedule:', err);
+      this.error.set('حدث خطأ أثناء حذف الموعد');
+    }
   }
 
   takeAttendance(group: GroupWithSchedulesDto) {

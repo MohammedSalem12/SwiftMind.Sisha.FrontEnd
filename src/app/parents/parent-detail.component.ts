@@ -27,6 +27,10 @@ export class ParentDetailComponent implements OnInit {
   // For enroll child modal
   showEnrollModal = signal(false);
   availableStudents = signal<any[]>([]);
+  studentSearchCode = signal('');
+  searchedStudent = signal<any>(null);
+  searchError = signal('');
+  searching = signal(false);
   enrollForm = {
     studentId: '',
     relationshipType: 'Parent',
@@ -72,23 +76,56 @@ export class ParentDetailComponent implements OnInit {
     }
   }
 
-  async openEnrollModal() {
+  openEnrollModal() {
+    this.studentSearchCode.set('');
+    this.searchedStudent.set(null);
+    this.searchError.set('');
+    this.showEnrollModal.set(true);
+  }
+
+  async searchStudentByCode() {
+    const code = this.studentSearchCode().trim();
+    if (!code) {
+      this.searchError.set('الرجاء إدخال كود الطالب');
+      return;
+    }
+
+    this.searching.set(true);
+    this.searchError.set('');
+    this.searchedStudent.set(null);
+
     try {
-      // Load available students (not already linked to this parent)
-      const allStudents = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 100 }));
+      const result = await lastValueFrom(this.studentSvc.getList({ skipCount: 0, maxResultCount: 1, filter: code } as any));
+      const students = result.items || [];
+      const match = students.find((s: any) => s.studentCode === code);
+
+      if (!match) {
+        this.searchError.set('لم يتم العثور على طالب بهذا الكود');
+        return;
+      }
+
+      // Check if already linked
       const linkedStudentIds = this.children().map(c => c.studentId);
-      const available = (allStudents.items || []).filter((s: any) => !linkedStudentIds.includes(s.id));
-      
-      this.availableStudents.set(available);
-      this.showEnrollModal.set(true);
+      if (linkedStudentIds.includes(match.id)) {
+        this.searchError.set('هذا الطالب مرتبط بالفعل بولي الأمر');
+        return;
+      }
+
+      this.searchedStudent.set(match);
+      this.enrollForm.studentId = match.id;
     } catch (e) {
-      console.error('Failed to load available students', e);
-      alert('Failed to load available students');
+      console.error('Failed to search student', e);
+      this.searchError.set('حدث خطأ أثناء البحث');
+    } finally {
+      this.searching.set(false);
     }
   }
 
   closeEnrollModal() {
     this.showEnrollModal.set(false);
+    this.searchedStudent.set(null);
+    this.searchError.set('');
+    this.studentSearchCode.set('');
     this.enrollForm = {
       studentId: '',
       relationshipType: 'Parent',

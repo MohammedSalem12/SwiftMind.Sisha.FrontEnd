@@ -17,7 +17,22 @@
           <input name="lastName" [ngModel]="model().lastName" (ngModelChange)="setField('lastName', $event)" required />
         </div>
 
-        <div class="field full">
+        <div class="field">
+          <label>Email <span class="required">*</span></label>
+          <input name="email" type="email" [ngModel]="model().email" (ngModelChange)="setField('email', $event)" required placeholder="teacher@example.com" />
+        </div>
+
+        <div class="field">
+          <label>Phone number</label>
+          <input name="phoneNumber" [ngModel]="model().phoneNumber" (ngModelChange)="setField('phoneNumber', $event)" placeholder="+966..." />
+        </div>
+
+        <div class="field">
+          <label>Password <span class="required">*</span></label>
+          <input name="password" type="password" [ngModel]="model().password" (ngModelChange)="setField('password', $event)" required placeholder="Min 6 characters" />
+        </div>
+
+        <div class="field">
           <label>Address</label>
           <input name="address" [ngModel]="model().address" (ngModelChange)="setField('address', $event)" />
         </div>

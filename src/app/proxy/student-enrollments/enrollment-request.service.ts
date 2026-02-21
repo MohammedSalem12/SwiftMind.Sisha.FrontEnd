@@ -35,6 +35,38 @@ export class EnrollmentRequestService {
     { apiName: this.apiName,...config });
   
 
+  getPendingRequestsForCurrentParent = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, EnrollmentRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/enrollment-request/pending-requests-for-current-parent',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPendingRequestsForCurrentTeacher = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, EnrollmentRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/enrollment-request/pending-requests-for-current-teacher',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPendingRequestsForSecretary = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, EnrollmentRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/enrollment-request/pending-requests-for-secretary',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getRequestDetails = (requestId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, EnrollmentRequestDto>({
+      method: 'GET',
+      url: `/api/app/enrollment-request/request-details/${requestId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   reject = (requestId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',

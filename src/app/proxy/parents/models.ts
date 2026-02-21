@@ -1,4 +1,5 @@
 import type { EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
+import type { ParentStudentLinkStatus } from '../enums/parent-student-link-status.enum';
 
 export interface CreateParentDto {
   userId?: string;
@@ -71,6 +72,8 @@ export interface ParentStudentDto extends FullAuditedEntityDto {
   parent: ParentDto;
   studentName?: string;
   studentCode?: string;
+  gradeName?: string;
+  linkStatus?: ParentStudentLinkStatus;
 }
 
 export interface RegisterParentDto {

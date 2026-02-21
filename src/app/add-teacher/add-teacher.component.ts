@@ -27,6 +27,9 @@ export class AddTeacherComponent {
     firstName: '',
     lastName: '',
     address: undefined,
+    email: undefined,
+    phoneNumber: undefined,
+    password: undefined,
   });
 
   saving = signal(false);

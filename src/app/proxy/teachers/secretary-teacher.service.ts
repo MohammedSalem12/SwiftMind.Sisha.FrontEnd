@@ -1,0 +1,46 @@
+import type { CreateSecretaryTeacherDto, SecretaryTeacherDto } from './models';
+import { RestService, Rest } from '@abp/ng.core';
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class SecretaryTeacherService {
+  apiName = 'Default';
+  
+
+  assignTeacherToSecretary = (input: CreateSecretaryTeacherDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SecretaryTeacherDto>({
+      method: 'POST',
+      url: '/api/app/secretary-teacher/assign-teacher-to-secretary',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getTeacherIdsForSecretary = (secretaryUserId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, string[]>({
+      method: 'GET',
+      url: `/api/app/secretary-teacher/teacher-ids-for-secretary/${secretaryUserId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getTeachersForCurrentSecretary = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SecretaryTeacherDto[]>({
+      method: 'GET',
+      url: '/api/app/secretary-teacher/teachers-for-current-secretary',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  removeTeacherFromSecretary = (secretaryUserId: string, teacherId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: '/api/app/secretary-teacher/teacher-from-secretary',
+      params: { secretaryUserId, teacherId },
+    },
+    { apiName: this.apiName,...config });
+
+  constructor(private restService: RestService) {}
+}
