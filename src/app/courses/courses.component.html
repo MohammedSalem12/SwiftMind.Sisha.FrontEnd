@@ -1,34 +1,57 @@
-<div class="courses-hero">
+<div class="courses-hero" dir="rtl" *ngIf="isStudent(); else adminHero">
   <div>
-    <h1>Courses</h1>
-    <p class="subtitle">Manage courses — quick overview, open details or add a new course.</p>
+    <h1>المقررات الدراسية</h1>
+    <p class="subtitle">اختر مقرراً للتسجيل فيه</p>
   </div>
   <div class="hero-controls">
-    <input class="search" placeholder="Search by name or code" [ngModel]="filter()" (ngModelChange)="filter.set($event)" />
-    <button class="btn-primary" (click)="onSearch()">Search</button>
-    <button class="btn-outline" (click)="goToAddCourse()">Add course</button>
+    <input class="search" placeholder="ابحث بالاسم أو الكود..." [ngModel]="filter()" (ngModelChange)="filter.set($event)" (keyup.enter)="onSearch()" />
+    <button class="btn-primary" (click)="onSearch()">بحث</button>
   </div>
 </div>
+
+<ng-template #adminHero>
+  <div class="courses-hero">
+    <div>
+      <h1>Courses</h1>
+      <p class="subtitle">Manage courses — quick overview, open details or add a new course.</p>
+    </div>
+    <div class="hero-controls">
+      <input class="search" placeholder="Search by name or code" [ngModel]="filter()" (ngModelChange)="filter.set($event)" />
+      <button class="btn-primary" (click)="onSearch()">Search</button>
+      <button class="btn-outline" (click)="goToAddCourse()">Add course</button>
+    </div>
+  </div>
+</ng-template>
 
 <div *ngIf="loading()" class="loading">Loading courses...</div>
 
-<div class="courses-grid">
+<div class="courses-grid" [dir]="isStudent() ? 'rtl' : 'ltr'">
   <div *ngFor="let c of courses(); trackBy: trackById" class="course-card">
     <div class="card-top">
       <div class="code">{{ c.code || '-' }}</div>
-      <div class="grade">{{ c.gradeName || ('Grade ' + (c.grade || '-')) }}</div>
+      <div class="grade">{{ c.gradeName }}</div>
     </div>
     <div class="card-body">
-      <div class="title">{{ c.nameEn }}</div>
-      <div class="title-ar">{{ c.nameAr }}</div>
+      <div class="title">{{ c.nameAr }}</div>
+      <div class="title-ar" *ngIf="c.nameEn">{{ c.nameEn }}</div>
     </div>
     <div class="card-actions">
-      <button class="btn-outline" (click)="showDetails(c)">Details</button>
+      <!-- Students see Enroll button -->
+      <button *ngIf="isStudent()" class="btn-enroll-course" (click)="enrollInCourse(c)">
+        <i class="fas fa-user-plus"></i> تسجيل
+      </button>
+      <!-- Admins/Teachers see Details -->
+      <button *ngIf="!isStudent()" class="btn-outline" (click)="showDetails(c)">Details</button>
     </div>
   </div>
 </div>
 
-<!-- Details modal -->
+<div *ngIf="!loading() && courses().length === 0" class="empty-state">
+  <p *ngIf="isStudent()">لا توجد مقررات متاحة حالياً</p>
+  <p *ngIf="!isStudent()">No courses found.</p>
+</div>
+
+<!-- Details modal (admin/teacher only) -->
 <div class="modal-backdrop" *ngIf="selected()">
   <div class="modal-card">
     <div class="modal-header">
@@ -37,7 +60,7 @@
     </div>
     <div class="modal-body">
       <div><strong>Code:</strong> {{ selected()?.code || '-' }}</div>
-  <div><strong>Grade:</strong> {{ selected()?.gradeName || gradeName(Number(selected()?.grade)) }}</div>
+      <div><strong>Grade:</strong> {{ selected()?.gradeName }}</div>
       <div><strong>Name (AR):</strong> {{ selected()?.nameAr }}</div>
     </div>
     <div class="modal-actions">

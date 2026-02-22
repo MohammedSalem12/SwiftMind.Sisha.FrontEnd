@@ -129,6 +129,10 @@ export class CoursesComponent implements OnInit {
 
   trackById = (_: number, it: CourseDto) => it.id;
 
+  enrollInCourse(course: CourseDto): void {
+    this.router.navigate(['/courses', course.id, 'enroll']);
+  }
+
   goToAddCourse() {
     this.router.navigate(['/add-course']);
   }

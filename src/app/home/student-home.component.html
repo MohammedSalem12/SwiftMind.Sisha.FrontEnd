@@ -31,7 +31,7 @@
           <i class="fas fa-book-open"></i>
         </div>
         <div class="stat-info">
-          <span class="stat-value">{{ courses().length }}</span>
+          <span class="stat-value">{{ enrolledCourses().length }}</span>
           <span class="stat-label">مقررات مسجلة</span>
         </div>
       </div>
@@ -104,29 +104,35 @@
         </button>
       </div>
 
-      <div *ngIf="courses().length === 0" class="empty-state">
+      <div *ngIf="enrolledCourses().length === 0" class="empty-state">
         <i class="fas fa-book-open empty-icon"></i>
         <p>لم تسجل في أي مقررات بعد</p>
         <button class="btn-primary-action" (click)="enrollInCourse()">ابدأ التسجيل</button>
       </div>
 
-      <div class="courses-grid" *ngIf="courses().length > 0">
-        <div class="course-card" *ngFor="let course of courses(); trackBy: trackById"
-             (click)="viewCourseDetails(course)">
+      <div class="courses-grid" *ngIf="enrolledCourses().length > 0">
+        <div class="course-card"
+             *ngFor="let course of enrolledCourses(); trackBy: trackByCourseId"
+             (click)="viewCourse(course)">
           <div class="course-header">
             <div class="course-icon-wrap">
               <i class="fas fa-book"></i>
             </div>
-            <span class="badge-code">{{ course.code }}</span>
+            <span class="badge-code">{{ course.courseCode }}</span>
           </div>
-          <h3 class="course-name">{{ course.nameAr }}</h3>
-          <p class="course-name-en" *ngIf="course.nameEn">{{ course.nameEn }}</p>
+          <h3 class="course-name">{{ course.courseName }}</h3>
+          <p class="course-teacher" *ngIf="course.teacherName">
+            <i class="fas fa-chalkboard-teacher"></i> {{ course.teacherName }}
+          </p>
+          <p class="course-group" *ngIf="course.groupName">
+            <i class="fas fa-users"></i> {{ course.groupName }}
+          </p>
           <div class="course-stats">
-            <div class="course-stat" [class.has-absence]="getCourseAbsences(course.id) > 0">
+            <div class="course-stat" [class.has-absence]="getCourseAbsences(course.courseId) > 0">
               <i class="fas fa-calendar-times"></i>
-              <span>{{ getCourseAbsences(course.id) }} غياب</span>
+              <span>{{ getCourseAbsences(course.courseId) }} غياب</span>
             </div>
-            <ng-container *ngIf="getCourseLastGrade(course.nameAr) as g">
+            <ng-container *ngIf="getCourseLastGrade(course.courseName) as g">
               <div class="course-stat grade-stat">
                 <i class="fas fa-star"></i>
                 <span>{{ getGradePercent(g) }}%</span>
@@ -135,9 +141,9 @@
           </div>
           <div class="course-attendance-bar">
             <div class="attendance-fill"
-                 [style.width.%]="getCourseAttendancePct(course.id)"></div>
+                 [style.width.%]="getCourseAttendancePct(course.courseId)"></div>
           </div>
-          <p class="attendance-pct-label">{{ getCourseAttendancePct(course.id) | number:'1.0-0' }}% حضور</p>
+          <p class="attendance-pct-label">{{ getCourseAttendancePct(course.courseId) | number:'1.0-0' }}% حضور</p>
         </div>
       </div>
     </div>
@@ -170,11 +176,11 @@
       </div>
     </div>
 
-    <!-- Enrollment Requests -->
+    <!-- Pending Enrollment Requests -->
     <div class="section" *ngIf="pendingRequests().length > 0">
       <h2 class="section-title">
         <i class="fas fa-clipboard-list"></i>
-        طلبات التسجيل
+        طلبات التسجيل قيد الانتظار
         <button class="btn-view-all" (click)="goToMyRequests()">عرض الكل</button>
       </h2>
       <div class="requests-list">
@@ -201,8 +207,7 @@
               </span>
             </div>
           </div>
-          <button *ngIf="req.status === 0"
-                  class="btn-cancel"
+          <button class="btn-cancel"
                   [disabled]="cancellingId() === req.id"
                   (click)="cancelRequest(req.id)">
             <span *ngIf="cancellingId() !== req.id"><i class="fas fa-times"></i> إلغاء</span>

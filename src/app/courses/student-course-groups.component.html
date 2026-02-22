@@ -1,185 +1,143 @@
-<div class="student-course-groups-container">
-  <div class="container py-4">
-    <!-- Header -->
-    <div class="header-section mb-4">
-      <button class="btn btn-outline-secondary mb-3" (click)="goBack()">
-        <i class="fas fa-arrow-right me-2"></i>
-        العودة
+<div class="enroll-page" dir="rtl">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-inner">
+      <button class="btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-right"></i> رجوع
       </button>
-      
-      <div *ngIf="course()" class="course-header">
-        <div class="course-icon">
-          <i class="fas fa-book"></i>
-        </div>
-        <div class="course-info">
-          <h1 class="course-title">{{ course()?.nameAr }}</h1>
-          <p class="course-subtitle" *ngIf="course()?.nameEn">{{ course()?.nameEn }}</p>
-          <div class="course-meta">
-            <span class="badge bg-primary">{{ course()?.code }}</span>
-            <span class="badge bg-secondary">{{ course()?.gradeName }}</span>
-          </div>
+      <div class="course-info" *ngIf="course()">
+        <h1 class="course-title">{{ course()?.nameAr }}</h1>
+        <div class="course-badges">
+          <span class="badge-code">{{ course()?.code }}</span>
+          <span class="badge-grade">{{ course()?.gradeName }}</span>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Loading State -->
-    <div *ngIf="loading()" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">جاري التحميل...</span>
+  <!-- Loading -->
+  <div *ngIf="loading()" class="center-state">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p>جاري تحميل بيانات المقرر...</p>
+  </div>
+
+  <div *ngIf="!loading()" class="page-body">
+
+    <!-- Success Banner -->
+    <div *ngIf="successMessage()" class="success-banner">
+      <i class="fas fa-check-circle"></i>
+      <div>
+        <p class="success-title">{{ successMessage() }}</p>
+        <button class="btn-requests" (click)="goToRequests()">
+          عرض طلباتي <i class="fas fa-arrow-left"></i>
+        </button>
       </div>
-      <p class="mt-3 text-muted">جاري تحميل المجموعات...</p>
     </div>
 
-    <!-- Error State -->
-    <div *ngIf="error()" class="alert alert-danger">
-      <i class="fas fa-exclamation-circle me-2"></i>
-      {{ error() }}
+    <!-- Error -->
+    <div *ngIf="error()" class="error-banner">
+      <i class="fas fa-exclamation-circle"></i> {{ error() }}
     </div>
 
-    <!-- Success Message -->
-    <div *ngIf="successMessage()" class="alert alert-success alert-dismissible fade show">
-      <i class="fas fa-check-circle me-2"></i>
-      {{ successMessage() }}
-      <button type="button" class="btn-close" (click)="successMessage.set(null)"></button>
+    <!-- Search Box -->
+    <div class="search-section">
+      <div class="search-wrap">
+        <i class="fas fa-search search-icon"></i>
+        <input class="search-input"
+               type="text"
+               placeholder="ابحث بكود المعلم أو اسمه..."
+               [ngModel]="searchQuery()"
+               (ngModelChange)="searchQuery.set($event)" />
+        <button *ngIf="searchQuery()" class="clear-btn" (click)="searchQuery.set('')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <p class="results-hint">{{ filteredTeachers().length }} معلم متاح</p>
     </div>
 
-    <div *ngIf="!loading() && !error()">
-      <!-- Current Enrollment Section -->
-      <div *ngIf="currentEnrollment()" class="current-enrollment-section mb-5">
-        <h2 class="section-title mb-4">
-          <i class="fas fa-user-check me-2"></i>
-          مجموعتك الحالية
-        </h2>
-        
-        <div class="current-group-card">
-          <div class="enrolled-badge">
-            <i class="fas fa-check-circle"></i>
-            <span>مسجل</span>
+    <!-- Teachers List -->
+    <div *ngIf="filteredTeachers().length === 0" class="center-state">
+      <i class="fas fa-chalkboard-teacher empty-icon"></i>
+      <p>لا يوجد معلمون مطابقون للبحث</p>
+    </div>
+
+    <div class="teachers-list">
+      <div *ngFor="let teacher of filteredTeachers(); trackBy: trackByTeacherId"
+           class="teacher-block"
+           [class.expanded]="selectedTeacher()?.id === teacher.id">
+
+        <!-- Teacher Row -->
+        <div class="teacher-row" (click)="selectTeacher(teacher)">
+          <div class="teacher-avatar">
+            <i class="fas fa-user-tie"></i>
           </div>
-          <div class="group-content">
-            <h3 class="group-name">{{ currentEnrollment()?.groupName }}</h3>
-            <div class="group-details">
-              <div class="detail-item">
-                <i class="fas fa-chalkboard-teacher"></i>
-                <span>{{ currentEnrollment()?.teacherName }}</span>
+          <div class="teacher-meta">
+            <span class="teacher-name">{{ teacher.displayName }}</span>
+            <span class="teacher-code" *ngIf="teacher.code">كود: {{ teacher.code }}</span>
+          </div>
+          <div class="teacher-action">
+            <span class="action-label" *ngIf="selectedTeacher()?.id !== teacher.id">
+              عرض المجموعات <i class="fas fa-chevron-down"></i>
+            </span>
+            <span class="action-label active" *ngIf="selectedTeacher()?.id === teacher.id">
+              إخفاء <i class="fas fa-chevron-up"></i>
+            </span>
+          </div>
+        </div>
+
+        <!-- Groups Panel (expands when teacher selected) -->
+        <div *ngIf="selectedTeacher()?.id === teacher.id" class="groups-panel">
+
+          <div *ngIf="loadingGroups()" class="center-state small">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            <span>جاري تحميل المجموعات...</span>
+          </div>
+
+          <div *ngIf="!loadingGroups() && teacherGroups().length === 0" class="no-groups">
+            <i class="fas fa-folder-open"></i>
+            لا توجد مجموعات متاحة لهذا المعلم حالياً
+          </div>
+
+          <div class="groups-grid" *ngIf="!loadingGroups() && teacherGroups().length > 0">
+            <div *ngFor="let group of teacherGroups(); trackBy: trackByGroupId" class="group-card">
+              <div class="group-head">
+                <h4 class="group-name">{{ group.name }}</h4>
+                <span class="group-code" *ngIf="group.groupCode">{{ group.groupCode }}</span>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Teacher Selection -->
-      <div class="groups-enrollment-section">
-        <h2 class="section-title mb-4">
-          <i class="fas fa-users me-2"></i>
-          {{ currentEnrollment() ? 'المجموعات الأخرى المتاحة' : 'اختر مجموعة للتسجيل' }}
-        </h2>
-
-        <!-- Step 1: Select Teacher -->
-        <div *ngIf="!selectedTeacher()" class="teachers-grid">
-          <h4 class="sub-title mb-3">اختر المعلم</h4>
-          
-          <div *ngIf="teachers().length === 0" class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            لا يوجد معلمون متاحون لهذا المقرر حالياً
-          </div>
-
-          <div class="row g-4">
-            <div class="col-md-6 col-lg-4" *ngFor="let teacher of teachers(); trackBy: trackByTeacherId">
-              <div class="teacher-selection-card" (click)="selectTeacher(teacher)">
-                <div class="teacher-avatar">
-                  <i class="fas fa-user"></i>
-                </div>
-                <h3 class="teacher-name">{{ teacher.fullName }}</h3>
-                <button class="btn btn-primary btn-sm mt-2">
-                  <i class="fas fa-arrow-left me-1"></i>
-                  اختيار
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 2: Select Group -->
-        <div *ngIf="selectedTeacher()" class="groups-selection">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="sub-title mb-0">
-              مجموعات المعلم: {{ selectedTeacher()?.fullName }}
-            </h4>
-            <button class="btn btn-outline-secondary btn-sm" (click)="clearTeacherSelection()">
-              <i class="fas fa-arrow-right me-1"></i>
-              تغيير المعلم
-            </button>
-          </div>
-
-          <!-- Loading Groups -->
-          <div *ngIf="loadingGroups()" class="text-center py-4">
-            <div class="spinner-border text-primary spinner-border-sm" role="status">
-              <span class="visually-hidden">جاري التحميل...</span>
-            </div>
-          </div>
-
-          <!-- Groups List -->
-          <div *ngIf="!loadingGroups()">
-            <div *ngIf="teacherGroups().length === 0" class="alert alert-warning">
-              <i class="fas fa-exclamation-triangle me-2"></i>
-              لا توجد مجموعات متاحة لهذا المعلم حالياً
-            </div>
-
-            <div class="row g-4">
-              <div class="col-md-6" *ngFor="let group of teacherGroups(); trackBy: trackByGroupId">
-                <div class="group-card">
-                  <div class="group-header">
-                    <h3 class="group-title">{{ group.name }}</h3>
-                    <span class="group-code" *ngIf="group.groupCode">{{ group.groupCode }}</span>
-                  </div>
-
-                  <!-- Schedules -->
-                  <div class="schedules-section" *ngIf="group.schedules && group.schedules.length > 0">
-                    <h5 class="schedules-title">
-                      <i class="fas fa-calendar-alt me-2"></i>
-                      المواعيد
-                    </h5>
-                    <div class="schedule-item" *ngFor="let schedule of group.schedules">
-                      <div class="schedule-day">
-                        <i class="fas fa-calendar-day"></i>
-                        <span>{{ getDayName(schedule.dayOfWeek) }}</span>
-                      </div>
-                      <div class="schedule-time">
-                        <i class="fas fa-clock"></i>
-                        <span>{{ formatTime(schedule.startTime) }} - {{ formatTime(schedule.endTime) }}</span>
-                      </div>
-                      <div class="schedule-location" *ngIf="schedule.location">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>{{ schedule.location }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Enroll Button -->
-                  <button 
-                    class="btn btn-success w-100 mt-3"
-                    (click)="enrollInGroup(group)"
-                    [disabled]="submitting() || (currentEnrollment() && currentEnrollment()?.groupId === group.groupId)">
-                    <span *ngIf="currentEnrollment() && currentEnrollment()?.groupId === group.groupId">
-                      <i class="fas fa-check me-1"></i>
-                      مجموعتك الحالية
-                    </span>
-                    <span *ngIf="!submitting() && (!currentEnrollment() || currentEnrollment()?.groupId !== group.groupId)">
-                      <i class="fas fa-user-plus me-1"></i>
-                      طلب الانضمام
-                    </span>
-                    <span *ngIf="submitting()">
-                      <span class="spinner-border spinner-border-sm me-1"></span>
-                      جاري الإرسال...
-                    </span>
-                  </button>
+              <!-- Schedules -->
+              <div class="schedules" *ngIf="group.schedules?.length">
+                <div *ngFor="let s of group.schedules; trackBy: trackBySchedule" class="schedule-row">
+                  <span class="day">
+                    <i class="fas fa-calendar-day"></i> {{ getDayName(s.dayOfWeek) }}
+                  </span>
+                  <span class="time">
+                    <i class="fas fa-clock"></i> {{ formatTime(s.startTime) }} – {{ formatTime(s.endTime) }}
+                  </span>
+                  <span class="location" *ngIf="s.location">
+                    <i class="fas fa-map-marker-alt"></i> {{ s.location }}
+                  </span>
                 </div>
               </div>
+              <p class="no-schedule" *ngIf="!group.schedules?.length">لا توجد مواعيد محددة</p>
+
+              <!-- Join Button -->
+              <button class="btn-join"
+                      (click)="enrollInGroup(group)"
+                      [disabled]="submitting()">
+                <span *ngIf="!submitting()">
+                  <i class="fas fa-user-plus"></i> طلب الانضمام
+                </span>
+                <span *ngIf="submitting()">
+                  <i class="fas fa-spinner fa-spin"></i> جاري الإرسال...
+                </span>
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </div>

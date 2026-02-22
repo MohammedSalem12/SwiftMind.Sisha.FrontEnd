@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
 
 import { CourseService } from '@proxy/courses';
@@ -13,19 +14,10 @@ import { EnrollmentRequestInitiator } from '@proxy/enums/enrollment-request-init
 import { TeacherService } from '@proxy/teachers';
 import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
 
-interface StudentEnrollmentInfo {
-  groupId: string;
-  groupName: string;
-  groupCode: string;
-  teacherId: string;
-  teacherName: string;
-  schedules: GroupScheduleDto[];
-}
-
 @Component({
   selector: 'app-student-course-groups',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './student-course-groups.component.html',
   styleUrls: ['./student-course-groups.component.scss'],
 })
@@ -38,11 +30,10 @@ export class StudentCourseGroupsComponent implements OnInit {
   private readonly currentUserInfoService = inject(CurrentUserInfoService);
   private readonly teacherService = inject(TeacherService);
 
-  courseId = signal<string>('');
+  courseId = signal('');
   course = signal<CourseDto | null>(null);
-  currentEnrollment = signal<StudentEnrollmentInfo | null>(null);
   teachers = signal<TeacherAutocompleteDto[]>([]);
-  allGroups = signal<GroupWithSchedulesDto[]>([]);
+  searchQuery = signal('');
   selectedTeacher = signal<TeacherAutocompleteDto | null>(null);
   teacherGroups = signal<GroupWithSchedulesDto[]>([]);
   loading = signal(false);
@@ -51,124 +42,60 @@ export class StudentCourseGroupsComponent implements OnInit {
   error = signal<string | null>(null);
   successMessage = signal<string | null>(null);
 
+  filteredTeachers = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.teachers();
+    return this.teachers().filter(t =>
+      t.code?.toLowerCase().includes(q) ||
+      t.displayName?.toLowerCase().includes(q) ||
+      t.nameArabic?.toLowerCase().includes(q) ||
+      t.nameEnglish?.toLowerCase().includes(q)
+    );
+  });
+
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.error.set('Course ID is missing');
-      return;
-    }
-
+    if (!id) { this.error.set('معرف المقرر مفقود'); return; }
     this.courseId.set(id);
-    await this.loadCourseData();
+    await this.loadData();
   }
 
-  private async loadCourseData(): Promise<void> {
+  private async loadData(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
-
     try {
-      // Load course details
-      const courseData = await lastValueFrom(
-        this.courseService.get(this.courseId())
-      );
+      const [courseData, teachersData] = await Promise.all([
+        lastValueFrom(this.courseService.get(this.courseId())),
+        lastValueFrom(this.teacherService.getTeachersByCourse(this.courseId(), undefined, 100)),
+      ]);
       this.course.set(courseData);
-
-      // Load teachers for this course
-      const teachersData = await lastValueFrom(
-        this.teacherService.getTeachersByCourse(this.courseId(), undefined, 100)
-      );
       this.teachers.set(teachersData || []);
-
-      // Check if student is already enrolled in this course
-      await this.checkCurrentEnrollment();
-
-      // Load all groups for all teachers
-      await this.loadAllGroups();
     } catch (err) {
-      console.error('Error loading course data:', err);
-      this.error.set('Failed to load course information. Please try again.');
+      console.error('Error loading enrollment data:', err);
+      this.error.set('حدث خطأ أثناء تحميل بيانات المقرر');
     } finally {
       this.loading.set(false);
     }
   }
 
-  private async checkCurrentEnrollment(): Promise<void> {
-    try {
-      // Get current user info
-      const userInfo = await lastValueFrom(
-        this.currentUserInfoService.getCurrentUserActorInfo()
-      );
-      
-      if (!userInfo || !userInfo.actorId) {
-        return;
-      }
-
-      // Get all enrollment requests for this student and course
-      const requests = await lastValueFrom(
-        this.enrollmentRequestService.getList()
-      );
-
-      // Find approved enrollment for this course
-      const approvedRequest = requests?.find(
-        (req) =>
-          req.studentId === userInfo.actorId &&
-          req.courseId === this.courseId() &&
-          req.isParentApproved &&
-          req.isTeacherApproved &&
-          req.groupId
-      );
-
-      if (approvedRequest && approvedRequest.groupId) {
-        this.currentEnrollment.set({
-          groupId: approvedRequest.groupId,
-          groupName: approvedRequest.groupName || '',
-          groupCode: '',
-          teacherId: approvedRequest.teacherId || '',
-          teacherName: approvedRequest.teacherName || '',
-          schedules: [],
-        });
-      }
-    } catch (err) {
-      console.error('Error checking current enrollment:', err);
-      // Don't set error, just log it - not being enrolled is ok
-    }
-  }
-
-  private async loadAllGroups(): Promise<void> {
-    try {
-      const allGroupsPromises = this.teachers().map((teacher) =>
-        lastValueFrom(
-          this.groupService.getGroupsForTeacherAndCourse(teacher.id!, this.courseId())
-        )
-      );
-
-      const groupsArrays = await Promise.all(allGroupsPromises);
-      
-      // Flatten the array manually for older TypeScript targets
-      const flatGroups: GroupWithSchedulesDto[] = [];
-      for (const groupArray of groupsArrays) {
-        flatGroups.push(...groupArray);
-      }
-      
-      this.allGroups.set(flatGroups);
-    } catch (err) {
-      console.error('Error loading groups:', err);
-    }
-  }
-
   async selectTeacher(teacher: TeacherAutocompleteDto): Promise<void> {
+    // Toggle: deselect if clicking the same teacher
+    if (this.selectedTeacher()?.id === teacher.id) {
+      this.selectedTeacher.set(null);
+      this.teacherGroups.set([]);
+      return;
+    }
     this.selectedTeacher.set(teacher);
     this.loadingGroups.set(true);
     this.error.set(null);
-
     try {
       const groups = await lastValueFrom(
         this.groupService.getGroupsForTeacherAndCourse(teacher.id!, this.courseId())
       );
       this.teacherGroups.set(groups || []);
     } catch (err) {
-      console.error('Error loading teacher groups:', err);
-      this.error.set('Failed to load groups for this teacher.');
+      console.error('Error loading groups:', err);
+      this.error.set('حدث خطأ أثناء تحميل المجموعات');
     } finally {
       this.loadingGroups.set(false);
     }
@@ -176,74 +103,57 @@ export class StudentCourseGroupsComponent implements OnInit {
 
   async enrollInGroup(group: GroupWithSchedulesDto): Promise<void> {
     if (this.submitting()) return;
-
     this.submitting.set(true);
     this.error.set(null);
     this.successMessage.set(null);
-
     try {
-      const userInfo = await lastValueFrom(
-        this.currentUserInfoService.getCurrentUserActorInfo()
-      );
-
-      if (!userInfo || !userInfo.actorId) {
-        this.error.set('Unable to identify student. Please log in again.');
-        this.submitting.set(false);
+      const userInfo = await lastValueFrom(this.currentUserInfoService.getCurrentUserActorInfo());
+      if (!userInfo?.actorId) {
+        this.error.set('تعذر التعرف على الطالب. يرجى تسجيل الدخول مجدداً.');
         return;
       }
-
-      const request = {
+      await lastValueFrom(this.enrollmentRequestService.create({
         studentId: userInfo.actorId,
         courseId: this.courseId(),
         teacherId: group.teacherId!,
         groupId: group.groupId!,
         initiator: EnrollmentRequestInitiator.Student,
-      };
-
-      await lastValueFrom(this.enrollmentRequestService.create(request));
-      this.successMessage.set('تم إرسال طلب التسجيل بنجاح! سيتم مراجعته قريباً.');
-      
-      // Reload enrollment status
-      await this.checkCurrentEnrollment();
+      }));
+      this.successMessage.set('تم إرسال طلب التسجيل بنجاح! سيتم مراجعته من المعلم وولي الأمر.');
+      this.selectedTeacher.set(null);
+      this.teacherGroups.set([]);
     } catch (err: any) {
-      console.error('Error enrolling in group:', err);
-      let errorMsg = 'حدث خطأ أثناء إرسال طلب التسجيل.';
-      if (err?.error?.error?.message) {
-        errorMsg = err.error.error.message;
-      }
-      this.error.set(errorMsg);
+      console.error('Error enrolling:', err);
+      this.error.set(err?.error?.error?.message || 'حدث خطأ أثناء إرسال طلب التسجيل');
     } finally {
       this.submitting.set(false);
     }
   }
 
-  clearTeacherSelection(): void {
-    this.selectedTeacher.set(null);
-    this.teacherGroups.set([]);
+  goBack(): void {
+    this.router.navigate(['/courses']);
   }
 
-  goBack(): void {
-    this.router.navigate(['/courses', this.courseId(), 'teachers']);
+  goToRequests(): void {
+    this.router.navigate(['/student/requests']);
   }
 
   getDayName(dayOfWeek: number): string {
-    const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    return days[dayOfWeek] || '';
+    return ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][dayOfWeek] || '';
   }
 
   formatTime(time?: string): string {
     if (!time) return '';
     const parts = time.split(':');
     if (parts.length >= 2) {
-      const hours = parseInt(parts[0]);
-      const minutes = parts[1];
-      const period = hours >= 12 ? 'م' : 'ص';
-      const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
-      return `${displayHours}:${minutes} ${period}`;
+      const h = parseInt(parts[0]);
+      const m = parts[1];
+      return `${h > 12 ? h - 12 : h === 0 ? 12 : h}:${m} ${h >= 12 ? 'م' : 'ص'}`;
     }
     return time;
   }
 
-  trackByGroupId = (_: number, item: GroupWithSchedulesDto) => item.groupId;
-  trackByTeacherId = (_: number, item: TeacherAutocompleteDto) => item.id;
+  trackByTeacherId = (_: number, t: TeacherAutocompleteDto) => t.id;
+  trackByGroupId = (_: number, g: GroupWithSchedulesDto) => g.groupId;
+  trackBySchedule = (_: number, s: GroupScheduleDto) => `${s.dayOfWeek}-${s.startTime}`;
 }

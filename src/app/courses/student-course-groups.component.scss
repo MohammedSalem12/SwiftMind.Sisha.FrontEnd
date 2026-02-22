@@ -1,334 +1,118 @@
-.student-course-groups-container {
-  min-height: calc(100vh - 200px);
-  background: #f8f9fa;
+.enroll-page {
+  min-height: 100vh;
+  background: #f0f2f5;
+  direction: rtl;
 }
 
-.header-section {
-  .btn-outline-secondary {
-    border-radius: 8px;
-    padding: 0.5rem 1rem;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background-color: #6c757d;
-      color: white;
-    }
-  }
-}
-
-.course-header {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 2rem;
+.page-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.5rem;
   color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
-  .course-icon {
-    width: 80px;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    i {
-      font-size: 2rem;
-      color: white;
-    }
-  }
-
-  .course-info {
-    flex: 1;
-  }
-
-  .course-title {
-    font-size: 2rem;
-    font-weight: 600;
-    margin: 0 0 0.5rem 0;
-  }
-
-  .course-subtitle {
-    font-size: 1rem;
-    opacity: 0.9;
-    margin: 0 0 0.75rem 0;
-  }
-
-  .course-meta {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-
-    .badge {
-      font-size: 0.875rem;
-      padding: 0.5rem 1rem;
-      font-weight: 500;
-    }
-  }
 }
 
-.section-title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #1a202c;
-  display: flex;
+.header-inner { max-width: 860px; margin: 0 auto; }
+
+.btn-back {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  display: inline-flex;
   align-items: center;
-
-  i {
-    color: #667eea;
-  }
+  gap: 0.4rem;
+  &:hover { background: rgba(255,255,255,0.3); }
 }
 
-.sub-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1a202c;
+.course-title { font-size: 1.6rem; font-weight: 700; margin: 0 0 0.5rem; }
+.course-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.badge-code { background: rgba(255,255,255,0.25); border-radius: 6px; padding: 0.2rem 0.6rem; font-size: 0.8rem; font-weight: 600; }
+.badge-grade { background: rgba(255,255,255,0.15); border-radius: 6px; padding: 0.2rem 0.6rem; font-size: 0.8rem; }
+
+.page-body { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 2rem; }
+
+.center-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6b7280;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  .empty-icon { font-size: 3rem; color: #d1d5db; }
+  &.small { padding: 1.5rem; flex-direction: row; justify-content: center; gap: 0.5rem; font-size: 0.9rem; }
 }
 
-// Current Enrollment Section
-.current-enrollment-section {
-  .current-group-card {
-    position: relative;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-
-    .enrolled-badge {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 600;
-
-      i {
-        font-size: 1rem;
-      }
-    }
-
-    .group-content {
-      .group-name {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin: 0 0 1rem 0;
-      }
-
-      .group-details {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-
-        .detail-item {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          font-size: 1.125rem;
-
-          i {
-            font-size: 1.25rem;
-            opacity: 0.9;
-          }
-        }
-      }
-    }
-  }
+.success-banner {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  color: #16a34a;
+  i { font-size: 1.5rem; flex-shrink: 0; }
+  .success-title { font-weight: 600; margin: 0 0 0.5rem; font-size: 0.95rem; }
+  .btn-requests { background: none; border: none; color: #15803d; font-size: 0.85rem; cursor: pointer; padding: 0; font-weight: 500; display: flex; align-items: center; gap: 0.3rem; &:hover { text-decoration: underline; } }
 }
 
-// Teachers Grid
-.teachers-grid {
-  .teacher-selection-card {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    height: 100%;
+.error-banner { background: #fee2e2; border: 1px solid #fca5a5; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1rem; color: #dc2626; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
 
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    }
+.search-section { background: white; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 
-    .teacher-avatar {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1rem;
+.search-wrap { position: relative; display: flex; align-items: center; }
+.search-icon { position: absolute; right: 0.9rem; color: #9ca3af; font-size: 1rem; pointer-events: none; }
+.search-input { width: 100%; border: 2px solid #e5e7eb; border-radius: 10px; padding: 0.65rem 2.5rem; font-size: 0.95rem; outline: none; direction: rtl; transition: border-color 0.2s; &:focus { border-color: #667eea; } }
+.clear-btn { position: absolute; left: 0.9rem; background: none; border: none; color: #9ca3af; cursor: pointer; padding: 0; &:hover { color: #374151; } }
+.results-hint { font-size: 0.8rem; color: #9ca3af; margin: 0.5rem 0 0; }
 
-      i {
-        font-size: 2rem;
-        color: white;
-      }
-    }
+.teachers-list { display: flex; flex-direction: column; gap: 0.75rem; }
 
-    .teacher-name {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #1a202c;
-      margin: 0 0 1rem 0;
-    }
-  }
+.teacher-block {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+  &.expanded { border-color: #667eea; }
 }
 
-// Groups Section
-.groups-selection {
-  .group-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+.teacher-row { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; cursor: pointer; transition: background 0.15s; &:hover { background: #f8f9ff; } }
 
-    &:hover {
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    }
+.teacher-avatar { width: 44px; height: 44px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; flex-shrink: 0; }
 
-    .group-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 1rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid #e5e7eb;
+.teacher-meta { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+.teacher-name { font-weight: 600; color: #1a202c; font-size: 0.95rem; }
+.teacher-code { font-size: 0.78rem; color: #667eea; font-weight: 600; background: #ede9fe; border-radius: 4px; padding: 0.1rem 0.45rem; display: inline-block; }
 
-      .group-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #1a202c;
-        margin: 0;
-        flex: 1;
-      }
+.teacher-action { flex-shrink: 0; }
+.action-label { font-size: 0.82rem; color: #667eea; font-weight: 500; display: flex; align-items: center; gap: 0.3rem; &.active { color: #764ba2; } }
 
-      .group-code {
-        background: #f3f4f6;
-        color: #6b7280;
-        padding: 0.25rem 0.75rem;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        font-weight: 500;
-      }
-    }
+.groups-panel { border-top: 1px solid #f0f0f0; padding: 1rem 1.25rem 1.25rem; background: #fafbff; }
 
-    .schedules-section {
-      flex: 1;
-      margin-bottom: 1rem;
+.no-groups { color: #6b7280; font-size: 0.9rem; padding: 0.75rem 0; display: flex; align-items: center; gap: 0.5rem; i { color: #d1d5db; } }
 
-      .schedules-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #4b5563;
-        margin-bottom: 0.75rem;
-      }
+.groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
 
-      .schedule-item {
-        background: #f9fafb;
-        border-left: 4px solid #667eea;
-        padding: 0.75rem;
-        border-radius: 6px;
-        margin-bottom: 0.75rem;
+.group-card { background: white; border-radius: 12px; padding: 1.1rem; border: 1px solid #e5e7eb; display: flex; flex-direction: column; gap: 0.75rem; }
 
-        &:last-child {
-          margin-bottom: 0;
-        }
+.group-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+.group-name { font-weight: 600; color: #1a202c; margin: 0; font-size: 0.95rem; }
+.group-code { background: #e8eaf6; color: #5c6bc0; border-radius: 5px; padding: 0.15rem 0.45rem; font-size: 0.7rem; font-weight: 600; white-space: nowrap; }
 
-        .schedule-day,
-        .schedule-time,
-        .schedule-location {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 0.875rem;
-          color: #4b5563;
-          margin-bottom: 0.25rem;
+.schedules { display: flex; flex-direction: column; gap: 0.4rem; }
+.schedule-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; font-size: 0.8rem; color: #374151; background: #f8f9fa; border-radius: 6px; padding: 0.4rem 0.6rem; i { color: #667eea; margin-left: 0.2rem; } .day { font-weight: 600; } .time { color: #4b5563; } .location { color: #6b7280; } }
+.no-schedule { font-size: 0.8rem; color: #9ca3af; margin: 0; }
 
-          &:last-child {
-            margin-bottom: 0;
-          }
+.btn-join { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 9px; padding: 0.6rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: auto; transition: opacity 0.2s; &:hover:not(:disabled) { opacity: 0.9; } &:disabled { opacity: 0.6; cursor: not-allowed; } }
 
-          i {
-            color: #667eea;
-            font-size: 0.875rem;
-            width: 16px;
-          }
-        }
-
-        .schedule-day {
-          font-weight: 600;
-          color: #1f2937;
-        }
-      }
-    }
-
-    .btn {
-      margin-top: auto;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .course-header {
-    flex-direction: column;
-    text-align: center;
-
-    .course-title {
-      font-size: 1.5rem;
-    }
-
-    .course-meta {
-      justify-content: center;
-    }
-  }
-
-  .section-title {
-    font-size: 1.5rem;
-  }
-
-  .current-enrollment-section {
-    .current-group-card {
-      padding: 1.5rem;
-
-      .enrolled-badge {
-        position: static;
-        margin-bottom: 1rem;
-        justify-content: center;
-      }
-
-      .group-content {
-        .group-name {
-          font-size: 1.5rem;
-        }
-      }
-    }
-  }
-
-  .group-card {
-    .group-header {
-      flex-direction: column;
-      gap: 0.5rem;
-
-      .group-code {
-        align-self: flex-start;
-      }
-    }
-  }
+@media (max-width: 600px) {
+  .groups-grid { grid-template-columns: 1fr; }
+  .teacher-row { padding: 0.85rem 1rem; }
 }

@@ -6,14 +6,20 @@ import { lastValueFrom } from 'rxjs';
 import { AttendanceService } from '@proxy/attendances';
 import type { StudentAttendanceReportDto } from '@proxy/attendances/dtos';
 import { CurrentUserInfoService } from '@proxy/common';
-import { CourseService } from '@proxy/courses';
-import type { CourseDto } from '@proxy/courses/dtos';
 import { ExamGradeService } from '@proxy/exam-grades';
 import type { ExamGradeDto } from '@proxy/exam-grades/dtos';
 import { ParentService } from '@proxy/parents';
 import type { ParentStudentDto } from '@proxy/parents/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
+
+interface EnrolledCourseInfo {
+  courseId: string;
+  courseName: string;
+  courseCode: string;
+  teacherName: string;
+  groupName: string;
+}
 
 @Component({
   selector: 'app-student-home',
@@ -25,7 +31,6 @@ import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 export class StudentHomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
-  private readonly courseService = inject(CourseService);
   private readonly parentService = inject(ParentService);
   private readonly attendanceSvc = inject(AttendanceService);
   private readonly examGradeSvc = inject(ExamGradeService);
@@ -34,7 +39,7 @@ export class StudentHomeComponent implements OnInit {
   studentName = signal('');
   studentId = signal<string | null>(null);
   studentGrade = signal<number | null>(null);
-  courses = signal<CourseDto[]>([]);
+  enrolledCourses = signal<EnrolledCourseInfo[]>([]);
   attendanceStats = signal<StudentAttendanceReportDto[]>([]);
   lastGrades = signal<ExamGradeDto[]>([]);
   pendingRequests = signal<EnrollmentRequestDto[]>([]);
@@ -46,9 +51,7 @@ export class StudentHomeComponent implements OnInit {
     this.attendanceStats().reduce((sum, s) => sum + (s.absentDays || 0), 0)
   );
 
-  pendingRequestsCount = computed(() =>
-    this.pendingRequests().filter(r => r.status === 0).length
-  );
+  pendingRequestsCount = computed(() => this.pendingRequests().length);
 
   lastGradePercent = computed(() => {
     const grades = this.lastGrades();
@@ -67,25 +70,15 @@ export class StudentHomeComponent implements OnInit {
         this.studentGrade.set(userInfo.currentGrade || null);
       }
       await Promise.all([
-        this.loadCourses(),
+        this.loadEnrollmentRequests(userInfo?.actorId),
         this.loadAttendanceStats(userInfo?.actorId),
         this.loadLastGrades(userInfo?.actorId),
-        this.loadEnrollmentRequests(userInfo?.actorId),
         this.loadPendingParentLinks(),
       ]);
     } catch (err) {
       console.error('Error loading student home:', err);
     } finally {
       this.loading.set(false);
-    }
-  }
-
-  private async loadCourses(): Promise<void> {
-    try {
-      const courses = await lastValueFrom(this.courseService.getCoursesForCurrentStudent());
-      this.courses.set(courses || []);
-    } catch (err) {
-      console.error('Error loading courses:', err);
     }
   }
 
@@ -123,7 +116,27 @@ export class StudentHomeComponent implements OnInit {
     try {
       const all = await lastValueFrom(this.enrollmentRequestSvc.getList());
       const mine = (all || []).filter(r => r.studentId === studentId);
-      this.pendingRequests.set(mine);
+
+      // Enrolled = both teacher AND parent approved — deduplicate by courseId
+      const seen = new Set<string>();
+      const enrolled: EnrolledCourseInfo[] = [];
+      for (const r of mine) {
+        if (r.isParentApproved && r.isTeacherApproved && r.courseId && !seen.has(r.courseId)) {
+          seen.add(r.courseId);
+          enrolled.push({
+            courseId: r.courseId,
+            courseName: r.courseName || '',
+            courseCode: r.courseCode || '',
+            teacherName: r.teacherName || '',
+            groupName: r.groupName || '',
+          });
+        }
+      }
+      this.enrolledCourses.set(enrolled);
+
+      // Pending = not yet fully approved
+      const pending = mine.filter(r => !r.isParentApproved || !r.isTeacherApproved);
+      this.pendingRequests.set(pending);
     } catch (err) {
       console.error('Error loading enrollment requests:', err);
     }
@@ -138,18 +151,15 @@ export class StudentHomeComponent implements OnInit {
     }
   }
 
-  getCourseAbsences(courseId?: string): number {
-    if (!courseId) return 0;
+  getCourseAbsences(courseId: string): number {
     return this.attendanceStats().find(s => s.courseId === courseId)?.absentDays || 0;
   }
 
-  getCourseAttendancePct(courseId?: string): number {
-    if (!courseId) return 100;
+  getCourseAttendancePct(courseId: string): number {
     return this.attendanceStats().find(s => s.courseId === courseId)?.attendancePercentage ?? 100;
   }
 
-  getCourseLastGrade(courseName?: string): ExamGradeDto | null {
-    if (!courseName) return null;
+  getCourseLastGrade(courseName: string): ExamGradeDto | null {
     return this.lastGrades().find(g => g.courseName === courseName) || null;
   }
 
@@ -188,8 +198,8 @@ export class StudentHomeComponent implements OnInit {
     }
   }
 
-  viewCourseDetails(course: CourseDto): void {
-    this.router.navigate(['/courses', course.id, 'teachers']);
+  viewCourse(course: EnrolledCourseInfo): void {
+    this.router.navigate(['/courses', course.courseId, 'enroll']);
   }
 
   enrollInCourse(): void {
@@ -208,6 +218,6 @@ export class StudentHomeComponent implements OnInit {
     this.router.navigate(['/feeds']);
   }
 
-  trackById = (_: number, item: CourseDto) => item.id;
+  trackByCourseId = (_: number, item: EnrolledCourseInfo) => item.courseId;
   trackByReqId = (_: number, item: EnrollmentRequestDto) => item.id;
 }
