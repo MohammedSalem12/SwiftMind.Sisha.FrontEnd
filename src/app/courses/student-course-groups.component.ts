@@ -5,12 +5,13 @@ import { lastValueFrom } from 'rxjs';
 
 import { CourseService } from '@proxy/courses';
 import type { CourseDto } from '@proxy/courses/dtos';
-import type { TeacherSimpleDto } from '@proxy/courses/models';
 import { GroupService } from '@proxy/groups';
 import type { GroupWithSchedulesDto, GroupScheduleDto } from '@proxy/groups/dtos/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { CurrentUserInfoService } from '@proxy/common';
 import { EnrollmentRequestInitiator } from '@proxy/enums/enrollment-request-initiator.enum';
+import { TeacherService } from '@proxy/teachers';
+import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
 
 interface StudentEnrollmentInfo {
   groupId: string;
@@ -35,13 +36,14 @@ export class StudentCourseGroupsComponent implements OnInit {
   private readonly groupService = inject(GroupService);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
   private readonly currentUserInfoService = inject(CurrentUserInfoService);
+  private readonly teacherService = inject(TeacherService);
 
   courseId = signal<string>('');
   course = signal<CourseDto | null>(null);
   currentEnrollment = signal<StudentEnrollmentInfo | null>(null);
-  teachers = signal<TeacherSimpleDto[]>([]);
+  teachers = signal<TeacherAutocompleteDto[]>([]);
   allGroups = signal<GroupWithSchedulesDto[]>([]);
-  selectedTeacher = signal<TeacherSimpleDto | null>(null);
+  selectedTeacher = signal<TeacherAutocompleteDto | null>(null);
   teacherGroups = signal<GroupWithSchedulesDto[]>([]);
   loading = signal(false);
   loadingGroups = signal(false);
@@ -73,7 +75,7 @@ export class StudentCourseGroupsComponent implements OnInit {
 
       // Load teachers for this course
       const teachersData = await lastValueFrom(
-        this.courseService.getTeachersForCourse(this.courseId())
+        this.teacherService.getTeachersByCourse(this.courseId(), undefined, 100)
       );
       this.teachers.set(teachersData || []);
 
@@ -154,7 +156,7 @@ export class StudentCourseGroupsComponent implements OnInit {
     }
   }
 
-  async selectTeacher(teacher: TeacherSimpleDto): Promise<void> {
+  async selectTeacher(teacher: TeacherAutocompleteDto): Promise<void> {
     this.selectedTeacher.set(teacher);
     this.loadingGroups.set(true);
     this.error.set(null);
@@ -243,5 +245,5 @@ export class StudentCourseGroupsComponent implements OnInit {
   }
 
   trackByGroupId = (_: number, item: GroupWithSchedulesDto) => item.groupId;
-  trackByTeacherId = (_: number, item: TeacherSimpleDto) => item.id;
+  trackByTeacherId = (_: number, item: TeacherAutocompleteDto) => item.id;
 }

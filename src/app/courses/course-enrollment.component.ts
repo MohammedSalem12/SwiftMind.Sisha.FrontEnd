@@ -3,11 +3,12 @@ import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
-import { TeacherSimpleDto } from '@proxy/courses/models';
 import { EnrollmentRequestInitiator } from '@proxy/enums/enrollment-request-initiator.enum';
 import { GroupService } from '@proxy/groups';
 import { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
+import { TeacherService } from '@proxy/teachers';
+import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
@@ -40,7 +41,7 @@ import { lastValueFrom } from 'rxjs';
               <div class="card teacher-card h-100" (click)="selectTeacher(teacher)" style="cursor: pointer;">
                 <div class="card-body text-center">
                   <i class="bi bi-person-circle fs-1 text-primary mb-2"></i>
-                  <h5 class="card-title">{{ teacher.fullName }}</h5>
+                  <h5 class="card-title">{{ teacher.displayName }}</h5>
                   <button class="btn btn-primary btn-sm mt-2">اختيار</button>
                 </div>
               </div>
@@ -146,9 +147,9 @@ import { lastValueFrom } from 'rxjs';
 })
 export class CourseEnrollmentComponent implements OnInit {
   courseId = signal<string>('');
-  teachers = signal<TeacherSimpleDto[]>([]);
+  teachers = signal<TeacherAutocompleteDto[]>([]);
   groups = signal<GroupWithSchedulesDto[]>([]);
-  selectedTeacher = signal<TeacherSimpleDto | null>(null);
+  selectedTeacher = signal<TeacherAutocompleteDto | null>(null);
   selectedGroup = signal<GroupWithSchedulesDto | null>(null);
   loading = signal(false);
   submitting = signal(false);
@@ -161,7 +162,8 @@ export class CourseEnrollmentComponent implements OnInit {
     private courseService: CourseService,
     private groupService: GroupService,
     private enrollmentRequestService: EnrollmentRequestService,
-    private currentUserInfoService: CurrentUserInfoService
+    private currentUserInfoService: CurrentUserInfoService,
+    private teacherService: TeacherService
   ) {}
 
   ngOnInit() {
@@ -176,7 +178,7 @@ export class CourseEnrollmentComponent implements OnInit {
     this.loading.set(true);
     this.errorMessage.set('');
     
-    this.courseService.getTeachersForCourse(this.courseId()).subscribe({
+    this.teacherService.getTeachersByCourse(this.courseId(), undefined, 100).subscribe({
       next: (teachers) => {
         this.teachers.set(teachers);
         this.loading.set(false);
@@ -189,7 +191,7 @@ export class CourseEnrollmentComponent implements OnInit {
     });
   }
 
-  selectTeacher(teacher: TeacherSimpleDto) {
+  selectTeacher(teacher: TeacherAutocompleteDto) {
     this.selectedTeacher.set(teacher);
     this.loading.set(true);
     this.errorMessage.set('');
