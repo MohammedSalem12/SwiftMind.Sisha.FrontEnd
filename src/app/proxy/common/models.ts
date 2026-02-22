@@ -9,6 +9,8 @@ export interface CurrentUserActorDto {
   userId?: string;
   userName?: string;
   email?: string;
+  currentGrade?: number;
+  linkedStudentIds: string[];
 }
 
 export interface RegisterUserDto {

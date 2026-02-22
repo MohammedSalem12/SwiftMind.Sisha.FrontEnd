@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { CourseService } from '@proxy/courses';
@@ -84,6 +84,7 @@ import { CurrentUserInfoService } from '@proxy/common';
 })
 export class CreateGroupComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly courseService = inject(CourseService);
   private readonly groupService = inject(GroupService);
   private readonly currentUserService = inject(CurrentUserInfoService);
@@ -96,6 +97,9 @@ export class CreateGroupComponent implements OnInit {
   courseId = '';
 
   async ngOnInit() {
+    // Pre-select course from query params if provided
+    const params = this.route.snapshot.queryParamMap;
+    this.courseId = params.get('courseId') || '';
     await this.loadData();
   }
 
@@ -122,7 +126,7 @@ export class CreateGroupComponent implements OnInit {
         teacherId: this.teacherId,
         courseId: this.courseId,
       }));
-      this.router.navigate(['/teacher-groups']);
+      this.navigateBack();
     } catch (err: any) {
       console.error('Error creating group:', err);
       this.errorMsg.set('حدث خطأ أثناء إنشاء المجموعة. يرجى المحاولة مرة أخرى.');
@@ -132,6 +136,14 @@ export class CreateGroupComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/teacher-groups']);
+    this.navigateBack();
+  }
+
+  private navigateBack() {
+    if (this.courseId) {
+      this.router.navigate(['/teacher-groups'], { queryParams: { courseId: this.courseId } });
+    } else {
+      this.router.navigate(['/teacher-groups']);
+    }
   }
 }

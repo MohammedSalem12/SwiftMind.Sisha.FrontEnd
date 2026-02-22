@@ -4,7 +4,8 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
-import { CourseService } from '@proxy/courses';
+import { CurrentUserInfoService } from '@proxy/common';
+import { TeacherService } from '@proxy/teachers';
 import type { CourseDto } from '@proxy/courses/dtos/models';
 
 @Component({
@@ -64,7 +65,7 @@ import type { CourseDto } from '@proxy/courses/dtos/models';
                       <i class="fas fa-eye me-1"></i>
                       عرض التفاصيل
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm" (click)="goToGroups()">
+                    <button class="btn btn-outline-secondary btn-sm" (click)="goToGroups(course)">
                       <i class="fas fa-users me-1"></i>
                       المجموعات
                     </button>
@@ -304,7 +305,8 @@ export class TeacherHomeComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly configStateService = inject(ConfigStateService);
   private readonly router = inject(Router);
-  private readonly courseService = inject(CourseService);
+  private readonly currentUserService = inject(CurrentUserInfoService);
+  private readonly teacherService = inject(TeacherService);
 
   courses = signal<CourseDto[]>([]);
   loading = signal(false);
@@ -316,9 +318,20 @@ export class TeacherHomeComponent implements OnInit {
   private async loadTeacherCourses(): Promise<void> {
     this.loading.set(true);
     try {
-      // Get teacher's courses - the backend filters by teacher's assigned groups
+      // Get teacher's actor ID from current user info
+      const userInfo = await lastValueFrom(
+        this.currentUserService.getCurrentUserActorInfo()
+      );
+      const teacherId = userInfo?.actorId;
+      if (!teacherId) {
+        console.warn('No teacher ID found for current user');
+        this.courses.set([]);
+        return;
+      }
+
+      // Get enrolled courses for the teacher
       const courses = await lastValueFrom(
-        this.courseService.getCoursesForTeacher()
+        this.teacherService.getTeacherCourses(teacherId)
       );
       this.courses.set(courses || []);
     } catch (error) {
@@ -329,12 +342,15 @@ export class TeacherHomeComponent implements OnInit {
   }
 
   viewCourseDetails(course: CourseDto): void {
-    // Navigate to courses page or specific course details
-    this.router.navigate(['/courses']);
+    this.router.navigate(['/courses', course.id, 'groups']);
   }
 
-  goToGroups(): void {
-    this.router.navigate(['/teacher-groups']);
+  goToGroups(course?: CourseDto): void {
+    if (course) {
+      this.router.navigate(['/teacher-groups'], { queryParams: { courseId: course.id } });
+    } else {
+      this.router.navigate(['/teacher-groups']);
+    }
   }
 
   goToEnrollmentRequests(): void {

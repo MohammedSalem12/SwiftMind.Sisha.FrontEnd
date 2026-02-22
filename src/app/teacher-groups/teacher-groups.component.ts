@@ -1,7 +1,7 @@
 import { AuthService, ConfigStateService } from '@abp/ng.core';
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { GroupService } from '@proxy/groups';
@@ -24,12 +24,17 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
               <h1 class="main-title mb-1">مجموعاتي التدريسية</h1>
               <p class="subtitle mb-0">
                 <i class="fas fa-chalkboard-teacher me-1"></i>
-                إدارة وتنظيم المجموعات المخصصة لك
+                <span *ngIf="courseName()">مجموعات مقرر: {{ courseName() }}</span>
+                <span *ngIf="!courseName()">إدارة وتنظيم المجموعات المخصصة لك</span>
               </p>
+              <a *ngIf="courseId()" class="show-all-link" (click)="clearFilter()">
+                <i class="fas fa-th-list me-1"></i>
+                عرض جميع المجموعات
+              </a>
             </div>
           </div>
           <div class="header-actions">
-            <button class="btn-create-group" routerLink="create">
+            <button class="btn-create-group" [routerLink]="['create']" [queryParams]="courseId() ? { courseId: courseId() } : {}">
               <i class="fas fa-plus me-2"></i>
               إنشاء مجموعة
             </button>
@@ -198,6 +203,8 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
   `,
   styles: [`
     .teacher-groups { padding: 2rem; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+    .show-all-link { display: inline-block; margin-top: 0.5rem; color: rgba(255,255,255,0.95); cursor: pointer; font-size: 0.85rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    .show-all-link:hover { color: white; }
     .header-wrapper { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; padding: 2rem; box-shadow: 0 10px 40px rgba(102,126,234,0.3); position: relative; overflow: hidden; }
     .header-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
     .header-title-section { display: flex; align-items: center; gap: 1rem; color: white; }
@@ -277,16 +284,21 @@ export class TeacherGroupsComponent implements OnInit {
   private currentUserService = inject(CurrentUserInfoService);
   private groupService = inject(GroupService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   // Component state
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
   groups = signal<GroupWithSchedulesDto[]>([]);
-  
+
   // Teacher info
   teacherName = signal<string | null>(null);
   teacherCode = signal<string | null>(null);
   teacherId = signal<string | null>(null);
+
+  // Filter by course
+  courseId = signal<string | null>(null);
+  courseName = signal<string | null>(null);
 
   // Day names in Arabic
   private dayNames = [
@@ -294,6 +306,10 @@ export class TeacherGroupsComponent implements OnInit {
   ];
 
   ngOnInit() {
+    // Read courseId from query params
+    this.route.queryParams.subscribe(params => {
+      this.courseId.set(params['courseId'] || null);
+    });
     this.loadCurrentUserAndGroups();
   }
 
@@ -309,15 +325,15 @@ export class TeacherGroupsComponent implements OnInit {
     try {
       // Get current user actor info to get teacher ID
       const currentUserActor = await this.currentUserService.getCurrentUserActorInfo().toPromise();
-      
+
       if (!currentUserActor) {
         throw new Error('لا يمكن الحصول على معلومات المستخدم الحالي');
       }
 
       // Check if user is a teacher
-      const isTeacher = currentUserActor.userRoles?.some(role => role.toLowerCase() === 'teacher') || 
-                       currentUserActor.actorType?.toLowerCase() === 'teacher';
-      
+      const isTeacher = currentUserActor.userRoles?.some(role => role.toLowerCase() === 'teacher') ||
+        currentUserActor.actorType?.toLowerCase() === 'teacher';
+
       if (!isTeacher) {
         this.error.set('هذه الصفحة متاحة للمعلمين فقط');
         return;
@@ -354,26 +370,77 @@ export class TeacherGroupsComponent implements OnInit {
     this.error.set(null);
 
     try {
-      // For now, we'll get all groups and filter by teacher ID
-      // In the future, we can add a specific API endpoint for teacher groups
-      const allGroups = await this.groupService.getList().toPromise();
-      
-      if (allGroups?.items) {
-        // Filter groups that belong to this teacher
-        const teacherGroups: GroupWithSchedulesDto[] = allGroups.items
-          .filter(group => group.teacherId === teacherId)
-          .map(group => ({
-            groupId: group.id,
-            name: group.name,
-            teacherId: group.teacherId,
-            teacherName: group.teacherName,
-            groupCode: group.groupCode,
-            courseId: group.courseId,
-            courseName: group.courseName,
-            schedules: [] // We'll need to load schedules separately if needed
-          }));
+      const filterCourseId = this.courseId();
 
-        this.groups.set(teacherGroups);
+      // If a specific courseId is provided, load only that course's groups
+      if (filterCourseId) {
+        try {
+          const groupsWithSchedules = await lastValueFrom(
+            this.groupService.getGroupsForTeacherAndCourse(teacherId, filterCourseId)
+          );
+          this.groups.set(groupsWithSchedules || []);
+          // Set course name from the first group's data
+          if (groupsWithSchedules?.length > 0) {
+            this.courseName.set(groupsWithSchedules[0].courseName || null);
+          }
+        } catch {
+          // Fallback: load all then filter client-side
+          const allGroups = await lastValueFrom(this.groupService.getList());
+          if (allGroups?.items) {
+            const filtered = allGroups.items
+              .filter(g => g.courseId === filterCourseId)
+              .map(g => ({
+                groupId: g.id,
+                name: g.name,
+                teacherId: g.teacherId,
+                teacherName: g.teacherName,
+                groupCode: g.groupCode,
+                courseId: g.courseId,
+                courseName: g.courseName,
+                schedules: [],
+              }));
+            this.groups.set(filtered);
+            if (filtered.length > 0) {
+              this.courseName.set(filtered[0].courseName || null);
+            }
+          } else {
+            this.groups.set([]);
+          }
+        }
+        return;
+      }
+
+      // No filter — load all groups
+      const allGroups = await lastValueFrom(this.groupService.getList());
+
+      if (allGroups?.items && allGroups.items.length > 0) {
+        const courseIds = [...new Set(allGroups.items.map(g => g.courseId).filter(Boolean))] as string[];
+
+        const allGroupsWithSchedules: GroupWithSchedulesDto[] = [];
+        for (const courseId of courseIds) {
+          try {
+            const groupsWithSchedules = await lastValueFrom(
+              this.groupService.getGroupsForTeacherAndCourse(teacherId, courseId)
+            );
+            allGroupsWithSchedules.push(...groupsWithSchedules);
+          } catch {
+            const basicGroups = allGroups.items
+              .filter(g => g.courseId === courseId)
+              .map(g => ({
+                groupId: g.id,
+                name: g.name,
+                teacherId: g.teacherId,
+                teacherName: g.teacherName,
+                groupCode: g.groupCode,
+                courseId: g.courseId,
+                courseName: g.courseName,
+                schedules: [],
+              }));
+            allGroupsWithSchedules.push(...basicGroups);
+          }
+        }
+
+        this.groups.set(allGroupsWithSchedules);
       } else {
         this.groups.set([]);
       }
@@ -392,13 +459,13 @@ export class TeacherGroupsComponent implements OnInit {
 
   formatTime(time?: string): string {
     if (!time) return '';
-    
+
     try {
       // Assuming time is in HH:mm format
       const [hours, minutes] = time.split(':');
       const hour = parseInt(hours, 10);
       const min = minutes || '00';
-      
+
       if (hour === 0) return `12:${min} ص`;
       if (hour < 12) return `${hour}:${min} ص`;
       if (hour === 12) return `12:${min} م`;
@@ -441,24 +508,31 @@ export class TeacherGroupsComponent implements OnInit {
     }
   }
 
+  clearFilter() {
+    this.courseId.set(null);
+    this.courseName.set(null);
+    this.router.navigate(['/teacher-groups']);
+    this.loadTeacherGroups();
+  }
+
   takeAttendance(group: GroupWithSchedulesDto) {
     // Navigate to attendance page for this group
-    this.router.navigate(['/attendance'], { 
-      queryParams: { 
+    this.router.navigate(['/attendance'], {
+      queryParams: {
         groupId: group.groupId,
         courseName: group.courseName,
-        groupName: group.name 
-      } 
+        groupName: group.name
+      }
     });
   }
 
   viewStudents(group: GroupWithSchedulesDto) {
     // Navigate to students page filtered by this group
-    this.router.navigate(['/students'], { 
-      queryParams: { 
+    this.router.navigate(['/students'], {
+      queryParams: {
         groupId: group.groupId,
         filter: 'group'
-      } 
+      }
     });
   }
 }

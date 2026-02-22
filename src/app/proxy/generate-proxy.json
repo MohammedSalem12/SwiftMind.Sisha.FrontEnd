@@ -2547,43 +2547,6 @@
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Courses.CourseAppService"
             },
-            "GetTeachersForCourseAsyncByCourseId": {
-              "uniqueName": "GetTeachersForCourseAsyncByCourseId",
-              "name": "GetTeachersForCourseAsync",
-              "httpMethod": "GET",
-              "url": "api/app/course/teachers-for-course/{courseId}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "courseId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "courseId",
-                  "name": "courseId",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.TeacherSimpleDto>",
-                "typeSimple": "[SwiftMind.Sesha.Courses.TeacherSimpleDto]"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "SwiftMind.Sesha.Courses.CourseAppService"
-            },
             "CreateAsyncByInput": {
               "uniqueName": "CreateAsyncByInput",
               "name": "CreateAsync",
@@ -13087,6 +13050,18 @@
           "regex": null
         },
         {
+          "name": "AttendanceId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "Date",
           "jsonName": null,
           "type": "System.DateTime",
@@ -13220,6 +13195,30 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CurrentGrade",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LinkedStudentIds",
+          "jsonName": null,
+          "type": "[System.String]",
+          "typeSimple": "[string]",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -13803,39 +13802,6 @@
           "type": "System.Guid",
           "typeSimple": "string",
           "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
-    "SwiftMind.Sesha.Courses.TeacherSimpleDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "Id",
-          "jsonName": null,
-          "type": "System.Guid",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "FullName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,

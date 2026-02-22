@@ -1,5 +1,5 @@
 import type { CourseDto, CreateUpdateCourseDto } from './dtos/models';
-import type { CourseSimpleDto, TeacherSimpleDto } from './models';
+import type { CourseSimpleDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { ListResultDto, PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -75,14 +75,6 @@ export class CourseService {
       method: 'GET',
       url: '/api/app/course/simple-courses',
       params: { search },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getTeachersForCourse = (courseId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, TeacherSimpleDto[]>({
-      method: 'GET',
-      url: `/api/app/course/teachers-for-course/${courseId}`,
     },
     { apiName: this.apiName,...config });
   
