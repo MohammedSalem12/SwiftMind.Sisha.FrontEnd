@@ -1,0 +1,242 @@
+<div class="student-home" dir="rtl">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="student-avatar">
+        <i class="fas fa-user-graduate"></i>
+      </div>
+      <div class="student-info">
+        <h1 class="student-name">{{ studentName() || 'الطالب' }}</h1>
+        <p class="student-grade" *ngIf="studentGrade()">الصف: {{ studentGrade() }}</p>
+        <p class="student-grade" *ngIf="!studentGrade()">مرحباً بك في SwiftMind</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="loading-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">جاري التحميل...</span>
+    </div>
+    <p class="mt-3 text-muted">جاري تحميل بياناتك...</p>
+  </div>
+
+  <div *ngIf="!loading()" class="content-container">
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-icon courses-icon">
+          <i class="fas fa-book-open"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ courses().length }}</span>
+          <span class="stat-label">مقررات مسجلة</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon absence-icon">
+          <i class="fas fa-calendar-times"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ totalAbsenceDays() }}</span>
+          <span class="stat-label">أيام غياب هذا الشهر</span>
+        </div>
+      </div>
+      <div class="stat-card" *ngIf="lastGradePercent() !== null">
+        <div class="stat-icon grade-icon">
+          <i class="fas fa-star"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ lastGradePercent() }}%</span>
+          <span class="stat-label">آخر تقييم</span>
+        </div>
+      </div>
+      <div class="stat-card" *ngIf="pendingRequestsCount() > 0">
+        <div class="stat-icon pending-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ pendingRequestsCount() }}</span>
+          <span class="stat-label">طلبات قيد الانتظار</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Parent Links -->
+    <div *ngIf="pendingParentLinks().length > 0" class="section">
+      <h2 class="section-title">
+        <i class="fas fa-link"></i>
+        طلبات ربط ولي الأمر
+        <span class="badge-count">{{ pendingParentLinks().length }}</span>
+      </h2>
+      <div class="links-list">
+        <div *ngFor="let link of pendingParentLinks()" class="link-card">
+          <div class="link-info">
+            <i class="fas fa-user-shield link-icon"></i>
+            <div>
+              <p class="link-name">{{ link.parent?.fullName }}</p>
+              <p class="link-relation">{{ link.relationshipType }}</p>
+            </div>
+          </div>
+          <div class="link-actions">
+            <button class="btn-approve" (click)="confirmParentLink(link)">
+              <i class="fas fa-check"></i> موافقة
+            </button>
+            <button class="btn-reject" (click)="rejectParentLink(link)">
+              <i class="fas fa-times"></i> رفض
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enrolled Courses -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="fas fa-graduation-cap"></i>
+          مقرراتي
+        </h2>
+        <button class="btn-enroll" (click)="enrollInCourse()">
+          <i class="fas fa-plus"></i> تسجيل في مقرر
+        </button>
+      </div>
+
+      <div *ngIf="courses().length === 0" class="empty-state">
+        <i class="fas fa-book-open empty-icon"></i>
+        <p>لم تسجل في أي مقررات بعد</p>
+        <button class="btn-primary-action" (click)="enrollInCourse()">ابدأ التسجيل</button>
+      </div>
+
+      <div class="courses-grid" *ngIf="courses().length > 0">
+        <div class="course-card" *ngFor="let course of courses(); trackBy: trackById"
+             (click)="viewCourseDetails(course)">
+          <div class="course-header">
+            <div class="course-icon-wrap">
+              <i class="fas fa-book"></i>
+            </div>
+            <span class="badge-code">{{ course.code }}</span>
+          </div>
+          <h3 class="course-name">{{ course.nameAr }}</h3>
+          <p class="course-name-en" *ngIf="course.nameEn">{{ course.nameEn }}</p>
+          <div class="course-stats">
+            <div class="course-stat" [class.has-absence]="getCourseAbsences(course.id) > 0">
+              <i class="fas fa-calendar-times"></i>
+              <span>{{ getCourseAbsences(course.id) }} غياب</span>
+            </div>
+            <ng-container *ngIf="getCourseLastGrade(course.nameAr) as g">
+              <div class="course-stat grade-stat">
+                <i class="fas fa-star"></i>
+                <span>{{ getGradePercent(g) }}%</span>
+              </div>
+            </ng-container>
+          </div>
+          <div class="course-attendance-bar">
+            <div class="attendance-fill"
+                 [style.width.%]="getCourseAttendancePct(course.id)"></div>
+          </div>
+          <p class="attendance-pct-label">{{ getCourseAttendancePct(course.id) | number:'1.0-0' }}% حضور</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity — Last Exam Grades -->
+    <div class="section" *ngIf="lastGrades().length > 0">
+      <h2 class="section-title">
+        <i class="fas fa-chart-line"></i>
+        آخر النتائج
+      </h2>
+      <div class="activity-list">
+        <div class="activity-item" *ngFor="let grade of lastGrades()">
+          <div class="activity-icon grade-activity-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="activity-content">
+            <p class="activity-title">{{ grade.examName }}</p>
+            <p class="activity-subtitle">{{ grade.courseName }}</p>
+            <p class="activity-date" *ngIf="grade.date">{{ grade.date | date:'d/M/yyyy' }}</p>
+          </div>
+          <div class="activity-grade"
+               [class.grade-high]="getGradePercent(grade) >= 75"
+               [class.grade-mid]="getGradePercent(grade) >= 50 && getGradePercent(grade) < 75"
+               [class.grade-low]="getGradePercent(grade) < 50">
+            <span class="grade-num">{{ grade.grade }}</span>
+            <span class="grade-max">/{{ grade.maxGrade }}</span>
+            <span class="grade-pct">{{ getGradePercent(grade) }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enrollment Requests -->
+    <div class="section" *ngIf="pendingRequests().length > 0">
+      <h2 class="section-title">
+        <i class="fas fa-clipboard-list"></i>
+        طلبات التسجيل
+        <button class="btn-view-all" (click)="goToMyRequests()">عرض الكل</button>
+      </h2>
+      <div class="requests-list">
+        <div class="request-item" *ngFor="let req of pendingRequests(); trackBy: trackByReqId">
+          <div class="request-info">
+            <p class="request-course">{{ req.courseName }}</p>
+            <p class="request-details">{{ req.teacherName }}<span *ngIf="req.groupName"> • {{ req.groupName }}</span></p>
+            <div class="approval-chips">
+              <span class="chip"
+                    [class.chip-done]="req.isTeacherApproved"
+                    [class.chip-wait]="!req.isTeacherApproved">
+                <i class="fas"
+                   [class.fa-check]="req.isTeacherApproved"
+                   [class.fa-clock]="!req.isTeacherApproved"></i>
+                المعلم
+              </span>
+              <span class="chip"
+                    [class.chip-done]="req.isParentApproved"
+                    [class.chip-wait]="!req.isParentApproved">
+                <i class="fas"
+                   [class.fa-check]="req.isParentApproved"
+                   [class.fa-clock]="!req.isParentApproved"></i>
+                ولي الأمر
+              </span>
+            </div>
+          </div>
+          <button *ngIf="req.status === 0"
+                  class="btn-cancel"
+                  [disabled]="cancellingId() === req.id"
+                  (click)="cancelRequest(req.id)">
+            <span *ngIf="cancellingId() !== req.id"><i class="fas fa-times"></i> إلغاء</span>
+            <span *ngIf="cancellingId() === req.id"><i class="fas fa-spinner fa-spin"></i></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section">
+      <h2 class="section-title">
+        <i class="fas fa-bolt"></i>
+        روابط سريعة
+      </h2>
+      <div class="quick-actions">
+        <button class="action-btn" (click)="enrollInCourse()">
+          <i class="fas fa-plus-circle"></i>
+          <span>تسجيل مقرر</span>
+        </button>
+        <button class="action-btn" (click)="goToMyRequests()">
+          <i class="fas fa-clipboard-list"></i>
+          <span>طلباتي</span>
+        </button>
+        <button class="action-btn" (click)="goToMyGrades()">
+          <i class="fas fa-chart-bar"></i>
+          <span>درجاتي</span>
+        </button>
+        <button class="action-btn" (click)="goToFeeds()">
+          <i class="fas fa-rss"></i>
+          <span>النشرات</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
