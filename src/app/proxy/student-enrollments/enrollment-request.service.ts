@@ -67,6 +67,14 @@ export class EnrollmentRequestService {
     { apiName: this.apiName,...config });
   
 
+  getRequestsForCurrentStudent = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, EnrollmentRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/enrollment-request/requests-for-current-student',
+    },
+    { apiName: this.apiName,...config });
+  
+
   reject = (requestId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',

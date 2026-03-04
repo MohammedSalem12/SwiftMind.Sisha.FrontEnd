@@ -24,11 +24,49 @@ export const appRoutes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'parent/child/:studentId',
+    loadComponent: () => import('./home/parent-child-detail.component').then(m => m.ParentChildDetailComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
+    path: 'parent/link-child',
+    loadComponent: () => import('./home/parent-link-child.component').then(m => m.ParentLinkChildComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
+    path: 'student/attendance',
+    loadComponent: () => import('./home/student-my-attendance.component').then(m => m.StudentMyAttendanceComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'student/grades',
+    loadComponent: () => import('./home/student-my-grades.component').then(m => m.StudentMyGradesComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'student/requests',
+    loadComponent: () => import('./home/student-my-requests.component').then(m => m.StudentMyRequestsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'student/courses',
+    loadComponent: () => import('./home/student-courses.component').then(m => m.StudentCoursesComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
     path: 'teacher/enroll',
     loadComponent: () => import('./home/teacher-self-enroll.component').then(m => m.TeacherSelfEnrollComponent),
     canActivate: [roleGuard],
     data: { roles: ['TEACHER'] }
   },
+  // Redirect ABP's default account/login to our custom login page
+  { path: 'account/login', redirectTo: '/login', pathMatch: 'full' },
   {
     path: 'account',
     loadChildren: () => import('@abp/ng.account').then(m => m.createRoutes()),
@@ -107,10 +145,11 @@ export const appRoutes: Routes = [
   {
     path: 'courses',
     loadChildren: () => import('./courses/courses.routes').then(m => m.coursesRoutes),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN', 'SECRETARY'] }
   },
   {
-    path: 'courses/:id/enroll',
+    path: 'student/enroll/:id',
     loadComponent: () => import('./courses/course-enrollment.component').then(m => m.CourseEnrollmentComponent),
     canActivate: [roleGuard],
     data: { roles: ['STUDENT'] }
@@ -122,6 +161,12 @@ export const appRoutes: Routes = [
     data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
   {
+    path: 'secretary-assignments',
+    loadComponent: () => import('./secretary-assignments/secretary-assignments.component').then(m => m.SecretaryAssignmentsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN', 'SECRETARY'] }
+  },
+  {
     path: 'parent-enrollment-approval',
     loadComponent: () => import('./parent-enrollment-approval/parent-enrollment-approval.component').then(m => m.ParentEnrollmentApprovalComponent),
     canActivate: [roleGuard],
@@ -130,6 +175,11 @@ export const appRoutes: Routes = [
   {
     path: 'notifications',
     loadComponent: () => import('./notifications/notifications.component').then(m => m.NotificationsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./profile/profile.component').then(m => m.ProfileComponent),
     canActivate: [authGuard]
   },
   {
@@ -146,6 +196,12 @@ export const appRoutes: Routes = [
   {
     path: 'attendance',
     loadChildren: () => import('./attendance/attendance.routes').then(m => m.attendanceRoutes),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
+  },
+  {
+    path: 'marks-entry',
+    loadChildren: () => import('./marks-entry/marks-entry.routes').then(m => m.marksEntryRoutes),
     canActivate: [roleGuard],
     data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },

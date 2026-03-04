@@ -2,12 +2,22 @@ import type { CreateUpdateStudentDto, StudentDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
+import type { ParentStudentDto } from '../parents/models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StudentService {
   apiName = 'Default';
+  
+
+  confirmParentStudentLink = (parentId: string, studentId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/student/confirm-parent-student-link',
+      params: { parentId, studentId },
+    },
+    { apiName: this.apiName,...config });
   
 
   create = (input: CreateUpdateStudentDto, config?: Partial<Rest.Config>) =>
@@ -35,6 +45,15 @@ export class StudentService {
     { apiName: this.apiName,...config });
   
 
+  getByStudentCode = (studentCode: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentDto>({
+      method: 'GET',
+      url: '/api/app/student/by-student-code',
+      params: { studentCode },
+    },
+    { apiName: this.apiName,...config });
+  
+
   getCurrentStudent = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, StudentDto>({
       method: 'GET',
@@ -48,6 +67,23 @@ export class StudentService {
       method: 'GET',
       url: '/api/app/student',
       params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPendingLinksForCurrentStudent = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ParentStudentDto[]>({
+      method: 'GET',
+      url: '/api/app/student/pending-links-for-current-student',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  rejectParentStudentLink = (parentId: string, studentId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/student/reject-parent-student-link',
+      params: { parentId, studentId },
     },
     { apiName: this.apiName,...config });
   

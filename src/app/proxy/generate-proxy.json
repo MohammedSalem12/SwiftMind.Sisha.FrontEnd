@@ -1997,6 +1997,74 @@
                   }
                 },
                 {
+                  "name": "RegisterStudentAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Common.UserRegStudentDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Common.UserRegStudentDto",
+                      "typeSimple": "SwiftMind.Sesha.Common.UserRegStudentDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                    "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+                  }
+                },
+                {
+                  "name": "RegisterTeacherAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Common.UserRegTeacherDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Common.UserRegTeacherDto",
+                      "typeSimple": "SwiftMind.Sesha.Common.UserRegTeacherDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                    "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+                  }
+                },
+                {
+                  "name": "RegisterParentAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Common.UserRegParentDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Common.UserRegParentDto",
+                      "typeSimple": "SwiftMind.Sesha.Common.UserRegParentDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                    "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+                  }
+                },
+                {
+                  "name": "RegisterSecretaryAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Common.UserRegSecretaryDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Common.UserRegSecretaryDto",
+                      "typeSimple": "SwiftMind.Sesha.Common.UserRegSecretaryDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                    "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+                  }
+                },
+                {
                   "name": "GetAvailableUserTypesAsync",
                   "parametersOnMethod": [],
                   "returnValue": {
@@ -2031,6 +2099,154 @@
                   "jsonName": null,
                   "type": "SwiftMind.Sesha.Common.RegisterUserDto",
                   "typeSimple": "SwiftMind.Sesha.Common.RegisterUserDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+              },
+              "allowAnonymous": true,
+              "implementFrom": "SwiftMind.Sesha.Common.IUserRegistrationAppService"
+            },
+            "RegisterStudentAsyncByInput": {
+              "uniqueName": "RegisterStudentAsyncByInput",
+              "name": "RegisterStudentAsync",
+              "httpMethod": "POST",
+              "url": "api/app/user-registration/register-student",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Common.UserRegStudentDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Common.UserRegStudentDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegStudentDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Common.UserRegStudentDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegStudentDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+              },
+              "allowAnonymous": true,
+              "implementFrom": "SwiftMind.Sesha.Common.IUserRegistrationAppService"
+            },
+            "RegisterTeacherAsyncByInput": {
+              "uniqueName": "RegisterTeacherAsyncByInput",
+              "name": "RegisterTeacherAsync",
+              "httpMethod": "POST",
+              "url": "api/app/user-registration/register-teacher",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Common.UserRegTeacherDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Common.UserRegTeacherDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegTeacherDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Common.UserRegTeacherDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegTeacherDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+              },
+              "allowAnonymous": true,
+              "implementFrom": "SwiftMind.Sesha.Common.IUserRegistrationAppService"
+            },
+            "RegisterParentAsyncByInput": {
+              "uniqueName": "RegisterParentAsyncByInput",
+              "name": "RegisterParentAsync",
+              "httpMethod": "POST",
+              "url": "api/app/user-registration/register-parent",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Common.UserRegParentDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Common.UserRegParentDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegParentDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Common.UserRegParentDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegParentDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+              },
+              "allowAnonymous": true,
+              "implementFrom": "SwiftMind.Sesha.Common.IUserRegistrationAppService"
+            },
+            "RegisterSecretaryAsyncByInput": {
+              "uniqueName": "RegisterSecretaryAsyncByInput",
+              "name": "RegisterSecretaryAsync",
+              "httpMethod": "POST",
+              "url": "api/app/user-registration/register-secretary",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Common.UserRegSecretaryDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Common.UserRegSecretaryDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegSecretaryDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Common.UserRegSecretaryDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegSecretaryDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -2353,7 +2569,155 @@
                 "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
                 "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": true,
+              "implementFrom": "SwiftMind.Sesha.Controllers.UserRegistrationController"
+            },
+            "RegisterStudentAsyncByInput": {
+              "uniqueName": "RegisterStudentAsyncByInput",
+              "name": "RegisterStudentAsync",
+              "httpMethod": "POST",
+              "url": "api/app/user-registration/student",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Common.UserRegStudentDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Common.UserRegStudentDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegStudentDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Common.UserRegStudentDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegStudentDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+              },
+              "allowAnonymous": true,
+              "implementFrom": "SwiftMind.Sesha.Controllers.UserRegistrationController"
+            },
+            "RegisterTeacherAsyncByInput": {
+              "uniqueName": "RegisterTeacherAsyncByInput",
+              "name": "RegisterTeacherAsync",
+              "httpMethod": "POST",
+              "url": "api/app/user-registration/teacher",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Common.UserRegTeacherDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Common.UserRegTeacherDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegTeacherDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Common.UserRegTeacherDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegTeacherDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+              },
+              "allowAnonymous": true,
+              "implementFrom": "SwiftMind.Sesha.Controllers.UserRegistrationController"
+            },
+            "RegisterParentAsyncByInput": {
+              "uniqueName": "RegisterParentAsyncByInput",
+              "name": "RegisterParentAsync",
+              "httpMethod": "POST",
+              "url": "api/app/user-registration/parent",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Common.UserRegParentDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Common.UserRegParentDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegParentDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Common.UserRegParentDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegParentDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+              },
+              "allowAnonymous": true,
+              "implementFrom": "SwiftMind.Sesha.Controllers.UserRegistrationController"
+            },
+            "RegisterSecretaryAsyncByInput": {
+              "uniqueName": "RegisterSecretaryAsyncByInput",
+              "name": "RegisterSecretaryAsync",
+              "httpMethod": "POST",
+              "url": "api/app/user-registration/secretary",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Common.UserRegSecretaryDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Common.UserRegSecretaryDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegSecretaryDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Common.UserRegSecretaryDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UserRegSecretaryDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Common.UserRegistrationResultDto",
+                "typeSimple": "SwiftMind.Sesha.Common.UserRegistrationResultDto"
+              },
+              "allowAnonymous": true,
               "implementFrom": "SwiftMind.Sesha.Controllers.UserRegistrationController"
             },
             "GetAvailableUserTypesAsync": {
@@ -2368,7 +2732,7 @@
                 "type": "SwiftMind.Sesha.Common.UserRegistrationTypeDto[]",
                 "typeSimple": "[SwiftMind.Sesha.Common.UserRegistrationTypeDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": true,
               "implementFrom": "SwiftMind.Sesha.Controllers.UserRegistrationController"
             }
           }
@@ -2541,8 +2905,45 @@
               "parametersOnMethod": [],
               "parameters": [],
               "returnValue": {
-                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.CourseDto>",
-                "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]"
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.StudentCourseDto>",
+                "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.StudentCourseDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Courses.CourseAppService"
+            },
+            "UnrollFromCourseAsyncByCourseId": {
+              "uniqueName": "UnrollFromCourseAsyncByCourseId",
+              "name": "UnrollFromCourseAsync",
+              "httpMethod": "POST",
+              "url": "api/app/course/unroll-from-course/{courseId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "courseId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "courseId",
+                  "name": "courseId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Courses.CourseAppService"
@@ -4508,7 +4909,7 @@
                 "type": "Volo.Abp.Application.Dtos.ListResultDto<SwiftMind.Sesha.Grades.Dtos.GradeDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<SwiftMind.Sesha.Grades.Dtos.GradeDto>"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": true,
               "implementFrom": "SwiftMind.Sesha.Grades.GradeAppService"
             }
           }
@@ -5206,6 +5607,91 @@
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Home.IHomeAppService"
+            }
+          }
+        },
+        "SwiftMind.Sesha.Notifications.DeviceTokenAppService": {
+          "controllerName": "DeviceToken",
+          "controllerGroupName": "DeviceToken",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "SwiftMind.Sesha.Notifications.DeviceTokenAppService",
+          "interfaces": [],
+          "actions": {
+            "RegisterAsyncByInput": {
+              "uniqueName": "RegisterAsyncByInput",
+              "name": "RegisterAsync",
+              "httpMethod": "POST",
+              "url": "api/app/device-token/register",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Notifications.RegisterDeviceTokenDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Notifications.RegisterDeviceTokenDto",
+                  "typeSimple": "SwiftMind.Sesha.Notifications.RegisterDeviceTokenDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Notifications.RegisterDeviceTokenDto",
+                  "typeSimple": "SwiftMind.Sesha.Notifications.RegisterDeviceTokenDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Notifications.DeviceTokenAppService"
+            },
+            "UnregisterAsyncByToken": {
+              "uniqueName": "UnregisterAsyncByToken",
+              "name": "UnregisterAsync",
+              "httpMethod": "POST",
+              "url": "api/app/device-token/unregister",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "token",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "token",
+                  "name": "token",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Notifications.DeviceTokenAppService"
             }
           }
         },
@@ -6428,135 +6914,6 @@
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Parents.IParentAppService"
             },
-            "ConfirmParentStudentLinkAsyncByParentIdAndStudentId": {
-              "uniqueName": "ConfirmParentStudentLinkAsyncByParentIdAndStudentId",
-              "name": "ConfirmParentStudentLinkAsync",
-              "httpMethod": "POST",
-              "url": "api/app/parent/confirm-parent-student-link",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "parentId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "studentId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "parentId",
-                  "name": "parentId",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "studentId",
-                  "name": "studentId",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "SwiftMind.Sesha.Parents.ParentAppService"
-            },
-            "RejectParentStudentLinkAsyncByParentIdAndStudentId": {
-              "uniqueName": "RejectParentStudentLinkAsyncByParentIdAndStudentId",
-              "name": "RejectParentStudentLinkAsync",
-              "httpMethod": "POST",
-              "url": "api/app/parent/reject-parent-student-link",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "parentId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "studentId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "parentId",
-                  "name": "parentId",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "studentId",
-                  "name": "studentId",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "SwiftMind.Sesha.Parents.ParentAppService"
-            },
-            "GetPendingLinksForCurrentStudentAsync": {
-              "uniqueName": "GetPendingLinksForCurrentStudentAsync",
-              "name": "GetPendingLinksForCurrentStudentAsync",
-              "httpMethod": "GET",
-              "url": "api/app/parent/pending-links-for-current-student",
-              "supportedVersions": [],
-              "parametersOnMethod": [],
-              "parameters": [],
-              "returnValue": {
-                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Parents.ParentStudentDto>",
-                "typeSimple": "[SwiftMind.Sesha.Parents.ParentStudentDto]"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "SwiftMind.Sesha.Parents.ParentAppService"
-            },
             "UpdateAsyncByIdAndInput": {
               "uniqueName": "UpdateAsyncByIdAndInput",
               "name": "UpdateAsync",
@@ -6946,6 +7303,21 @@
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestAppService"
             },
+            "GetRequestsForCurrentStudentAsync": {
+              "uniqueName": "GetRequestsForCurrentStudentAsync",
+              "name": "GetRequestsForCurrentStudentAsync",
+              "httpMethod": "GET",
+              "url": "api/app/enrollment-request/requests-for-current-student",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.StudentEnrollments.EnrollmentRequestAppService"
+            },
             "GetPendingRequestsForCurrentTeacherAsync": {
               "uniqueName": "GetPendingRequestsForCurrentTeacherAsync",
               "name": "GetPendingRequestsForCurrentTeacherAsync",
@@ -7231,6 +7603,43 @@
               "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
             },
+            "GetEnrolledStudentsByCourseAsyncByCourseId": {
+              "uniqueName": "GetEnrolledStudentsByCourseAsyncByCourseId",
+              "name": "GetEnrolledStudentsByCourseAsync",
+              "httpMethod": "GET",
+              "url": "api/app/student-enrollment/enrolled-students-by-course/{courseId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "courseId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "courseId",
+                  "name": "courseId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.StudentEnrollments.Dtos.EnrolledStudentDto>",
+                "typeSimple": "[SwiftMind.Sesha.StudentEnrollments.Dtos.EnrolledStudentDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.StudentEnrollments.StudentEnrollmentAppService"
+            },
             "GetAsyncById": {
               "uniqueName": "GetAsyncById",
               "name": "GetAsync",
@@ -7277,7 +7686,190 @@
           "isIntegrationService": false,
           "apiVersion": null,
           "type": "SwiftMind.Sesha.Students.StudentAppService",
-          "interfaces": [],
+          "interfaces": [
+            {
+              "type": "SwiftMind.Sesha.Students.IStudentAppService",
+              "name": "IStudentAppService",
+              "methods": [
+                {
+                  "name": "GetCurrentStudentAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
+                  "name": "GetByStudentCodeAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "studentCode",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
+                  "name": "GetPendingLinksForCurrentStudentAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Parents.ParentStudentDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Parents.ParentStudentDto]"
+                  }
+                },
+                {
+                  "name": "ConfirmParentStudentLinkAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "parentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "studentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RejectParentStudentLinkAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "parentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "studentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
+                  "name": "GetListAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
+                      "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<SwiftMind.Sesha.Students.StudentDto>",
+                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<SwiftMind.Sesha.Students.StudentDto>"
+                  }
+                },
+                {
+                  "name": "CreateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Students.CreateUpdateStudentDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                      "typeSimple": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
+                  "name": "UpdateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Students.CreateUpdateStudentDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                      "typeSimple": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
+                  "name": "DeleteAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                }
+              ]
+            }
+          ],
           "actions": {
             "GetCurrentStudentAsync": {
               "uniqueName": "GetCurrentStudentAsync",
@@ -7292,7 +7884,173 @@
                 "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
               },
               "allowAnonymous": null,
-              "implementFrom": "SwiftMind.Sesha.Students.StudentAppService"
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "GetByStudentCodeAsyncByStudentCode": {
+              "uniqueName": "GetByStudentCodeAsyncByStudentCode",
+              "name": "GetByStudentCodeAsync",
+              "httpMethod": "GET",
+              "url": "api/app/student/by-student-code",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "studentCode",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "studentCode",
+                  "name": "studentCode",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "GetPendingLinksForCurrentStudentAsync": {
+              "uniqueName": "GetPendingLinksForCurrentStudentAsync",
+              "name": "GetPendingLinksForCurrentStudentAsync",
+              "httpMethod": "GET",
+              "url": "api/app/student/pending-links-for-current-student",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Parents.ParentStudentDto>",
+                "typeSimple": "[SwiftMind.Sesha.Parents.ParentStudentDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "ConfirmParentStudentLinkAsyncByParentIdAndStudentId": {
+              "uniqueName": "ConfirmParentStudentLinkAsyncByParentIdAndStudentId",
+              "name": "ConfirmParentStudentLinkAsync",
+              "httpMethod": "POST",
+              "url": "api/app/student/confirm-parent-student-link",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "parentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "studentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "parentId",
+                  "name": "parentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "studentId",
+                  "name": "studentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "RejectParentStudentLinkAsyncByParentIdAndStudentId": {
+              "uniqueName": "RejectParentStudentLinkAsyncByParentIdAndStudentId",
+              "name": "RejectParentStudentLinkAsync",
+              "httpMethod": "POST",
+              "url": "api/app/student/reject-parent-student-link",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "parentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "studentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "parentId",
+                  "name": "parentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "studentId",
+                  "name": "studentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
             },
             "CreateAsyncByInput": {
               "uniqueName": "CreateAsyncByInput",
@@ -7532,7 +8290,81 @@
           "isIntegrationService": false,
           "apiVersion": null,
           "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherAppService",
-          "interfaces": [],
+          "interfaces": [
+            {
+              "type": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService",
+              "name": "ISecretaryTeacherAppService",
+              "methods": [
+                {
+                  "name": "AssignTeacherToSecretaryAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Teachers.CreateSecretaryTeacherDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Teachers.CreateSecretaryTeacherDto",
+                      "typeSimple": "SwiftMind.Sesha.Teachers.CreateSecretaryTeacherDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherDto",
+                    "typeSimple": "SwiftMind.Sesha.Teachers.SecretaryTeacherDto"
+                  }
+                },
+                {
+                  "name": "RemoveTeacherFromSecretaryAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "secretaryUserId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "teacherId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetTeachersForCurrentSecretaryAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.SecretaryTeacherDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Teachers.SecretaryTeacherDto]"
+                  }
+                },
+                {
+                  "name": "GetTeacherIdsForSecretaryAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "secretaryUserId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<System.Guid>",
+                    "typeSimple": "[string]"
+                  }
+                }
+              ]
+            }
+          ],
           "actions": {
             "AssignTeacherToSecretaryAsyncByInput": {
               "uniqueName": "AssignTeacherToSecretaryAsyncByInput",
@@ -7569,7 +8401,7 @@
                 "typeSimple": "SwiftMind.Sesha.Teachers.SecretaryTeacherDto"
               },
               "allowAnonymous": null,
-              "implementFrom": "SwiftMind.Sesha.Teachers.SecretaryTeacherAppService"
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
             },
             "RemoveTeacherFromSecretaryAsyncBySecretaryUserIdAndTeacherId": {
               "uniqueName": "RemoveTeacherFromSecretaryAsyncBySecretaryUserIdAndTeacherId",
@@ -7626,7 +8458,7 @@
                 "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
-              "implementFrom": "SwiftMind.Sesha.Teachers.SecretaryTeacherAppService"
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
             },
             "GetTeachersForCurrentSecretaryAsync": {
               "uniqueName": "GetTeachersForCurrentSecretaryAsync",
@@ -7641,7 +8473,7 @@
                 "typeSimple": "[SwiftMind.Sesha.Teachers.SecretaryTeacherDto]"
               },
               "allowAnonymous": null,
-              "implementFrom": "SwiftMind.Sesha.Teachers.SecretaryTeacherAppService"
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
             },
             "GetTeacherIdsForSecretaryAsyncBySecretaryUserId": {
               "uniqueName": "GetTeacherIdsForSecretaryAsyncBySecretaryUserId",
@@ -7678,7 +8510,7 @@
                 "typeSimple": "[string]"
               },
               "allowAnonymous": null,
-              "implementFrom": "SwiftMind.Sesha.Teachers.SecretaryTeacherAppService"
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
             }
           }
         },
@@ -12267,6 +13099,610 @@
               "implementFrom": "SwiftMind.Sesha.Parents.IParentAppService"
             }
           }
+        },
+        "SwiftMind.Sesha.Controllers.Students.StudentController": {
+          "controllerName": "Student",
+          "controllerGroupName": "Student",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "SwiftMind.Sesha.Controllers.Students.StudentController",
+          "interfaces": [
+            {
+              "type": "SwiftMind.Sesha.Students.IStudentAppService",
+              "name": "IStudentAppService",
+              "methods": [
+                {
+                  "name": "GetCurrentStudentAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
+                  "name": "GetByStudentCodeAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "studentCode",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
+                  "name": "GetPendingLinksForCurrentStudentAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Parents.ParentStudentDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Parents.ParentStudentDto]"
+                  }
+                },
+                {
+                  "name": "ConfirmParentStudentLinkAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "parentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "studentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RejectParentStudentLinkAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "parentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "studentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
+                  "name": "GetListAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
+                      "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<SwiftMind.Sesha.Students.StudentDto>",
+                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<SwiftMind.Sesha.Students.StudentDto>"
+                  }
+                },
+                {
+                  "name": "CreateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Students.CreateUpdateStudentDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                      "typeSimple": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
+                  "name": "UpdateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Students.CreateUpdateStudentDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                      "typeSimple": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
+                  "name": "DeleteAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetListAsyncByInput": {
+              "uniqueName": "GetListAsyncByInput",
+              "name": "GetListAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/students",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
+                  "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "Sorting",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<SwiftMind.Sesha.Students.StudentDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<SwiftMind.Sesha.Students.StudentDto>"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<SwiftMind.Sesha.Students.StudentDto,SwiftMind.Sesha.Students.StudentDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
+            },
+            "GetAsyncById": {
+              "uniqueName": "GetAsyncById",
+              "name": "GetAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/students/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<SwiftMind.Sesha.Students.StudentDto,SwiftMind.Sesha.Students.StudentDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
+            },
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/students",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Students.CreateUpdateStudentDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<SwiftMind.Sesha.Students.StudentDto,SwiftMind.Sesha.Students.CreateUpdateStudentDto>"
+            },
+            "UpdateAsyncByIdAndInput": {
+              "uniqueName": "UpdateAsyncByIdAndInput",
+              "name": "UpdateAsync",
+              "httpMethod": "PUT",
+              "url": "api/sesha/students/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Students.CreateUpdateStudentDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreateUpdateStudentDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.IUpdateAppService<SwiftMind.Sesha.Students.StudentDto,System.Guid,SwiftMind.Sesha.Students.CreateUpdateStudentDto>"
+            },
+            "DeleteAsyncById": {
+              "uniqueName": "DeleteAsyncById",
+              "name": "DeleteAsync",
+              "httpMethod": "DELETE",
+              "url": "api/sesha/students/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
+            },
+            "GetCurrentStudentAsync": {
+              "uniqueName": "GetCurrentStudentAsync",
+              "name": "GetCurrentStudentAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/students/current",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "GetByStudentCodeAsyncByStudentCode": {
+              "uniqueName": "GetByStudentCodeAsyncByStudentCode",
+              "name": "GetByStudentCodeAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/students/by-code/{studentCode}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "studentCode",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "studentCode",
+                  "name": "studentCode",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "GetPendingLinksForCurrentStudentAsync": {
+              "uniqueName": "GetPendingLinksForCurrentStudentAsync",
+              "name": "GetPendingLinksForCurrentStudentAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/students/pending-parent-links",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Parents.ParentStudentDto>",
+                "typeSimple": "[SwiftMind.Sesha.Parents.ParentStudentDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "ConfirmParentStudentLinkAsyncByParentIdAndStudentId": {
+              "uniqueName": "ConfirmParentStudentLinkAsyncByParentIdAndStudentId",
+              "name": "ConfirmParentStudentLinkAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/students/confirm-parent-link",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "parentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "studentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "parentId",
+                  "name": "parentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "studentId",
+                  "name": "studentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "RejectParentStudentLinkAsyncByParentIdAndStudentId": {
+              "uniqueName": "RejectParentStudentLinkAsyncByParentIdAndStudentId",
+              "name": "RejectParentStudentLinkAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/students/reject-parent-link",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "parentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "studentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "parentId",
+                  "name": "parentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "studentId",
+                  "name": "studentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            }
+          }
         }
       }
     },
@@ -13276,7 +14712,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": 0,
           "maxLength": 32,
           "minimum": null,
@@ -13477,6 +14913,75 @@
         }
       ]
     },
+    "SwiftMind.Sesha.Common.UserRegBaseDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 3,
+          "maxLength": 64,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FirstName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 64,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MiddleName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 64,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 64,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Password",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 6,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "SwiftMind.Sesha.Common.UserRegistrationResultDto": {
       "baseType": null,
       "isEnum": false,
@@ -13651,6 +15156,51 @@
         }
       ]
     },
+    "SwiftMind.Sesha.Common.UserRegParentDto": {
+      "baseType": "SwiftMind.Sesha.Common.UserRegBaseDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": []
+    },
+    "SwiftMind.Sesha.Common.UserRegSecretaryDto": {
+      "baseType": "SwiftMind.Sesha.Common.UserRegBaseDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": []
+    },
+    "SwiftMind.Sesha.Common.UserRegStudentDto": {
+      "baseType": "SwiftMind.Sesha.Common.UserRegBaseDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Grade",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "1",
+          "maximum": "12",
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Common.UserRegTeacherDto": {
+      "baseType": "SwiftMind.Sesha.Common.UserRegBaseDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": []
+    },
     "SwiftMind.Sesha.Courses.CourseSimpleDto": {
       "baseType": null,
       "isEnum": false,
@@ -13802,6 +15352,63 @@
           "type": "System.Guid",
           "typeSimple": "string",
           "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Courses.Dtos.StudentCourseDto": {
+      "baseType": "SwiftMind.Sesha.Courses.Dtos.CourseDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "IsEnrolled",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HasPendingRequest",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EnrollmentId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PendingRequestId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,
@@ -16005,6 +17612,8 @@
         "EnrollmentRejected",
         "EnrollmentRequestPending",
         "ParentStudentLinked",
+        "ExamGradePosted",
+        "AttendanceMarkedAbsent",
         "General"
       ],
       "enumValues": [
@@ -16012,10 +17621,45 @@
         1,
         2,
         3,
-        4
+        4,
+        5,
+        6
       ],
       "genericArguments": null,
       "properties": null
+    },
+    "SwiftMind.Sesha.Notifications.RegisterDeviceTokenDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Token",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 512,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Platform",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 16,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
     },
     "SwiftMind.Sesha.Parents.CreateParentDto": {
       "baseType": null,
@@ -17068,6 +18712,63 @@
           "type": "System.DateTime",
           "typeSimple": "string",
           "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.StudentEnrollments.Dtos.EnrolledStudentDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "StudentId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StudentName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StudentCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EnrolledAt",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,

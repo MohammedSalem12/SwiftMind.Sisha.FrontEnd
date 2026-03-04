@@ -5,7 +5,9 @@ export enum NotificationType {
   EnrollmentRejected = 1,
   EnrollmentRequestPending = 2,
   ParentStudentLinked = 3,
-  General = 4,
+  ExamGradePosted = 4,
+  AttendanceMarkedAbsent = 5,
+  General = 6,
 }
 
 export const notificationTypeOptions = mapEnumToOptions(NotificationType);

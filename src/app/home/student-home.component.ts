@@ -8,10 +8,11 @@ import type { StudentAttendanceReportDto } from '@proxy/attendances/dtos';
 import { CurrentUserInfoService } from '@proxy/common';
 import { ExamGradeService } from '@proxy/exam-grades';
 import type { ExamGradeDto } from '@proxy/exam-grades/dtos';
-import { ParentService } from '@proxy/parents';
+import { StudentService } from '@proxy/students';
 import type { ParentStudentDto } from '@proxy/parents/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
+import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 
 interface EnrolledCourseInfo {
   courseId: string;
@@ -31,7 +32,7 @@ interface EnrolledCourseInfo {
 export class StudentHomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
-  private readonly parentService = inject(ParentService);
+  private readonly studentService = inject(StudentService);
   private readonly attendanceSvc = inject(AttendanceService);
   private readonly examGradeSvc = inject(ExamGradeService);
   private readonly enrollmentRequestSvc = inject(EnrollmentRequestService);
@@ -114,14 +115,13 @@ export class StudentHomeComponent implements OnInit {
   private async loadEnrollmentRequests(studentId?: string | null): Promise<void> {
     if (!studentId) return;
     try {
-      const all = await lastValueFrom(this.enrollmentRequestSvc.getList());
-      const mine = (all || []).filter(r => r.studentId === studentId);
+      const mine = await lastValueFrom(this.enrollmentRequestSvc.getRequestsForCurrentStudent());
 
-      // Enrolled = both teacher AND parent approved — deduplicate by courseId
+      // Enrolled = status Approved — deduplicate by courseId
       const seen = new Set<string>();
       const enrolled: EnrolledCourseInfo[] = [];
-      for (const r of mine) {
-        if (r.isParentApproved && r.isTeacherApproved && r.courseId && !seen.has(r.courseId)) {
+      for (const r of (mine || [])) {
+        if (r.status === EnrollmentRequestStatus.Approved && r.courseId && !seen.has(r.courseId)) {
           seen.add(r.courseId);
           enrolled.push({
             courseId: r.courseId,
@@ -134,8 +134,8 @@ export class StudentHomeComponent implements OnInit {
       }
       this.enrolledCourses.set(enrolled);
 
-      // Pending = not yet fully approved
-      const pending = mine.filter(r => !r.isParentApproved || !r.isTeacherApproved);
+      // Pending = status Pending (waiting for approval)
+      const pending = (mine || []).filter(r => r.status === EnrollmentRequestStatus.Pending);
       this.pendingRequests.set(pending);
     } catch (err) {
       console.error('Error loading enrollment requests:', err);
@@ -144,7 +144,7 @@ export class StudentHomeComponent implements OnInit {
 
   private async loadPendingParentLinks(): Promise<void> {
     try {
-      const links = await lastValueFrom(this.parentService.getPendingLinksForCurrentStudent());
+      const links = await lastValueFrom(this.studentService.getPendingLinksForCurrentStudent());
       this.pendingParentLinks.set(links || []);
     } catch (err) {
       console.error('Error loading pending parent links:', err);
@@ -182,7 +182,7 @@ export class StudentHomeComponent implements OnInit {
 
   async confirmParentLink(link: ParentStudentDto): Promise<void> {
     try {
-      await lastValueFrom(this.parentService.confirmParentStudentLink(link.parentId!, link.studentId!));
+      await lastValueFrom(this.studentService.confirmParentStudentLink(link.parentId!, link.studentId!));
       await this.loadPendingParentLinks();
     } catch (err) {
       console.error('Error confirming parent link:', err);
@@ -191,7 +191,7 @@ export class StudentHomeComponent implements OnInit {
 
   async rejectParentLink(link: ParentStudentDto): Promise<void> {
     try {
-      await lastValueFrom(this.parentService.rejectParentStudentLink(link.parentId!, link.studentId!));
+      await lastValueFrom(this.studentService.rejectParentStudentLink(link.parentId!, link.studentId!));
       await this.loadPendingParentLinks();
     } catch (err) {
       console.error('Error rejecting parent link:', err);
@@ -199,11 +199,11 @@ export class StudentHomeComponent implements OnInit {
   }
 
   viewCourse(course: EnrolledCourseInfo): void {
-    this.router.navigate(['/courses', course.courseId, 'enroll']);
+    this.router.navigate(['/student/courses']);
   }
 
   enrollInCourse(): void {
-    this.router.navigate(['/courses']);
+    this.router.navigate(['/student/courses']);
   }
 
   goToMyRequests(): void {

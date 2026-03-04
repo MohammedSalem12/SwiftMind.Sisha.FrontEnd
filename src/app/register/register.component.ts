@@ -2,8 +2,10 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { UserRegistrationService } from '@proxy/common';
+import { UserRegistrationService } from '@proxy/controllers';
 import { UserRegistrationType } from '@proxy/domain/shared/enums/user-registration-type.enum';
+import type { UserRegStudentDto, UserRegTeacherDto, UserRegParentDto, UserRegSecretaryDto } from '@proxy/common/models';
+import { GradeService } from '@proxy/grades';
 import { AuthService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
@@ -12,143 +14,205 @@ import { lastValueFrom } from 'rxjs';
   selector: 'app-register',
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent implements OnInit {
   private readonly userRegSvc = inject(UserRegistrationService);
+  private readonly gradeSvc = inject(GradeService);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
 
-  userTypes = signal<any[]>([]);
-  loading = signal(false);
-  registering = signal(false);
-
-  // Form model
-  registerForm = {
-    userType: null as UserRegistrationType | null,
-    userName: '',
-    email: '',
-    phoneNumber: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    address: '',
-    occupation: '',
-    emergencyContact: '',
-    dateOfBirth: '',
-    grade: '',
-    parentContact: '',
-    department: '',
-    qualification: '',
-    employeeId: '',
-    hireDate: '',
-    position: '',
-    responsibilities: ''
-  };
-
   UserRegistrationType = UserRegistrationType;
 
-  ngOnInit(): void {
-    // If user is already authenticated, redirect to home
+  step = signal<'role' | 'form' | 'success'>('role');
+  registering = signal(false);
+  error = signal<string | null>(null);
+  successCode = signal<string | null>(null);
+
+  readonly roles = [
+    {
+      type: UserRegistrationType.Student,
+      label: 'طالب',
+      description: 'سجّل كطالب للوصول إلى مقرراتك',
+      icon: 'fa-graduation-cap',
+      color: '#22c55e',
+      bg: '#f0fdf4',
+      border: '#86efac',
+    },
+    {
+      type: UserRegistrationType.Teacher,
+      label: 'معلم',
+      description: 'سجّل كمعلم لإدارة طلابك وفصولك',
+      icon: 'fa-chalkboard-teacher',
+      color: '#667eea',
+      bg: '#f5f3ff',
+      border: '#c4b5fd',
+    },
+    {
+      type: UserRegistrationType.Parent,
+      label: 'ولي أمر',
+      description: 'تابع مسيرة أبنائك الدراسية',
+      icon: 'fa-user-friends',
+      color: '#f59e0b',
+      bg: '#fffbeb',
+      border: '#fcd34d',
+    },
+    {
+      type: UserRegistrationType.Secretary,
+      label: 'سكرتير',
+      description: 'إدارة السجلات والبيانات المدرسية',
+      icon: 'fa-user-tie',
+      color: '#0ea5e9',
+      bg: '#f0f9ff',
+      border: '#7dd3fc',
+    },
+  ];
+
+  gradeOptions = signal<{ value: string; label: string }[]>([]);
+
+  form = {
+    userType: null as UserRegistrationType | null,
+    fullName: '',
+    userName: '',
+    password: '',
+    confirmPassword: '',
+    grade: '',
+  };
+
+  showPassword = signal(false);
+  showConfirmPassword = signal(false);
+
+  async ngOnInit(): Promise<void> {
     if (this.authService.isAuthenticated) {
       this.router.navigate(['/']);
       return;
     }
-    void this.loadUserTypes();
+    await this.loadGrades();
   }
 
-  async loadUserTypes() {
-    this.loading.set(true);
+  private async loadGrades(): Promise<void> {
     try {
-      const types: any = await lastValueFrom(this.userRegSvc.getAvailableUserTypes());
-      this.userTypes.set(types || []);
-    } catch (e) {
-      console.error('Failed to load user types', e);
-    } finally {
-      this.loading.set(false);
+      const res = await lastValueFrom(this.gradeSvc.getList());
+      this.gradeOptions.set(
+        (res?.items || []).map(g => ({
+          value: String(g.order),
+          label: g.name || `الصف ${g.order}`,
+        }))
+      );
+    } catch {
+      // Fallback to Arabic grade names if API fails
+      this.gradeOptions.set([
+        { value: '1', label: 'الصف الأول الابتدائي' },
+        { value: '2', label: 'الصف الثاني الابتدائي' },
+        { value: '3', label: 'الصف الثالث الابتدائي' },
+        { value: '4', label: 'الصف الرابع الابتدائي' },
+        { value: '5', label: 'الصف الخامس الابتدائي' },
+        { value: '6', label: 'الصف السادس الابتدائي' },
+        { value: '7', label: 'الصف الأول الإعدادي' },
+        { value: '8', label: 'الصف الثاني الإعدادي' },
+        { value: '9', label: 'الصف الثالث الإعدادي' },
+        { value: '10', label: 'الصف الأول الثانوي' },
+        { value: '11', label: 'الصف الثاني الثانوي' },
+        { value: '12', label: 'الصف الثالث الثانوي' },
+      ]);
     }
   }
 
-  getSelectedUserType() {
-    return this.userTypes().find(t => t.type === this.registerForm.userType);
+  selectRole(type: UserRegistrationType): void {
+    this.form.userType = type;
+    this.error.set(null);
+    this.step.set('form');
   }
 
-  isFieldRequired(fieldName: string): boolean {
-    const selectedType = this.getSelectedUserType();
-    return selectedType?.requiredFields?.includes(fieldName) || false;
+  back(): void {
+    this.step.set('role');
+    this.error.set(null);
   }
 
-  isFieldVisible(fieldName: string): boolean {
-    const userType = this.registerForm.userType;
-    switch (fieldName) {
-      case 'grade':
-      case 'parentContact':
-        return userType === UserRegistrationType.Student;
-      case 'department':
-      case 'qualification':
-      case 'employeeId':
-      case 'hireDate':
-      case 'position':
-      case 'responsibilities':
-        return userType === UserRegistrationType.Teacher;
-      case 'occupation':
-      case 'emergencyContact':
-        return userType === UserRegistrationType.Parent;
-      default:
-        return true;
+  getSelectedRole() {
+    return this.roles.find(r => r.type === this.form.userType);
+  }
+
+  async onSubmit(): Promise<void> {
+    this.error.set(null);
+
+    if (!this.form.fullName.trim()) {
+      this.error.set('يرجى إدخال الاسم الكامل');
+      return;
     }
-  }
-
-  async onSubmit() {
-    if (!this.isFormValid()) {
-      alert('Please fill in all required fields');
+    if (!this.form.userName.trim()) {
+      this.error.set('يرجى إدخال اسم المستخدم');
+      return;
+    }
+    if (!this.form.password) {
+      this.error.set('يرجى إدخال كلمة المرور');
+      return;
+    }
+    if (this.form.password !== this.form.confirmPassword) {
+      this.error.set('كلمة المرور وتأكيدها غير متطابقتان');
+      return;
+    }
+    if (this.form.userType === UserRegistrationType.Student && !this.form.grade) {
+      this.error.set('يرجى اختيار الصف الدراسي');
       return;
     }
 
-    if (this.registerForm.password !== this.registerForm.confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
+    // Split full name: last word → lastName, rest → firstName
+    const parts = this.form.fullName.trim().split(/\s+/);
+    const firstName = parts.length > 1 ? parts.slice(0, -1).join(' ') : parts[0];
+    const lastName = parts.length > 1 ? parts[parts.length - 1] : '-';
 
     this.registering.set(true);
     try {
-      const result = await lastValueFrom(this.userRegSvc.registerUser({
-        userType: this.registerForm.userType!,
-        userName: this.registerForm.userName,
-        email: this.registerForm.email,
-        phoneNumber: this.registerForm.phoneNumber,
-        password: this.registerForm.password,
-        firstName: this.registerForm.firstName,
-        middleName: this.registerForm.middleName || undefined,
-        lastName: this.registerForm.lastName,
-        address: this.registerForm.address || undefined,
-        occupation: this.registerForm.occupation || undefined,
-        emergencyContact: this.registerForm.emergencyContact || undefined,
-        dateOfBirth: this.registerForm.dateOfBirth || undefined,
-        grade: this.registerForm.grade || undefined,
-        parentContact: this.registerForm.parentContact || undefined,
-        department: this.registerForm.department || undefined,
-        qualification: this.registerForm.qualification || undefined,
-        employeeId: this.registerForm.employeeId || undefined,
-        hireDate: this.registerForm.hireDate || undefined,
-        position: this.registerForm.position || undefined,
-        responsibilities: this.registerForm.responsibilities || undefined
-      }));
+      const userName = this.form.userName.trim();
+      const base = { userName, firstName, lastName, password: this.form.password };
+      let result;
 
-      alert(`Registration successful! User code: ${result.userCode}`);
-      this.router.navigate(['/login']);
+      switch (this.form.userType!) {
+        case UserRegistrationType.Student:
+          result = await lastValueFrom(this.userRegSvc.registerStudent(
+            { ...base, grade: Number(this.form.grade) } as UserRegStudentDto,
+            { skipHandleError: true }
+          ));
+          break;
+        case UserRegistrationType.Teacher:
+          result = await lastValueFrom(this.userRegSvc.registerTeacher(
+            base as UserRegTeacherDto,
+            { skipHandleError: true }
+          ));
+          break;
+        case UserRegistrationType.Parent:
+          result = await lastValueFrom(this.userRegSvc.registerParent(
+            base as UserRegParentDto,
+            { skipHandleError: true }
+          ));
+          break;
+        case UserRegistrationType.Secretary:
+          result = await lastValueFrom(this.userRegSvc.registerSecretary(
+            base as UserRegSecretaryDto,
+            { skipHandleError: true }
+          ));
+          break;
+        default:
+          throw new Error('نوع المستخدم غير معروف');
+      }
+      this.successCode.set(result?.userCode ?? null);
+      this.step.set('success');
     } catch (e: any) {
-      console.error('Registration failed', e);
-      alert(`Registration failed: ${e.error?.message || 'Unknown error'}`);
+      console.error('Registration error:', e);
+      const body = e?.error;
+      const fieldErrors = body?.errors
+        ? ([] as string[]).concat(...Object.values(body.errors) as string[][]).join(', ')
+        : null;
+      const msg =
+        body?.error?.message ||
+        fieldErrors ||
+        body?.title ||
+        e?.message ||
+        'فشل إنشاء الحساب، يرجى المحاولة مرة أخرى';
+      this.error.set(msg);
     } finally {
       this.registering.set(false);
     }
-  }
-
-  private isFormValid(): boolean {
-    const required = ['userType', 'userName', 'email', 'password', 'firstName', 'lastName'];
-    return required.every(field => this.registerForm[field as keyof typeof this.registerForm]);
   }
 }

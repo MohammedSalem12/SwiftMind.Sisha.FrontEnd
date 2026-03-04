@@ -59,7 +59,7 @@ import { lastValueFrom } from 'rxjs';
               <i class="bi bi-arrow-right"></i> تغيير المعلم
             </button>
           </div>
-          <h4 class="mb-3">اختر المجموعة - المعلم: {{ selectedTeacher()?.fullName }}</h4>
+          <h4 class="mb-3">اختر المجموعة - المعلم: {{ selectedTeacher()?.displayName }}</h4>
           <div class="row g-3">
             <div class="col-md-6" *ngFor="let group of groups()">
               <div class="card group-card h-100">

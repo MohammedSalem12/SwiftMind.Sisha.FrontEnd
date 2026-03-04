@@ -179,7 +179,7 @@ export class ParentDashboardComponent implements OnInit {
   }
 
   viewStudentDetails(studentId: string) {
-    this.router.navigate(['/students', studentId]);
+    this.router.navigate(['/parent/child', studentId]);
   }
 
   viewAllNotifications() {

@@ -1,4 +1,4 @@
-import type { CourseDto, CreateUpdateCourseDto } from './dtos/models';
+import type { CourseDto, CreateUpdateCourseDto, StudentCourseDto } from './dtos/models';
 import type { CourseSimpleDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { ListResultDto, PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
@@ -46,7 +46,7 @@ export class CourseService {
   
 
   getCoursesForCurrentStudent = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, CourseDto[]>({
+    this.restService.request<any, StudentCourseDto[]>({
       method: 'GET',
       url: '/api/app/course/courses-for-current-student',
     },
@@ -75,6 +75,14 @@ export class CourseService {
       method: 'GET',
       url: '/api/app/course/simple-courses',
       params: { search },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  unrollFromCourse = (courseId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/course/unroll-from-course/${courseId}`,
     },
     { apiName: this.apiName,...config });
   

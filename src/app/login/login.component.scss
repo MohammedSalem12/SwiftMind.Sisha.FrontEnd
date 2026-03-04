@@ -1,98 +1,407 @@
-.auth-container {
+// ─── Design Tokens ──────────────────────────────────────────────
+$grad-start: #667eea;
+$grad-end:   #764ba2;
+$white:      #ffffff;
+$text-dark:  #1a1a2e;
+$text-mid:   #4a4a6a;
+$text-light: #9090aa;
+$danger:     #e74c6a;
+$radius-card: 28px;
+$radius-field: 14px;
+
+// ─── Page Shell ─────────────────────────────────────────────────
+.login-page {
   min-height: 100vh;
+  min-height: 100dvh; // dynamic viewport for mobile browsers
+  background: linear-gradient(145deg, $grad-start 0%, $grad-end 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8f9fa;
-  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  padding: env(safe-area-inset-top, 1rem) 1.25rem env(safe-area-inset-bottom, 1rem);
 }
 
-.auth-content {
-  width: 100%;
-  max-width: 420px;
-}
+// ─── Decorative Blobs ───────────────────────────────────────────
+.bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  pointer-events: none;
 
-.auth-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+  &.shape-top {
+    width: 340px;
+    height: 340px;
+    top: -120px;
+    right: -100px;
+  }
 
-.login-card .auth-header {
-  padding: 2rem 2rem 1rem;
-  text-align: center;
-  .logo-container { margin-bottom: 1.5rem; }
-  .logo { width: 80px; height: 80px; object-fit: contain; }
-  .page-title { font-size: 1.75rem; font-weight: 600; color: #1a202c; margin: 0; }
-}
-
-.auth-form {
-  padding: 0 2rem 2rem;
-  .alert { padding: 0.875rem; border-radius: 6px; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
-  .alert.alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-  .alert.alert-error i { color: #dc2626; }
-}
-
-.input-group {
-  margin-bottom: 1.25rem;
-  label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem; }
-  .input-wrapper { position: relative; }
-  .input-icon { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.875rem; z-index: 1; }
-  .form-input {
-    width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 0.9375rem;
-    transition: all 0.2s;
-    &:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-    &::placeholder { color: #9ca3af; }
+  &.shape-bottom {
+    width: 280px;
+    height: 280px;
+    bottom: -100px;
+    left: -80px;
   }
 }
 
-.form-options {
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.875rem;
-  .checkbox-wrapper { display: flex; align-items: center; cursor: pointer; user-select: none; }
-  .checkbox-wrapper input[type="checkbox"] { display: none; }
-  .checkbox-wrapper input[type="checkbox"]:checked + .checkmark::after { opacity: 1; }
-  .checkmark { position: relative; width: 16px; height: 16px; background: white; border: 1px solid #d1d5db; border-radius: 3px; margin-left: 0.5rem; transition: all 0.15s; }
-  .checkmark::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 11px; opacity: 0; transition: opacity 0.15s; }
-  .checkbox-wrapper input[type="checkbox"]:checked + .checkmark { background: #3b82f6; border-color: #3b82f6; }
-  .checkbox-label { color: #6b7280; }
-  .forgot-link { color: #3b82f6; text-decoration: none; transition: color 0.15s; }
-  .forgot-link:hover { color: #2563eb; }
+// ─── Card ───────────────────────────────────────────────────────
+.card-wrapper {
+  width: 100%;
+  max-width: 420px;
+  z-index: 1;
 }
 
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; border-radius: 6px; font-size: 0.9375rem; font-weight: 500; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; gap: 0.5rem;
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-  &.btn-large { width: 100%; padding: 0.875rem 1.25rem; }
-  &.btn-primary { background: #3b82f6; color: white; }
-  &.btn-primary:hover:not(:disabled) { background: #2563eb; }
-  &.btn-primary.loading .loading-content { display: flex; align-items: center; gap: 0.5rem; }
-  &.btn-primary.loading .loading-content i { animation: spin 1s linear infinite; }
+.login-card {
+  background: $white;
+  border-radius: $radius-card;
+  padding: 2.25rem 1.75rem 1.75rem;
+  box-shadow: 0 24px 64px rgba(102, 126, 234, 0.35);
 }
 
-.auth-switch {
+// ─── Brand Section ──────────────────────────────────────────────
+.brand-section {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-ring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $grad-start, $grad-end);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  margin-bottom: 1rem;
+}
+
+.logo-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  filter: brightness(0) invert(1); // make logo white on colored bg
+}
+
+.app-name {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.3px;
+}
+
+.app-tagline {
+  font-size: 0.875rem;
+  color: $text-light;
+  margin: 0;
+}
+
+// ─── Error Banner ───────────────────────────────────────────────
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff0f3;
+  border: 1px solid #ffc0cb;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  color: $danger;
+  font-size: 0.875rem;
+  text-align: right;
+
+  i { flex-shrink: 0; font-size: 1rem; }
+}
+
+// ─── Form Fields ────────────────────────────────────────────────
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.field-wrap {
+  margin-bottom: 1rem;
+}
+
+.field-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-icon {
+  position: absolute;
+  right: 1rem;
+  color: $text-light;
+  font-size: 0.9rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.field-input {
+  width: 100%;
+  padding: 0.875rem 2.75rem 0.875rem 3rem;
+  border: 1.5px solid #e8e8f0;
+  border-radius: $radius-field;
+  font-size: 0.9375rem;
+  color: $text-dark;
+  background: #fafafa;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  box-sizing: border-box;
+  text-align: right;
+
+  &::placeholder {
+    color: $text-light;
+    font-size: 0.875rem;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $grad-start;
+    background: $white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+  }
+}
+
+.toggle-pw {
+  position: absolute;
+  left: 0.875rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-light;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  transition: color 0.15s;
+
+  &:hover { color: $grad-start; }
+}
+
+// ─── Options Row ────────────────────────────────────────────────
+.options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.remember-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: $text-mid;
+  user-select: none;
+}
+
+.remember-checkbox {
+  display: none;
+
+  &:checked + .custom-check {
+    background: linear-gradient(135deg, $grad-start, $grad-end);
+    border-color: transparent;
+
+    &::after { opacity: 1; }
+  }
+}
+
+.custom-check {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d0d0e0;
+  border-radius: 5px;
+  position: relative;
+  transition: all 0.15s;
+
+  &::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $white;
+    font-size: 11px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+}
+
+.forgot-link {
+  color: $grad-start;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s;
+
+  &:hover { color: $grad-end; }
+}
+
+// ─── Login Button ───────────────────────────────────────────────
+.btn-login {
+  width: 100%;
+  padding: 0.9375rem;
+  background: linear-gradient(135deg, $grad-start, $grad-end);
+  color: $white;
+  border: none;
+  border-radius: $radius-field;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 52px;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+
+  &:hover:not(:disabled) {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) { transform: translateY(0); }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  i { font-size: 0.9rem; }
+}
+
+// ─── Biometric Section ──────────────────────────────────────────
+.biometric-section {
+  margin-top: 1.25rem;
+}
+
+.divider-line {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e8e8f0;
+  }
+}
+
+.divider-text {
+  font-size: 0.8125rem;
+  color: $text-light;
+  white-space: nowrap;
+}
+
+.btn-biometric {
+  width: 100%;
+  padding: 0.875rem;
+  background: $white;
+  color: $grad-start;
+  border: 1.5px solid rgba(102, 126, 234, 0.35);
+  border-radius: $radius-field;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-height: 52px;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: rgba(102, 126, 234, 0.06);
+    border-color: $grad-start;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.biometric-icon {
+  font-size: 1.375rem;
+}
+
+// ─── Register Row ───────────────────────────────────────────────
+.register-row {
   text-align: center;
   margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  p { color: #6b7280; margin: 0; font-size: 0.875rem; }
-  .register-link { color: #3b82f6; text-decoration: none; font-weight: 500; }
-  .register-link:hover { text-decoration: underline; }
+  padding-top: 1.25rem;
+  border-top: 1px solid #f0f0f8;
+  font-size: 0.875rem;
+  color: $text-mid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
 }
 
+.register-link {
+  color: $grad-start;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+
+  &:hover { color: $grad-end; }
+}
+
+// ─── Spinner Animation ──────────────────────────────────────────
 @keyframes spin {
-  from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 640px) {
-  .auth-container { padding: 0.5rem; }
-  .login-card .auth-header { padding: 1.5rem 1.5rem 1rem; }
-  .login-card .auth-header .logo { width: 60px; height: 60px; }
-  .login-card .auth-header .page-title { font-size: 1.5rem; }
-  .auth-form { padding: 0 1.5rem 1.5rem; }
-  .form-options { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+.fa-spin {
+  animation: spin 0.8s linear infinite;
+}
+
+// ─── Responsive (small phones) ──────────────────────────────────
+@media (max-width: 380px) {
+  .login-card {
+    padding: 1.75rem 1.25rem 1.5rem;
+    border-radius: 20px;
+  }
+
+  .logo-ring {
+    width: 76px;
+    height: 76px;
+  }
+
+  .logo-img {
+    width: 46px;
+    height: 46px;
+  }
+
+  .app-name { font-size: 1.375rem; }
+}
+
+// ─── Landscape on small phones ──────────────────────────────────
+@media (max-height: 600px) and (orientation: landscape) {
+  .brand-section { margin-bottom: 1rem; }
+
+  .logo-ring {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 0.5rem;
+  }
+
+  .logo-img { width: 36px; height: 36px; }
+  .app-name { font-size: 1.25rem; }
+  .app-tagline { display: none; }
+  .login-card { padding: 1.25rem 1.5rem; }
 }

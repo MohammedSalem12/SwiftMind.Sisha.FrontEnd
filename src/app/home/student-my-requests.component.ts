@@ -5,7 +5,7 @@ import { lastValueFrom } from 'rxjs';
 
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
-import { CurrentUserInfoService } from '@proxy/common';
+import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 
 @Component({
   selector: 'app-student-my-requests',
@@ -76,7 +76,7 @@ import { CurrentUserInfoService } from '@proxy/common';
                       </span>
                     </div>
                   </div>
-                  <div class="mt-3" *ngIf="req.status === 0">
+                  <div class="mt-3" *ngIf="req.status === EnrollmentRequestStatus.Pending">
                     <button class="btn btn-sm btn-outline-danger w-100"
                             [disabled]="cancellingId() === req.id"
                             (click)="cancelRequest(req.id)">
@@ -112,18 +112,16 @@ import { CurrentUserInfoService } from '@proxy/common';
 export class StudentMyRequestsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
-  private readonly currentUserInfoService = inject(CurrentUserInfoService);
+
+  readonly EnrollmentRequestStatus = EnrollmentRequestStatus;
 
   requests = signal<EnrollmentRequestDto[]>([]);
   loading = signal(false);
   cancellingId = signal<string | null>(null);
-  private studentId = '';
 
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
-      const userInfo = await lastValueFrom(this.currentUserInfoService.getCurrentUserActorInfo());
-      this.studentId = userInfo?.actorId || '';
       await this.loadRequests();
     } catch (error) {
       console.error('Error loading requests:', error);
@@ -133,11 +131,8 @@ export class StudentMyRequestsComponent implements OnInit {
   }
 
   private async loadRequests(): Promise<void> {
-    const allRequests = await lastValueFrom(this.enrollmentRequestService.getList());
-    const myRequests = this.studentId
-      ? allRequests.filter(r => r.studentId === this.studentId)
-      : allRequests;
-    this.requests.set(myRequests);
+    const myRequests = await lastValueFrom(this.enrollmentRequestService.getRequestsForCurrentStudent());
+    this.requests.set(myRequests || []);
   }
 
   async cancelRequest(requestId?: string): Promise<void> {
@@ -154,8 +149,8 @@ export class StudentMyRequestsComponent implements OnInit {
   }
 
   getStatus(req: EnrollmentRequestDto): string {
-    if (req.status === 2) return 'rejected';
-    if (req.status === 1) return 'approved';
+    if (req.status === EnrollmentRequestStatus.Rejected) return 'rejected';
+    if (req.status === EnrollmentRequestStatus.Approved) return 'approved';
     return 'pending';
   }
 

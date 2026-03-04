@@ -153,3 +153,225 @@ button:focus, a:focus, input:focus { outline: 3px solid rgba(212,175,55,0.18); o
   a { color: #9dd3ff; }
 }
 
+/* ========================================
+   MOBILE RESPONSIVE STYLES
+   ======================================== */
+
+/* ── True mobile (≤767px): hide sidebar, use bottom nav instead ── */
+@media (max-width: 767px) {
+  .lpx-sidebar-container {
+    display: none !important;
+  }
+
+  /* Content fills full width on mobile */
+  .lpx-content-container {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Hide desktop-only elements */
+  .desktop-only,
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+/* Mobile-first utility classes */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .mobile-only {
+    display: block !important;
+  }
+  
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+/* Safe area insets for iOS notch devices */
+@supports (padding-top: env(safe-area-inset-top)) {
+  @media (max-width: 991px) {
+    .lpx-toolbar,
+    .lp-toolbar,
+    .lpx-topbar {
+      padding-top: max(0.5rem, env(safe-area-inset-top));
+    }
+  }
+}
+
+/* Touch-friendly button sizes for mobile */
+@media (max-width: 991px) {
+  .btn {
+    min-height: 44px;
+    padding: 0.75rem 1.25rem;
+  }
+  
+  /* Larger tap targets */
+  a, button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Form elements */
+  input, select, textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* RTL Support for Arabic */
+[dir="rtl"],
+.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+html[lang="ar"] {
+  direction: rtl;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Pull-to-refresh indicator space */
+@media (max-width: 991px) {
+  body {
+    overscroll-behavior-y: contain;
+  }
+}
+
+/* ========================================
+   SIDE MENU — Purple Gradient Design
+   Targets ABP LeptonX sidebar elements
+   ======================================== */
+
+:root {
+  --sw-grad-start: #667eea;
+  --sw-grad-end:   #764ba2;
+  --sw-menu-text:  rgba(255, 255, 255, 0.85);
+  --sw-menu-text-active: #ffffff;
+  --sw-menu-hover-bg: rgba(255, 255, 255, 0.12);
+  --sw-menu-active-bg: rgba(255, 255, 255, 0.18);
+}
+
+/* Sidebar container */
+.lpx-sidebar,
+.lpx-side-menu,
+lpx-side-menu,
+.lpx-nav {
+  background: linear-gradient(160deg, var(--sw-grad-start) 0%, var(--sw-grad-end) 100%) !important;
+  box-shadow: 4px 0 24px rgba(102, 126, 234, 0.3) !important;
+  border: none !important;
+}
+
+/* Sidebar logo area */
+.lpx-brand,
+.lpx-logo-wrapper,
+.lpx-sidebar .lpx-brand-link {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  padding: 1.25rem !important;
+}
+
+/* Nav items */
+.lpx-sidebar .lpx-nav-item,
+.lpx-side-menu .nav-item,
+.lpx-nav .nav-item,
+lpx-side-menu .nav-item {
+  margin: 2px 8px !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+
+/* Nav links */
+.lpx-sidebar .lpx-nav-item .nav-link,
+.lpx-sidebar .lpx-nav-item a,
+.lpx-side-menu .nav-link,
+.lpx-nav .nav-link,
+lpx-side-menu .nav-link {
+  color: var(--sw-menu-text) !important;
+  border-radius: 10px !important;
+  padding: 0.65rem 1rem !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  transition: background 0.18s, color 0.18s !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.625rem !important;
+  min-height: 44px !important; /* touch target */
+
+  &:hover {
+    background: var(--sw-menu-hover-bg) !important;
+    color: var(--sw-menu-text-active) !important;
+  }
+
+  &.active,
+  &.router-link-active {
+    background: var(--sw-menu-active-bg) !important;
+    color: var(--sw-menu-text-active) !important;
+    font-weight: 600 !important;
+  }
+}
+
+/* Nav icons */
+.lpx-sidebar .nav-link i,
+.lpx-side-menu .nav-link i,
+lpx-side-menu .nav-link i {
+  color: rgba(255, 255, 255, 0.8) !important;
+  width: 18px !important;
+  text-align: center !important;
+}
+
+/* Active icon */
+.lpx-sidebar .nav-link.active i,
+.lpx-side-menu .nav-link.active i,
+lpx-side-menu .nav-link.active i {
+  color: #ffffff !important;
+}
+
+/* Scrollbar in sidebar */
+.lpx-sidebar::-webkit-scrollbar { width: 4px; }
+.lpx-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+}
+
+/* Sidebar toggle button (hamburger area) */
+.lpx-sidebar-toggle,
+.lpx-hamburger,
+.lpx-mobile-menu-toggle {
+  color: var(--sw-grad-start) !important;
+}
+
+/* Ensure collapse icon remains visible and clickable when sidebar is collapsed (hover-trigger)
+   The library hides elements with .hidden-in-hover-trigger when the sidebar is collapsed; keep
+   the collapse icon visible so users can toggle the sidebar. */
+#lpx-wrapper.hover-trigger .lpx-sidebar-container:not(:hover) .menu-collapse-icon,
+.lpx-sidebar-container:not(:hover) .menu-collapse-icon {
+  display: block !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 1100;
+}
+
+/* Top bar / toolbar */
+.lpx-toolbar,
+.lpx-topbar,
+lpx-navbar {
+  background: #ffffff !important;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.15) !important;
+  border-bottom: none !important;
+}
+
+/* Toolbar icons / user avatar area */
+.lpx-toolbar .lpx-user-icon,
+.lpx-topbar .lpx-user-menu {
+  color: var(--sw-grad-start) !important;
+}
+
+/* Sidebar visible at 768px+ (LeptonX handles collapsed/full automatically) */
+/* On true mobile (≤767px) it's hidden by the section above */

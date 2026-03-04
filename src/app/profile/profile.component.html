@@ -1,0 +1,83 @@
+<div class="profile-page" dir="rtl">
+
+  <!-- Loading -->
+  <div class="loading-wrap" *ngIf="loading()">
+    <div class="spinner-lg"></div>
+  </div>
+
+  <ng-container *ngIf="!loading() && userInfo() as info">
+
+    <!-- Header -->
+    <div class="profile-header" [style.background]="getRoleConfig().bg">
+      <div class="header-inner">
+        <!-- Avatar -->
+        <div class="avatar-wrap">
+          <div class="avatar">{{ getInitials() }}</div>
+          <div class="role-icon-badge" [style.background]="getRoleConfig().color">
+            <i class="fas" [ngClass]="getRoleConfig().icon"></i>
+          </div>
+        </div>
+
+        <!-- Name & Role -->
+        <h1 class="user-name">{{ info.actorName || info.userName }}</h1>
+        <span class="role-badge" [style.color]="getRoleConfig().color" [style.border-color]="getRoleConfig().color">
+          {{ getRoleConfig().label }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="profile-body">
+
+      <!-- User Code card -->
+      <div class="info-card" *ngIf="info.actorCode">
+        <div class="card-label">
+          <i class="fas fa-id-badge"></i>
+          الرمز التعريفي
+        </div>
+        <div class="card-value code-value">{{ info.actorCode }}</div>
+      </div>
+
+      <!-- Username card -->
+      <div class="info-card">
+        <div class="card-label">
+          <i class="fas fa-at"></i>
+          اسم المستخدم
+        </div>
+        <div class="card-value">{{ info.userName }}</div>
+      </div>
+
+      <!-- Student grade -->
+      <div class="info-card" *ngIf="getPrimaryRole() === 'STUDENT' && info.currentGrade">
+        <div class="card-label">
+          <i class="fas fa-graduation-cap"></i>
+          الصف الدراسي
+        </div>
+        <div class="card-value">{{ getGradeName(info.currentGrade) }}</div>
+      </div>
+
+      <!-- Parent linked children count -->
+      <div class="info-card" *ngIf="getPrimaryRole() === 'PARENT' && info.linkedStudentIds?.length">
+        <div class="card-label">
+          <i class="fas fa-child"></i>
+          الأبناء المرتبطون
+        </div>
+        <div class="card-value">{{ info.linkedStudentIds!.length }} طالب</div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-section">
+        <a routerLink="/account/manage" class="action-btn primary-btn">
+          <i class="fas fa-user-edit"></i>
+          تعديل الملف الشخصي
+        </a>
+        <button class="action-btn danger-btn" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          تسجيل الخروج
+        </button>
+      </div>
+
+    </div>
+  </ng-container>
+
+</div>

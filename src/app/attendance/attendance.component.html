@@ -43,7 +43,7 @@
         (ngModelChange)="onDateChange($event)" />
     </div>
 
-    <!-- Group (optional, shown only when course selected and groups exist) -->
+    <!-- Group (optional) -->
     <div class="filter-group" *ngIf="selectedCourseId() && groups().length > 0">
       <label>
         <i class="fas fa-users me-1"></i>
@@ -85,25 +85,62 @@
   <!-- Students section -->
   <div *ngIf="students().length > 0 && !loading()">
 
-    <!-- Stats bar -->
-    <div class="stats-bar">
-      <div class="stat-card present">
-        <span class="stat-num">{{ presentCount() }}</span>
-        <span class="stat-label">
-          <i class="fas fa-check-circle me-1"></i>حاضر
-        </span>
+    <!-- Stats Panel (donut chart) -->
+    <div class="stats-panel">
+      <!-- Donut Chart -->
+      <div class="donut-wrap">
+        <svg viewBox="0 0 100 100" class="donut-svg">
+          <!-- Track -->
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f0f5" stroke-width="13"/>
+          <!-- Present arc -->
+          <circle
+            cx="50" cy="50" r="40"
+            fill="none"
+            stroke="#22c55e"
+            stroke-width="13"
+            [attr.stroke-dasharray]="pieChart().presentDash"
+            stroke-dashoffset="0"
+            transform="rotate(-90 50 50)"/>
+          <!-- Absent arc -->
+          <circle
+            cx="50" cy="50" r="40"
+            fill="none"
+            stroke="#ef4444"
+            stroke-width="13"
+            [attr.stroke-dasharray]="pieChart().absentDash"
+            [attr.stroke-dashoffset]="pieChart().absentOffset"
+            transform="rotate(-90 50 50)"/>
+          <!-- Center label -->
+          <text x="50" y="45" text-anchor="middle" class="donut-num">{{ students().length }}</text>
+          <text x="50" y="60" text-anchor="middle" class="donut-label">طالب</text>
+        </svg>
       </div>
-      <div class="stat-card absent">
-        <span class="stat-num">{{ absentCount() }}</span>
-        <span class="stat-label">
-          <i class="fas fa-times-circle me-1"></i>غائب
-        </span>
-      </div>
-      <div class="stat-card total">
-        <span class="stat-num">{{ students().length }}</span>
-        <span class="stat-label">
-          <i class="fas fa-users me-1"></i>الإجمالي
-        </span>
+
+      <!-- Legend -->
+      <div class="stats-legend">
+        <div class="legend-item">
+          <span class="legend-dot dot-present"></span>
+          <div class="legend-body">
+            <span class="legend-count">{{ presentCount() }}</span>
+            <span class="legend-title">حاضر</span>
+          </div>
+          <span class="legend-pct">{{ pieChart().presentPct }}%</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot dot-absent"></span>
+          <div class="legend-body">
+            <span class="legend-count">{{ absentCount() }}</span>
+            <span class="legend-title">غائب</span>
+          </div>
+          <span class="legend-pct">{{ pieChart().absentPct }}%</span>
+        </div>
+        <div class="legend-item legend-total">
+          <span class="legend-dot dot-total"></span>
+          <div class="legend-body">
+            <span class="legend-count">{{ students().length }}</span>
+            <span class="legend-title">المجموع</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -125,16 +162,16 @@
           class="btn-bulk btn-mark-selected"
           (click)="markSelectedAbsent()"
           [disabled]="saving() || selectedCount() === 0">
-          <i class="fas fa-user-times me-1"></i>
-          تسجيل غياب المحددين
+          <i class="fas fa-user-times"></i>
+          <span>تسجيل غياب المحددين</span>
           <span class="count-badge" *ngIf="selectedCount() > 0">({{ selectedCount() }})</span>
         </button>
         <button
           class="btn-bulk btn-mark-all"
           (click)="markAllAbsent()"
           [disabled]="saving()">
-          <i class="fas fa-times-circle me-1"></i>
-          تسجيل غياب الكل
+          <i class="fas fa-times-circle"></i>
+          <span>تسجيل غياب الكل</span>
         </button>
       </div>
     </div>
@@ -158,8 +195,8 @@
       <span>جاري الحفظ وإرسال الإشعارات...</span>
     </div>
 
-    <!-- Students table -->
-    <div class="students-table-wrapper">
+    <!-- Desktop: Students table -->
+    <div class="students-table-wrapper desktop-only">
       <table class="students-table">
         <thead>
           <tr>
@@ -193,9 +230,7 @@
                 <div class="avatar" [class.avatar-absent]="s.isAbsent">
                   {{ s.studentName.charAt(0) }}
                 </div>
-                <div class="student-text">
-                  <span class="student-name">{{ s.studentName }}</span>
-                </div>
+                <span class="student-name">{{ s.studentName }}</span>
               </div>
             </td>
             <td class="col-code">{{ s.studentCode }}</td>
@@ -204,10 +239,7 @@
                 class="status-badge"
                 [class.status-present]="!s.isAbsent"
                 [class.status-absent]="s.isAbsent">
-                <i
-                  class="fas"
-                  [class.fa-check-circle]="!s.isAbsent"
-                  [class.fa-times-circle]="s.isAbsent"></i>
+                <i class="fas" [class.fa-check-circle]="!s.isAbsent" [class.fa-times-circle]="s.isAbsent"></i>
                 {{ s.isAbsent ? 'غائب' : 'حاضر' }}
               </span>
             </td>
@@ -218,16 +250,54 @@
                 [class.btn-cancel-absent]="s.isAbsent"
                 (click)="toggleStudentAbsent(s, i)"
                 [disabled]="saving()">
-                <i
-                  class="fas"
-                  [class.fa-user-times]="!s.isAbsent"
-                  [class.fa-user-check]="s.isAbsent"></i>
+                <i class="fas" [class.fa-user-times]="!s.isAbsent" [class.fa-user-check]="s.isAbsent"></i>
                 {{ s.isAbsent ? 'إلغاء الغياب' : 'تسجيل غياب' }}
               </button>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Mobile: Student cards -->
+    <div class="student-cards mobile-only">
+      <div
+        *ngFor="let s of students(); let i = index; trackBy: trackByEnrollment"
+        class="student-card"
+        [class.card-absent]="s.isAbsent"
+        [class.card-selected]="s.selected && !s.isAbsent">
+
+        <div class="card-header">
+          <label class="card-check">
+            <input type="checkbox" [checked]="s.selected" (change)="toggleSelect(i)" />
+          </label>
+          <div class="avatar" [class.avatar-absent]="s.isAbsent">
+            {{ s.studentName.charAt(0) }}
+          </div>
+          <div class="card-info">
+            <span class="student-name">{{ s.studentName }}</span>
+            <span class="card-code" *ngIf="s.studentCode">{{ s.studentCode }}</span>
+          </div>
+          <span
+            class="status-badge"
+            [class.status-present]="!s.isAbsent"
+            [class.status-absent]="s.isAbsent">
+            {{ s.isAbsent ? 'غائب' : 'حاضر' }}
+          </span>
+        </div>
+
+        <div class="card-action">
+          <button
+            class="btn-toggle btn-full"
+            [class.btn-mark-absent]="!s.isAbsent"
+            [class.btn-cancel-absent]="s.isAbsent"
+            (click)="toggleStudentAbsent(s, i)"
+            [disabled]="saving()">
+            <i class="fas" [class.fa-user-times]="!s.isAbsent" [class.fa-user-check]="s.isAbsent"></i>
+            {{ s.isAbsent ? 'إلغاء الغياب' : 'تسجيل غياب' }}
+          </button>
+        </div>
+      </div>
     </div>
 
   </div>

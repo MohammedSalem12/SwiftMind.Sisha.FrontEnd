@@ -9,3 +9,8 @@ export interface NotificationDto extends CreationAuditedEntityDto<string> {
   isRead: boolean;
   referenceId?: string;
 }
+
+export interface RegisterDeviceTokenDto {
+  token: string;
+  platform: string;
+}

@@ -17,7 +17,7 @@ export interface RegisterUserDto {
   userType: UserRegistrationType;
   userName: string;
   email: string;
-  phoneNumber: string;
+  phoneNumber?: string;
   password: string;
   firstName: string;
   middleName?: string;
@@ -34,6 +34,27 @@ export interface RegisterUserDto {
   hireDate?: string;
   position?: string;
   responsibilities?: string;
+}
+
+export interface UserRegBaseDto {
+  userName: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  password: string;
+}
+
+export interface UserRegParentDto extends UserRegBaseDto {
+}
+
+export interface UserRegSecretaryDto extends UserRegBaseDto {
+}
+
+export interface UserRegStudentDto extends UserRegBaseDto {
+  grade: number;
+}
+
+export interface UserRegTeacherDto extends UserRegBaseDto {
 }
 
 export interface UserRegistrationResultDto {

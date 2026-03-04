@@ -1,0 +1,455 @@
+import { CommonModule, Location } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { AttendanceService } from '@proxy/attendances';
+import { CurrentUserInfoService } from '@proxy/common';
+import { CourseService } from '@proxy/courses';
+import { ExamGradeService } from '@proxy/exam-grades';
+import { ExamService } from '@proxy/exams';
+import { GroupService } from '@proxy/groups';
+import { TeacherService } from '@proxy/teachers';
+import { lastValueFrom } from 'rxjs';
+
+interface StudentGradeEntry {
+  enrollmentId: string;
+  studentId: string;
+  studentCode: string;
+  studentName: string;
+  gradeId: string | null;
+  inputGrade: string;
+  savedGrade: number | null;
+  savedMaxGrade: number | null;
+  saving: boolean;
+  rowError: string | null;
+  rowSuccess: boolean;
+}
+
+interface GroupOption {
+  id: string;
+  name: string;
+  teacherId: string;
+  teacherName: string;
+}
+
+@Component({
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './marks-entry.component.html',
+  styleUrls: ['./marks-entry.component.scss'],
+})
+export class MarksEntryComponent implements OnInit {
+  private readonly attendanceSvc = inject(AttendanceService);
+  private readonly examSvc = inject(ExamService);
+  private readonly examGradeSvc = inject(ExamGradeService);
+  private readonly courseSvc = inject(CourseService);
+  private readonly teacherSvc = inject(TeacherService);
+  private readonly groupSvc = inject(GroupService);
+  private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly location = inject(Location);
+
+  // Role
+  isTeacher = signal(false);
+  teacherId = signal<string | null>(null);
+
+  // Course
+  courses = signal<any[]>([]);
+  selectedCourseId = signal<string | null>(null);
+
+  // Exam
+  exams = signal<any[]>([]);
+  selectedExamId = signal<string | null>(null);
+  selectedExamName = signal<string>('');
+
+  // Date (for grade record)
+  gradeDate = signal<string>(new Date().toISOString().slice(0, 10));
+
+  // Global max grade for this session
+  globalMaxGrade = signal<string>('100');
+
+  // Group
+  groups = signal<GroupOption[]>([]);
+  selectedGroupId = signal<string | null>(null);
+  effectiveTeacherId = signal<string | null>(null);
+
+  // Students
+  students = signal<StudentGradeEntry[]>([]);
+
+  // Add exam form
+  showAddExamForm = signal(false);
+  newExamName = signal('');
+  addingExam = signal(false);
+
+  // UI
+  loading = signal(false);
+  saving = signal(false);
+  message = signal<string | null>(null);
+  messageType = signal<'success' | 'error'>('success');
+
+  // Stats
+  gradedCount = computed(() => this.students().filter(s => s.savedGrade !== null).length);
+  ungradedCount = computed(() => this.students().filter(s => s.savedGrade === null).length);
+  totalCount = computed(() => this.students().length);
+
+  async ngOnInit(): Promise<void> {
+    await this.init();
+  }
+
+  private async init(): Promise<void> {
+    try {
+      const userInfo = await lastValueFrom(this.currentUserInfoSvc.getCurrentUserActorInfo());
+      const actorType = userInfo?.actorType;
+      const actorId = userInfo?.actorId;
+
+      if (actorType === 'Teacher' && actorId) {
+        this.isTeacher.set(true);
+        this.teacherId.set(actorId);
+        this.effectiveTeacherId.set(actorId);
+        await this.loadTeacherCourses(actorId);
+      } else {
+        this.isTeacher.set(false);
+        await this.loadAllCourses();
+      }
+
+      const qpCourseId = this.route.snapshot.queryParamMap.get('courseId');
+      if (qpCourseId && this.courses().some(c => c.id === qpCourseId)) {
+        await this.onCourseChange(qpCourseId);
+      }
+    } catch (e) {
+      console.error('Failed to initialize marks-entry:', e);
+    }
+  }
+
+  private async loadTeacherCourses(teacherId: string): Promise<void> {
+    this.loading.set(true);
+    try {
+      const res: any[] = await lastValueFrom(this.teacherSvc.getTeacherCourses(teacherId));
+      this.courses.set(res || []);
+    } catch (e) {
+      console.error('Failed to load teacher courses', e);
+      this.courses.set([]);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  private async loadAllCourses(): Promise<void> {
+    this.loading.set(true);
+    try {
+      const res: any = await lastValueFrom(
+        this.courseSvc.getList({ skipCount: 0, maxResultCount: 1000 } as any)
+      );
+      this.courses.set(res?.items || []);
+    } catch (e) {
+      console.error('Failed to load all courses', e);
+      this.courses.set([]);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async onCourseChange(courseId: string): Promise<void> {
+    this.selectedCourseId.set(courseId || null);
+    this.selectedGroupId.set(null);
+    this.selectedExamId.set(null);
+    this.selectedExamName.set('');
+    this.groups.set([]);
+    this.exams.set([]);
+    this.students.set([]);
+    this.message.set(null);
+
+    if (!courseId) return;
+
+    this.effectiveTeacherId.set(this.teacherId());
+    await Promise.all([this.loadGroups(courseId), this.loadExams(courseId)]);
+  }
+
+  private async loadGroups(courseId: string): Promise<void> {
+    try {
+      if (this.isTeacher() && this.teacherId()) {
+        const res: any[] = await lastValueFrom(
+          this.groupSvc.getGroupsByCourseAndTeacher(courseId, this.teacherId()!)
+        );
+        this.groups.set(
+          (res || []).map(g => ({
+            id: g.groupId || g.id,
+            name: g.name || '',
+            teacherId: g.teacherId || '',
+            teacherName: g.teacherName || '',
+          }))
+        );
+      } else {
+        const res: any = await lastValueFrom(this.groupSvc.getList());
+        const allGroups: any[] = res?.items || [];
+        this.groups.set(
+          allGroups
+            .filter(g => g.courseId === courseId)
+            .map(g => ({
+              id: g.id || g.groupId,
+              name: g.name || '',
+              teacherId: g.teacherId || '',
+              teacherName: g.teacherName || '',
+            }))
+        );
+      }
+    } catch (e) {
+      console.error('Failed to load groups', e);
+      this.groups.set([]);
+    }
+  }
+
+  private async loadExams(courseId: string): Promise<void> {
+    try {
+      const res: any = await lastValueFrom(
+        this.examSvc.getExamsByCourse(courseId, { skipCount: 0, maxResultCount: 200 } as any)
+      );
+      this.exams.set(res?.items || []);
+    } catch (e) {
+      console.error('Failed to load exams', e);
+      this.exams.set([]);
+    }
+  }
+
+  async onGroupChange(groupId: string): Promise<void> {
+    this.selectedGroupId.set(groupId || null);
+    this.students.set([]);
+    this.message.set(null);
+
+    if (groupId) {
+      const group = this.groups().find(g => g.id === groupId);
+      this.effectiveTeacherId.set(group?.teacherId || this.teacherId());
+    } else {
+      this.effectiveTeacherId.set(this.teacherId());
+    }
+
+    if (this.selectedExamId()) {
+      await this.loadStudents();
+    }
+  }
+
+  async onExamChange(examId: string): Promise<void> {
+    this.selectedExamId.set(examId || null);
+    this.students.set([]);
+    this.message.set(null);
+
+    const exam = this.exams().find(e => e.id === examId);
+    this.selectedExamName.set(exam?.examName || '');
+
+    if (examId && this.selectedCourseId()) {
+      await this.loadStudents();
+    }
+  }
+
+  async addExam(): Promise<void> {
+    const name = this.newExamName().trim();
+    if (!name) return;
+
+    const courseId = this.selectedCourseId();
+    if (!courseId) return;
+
+    this.addingExam.set(true);
+    try {
+      const dto: any = {
+        examName: name,
+        courseId,
+        teacherId: this.effectiveTeacherId() || '',
+        groupId: this.selectedGroupId() || undefined,
+      };
+      const created: any = await lastValueFrom(
+        this.examSvc.create(dto, { skipHandleError: true })
+      );
+      this.newExamName.set('');
+      this.showAddExamForm.set(false);
+      await this.loadExams(courseId);
+      if (created?.id) {
+        await this.onExamChange(created.id);
+      }
+    } catch (e: any) {
+      const msg = e?.error?.error?.message || 'فشل إنشاء الاختبار';
+      this.showMessage(msg, 'error');
+    } finally {
+      this.addingExam.set(false);
+    }
+  }
+
+  private async loadStudents(): Promise<void> {
+    const courseId = this.selectedCourseId();
+    const examId = this.selectedExamId();
+    if (!courseId || !examId) return;
+
+    this.loading.set(true);
+    this.students.set([]);
+
+    try {
+      const params: any = {
+        courseId,
+        date: this.gradeDate(),
+        skipCount: 0,
+        maxResultCount: 1000,
+      };
+      if (this.effectiveTeacherId()) {
+        params.teacherId = this.effectiveTeacherId();
+      }
+
+      const [studentsRes, gradesRes] = await Promise.all([
+        lastValueFrom(this.attendanceSvc.getStudentAttendanceStatus(params)),
+        lastValueFrom(this.examGradeSvc.getGradesByExam(examId)),
+      ]);
+
+      const grades: any[] = (gradesRes as any) || [];
+      const gradeLookup = new Map(grades.map((g: any) => [g.enrollmentId, g]));
+
+      const rawEntries: StudentGradeEntry[] = ((studentsRes as any)?.items || []).map((item: any) => {
+        const existing = gradeLookup.get(item.enrollmentId);
+        return {
+          enrollmentId: item.enrollmentId,
+          studentId: item.studentId,
+          studentCode: item.studentCode || '',
+          studentName:
+            item.fullName || `${item.firstName || ''} ${item.lastName || ''}`.trim(),
+          gradeId: existing?.id || null,
+          inputGrade: existing != null ? String(existing.grade) : '',
+          savedGrade: existing?.grade ?? null,
+          savedMaxGrade: existing?.maxGrade ?? null,
+          saving: false,
+          rowError: null,
+          rowSuccess: false,
+        };
+      });
+
+      // Deduplicate by studentId — prefer the row that already has a grade
+      const seen = new Map<string, StudentGradeEntry>();
+      for (const entry of rawEntries) {
+        const prev = seen.get(entry.studentId);
+        if (!prev || (prev.savedGrade === null && entry.savedGrade !== null)) {
+          seen.set(entry.studentId, entry);
+        }
+      }
+      this.students.set(Array.from(seen.values()));
+    } catch (e) {
+      console.error('Failed to load students with grades:', e);
+      this.students.set([]);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async saveGrade(index: number): Promise<void> {
+    const student = this.students()[index];
+    const grade = parseFloat(student.inputGrade);
+    const maxGrade = parseFloat(this.globalMaxGrade());
+
+    if (isNaN(grade) || grade < 0) {
+      this.updateStudent(index, { rowError: 'يرجى إدخال درجة صحيحة', rowSuccess: false });
+      return;
+    }
+    if (isNaN(maxGrade) || maxGrade <= 0) {
+      this.updateStudent(index, { rowError: 'يرجى تحديد الدرجة العظمى', rowSuccess: false });
+      return;
+    }
+    if (grade > maxGrade) {
+      this.updateStudent(index, {
+        rowError: `الدرجة لا يمكن أن تتجاوز ${maxGrade}`,
+        rowSuccess: false,
+      });
+      return;
+    }
+
+    this.updateStudent(index, { saving: true, rowError: null, rowSuccess: false });
+    try {
+      const dto = {
+        enrollmentId: student.enrollmentId,
+        examId: this.selectedExamId()!,
+        grade,
+        maxGrade,
+        date: new Date(this.gradeDate()).toISOString(),
+      };
+
+      if (student.gradeId) {
+        await lastValueFrom(
+          this.examGradeSvc.update(student.gradeId, dto, { skipHandleError: true })
+        );
+      } else {
+        const created: any = await lastValueFrom(
+          this.examGradeSvc.create(dto, { skipHandleError: true })
+        );
+        this.updateStudent(index, { gradeId: created?.id || null });
+      }
+
+      this.updateStudent(index, {
+        savedGrade: grade,
+        savedMaxGrade: maxGrade,
+        rowSuccess: true,
+        rowError: null,
+      });
+      setTimeout(() => this.updateStudent(index, { rowSuccess: false }), 2500);
+    } catch (e: any) {
+      const msg = e?.error?.error?.message || 'فشل الحفظ، يرجى المحاولة مرة أخرى';
+      this.updateStudent(index, { rowError: msg, rowSuccess: false });
+    } finally {
+      this.updateStudent(index, { saving: false });
+    }
+  }
+
+  async saveAll(): Promise<void> {
+    const indices = this.students()
+      .map((s, i) => ({ s, i }))
+      .filter(({ s }) => s.inputGrade !== '' && !isNaN(parseFloat(s.inputGrade)))
+      .map(({ i }) => i);
+
+    if (indices.length === 0) {
+      this.showMessage('لا يوجد درجات لحفظها — أدخل الدرجات أولاً', 'error');
+      return;
+    }
+
+    this.saving.set(true);
+    this.message.set(null);
+    await Promise.all(indices.map(i => this.saveGrade(i)));
+    this.saving.set(false);
+
+    const errors = this.students().filter(s => s.rowError !== null).length;
+    const ok = indices.length - errors;
+    this.showMessage(
+      errors > 0
+        ? `تم حفظ ${ok} درجة — فشل ${errors}`
+        : `تم حفظ ${ok} درجة بنجاح وإرسال الإشعارات`,
+      errors > 0 ? 'error' : 'success'
+    );
+  }
+
+  updateGradeInput(index: number, value: string): void {
+    this.updateStudent(index, { inputGrade: value, rowError: null, rowSuccess: false });
+  }
+
+  private updateStudent(index: number, partial: Partial<StudentGradeEntry>): void {
+    this.students.update(list => {
+      const updated = [...list];
+      updated[index] = { ...updated[index], ...partial };
+      return updated;
+    });
+  }
+
+  private showMessage(text: string, type: 'success' | 'error'): void {
+    this.message.set(text);
+    this.messageType.set(type);
+    setTimeout(() => this.message.set(null), 5000);
+  }
+
+  gradePct(entry: StudentGradeEntry): number {
+    if (entry.savedGrade === null || !entry.savedMaxGrade) return 0;
+    return Math.round((entry.savedGrade / entry.savedMaxGrade) * 100);
+  }
+
+  gradeLabel(pct: number): string {
+    if (pct >= 90) return 'ممتاز';
+    if (pct >= 75) return 'جيد جداً';
+    if (pct >= 60) return 'جيد';
+    if (pct >= 50) return 'مقبول';
+    return 'راسب';
+  }
+
+  trackByEnrollment = (_: number, item: StudentGradeEntry) => item.enrollmentId;
+
+  goBack(): void { this.location.back(); }
+}

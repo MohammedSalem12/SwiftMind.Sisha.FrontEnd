@@ -5,6 +5,6 @@ export const loginRoutes: Routes = [
     path: '',
     pathMatch: 'full',
     loadComponent: () => import('./login.component').then(m => m.LoginComponent),
-    data: { layout: 'account' },
+    data: { layout: 'empty' },
   },
 ];

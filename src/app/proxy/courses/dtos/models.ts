@@ -13,3 +13,10 @@ export interface CreateUpdateCourseDto {
   nameEn: string;
   gradeId: string;
 }
+
+export interface StudentCourseDto extends CourseDto {
+  isEnrolled: boolean;
+  hasPendingRequest: boolean;
+  enrollmentId?: string;
+  pendingRequestId?: string;
+}

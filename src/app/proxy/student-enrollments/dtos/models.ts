@@ -7,6 +7,13 @@ export interface CreateUpdateEnrollmentDto {
   enrolledAt: string;
 }
 
+export interface EnrolledStudentDto {
+  studentId?: string;
+  studentName?: string;
+  studentCode?: string;
+  enrolledAt?: string;
+}
+
 export interface EnrollmentDto extends ExtensibleAuditedEntityDto<string> {
   studentId?: string;
   courseId?: string;

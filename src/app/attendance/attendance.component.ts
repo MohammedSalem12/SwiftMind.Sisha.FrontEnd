@@ -74,6 +74,24 @@ export class AttendanceComponent implements OnInit {
     () => this.students().length > 0 && this.students().every(s => s.selected)
   );
 
+  // Pie chart data (SVG donut, circumference = 2π×40 ≈ 251.33)
+  readonly C = 251.33;
+  pieChart = computed(() => {
+    const total = this.students().length;
+    const present = this.presentCount();
+    const absent = this.absentCount();
+    if (total === 0) return { presentDash: `0 ${this.C}`, absentDash: `0 ${this.C}`, absentOffset: 0, presentPct: 0, absentPct: 0 };
+    const pLen = (present / total) * this.C;
+    const aLen = (absent / total) * this.C;
+    return {
+      presentDash: `${pLen} ${this.C}`,
+      absentDash: `${aLen} ${this.C}`,
+      absentOffset: -pLen,
+      presentPct: Math.round((present / total) * 100),
+      absentPct: Math.round((absent / total) * 100),
+    };
+  });
+
   async ngOnInit(): Promise<void> {
     await this.init();
   }
@@ -231,7 +249,7 @@ export class AttendanceComponent implements OnInit {
         this.attendanceSvc.getStudentAttendanceStatus(params)
       );
 
-      const entries: StudentEntry[] = (response?.items || []).map((item: any) => ({
+      const rawEntries: StudentEntry[] = (response?.items || []).map((item: any) => ({
         enrollmentId: item.enrollmentId,
         studentId: item.studentId,
         studentCode: item.studentCode || '',
@@ -243,7 +261,15 @@ export class AttendanceComponent implements OnInit {
         selected: false,
       }));
 
-      this.students.set(entries);
+      // Deduplicate by studentId — prefer the row that has an absence record
+      const seen = new Map<string, StudentEntry>();
+      for (const entry of rawEntries) {
+        const prev = seen.get(entry.studentId);
+        if (!prev || (!prev.isAbsent && entry.isAbsent)) {
+          seen.set(entry.studentId, entry);
+        }
+      }
+      this.students.set(Array.from(seen.values()));
     } catch (e) {
       console.error('Failed to load students:', e);
       this.students.set([]);
@@ -293,12 +319,15 @@ export class AttendanceComponent implements OnInit {
       for (const s of toMark) {
         try {
           await lastValueFrom(
-            this.attendanceSvc.create({
-              enrollmentId: s.enrollmentId,
-              date: new Date(this.attendanceDate()).toISOString(),
-              isAbsent: true,
-              note: '--',
-            })
+            this.attendanceSvc.create(
+              {
+                enrollmentId: s.enrollmentId,
+                date: new Date(this.attendanceDate()).toISOString(),
+                isAbsent: true,
+                note: '--',
+              },
+              { skipHandleError: true }
+            )
           );
           successCount++;
         } catch {
@@ -323,7 +352,7 @@ export class AttendanceComponent implements OnInit {
       if (student.isAbsent) {
         // Remove absence
         if (student.attendanceId) {
-          await lastValueFrom(this.attendanceSvc.delete(student.attendanceId));
+          await lastValueFrom(this.attendanceSvc.delete(student.attendanceId, { skipHandleError: true }));
         } else {
           // Fallback: search by enrollmentId + date
           const records: any = await lastValueFrom(
@@ -336,25 +365,29 @@ export class AttendanceComponent implements OnInit {
               new Date(r.date).toISOString().slice(0, 10) === targetDate
           );
           if (record?.id) {
-            await lastValueFrom(this.attendanceSvc.delete(record.id));
+            await lastValueFrom(this.attendanceSvc.delete(record.id, { skipHandleError: true }));
           }
         }
         this.showMessage('تم إلغاء الغياب', 'success');
       } else {
         await lastValueFrom(
-          this.attendanceSvc.create({
-            enrollmentId: student.enrollmentId,
-            date: new Date(this.attendanceDate()).toISOString(),
-            isAbsent: true,
-            note: '--',
-          })
+          this.attendanceSvc.create(
+            {
+              enrollmentId: student.enrollmentId,
+              date: new Date(this.attendanceDate()).toISOString(),
+              isAbsent: true,
+              note: '--',
+            },
+            { skipHandleError: true }
+          )
         );
         this.showMessage('تم تسجيل الغياب وإرسال الإشعار', 'success');
       }
       await this.loadStudents();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Toggle attendance failed:', e);
-      this.showMessage('فشلت العملية، يرجى المحاولة مرة أخرى', 'error');
+      const msg = e?.error?.error?.message || 'فشلت العملية، يرجى المحاولة مرة أخرى';
+      this.showMessage(msg, 'error');
     } finally {
       this.saving.set(false);
     }

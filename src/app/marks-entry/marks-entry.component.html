@@ -1,0 +1,336 @@
+<div class="marks-page" dir="rtl">
+
+  <!-- Header -->
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()" title="رجوع">
+      <i class="fas fa-arrow-right"></i>
+    </button>
+    <div class="header-icon">
+      <i class="fas fa-star-half-alt"></i>
+    </div>
+    <div>
+      <h1>تسجيل الدرجات</h1>
+      <p>اختر المقرر والاختبار لتسجيل درجات الطلاب وإرسال الإشعارات تلقائياً</p>
+    </div>
+  </div>
+
+  <!-- Filters Card -->
+  <div class="filters-card">
+    <!-- Course -->
+    <div class="filter-group">
+      <label>
+        <i class="fas fa-book me-1"></i>
+        المقرر الدراسي
+        <span class="required">*</span>
+      </label>
+      <select
+        [ngModel]="selectedCourseId()"
+        (ngModelChange)="onCourseChange($event)"
+        [disabled]="loading()">
+        <option value="">-- اختر المقرر --</option>
+        <option *ngFor="let c of courses()" [value]="c.id">
+          {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' — ' + c.gradeName : '' }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Exam -->
+    <div class="filter-group" *ngIf="selectedCourseId()">
+      <label class="label-with-action">
+        <span><i class="fas fa-file-alt me-1"></i>الاختبار<span class="required">*</span></span>
+        <button
+          class="btn-add-exam"
+          (click)="showAddExamForm.set(!showAddExamForm())"
+          [class.active]="showAddExamForm()"
+          title="إضافة اختبار جديد">
+          <i class="fas" [class.fa-plus]="!showAddExamForm()" [class.fa-times]="showAddExamForm()"></i>
+          {{ showAddExamForm() ? 'إلغاء' : 'اختبار جديد' }}
+        </button>
+      </label>
+      <select
+        [ngModel]="selectedExamId()"
+        (ngModelChange)="onExamChange($event)"
+        [disabled]="loading()">
+        <option value="">-- اختر الاختبار --</option>
+        <option *ngFor="let e of exams()" [value]="e.id">
+          {{ e.examName }}{{ e.groupName ? ' (' + e.groupName + ')' : '' }}
+        </option>
+      </select>
+      <span class="hint-text" *ngIf="exams().length === 0 && !loading() && !showAddExamForm()">
+        لا يوجد اختبارات — أضف اختباراً جديداً
+      </span>
+    </div>
+
+    <!-- Group -->
+    <div class="filter-group" *ngIf="selectedCourseId() && groups().length > 0">
+      <label>
+        <i class="fas fa-users me-1"></i>
+        المجموعة
+        <span class="optional">(اختياري)</span>
+      </label>
+      <select
+        [ngModel]="selectedGroupId()"
+        (ngModelChange)="onGroupChange($event)"
+        [disabled]="loading()">
+        <option value="">-- جميع المجموعات --</option>
+        <option *ngFor="let g of groups()" [value]="g.id">
+          {{ g.name }}{{ g.teacherName ? ' — ' + g.teacherName : '' }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Max Grade -->
+    <div class="filter-group max-grade-group" *ngIf="selectedExamId()">
+      <label>
+        <i class="fas fa-sort-numeric-up me-1"></i>
+        الدرجة العظمى
+      </label>
+      <input
+        type="number"
+        min="1"
+        [ngModel]="globalMaxGrade()"
+        (ngModelChange)="globalMaxGrade.set($event)"
+        placeholder="100" />
+    </div>
+  </div>
+
+  <!-- Add Exam Inline Form -->
+  <div class="add-exam-card" *ngIf="showAddExamForm() && selectedCourseId()">
+    <div class="add-exam-title">
+      <i class="fas fa-file-plus me-2"></i>إضافة اختبار جديد
+    </div>
+    <div class="add-exam-body">
+      <div class="add-exam-field">
+        <label>اسم الاختبار <span class="required">*</span></label>
+        <input
+          type="text"
+          class="exam-name-input"
+          [ngModel]="newExamName()"
+          (ngModelChange)="newExamName.set($event)"
+          placeholder="مثال: اختبار الفصل الأول، اختبار منتصف الفصل..."
+          [disabled]="addingExam()"
+          (keyup.enter)="addExam()" />
+      </div>
+      <div class="add-exam-context" *ngIf="selectedGroupId()">
+        <i class="fas fa-info-circle me-1"></i>
+        سيُضاف الاختبار للمجموعة المحددة
+      </div>
+      <div class="add-exam-actions">
+        <button
+          class="btn-create-exam"
+          (click)="addExam()"
+          [disabled]="addingExam() || !newExamName().trim()">
+          <span *ngIf="!addingExam()"><i class="fas fa-save me-1"></i>حفظ الاختبار</span>
+          <span *ngIf="addingExam()"><span class="btn-spinner-sm"></span>جاري الحفظ...</span>
+        </button>
+        <button
+          class="btn-cancel-exam"
+          (click)="showAddExamForm.set(false); newExamName.set('')"
+          [disabled]="addingExam()">
+          إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="spinner"></div>
+    <span>جاري التحميل...</span>
+  </div>
+
+  <!-- No course selected -->
+  <div class="empty-state" *ngIf="!selectedCourseId() && !loading()">
+    <i class="fas fa-book-open"></i>
+    <p>اختر مقرراً لعرض قائمة الاختبارات</p>
+  </div>
+
+  <!-- Course selected but no exam -->
+  <div class="empty-state" *ngIf="selectedCourseId() && !selectedExamId() && !loading()">
+    <i class="fas fa-file-alt"></i>
+    <p>اختر اختباراً لعرض قائمة الطلاب</p>
+  </div>
+
+  <!-- No students -->
+  <div
+    class="empty-state warning"
+    *ngIf="selectedExamId() && students().length === 0 && !loading()">
+    <i class="fas fa-user-slash"></i>
+    <p>لا يوجد طلاب مسجلون في هذا المقرر</p>
+  </div>
+
+  <!-- Students section -->
+  <div *ngIf="students().length > 0 && !loading()">
+
+    <!-- Stats Panel -->
+    <div class="stats-panel">
+      <div class="stat-item stat-graded">
+        <span class="stat-num">{{ gradedCount() }}</span>
+        <span class="stat-label"><i class="fas fa-check-circle me-1"></i>مسجّل</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item stat-ungraded">
+        <span class="stat-num">{{ ungradedCount() }}</span>
+        <span class="stat-label"><i class="fas fa-clock me-1"></i>لم يُسجَّل</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item stat-total">
+        <span class="stat-num">{{ totalCount() }}</span>
+        <span class="stat-label"><i class="fas fa-users me-1"></i>الإجمالي</span>
+      </div>
+      <div class="exam-badge" *ngIf="selectedExamName()">
+        <i class="fas fa-file-alt me-1"></i>{{ selectedExamName() }}
+      </div>
+    </div>
+
+    <!-- Actions bar -->
+    <div class="actions-bar">
+      <div class="max-grade-pill">
+        <i class="fas fa-sort-numeric-up me-1"></i>
+        الدرجة العظمى: <strong>{{ globalMaxGrade() }}</strong>
+      </div>
+      <button
+        class="btn-save-all"
+        (click)="saveAll()"
+        [disabled]="saving()">
+        <span *ngIf="!saving()">
+          <i class="fas fa-save me-1"></i>حفظ جميع الدرجات
+        </span>
+        <span *ngIf="saving()">
+          <span class="btn-spinner"></span>جاري الحفظ...
+        </span>
+      </button>
+    </div>
+
+    <!-- Message -->
+    <div
+      class="message-bar"
+      *ngIf="message()"
+      [class.success]="messageType() === 'success'"
+      [class.error]="messageType() === 'error'">
+      <i
+        class="fas me-2"
+        [class.fa-check-circle]="messageType() === 'success'"
+        [class.fa-exclamation-circle]="messageType() === 'error'"></i>
+      {{ message() }}
+    </div>
+
+    <!-- Desktop table -->
+    <div class="students-table-wrapper desktop-only">
+      <table class="students-table">
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th class="col-name">الطالب</th>
+            <th class="col-code">الرمز</th>
+            <th class="col-prev">الدرجة الحالية</th>
+            <th class="col-input">الدرجة الجديدة</th>
+            <th class="col-action">حفظ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let s of students(); let i = index; trackBy: trackByEnrollment"
+            [class.row-graded]="s.savedGrade !== null"
+            [class.row-error]="s.rowError"
+            [class.row-success]="s.rowSuccess">
+            <td class="col-num">{{ i + 1 }}</td>
+            <td class="col-name">
+              <div class="student-info">
+                <div class="avatar" [class.avatar-graded]="s.savedGrade !== null">
+                  {{ s.studentName.charAt(0) }}
+                </div>
+                <span class="student-name">{{ s.studentName }}</span>
+              </div>
+            </td>
+            <td class="col-code">{{ s.studentCode }}</td>
+            <td class="col-prev">
+              <span *ngIf="s.savedGrade !== null" class="grade-badge" [class]="'grade-' + gradeLabel(gradePct(s))">
+                {{ s.savedGrade }}/{{ s.savedMaxGrade }}
+                <span class="pct-text">({{ gradePct(s) }}%)</span>
+              </span>
+              <span *ngIf="s.savedGrade === null" class="no-grade">—</span>
+            </td>
+            <td class="col-input">
+              <input
+                class="grade-input"
+                type="number"
+                min="0"
+                [max]="globalMaxGrade()"
+                [ngModel]="s.inputGrade"
+                (ngModelChange)="updateGradeInput(i, $event)"
+                [placeholder]="'من ' + globalMaxGrade()"
+                [disabled]="s.saving || saving()" />
+            </td>
+            <td class="col-action">
+              <button
+                class="btn-save-row"
+                [class.btn-update]="s.gradeId"
+                (click)="saveGrade(i)"
+                [disabled]="s.saving || saving() || s.inputGrade === ''">
+                <span *ngIf="s.saving"><span class="btn-spinner-sm"></span></span>
+                <span *ngIf="s.rowSuccess && !s.saving"><i class="fas fa-check"></i></span>
+                <span *ngIf="!s.saving && !s.rowSuccess">
+                  <i class="fas" [class.fa-save]="!s.gradeId" [class.fa-edit]="s.gradeId"></i>
+                  {{ s.gradeId ? 'تعديل' : 'حفظ' }}
+                </span>
+              </button>
+              <div class="row-error" *ngIf="s.rowError">{{ s.rowError }}</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile cards -->
+    <div class="student-cards mobile-only">
+      <div
+        *ngFor="let s of students(); let i = index; trackBy: trackByEnrollment"
+        class="student-card"
+        [class.card-graded]="s.savedGrade !== null"
+        [class.card-error]="s.rowError"
+        [class.card-success]="s.rowSuccess">
+
+        <div class="card-top">
+          <div class="avatar" [class.avatar-graded]="s.savedGrade !== null">
+            {{ s.studentName.charAt(0) }}
+          </div>
+          <div class="card-info">
+            <span class="student-name">{{ s.studentName }}</span>
+            <span class="card-code">{{ s.studentCode }}</span>
+          </div>
+          <span *ngIf="s.savedGrade !== null" class="grade-badge" [class]="'grade-' + gradeLabel(gradePct(s))">
+            {{ s.savedGrade }}/{{ s.savedMaxGrade }}
+          </span>
+        </div>
+
+        <div class="card-input-row">
+          <input
+            class="grade-input grade-input-full"
+            type="number"
+            min="0"
+            [max]="globalMaxGrade()"
+            [ngModel]="s.inputGrade"
+            (ngModelChange)="updateGradeInput(i, $event)"
+            [placeholder]="'الدرجة من ' + globalMaxGrade()"
+            [disabled]="s.saving || saving()" />
+          <button
+            class="btn-save-row"
+            [class.btn-update]="s.gradeId"
+            (click)="saveGrade(i)"
+            [disabled]="s.saving || saving() || s.inputGrade === ''">
+            <span *ngIf="s.saving"><span class="btn-spinner-sm"></span></span>
+            <span *ngIf="s.rowSuccess && !s.saving"><i class="fas fa-check"></i></span>
+            <span *ngIf="!s.saving && !s.rowSuccess">
+              {{ s.gradeId ? 'تعديل' : 'حفظ' }}
+            </span>
+          </button>
+        </div>
+
+        <div class="row-error" *ngIf="s.rowError">{{ s.rowError }}</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

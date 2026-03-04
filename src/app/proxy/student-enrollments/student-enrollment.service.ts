@@ -1,4 +1,4 @@
-import type { CreateUpdateEnrollmentDto, EnrollmentDto } from './dtos/models';
+import type { CreateUpdateEnrollmentDto, EnrolledStudentDto, EnrollmentDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -31,6 +31,14 @@ export class StudentEnrollmentService {
     this.restService.request<any, EnrollmentDto>({
       method: 'GET',
       url: `/api/app/student-enrollment/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getEnrolledStudentsByCourse = (courseId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, EnrolledStudentDto[]>({
+      method: 'GET',
+      url: `/api/app/student-enrollment/enrolled-students-by-course/${courseId}`,
     },
     { apiName: this.apiName,...config });
   

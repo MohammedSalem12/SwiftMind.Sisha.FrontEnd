@@ -101,9 +101,21 @@ import { NotificationService, NotificationDto } from '@proxy/notifications';
           <h3 class="mb-3">روابط سريعة</h3>
           <div class="row g-3">
             <div class="col-md-3">
+              <button class="action-btn w-100" (click)="goToLinkChild()">
+                <i class="fas fa-link"></i>
+                <span>ربط ابن/ابنة</span>
+              </button>
+            </div>
+            <div class="col-md-3">
               <button class="action-btn w-100" (click)="goToEnrollmentApproval()">
                 <i class="fas fa-clipboard-check"></i>
                 <span>طلبات التسجيل</span>
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="action-btn w-100" (click)="goToDashboard()">
+                <i class="fas fa-chart-line"></i>
+                <span>لوحة المتابعة</span>
               </button>
             </div>
             <div class="col-md-3">
@@ -112,12 +124,8 @@ import { NotificationService, NotificationDto } from '@proxy/notifications';
                 <span>النشرات</span>
               </button>
             </div>
-            <div class="col-md-3">
-              <button class="action-btn w-100" (click)="goToParents()">
-                <i class="fas fa-users"></i>
-                <span>أولياء الأمور</span>
-              </button>
-            </div>
+          </div>
+          <div class="row g-3 mt-2">
             <div class="col-md-3">
               <button class="action-btn w-100" (click)="goToProfile()">
                 <i class="fas fa-user"></i>
@@ -335,8 +343,7 @@ export class ParentHomeComponent implements OnInit {
   }
 
   viewChildDetails(child: ParentStudentDto): void {
-    // Navigate to student details or courses page
-    this.router.navigate(['/courses']);
+    this.router.navigate(['/parent/child', child.studentId]);
   }
 
   goToNotifications(): void {
@@ -347,12 +354,16 @@ export class ParentHomeComponent implements OnInit {
     this.router.navigate(['/parent-enrollment-approval']);
   }
 
-  goToFeeds(): void {
-    this.router.navigate(['/feeds']);
+  goToLinkChild(): void {
+    this.router.navigate(['/parent/link-child']);
   }
 
-  goToParents(): void {
-    this.router.navigate(['/parents']);
+  goToDashboard(): void {
+    this.router.navigate(['/parents/dashboard']);
+  }
+
+  goToFeeds(): void {
+    this.router.navigate(['/feeds']);
   }
 
   goToProfile(): void {
