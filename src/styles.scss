@@ -1,21 +1,792 @@
-/* You can add global styles to this file, and also import other style files */
+/* ============================================================
+   SwiftMind Sesha — Global Styles
+   Design system: ngx-admin / Nebular default theme adaptation
+   ============================================================ */
 
-@keyframes donut-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+// ── Google Fonts (Open Sans — matches ngx-admin) ─────────────
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap');
+
+// ── Design tokens (CSS custom properties) ────────────────────
+@import 'ngx-design-tokens';
+
+// ─────────────────────────────────────────────────────────────
+// BASE
+// ─────────────────────────────────────────────────────────────
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--ngx-font);
+  font-size: var(--ngx-font-size-base);
+  color: var(--ngx-text);
+  background-color: var(--ngx-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+// Smooth scrolling
+html { scroll-behavior: smooth; }
+
+// ABP logo CSS vars
 :root {
-  --lpx-logo: url('/assets/images/logo/logo-light.png');
+  --lpx-logo:      url('/assets/images/logo/logo-light.png');
   --lpx-logo-icon: url('/assets/images/logo/logo-light-thumbnail.png');
 }
+
+// ── RTL / LTR ────────────────────────────────────────────────
+[dir="rtl"], .rtl { direction: rtl; text-align: right; }
+[dir="ltr"], .ltr { direction: ltr; text-align: left; }
+html[lang="ar"] { direction: rtl; }
+
+// ─────────────────────────────────────────────────────────────
+// TYPOGRAPHY
+// ─────────────────────────────────────────────────────────────
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ngx-text);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+a {
+  color: var(--ngx-primary);
+  text-decoration: none;
+  transition: color var(--ngx-transition);
+  &:hover { color: var(--ngx-primary-hover); }
+}
+
+// ─────────────────────────────────────────────────────────────
+// CARDS  (ngx-admin nb-card style)
+// ─────────────────────────────────────────────────────────────
+
+.card,
+.ngx-card,
+.section-card,
+.stat-card {
+  background: var(--ngx-card-bg);
+  border-radius: var(--ngx-card-radius);
+  box-shadow: var(--ngx-card-shadow);
+  border: none;
+  margin-bottom: var(--ngx-card-margin-b);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1rem var(--ngx-card-padding);
+  border-bottom: 1px solid var(--ngx-border);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--ngx-text-hint);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: transparent;
+}
+
+.card-body {
+  padding: var(--ngx-card-padding);
+}
+
+// ─────────────────────────────────────────────────────────────
+// BUTTONS  (ngx-admin style)
+// ─────────────────────────────────────────────────────────────
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: var(--ngx-btn-padding);
+  font-size: var(--ngx-btn-font-size);
+  font-weight: var(--ngx-btn-font-weight);
+  font-family: var(--ngx-font);
+  border-radius: var(--ngx-btn-radius);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: background var(--ngx-transition), border-color var(--ngx-transition), color var(--ngx-transition), box-shadow var(--ngx-transition);
+  min-height: 2.625rem;
+  line-height: 1.25;
+  text-decoration: none;
+
+  &:disabled { opacity: 0.65; cursor: not-allowed; }
+}
+
+.btn-primary {
+  background: var(--ngx-primary);
+  color: #fff;
+  border-color: var(--ngx-primary);
+  &:hover:not(:disabled) {
+    background: var(--ngx-primary-hover);
+    border-color: var(--ngx-primary-hover);
+    box-shadow: 0 0.5rem 1rem rgba(51, 102, 255, 0.35);
+  }
+}
+
+.btn-success {
+  background: var(--ngx-success);
+  color: #fff;
+  border-color: var(--ngx-success);
+  &:hover:not(:disabled) { opacity: 0.9; }
+}
+
+.btn-danger {
+  background: var(--ngx-danger);
+  color: #fff;
+  border-color: var(--ngx-danger);
+  &:hover:not(:disabled) { opacity: 0.9; }
+}
+
+.btn-warning {
+  background: var(--ngx-warning);
+  color: #fff;
+  border-color: var(--ngx-warning);
+  &:hover:not(:disabled) { opacity: 0.9; }
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--ngx-primary);
+  color: var(--ngx-primary);
+  &:hover:not(:disabled) {
+    background: var(--ngx-primary-light);
+  }
+}
+
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8125rem;
+  min-height: 2rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  min-height: 3rem;
+}
+
+// ─────────────────────────────────────────────────────────────
+// FORMS  (ngx-admin input style)
+// ─────────────────────────────────────────────────────────────
+
+input, textarea, select {
+  width: 100%;
+  background: var(--ngx-input-bg);
+  border: 1px solid var(--ngx-input-border);
+  border-radius: var(--ngx-input-radius);
+  padding: var(--ngx-input-padding);
+  font-family: var(--ngx-font);
+  font-size: var(--ngx-font-size-base);
+  color: var(--ngx-text);
+  min-height: var(--ngx-input-height);
+  transition: border-color var(--ngx-transition), box-shadow var(--ngx-transition);
+  box-sizing: border-box;
+  font-size: 16px; // prevents iOS zoom
+
+  &:focus {
+    outline: none;
+    border-color: var(--ngx-primary);
+    box-shadow: 0 0 0 3px rgba(51, 102, 255, 0.15);
+  }
+
+  &::placeholder { color: var(--ngx-text-hint); }
+  &:disabled {
+    background: var(--ngx-divider);
+    color: var(--ngx-text-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ngx-text-hint);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.375rem;
+}
+
+.form-group { margin-bottom: 1rem; }
+
+// ─────────────────────────────────────────────────────────────
+// STATUS BADGES  (ngx-admin status chip style)
+// ─────────────────────────────────────────────────────────────
+
+.badge, .status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-primary   { background: var(--ngx-primary-light);  color: var(--ngx-primary); }
+.badge-success   { background: var(--ngx-success-light);  color: #00875a; }
+.badge-warning   { background: var(--ngx-warning-light);  color: #b76c00; }
+.badge-danger    { background: var(--ngx-danger-light);   color: #b12a4e; }
+.badge-info      { background: var(--ngx-info-light);     color: #006dbf; }
+
+// ─────────────────────────────────────────────────────────────
+// TABLES  (ngx-admin table style)
+// ─────────────────────────────────────────────────────────────
+
+.ngx-table, table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    padding: 0.875rem 1rem;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--ngx-text-hint);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--ngx-border);
+    background: var(--ngx-card-bg-alt);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--ngx-divider);
+    color: var(--ngx-text);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tbody tr {
+    transition: background var(--ngx-transition);
+    &:hover { background: var(--ngx-card-bg-alt); }
+  }
+}
+
+// RTL table headers
+[dir="rtl"] table th, [dir="rtl"] table td {
+  text-align: right;
+}
+[dir="ltr"] table th, [dir="ltr"] table td {
+  text-align: left;
+}
+
+// ─────────────────────────────────────────────────────────────
+// HERO / PAGE HEADERS  (replaces purple gradient → ngx blue)
+// ─────────────────────────────────────────────────────────────
+
+// Component-level hero headers — override the hardcoded purple gradient
+// Targets common class patterns used in our components
+
+.hero-header,
+.page-header.gradient,
+[class*="-hero"],
+[class*="hero-section"] {
+  background: var(--ngx-hero-gradient) !important;
+}
+
+// Enroll buttons and call-to-action gradients
+.btn-enroll,
+.btn-done {
+  background: var(--ngx-hero-gradient) !important;
+  border-color: transparent !important;
+}
+
+// Step active dot
+.step-dot { }
+.step-item.active .step-dot {
+  background: var(--ngx-hero-gradient) !important;
+}
+
+// Card icon backgrounds
+.card-icon,
+.group-icon {
+  background: var(--ngx-hero-gradient) !important;
+}
+.card-icon.teacher-icon {
+  background: linear-gradient(135deg, var(--ngx-success) 0%, #00875a 100%) !important;
+}
+
+// Chip colors
+.grade-chip { background: var(--ngx-primary-light) !important; color: var(--ngx-primary) !important; }
+.day-chip   { background: var(--ngx-primary-light) !important; color: var(--ngx-primary) !important; }
+
+// Spinner color
+.spinner { border-top-color: var(--ngx-primary) !important; }
+
+// Nav active color
+.nav-item.active, .nav-item.active .nav-icon i {
+  color: var(--ngx-primary) !important;
+}
+.nav-item.active .nav-icon {
+  background: rgba(51, 102, 255, 0.10) !important;
+}
+
+// ─────────────────────────────────────────────────────────────
+// PAGE LAYOUT UTILITIES
+// ─────────────────────────────────────────────────────────────
+
+.page-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.col-12 { flex: 0 0 100%; }
+.col-md-6 { flex: 0 0 calc(50% - 0.5rem); }
+.col-md-4 { flex: 0 0 calc(33.333% - 0.667rem); }
+.col-md-3 { flex: 0 0 calc(25% - 0.75rem); }
+
+// Stats grid (ngx-admin dashboard stat row style)
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: var(--ngx-card-margin-b);
+}
+
+.stat-box {
+  background: var(--ngx-card-bg);
+  border-radius: var(--ngx-card-radius);
+  box-shadow: var(--ngx-card-shadow);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  .stat-icon {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--ngx-text);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ngx-text-hint);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &.primary { .stat-icon { color: var(--ngx-primary); } }
+  &.success { .stat-icon { color: var(--ngx-success); } }
+  &.warning { .stat-icon { color: var(--ngx-warning); } }
+  &.danger  { .stat-icon { color: var(--ngx-danger);  } }
+}
+
+// ─────────────────────────────────────────────────────────────
+// LOADING / SPINNER
+// ─────────────────────────────────────────────────────────────
+
+.loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: var(--ngx-text-hint);
+  font-size: 0.9rem;
+}
+
+@keyframes ngx-spin { to { transform: rotate(360deg); } }
+
+.ngx-spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid var(--ngx-border);
+  border-top-color: var(--ngx-primary);
+  border-radius: 50%;
+  animation: ngx-spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+// ─────────────────────────────────────────────────────────────
+// EMPTY / ERROR STATES
+// ─────────────────────────────────────────────────────────────
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--ngx-text-hint);
+
+  i, .empty-icon {
+    font-size: 2.5rem;
+    color: var(--ngx-text-disabled);
+    display: block;
+  }
+  p { font-size: 0.9rem; margin: 0; }
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--ngx-danger-light);
+  color: #b12a4e;
+  border: 1px solid rgba(255, 61, 113, 0.25);
+  border-radius: var(--ngx-card-radius);
+  font-size: 0.875rem;
+}
+
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--ngx-success-light);
+  color: #00875a;
+  border: 1px solid rgba(0, 214, 143, 0.25);
+  border-radius: var(--ngx-card-radius);
+  font-size: 0.875rem;
+}
+
+// ─────────────────────────────────────────────────────────────
+// PROGRESS / ATTENDANCE BARS
+// ─────────────────────────────────────────────────────────────
+
+.progress-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progress-track {
+  flex: 1;
+  height: 8px;
+  background: var(--ngx-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  &.success { background: var(--ngx-success); }
+  &.warning { background: var(--ngx-warning); }
+  &.danger  { background: var(--ngx-danger); }
+  &.primary { background: var(--ngx-primary); }
+}
+
+// ─────────────────────────────────────────────────────────────
+// ABP / LEPTON-X OVERRIDES — ngx-admin visual
+// ─────────────────────────────────────────────────────────────
+
+// ── Sidebar — dark navy exactly like ngx-admin ────────────────
+.lpx-sidebar,
+.lpx-side-menu,
+lpx-side-menu,
+.lpx-nav,
+lpx-side-menu-item,
+.lpx-sidebar-container {
+  background: var(--ngx-sidebar-bg) !important;
+  border: none !important;
+  box-shadow: 4px 0 24px rgba(26, 33, 56, 0.3) !important;
+}
+
+// Logo / brand area
+.lpx-brand,
+.lpx-logo-wrapper,
+.lpx-sidebar .lpx-brand-link {
+  border-bottom: 1px solid var(--ngx-sidebar-divider) !important;
+  padding: 1.25rem !important;
+}
+
+// Nav items
+.lpx-sidebar .lpx-nav-item,
+.lpx-side-menu .nav-item,
+.lpx-nav .nav-item,
+lpx-side-menu .nav-item {
+  margin: 2px 8px !important;
+  border-radius: 0.375rem !important;
+  overflow: hidden;
+}
+
+// Nav links
+.lpx-sidebar .lpx-nav-item .nav-link,
+.lpx-sidebar .lpx-nav-item a,
+.lpx-side-menu .nav-link,
+.lpx-nav .nav-link,
+lpx-side-menu .nav-link,
+abp-nav-item a {
+  color: var(--ngx-sidebar-text) !important;
+  border-radius: 0.375rem !important;
+  padding: 0.625rem 1rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  font-family: var(--ngx-font) !important;
+  transition: background var(--ngx-transition), color var(--ngx-transition) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  min-height: 44px !important;
+
+  &:hover {
+    background: var(--ngx-sidebar-hover-bg) !important;
+    color: var(--ngx-sidebar-active) !important;
+  }
+
+  &.active, &.router-link-active {
+    background: var(--ngx-sidebar-active-bg) !important;
+    color: var(--ngx-sidebar-active) !important;
+    font-weight: 700 !important;
+  }
+}
+
+// Nav icons
+.lpx-sidebar .nav-link i,
+.lpx-side-menu .nav-link i,
+lpx-side-menu .nav-link i,
+abp-nav-item a i {
+  color: var(--ngx-sidebar-icon) !important;
+  width: 18px !important;
+  text-align: center !important;
+}
+
+.lpx-sidebar .nav-link.active i,
+lpx-side-menu .nav-link.active i {
+  color: #ffffff !important;
+}
+
+// Scrollbar
+.lpx-sidebar::-webkit-scrollbar { width: 4px; }
+.lpx-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+// Sidebar toggle
+.lpx-sidebar-toggle,
+.lpx-hamburger,
+.lpx-mobile-menu-toggle,
+.menu-collapse-icon {
+  color: var(--ngx-primary) !important;
+}
+
+// Keep collapse icon visible
+#lpx-wrapper.hover-trigger .lpx-sidebar-container:not(:hover) .menu-collapse-icon,
+.lpx-sidebar-container:not(:hover) .menu-collapse-icon {
+  display: block !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 1100;
+}
+
+// ── Top-bar — white with shadow (ngx-admin header) ────────────
+.lpx-toolbar,
+.lpx-topbar,
+lpx-navbar,
+.lpx-navbar {
+  background: var(--ngx-header-bg) !important;
+  box-shadow: var(--ngx-header-shadow) !important;
+  border-bottom: none !important;
+}
+
+// Top-bar icons
+.lpx-toolbar .lpx-user-icon,
+.lpx-topbar .lpx-user-menu,
+.lpx-toolbar button,
+.lpx-topbar button {
+  color: var(--ngx-text) !important;
+  &:hover { color: var(--ngx-primary) !important; }
+}
+
+// ─────────────────────────────────────────────────────────────
+// BOTTOM NAVIGATION  (ngx-admin adapted)
+// ─────────────────────────────────────────────────────────────
+
+.bottom-nav {
+  background: var(--ngx-bottom-nav-bg) !important;
+  border-top: 1px solid var(--ngx-border) !important;
+  box-shadow: 0 -0.25rem 0.75rem rgba(44, 51, 73, 0.08) !important;
+}
+
+.nav-item.active {
+  color: var(--ngx-bottom-nav-active) !important;
+}
+
+.nav-item.active .nav-icon {
+  background: rgba(51, 102, 255, 0.08) !important;
+}
+
+.nav-item.active .nav-icon i {
+  color: var(--ngx-bottom-nav-active) !important;
+}
+
+// ── App content padding for bottom nav ────────────────────────
+.app-content {
+  padding-bottom: 70px;
+
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// RESPONSIVE — Mobile-first (360px–430px primary target)
+// ─────────────────────────────────────────────────────────────
+
+// Hide sidebar on mobile — bottom nav takes over
+@media (max-width: 767px) {
+  .lpx-sidebar-container {
+    display: none !important;
+  }
+  .lpx-content-container {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .page-container { padding: 0.75rem; }
+
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.625rem;
+  }
+
+  .col-md-6, .col-md-4, .col-md-3 {
+    flex: 0 0 100%;
+  }
+
+  // Touch targets
+  button, a[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  input, select, textarea {
+    font-size: 16px !important; // prevent iOS zoom
+    min-height: 44px;
+  }
+
+  body { overscroll-behavior-y: contain; }
+}
+
+// Tablet (768px–1199px)
+@media (min-width: 768px) and (max-width: 1199px) {
+  .page-container { padding: 1rem; }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .col-md-3 { flex: 0 0 calc(50% - 0.5rem); }
+}
+
+// Desktop (1200px+)
+@media (min-width: 1200px) {
+  .page-container {
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+// ── iOS safe area ─────────────────────────────────────────────
+@supports (padding-top: env(safe-area-inset-top)) {
+  @media (max-width: 767px) {
+    .lpx-toolbar, .lpx-topbar, .lpx-navbar {
+      padding-top: max(0.5rem, env(safe-area-inset-top)) !important;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// UTILITY CLASSES
+// ─────────────────────────────────────────────────────────────
+
+.text-primary { color: var(--ngx-primary) !important; }
+.text-success { color: var(--ngx-success) !important; }
+.text-warning { color: var(--ngx-warning) !important; }
+.text-danger  { color: var(--ngx-danger)  !important; }
+.text-hint    { color: var(--ngx-text-hint) !important; }
+.text-muted   { color: var(--ngx-text-hint) !important; }
+
+.bg-primary-light { background: var(--ngx-primary-light) !important; }
+.bg-success-light { background: var(--ngx-success-light) !important; }
+.bg-warning-light { background: var(--ngx-warning-light) !important; }
+.bg-danger-light  { background: var(--ngx-danger-light)  !important; }
+
+.d-flex         { display: flex !important; }
+.flex-column    { flex-direction: column !important; }
+.align-center   { align-items: center !important; }
+.justify-between{ justify-content: space-between !important; }
+.gap-1          { gap: 0.5rem !important; }
+.gap-2          { gap: 1rem !important; }
+.gap-3          { gap: 1.5rem !important; }
+.w-100          { width: 100% !important; }
+.text-center    { text-align: center !important; }
+.text-right     { text-align: right !important; }
+
+.mb-0  { margin-bottom: 0 !important; }
+.mb-1  { margin-bottom: 0.5rem !important; }
+.mb-2  { margin-bottom: 1rem !important; }
+.mb-3  { margin-bottom: 1.5rem !important; }
+.mt-1  { margin-top: 0.5rem !important; }
+.mt-2  { margin-top: 1rem !important; }
+.mt-3  { margin-top: 1.5rem !important; }
+
+.p-1  { padding: 0.5rem !important; }
+.p-2  { padding: 1rem !important; }
+.p-3  { padding: 1.5rem !important; }
+
+// Accessibility focus
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid rgba(51, 102, 255, 0.35);
+  outline-offset: 2px;
+}
+
+// Hide / show responsive helpers
+.mobile-only  { display: none !important; }
+.desktop-only { display: block !important; }
+
+@media (max-width: 991px) {
+  .mobile-only  { display: block !important; }
+  .desktop-only { display: none  !important; }
+}
+
+// ── ABP LeptonX logo ─────────────────────────────────────────
+.abp-logo {
+  background-image: var(--lpx-logo);
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+// ─────────────────────────────────────────────────────────────
+// ANIMATIONS
+// ─────────────────────────────────────────────────────────────
+
+@keyframes donut-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .donut {
   display: inline-block;
   border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: #7983ff;
+  border-left-color: var(--ngx-primary);
   border-radius: 50%;
   width: 30px;
   height: 30px;
@@ -29,349 +800,11 @@
   }
 }
 
-.abp-logo {
-  background-repeat: no-repeat;
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.abp-support {
-  width: 178px;
-  height: 30px;
-  background-image: url('/assets/images/getting-started/abp-support.svg');
+.fade-in-up {
+  animation: fadeInUp 0.25s ease-out both;
 }
-
-.abp-community {
-  width: 215px;
-  height: 30px;
-  background-image: url('/assets/images/getting-started/abp-community.svg');
-}
-
-.abp-blog {
-  width: 142px;
-  height: 30px;
-  background-image: url('/assets/images/getting-started/abp-blog.svg');
-}
-
-.logo-x {
-  width: 20px;
-  height: 20px;
-  background-image: url('/assets/images/getting-started/x.svg');
-}
-
-/* === Ancient Egyptian themed variables and base styles === */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Noto+Sans:wght@400;700&display=swap');
-
-:root {
-  /* primary palette inspired by ancient Egyptian art */
-  --ancient-gold: #d4af37; /* gold */
-  --ancient-gold-2: #c99f2a;
-  --lapis: #0b3b5c; /* deep lapis/blue */
-  --sand: #f5e7c6; /* papyrus paper */
-  --charcoal: #1f2933;
-  --muted: #6b7280;
-  --card-bg: #fffaf0;
-  --accent: var(--ancient-gold);
-}
-
-html, body {
-  height: 100%;
-  font-family: 'Noto Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  color: var(--charcoal);
-  background: radial-gradient(circle at 10% 10%, rgba(11,59,92,0.08), transparent 20%), linear-gradient(180deg, #f9f6ef 0%, #f3ead0 100%);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-}
-
-/* subtle papyrus texture on large screens if available */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: url('/assets/images/patterns/papyrus.png');
-  background-repeat: repeat;
-  opacity: 0.04;
-  z-index: 0;
-}
-
-/* Headings with a slightly more classical serif for titles */
-h1, h2, h3, h4 {
-  font-family: 'Cormorant Garamond', 'Noto Sans', serif;
-  color: var(--lapis);
-}
-
-/* Links */
-a { color: var(--lapis); text-decoration: none; }
-a:hover { color: var(--ancient-gold-2); text-decoration: underline; }
-
-/* Buttons */
-.btn-primary, .btn-primary:active {
-  background: linear-gradient(180deg, var(--ancient-gold), var(--ancient-gold-2));
-  color: #111;
-  border: none;
-  box-shadow: 0 6px 14px rgba(11, 59, 92, 0.12);
-  border-radius: 8px;
-}
-.btn-outline { border: 1px solid rgba(11,59,92,0.08); background: transparent; color: var(--lapis); }
-
-/* Cards */
-.card, .modal-card {
-  background: linear-gradient(180deg, var(--card-bg), #fff);
-  border-radius: 10px;
-  box-shadow: 0 8px 26px rgba(11, 59, 92, 0.06);
-  border: 1px solid rgba(11,59,92,0.04);
-}
-
-/* Inputs */
-input, textarea, select {
-  border: 1px solid rgba(11,59,92,0.08);
-  padding: 0.55rem 0.65rem;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.9);
-}
-
-/* Header/logo area adjustments */
-.home-hero, .teachers-hero, .courses-hero, .feeds-hero {
-  box-shadow: inset 0 -40px 60px rgba(11,59,92,0.06);
-}
-
-/* Make ABP logo use the themed logo if provided */
-.abp-logo { background-image: var(--lpx-logo); background-size: contain; background-repeat: no-repeat; }
-
-/* Small utility to use gold accent for highlights */
-.accent { color: var(--accent); }
-
-/* Ensure main app content sits above papyrus texture */
-app-root, #root, .app-root { position: relative; z-index: 1; }
-
-/* Accessibility: focus styles */
-button:focus, a:focus, input:focus { outline: 3px solid rgba(212,175,55,0.18); outline-offset: 2px; }
-
-/* Responsive tweaks */
-@media (prefers-color-scheme: dark) {
-  :root { --card-bg: #0b1620; }
-  body { background: linear-gradient(180deg, #08121a 0%, #071224 100%); color: #e6eef8; }
-  a { color: #9dd3ff; }
-}
-
-/* ========================================
-   MOBILE RESPONSIVE STYLES
-   ======================================== */
-
-/* ── True mobile (≤767px): hide sidebar, use bottom nav instead ── */
-@media (max-width: 767px) {
-  .lpx-sidebar-container {
-    display: none !important;
-  }
-
-  /* Content fills full width on mobile */
-  .lpx-content-container {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-
-  /* Hide desktop-only elements */
-  .desktop-only,
-  .hide-on-mobile {
-    display: none !important;
-  }
-}
-
-/* Mobile-first utility classes */
-.mobile-only {
-  display: none;
-}
-
-@media (max-width: 991px) {
-  .mobile-only {
-    display: block !important;
-  }
-  
-  .desktop-only {
-    display: none !important;
-  }
-}
-
-/* Safe area insets for iOS notch devices */
-@supports (padding-top: env(safe-area-inset-top)) {
-  @media (max-width: 991px) {
-    .lpx-toolbar,
-    .lp-toolbar,
-    .lpx-topbar {
-      padding-top: max(0.5rem, env(safe-area-inset-top));
-    }
-  }
-}
-
-/* Touch-friendly button sizes for mobile */
-@media (max-width: 991px) {
-  .btn {
-    min-height: 44px;
-    padding: 0.75rem 1.25rem;
-  }
-  
-  /* Larger tap targets */
-  a, button {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  /* Form elements */
-  input, select, textarea {
-    min-height: 44px;
-    font-size: 16px; /* Prevents iOS zoom on focus */
-  }
-}
-
-/* RTL Support for Arabic */
-[dir="rtl"],
-.rtl {
-  direction: rtl;
-  text-align: right;
-}
-
-html[lang="ar"] {
-  direction: rtl;
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Pull-to-refresh indicator space */
-@media (max-width: 991px) {
-  body {
-    overscroll-behavior-y: contain;
-  }
-}
-
-/* ========================================
-   SIDE MENU — Purple Gradient Design
-   Targets ABP LeptonX sidebar elements
-   ======================================== */
-
-:root {
-  --sw-grad-start: #667eea;
-  --sw-grad-end:   #764ba2;
-  --sw-menu-text:  rgba(255, 255, 255, 0.85);
-  --sw-menu-text-active: #ffffff;
-  --sw-menu-hover-bg: rgba(255, 255, 255, 0.12);
-  --sw-menu-active-bg: rgba(255, 255, 255, 0.18);
-}
-
-/* Sidebar container */
-.lpx-sidebar,
-.lpx-side-menu,
-lpx-side-menu,
-.lpx-nav {
-  background: linear-gradient(160deg, var(--sw-grad-start) 0%, var(--sw-grad-end) 100%) !important;
-  box-shadow: 4px 0 24px rgba(102, 126, 234, 0.3) !important;
-  border: none !important;
-}
-
-/* Sidebar logo area */
-.lpx-brand,
-.lpx-logo-wrapper,
-.lpx-sidebar .lpx-brand-link {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
-  padding: 1.25rem !important;
-}
-
-/* Nav items */
-.lpx-sidebar .lpx-nav-item,
-.lpx-side-menu .nav-item,
-.lpx-nav .nav-item,
-lpx-side-menu .nav-item {
-  margin: 2px 8px !important;
-  border-radius: 10px !important;
-  overflow: hidden;
-}
-
-/* Nav links */
-.lpx-sidebar .lpx-nav-item .nav-link,
-.lpx-sidebar .lpx-nav-item a,
-.lpx-side-menu .nav-link,
-.lpx-nav .nav-link,
-lpx-side-menu .nav-link {
-  color: var(--sw-menu-text) !important;
-  border-radius: 10px !important;
-  padding: 0.65rem 1rem !important;
-  font-size: 0.9rem !important;
-  font-weight: 500 !important;
-  transition: background 0.18s, color 0.18s !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.625rem !important;
-  min-height: 44px !important; /* touch target */
-
-  &:hover {
-    background: var(--sw-menu-hover-bg) !important;
-    color: var(--sw-menu-text-active) !important;
-  }
-
-  &.active,
-  &.router-link-active {
-    background: var(--sw-menu-active-bg) !important;
-    color: var(--sw-menu-text-active) !important;
-    font-weight: 600 !important;
-  }
-}
-
-/* Nav icons */
-.lpx-sidebar .nav-link i,
-.lpx-side-menu .nav-link i,
-lpx-side-menu .nav-link i {
-  color: rgba(255, 255, 255, 0.8) !important;
-  width: 18px !important;
-  text-align: center !important;
-}
-
-/* Active icon */
-.lpx-sidebar .nav-link.active i,
-.lpx-side-menu .nav-link.active i,
-lpx-side-menu .nav-link.active i {
-  color: #ffffff !important;
-}
-
-/* Scrollbar in sidebar */
-.lpx-sidebar::-webkit-scrollbar { width: 4px; }
-.lpx-sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
-  border-radius: 2px;
-}
-
-/* Sidebar toggle button (hamburger area) */
-.lpx-sidebar-toggle,
-.lpx-hamburger,
-.lpx-mobile-menu-toggle {
-  color: var(--sw-grad-start) !important;
-}
-
-/* Ensure collapse icon remains visible and clickable when sidebar is collapsed (hover-trigger)
-   The library hides elements with .hidden-in-hover-trigger when the sidebar is collapsed; keep
-   the collapse icon visible so users can toggle the sidebar. */
-#lpx-wrapper.hover-trigger .lpx-sidebar-container:not(:hover) .menu-collapse-icon,
-.lpx-sidebar-container:not(:hover) .menu-collapse-icon {
-  display: block !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  z-index: 1100;
-}
-
-/* Top bar / toolbar */
-.lpx-toolbar,
-.lpx-topbar,
-lpx-navbar {
-  background: #ffffff !important;
-  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.15) !important;
-  border-bottom: none !important;
-}
-
-/* Toolbar icons / user avatar area */
-.lpx-toolbar .lpx-user-icon,
-.lpx-topbar .lpx-user-menu {
-  color: var(--sw-grad-start) !important;
-}
-
-/* Sidebar visible at 768px+ (LeptonX handles collapsed/full automatically) */
-/* On true mobile (≤767px) it's hidden by the section above */
