@@ -1,0 +1,51 @@
+<div class="qr-page" dir="rtl">
+
+  <!-- Hero Header -->
+  <div class="hero-header">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-right"></i>
+    </button>
+    <div class="hero-text">
+      <h1><i class="fas fa-qrcode me-2"></i>رمز هويتي</h1>
+      <p>اعرض هذا الرمز لولي الأمر لإضافتك</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>جاري إنشاء رمز QR...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error() && !loading()" class="error-state">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error() }}</p>
+    <button class="btn-retry" (click)="loadQR()">إعادة المحاولة</button>
+  </div>
+
+  <!-- QR Card -->
+  <div *ngIf="!loading() && !error() && qrDataUrl()" class="qr-container">
+    <div class="qr-card">
+      <div class="student-header">
+        <div class="student-avatar">
+          <i class="fas fa-user-graduate"></i>
+        </div>
+        <div class="student-info">
+          <h2 class="student-name">{{ studentName() }}</h2>
+          <span class="student-code">{{ studentCode() }}</span>
+        </div>
+      </div>
+
+      <div class="qr-image-wrap">
+        <img [src]="qrDataUrl()!" alt="Student QR Code" class="qr-image" />
+      </div>
+
+      <p class="qr-instruction">
+        <i class="fas fa-info-circle me-1"></i>
+        اعرض هذا الرمز للوالدين لإضافتك كابن/ابنة في حسابهم
+      </p>
+    </div>
+  </div>
+
+</div>

@@ -218,6 +218,10 @@ export class StudentHomeComponent implements OnInit {
     this.router.navigate(['/feeds']);
   }
 
+  goToMyQR(): void {
+    this.router.navigate(['/student/qr']);
+  }
+
   trackByCourseId = (_: number, item: EnrolledCourseInfo) => item.courseId;
   trackByReqId = (_: number, item: EnrollmentRequestDto) => item.id;
 }

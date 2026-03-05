@@ -46,7 +46,9 @@
     "@capacitor/push-notifications": "^8.0.1",
     "@ionic/angular": "^8.7.17",
     "@microsoft/signalr": "^10.0.0",
+    "@types/qrcode": "^1.5.6",
     "bootstrap-icons": "~1.8.0",
+    "qrcode": "^1.5.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.15.0"

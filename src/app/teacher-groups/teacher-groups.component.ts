@@ -259,6 +259,12 @@ export class TeacherGroupsComponent implements OnInit {
     });
   }
 
+  manageSchedule(group: GroupWithSchedulesDto) {
+    this.router.navigate(['/teacher-groups/edit', group.groupId], {
+      queryParams: { tab: 'schedule' },
+    });
+  }
+
   trackById = (_: number, item: GroupWithSchedulesDto) => item.groupId;
 
   /** Shorthand for `this.localization.instant('::' + key, ...params)` */

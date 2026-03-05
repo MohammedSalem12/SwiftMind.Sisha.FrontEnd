@@ -1,193 +1,123 @@
-import { AuthService, RestService } from '@abp/ng.core';
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
-import { FeedService } from '@proxy/feeds';
-import { ParentService } from '@proxy/parents';
-import { UserProfileService } from '@volo/ngx-lepton-x.core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
-interface StudentProgressDto {
-  student: any;
-  averageGrade: number;
-  attendanceRate: number;
-  recentGrades: any[];
-  upcomingExams: any[];
-  totalCourses: number;
-  completedExams: number;
-  totalAttendanceDays: number;
-  presentDays: number;
-}
+import { ParentService } from '@proxy/parents';
+import type { ParentStudentDto } from '@proxy/parents/models';
+import { AttendanceService } from '@proxy/attendances';
+import type { StudentAttendanceReportDto } from '@proxy/attendances/dtos/models';
+import { ExamGradeService } from '@proxy/exam-grades';
+import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
 
-interface NotificationDto {
-  id: string;
-  title: string;
-  content: string;
-  createdDate: string;
-  isRead: boolean;
-}
-
-interface ParentDashboardDto {
-  parent: any;
-  students: StudentProgressDto[];
-  totalChildren: number;
-  overallAttendanceRate: number;
-  recentNotifications: NotificationDto[];
-  upcomingExams: any[];
+interface ChildSummary {
+  link: ParentStudentDto;
+  attendance: StudentAttendanceReportDto[];
+  grades: ExamGradeDto[];
+  avgAttendance: number;
+  lastGrade: ExamGradeDto | null;
 }
 
 @Component({
-  standalone: true,
   selector: 'app-parent-dashboard',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './parent-dashboard.component.html',
   styleUrls: ['./parent-dashboard.component.scss'],
-  imports: [CommonModule, RouterModule]
 })
 export class ParentDashboardComponent implements OnInit {
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private userProfileService = inject(UserProfileService);
-  private feedService = inject(FeedService);
-  private parentService = inject(ParentService);
-  private restService = inject(RestService);
+  private readonly router = inject(Router);
+  private readonly configStateService = inject(ConfigStateService);
+  private readonly parentService = inject(ParentService);
+  private readonly attendanceSvc = inject(AttendanceService);
+  private readonly examGradeSvc = inject(ExamGradeService);
 
-  readonly user$ = this.userProfileService.user$;
-  
-  dashboard = signal<ParentDashboardDto | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
-  
-  // Filters for absence notifications
-  showOnlyAbsences = signal(false);
-  absenceNotifications = signal<NotificationDto[]>([]);
-  unreadAbsenceCount = signal(0);
+  children = signal<ChildSummary[]>([]);
 
-  ngOnInit(): void {
-    void this.loadDashboard();
+  async ngOnInit(): Promise<void> {
+    await this.loadDashboard();
   }
 
-  async loadDashboard() {
+  async loadDashboard(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
-    
     try {
-      // Get current user ID
-      const user: any = await lastValueFrom(this.user$);
-      
-      if (!user  || !user.id) {
-        this.error.set('User not authenticated');
+      const currentUserId = this.configStateService.getOne('currentUser')?.id;
+      if (!currentUserId) {
+        this.error.set('لم يتم التعرف على المستخدم');
         return;
       }
 
-      // Get parent by user ID
-      const parent = await lastValueFrom(this.parentService.getByUserId(user.id));
-      
-      if (!parent) {
-        this.error.set('Parent profile not found');
+      const parent = await lastValueFrom(this.parentService.getByUserId(currentUserId));
+      if (!parent?.id) {
+        this.error.set('لم يتم العثور على ملف ولي الأمر');
         return;
       }
 
-      // Load parent dashboard data from API
-      const dashboardData = await lastValueFrom(
-        this.restService.request<any, ParentDashboardDto>({
-          method: 'GET',
-          url: '/api/app/parent-dashboard',
+      const links = await lastValueFrom(this.parentService.getLinkedStudentsByParentId(parent.id));
+      if (!links?.length) {
+        this.children.set([]);
+        return;
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+
+      const summaries = await Promise.all(
+        links.map(async (link): Promise<ChildSummary> => {
+          const studentId = link.studentId!;
+          const [attendanceResult, gradesResult] = await Promise.all([
+            lastValueFrom(this.attendanceSvc.getStudentAttendanceReport({
+              studentId,
+              date: dateStr,
+              skipCount: 0,
+              maxResultCount: 100,
+            })).catch(() => null),
+            lastValueFrom(this.examGradeSvc.getLastTwoByStudent(studentId)).catch(() => null),
+          ]);
+
+          const attendance = attendanceResult?.items ?? [];
+          const gradesList = gradesResult ?? [];
+
+          const avgAttendance = attendance.length
+            ? Math.round(attendance.reduce((s, r) => s + r.attendancePercentage, 0) / attendance.length)
+            : 100;
+
+          const lastGrade = gradesList[0] ?? null;
+
+          return { link, attendance, grades: gradesList, avgAttendance, lastGrade };
         })
       );
 
-      this.dashboard.set(dashboardData);
-
-      // Load feeds and filter absence notifications
-      await this.loadAbsenceNotifications(parent.id);
-      
+      this.children.set(summaries);
     } catch (err: any) {
       console.error('Error loading parent dashboard:', err);
-      this.error.set(err?.error?.error?.message || 'Failed to load dashboard data');
+      this.error.set(err?.error?.error?.message || 'حدث خطأ أثناء تحميل البيانات');
     } finally {
       this.loading.set(false);
     }
   }
 
-  async loadAbsenceNotifications(parentId: string) {
-    try {
-      // Load all feeds
-      const feeds: any = await lastValueFrom(
-        this.feedService.getList({ skipCount: 0, maxResultCount: 100 })
-      );
-
-      // Filter for absence alerts (announcements with "Absence Alert" in title)
-      const absenceAlerts = (feeds.items || []).filter((feed: any) =>
-        feed.title?.includes('Absence Alert') || 
-        feed.title?.includes('🚨')
-      );
-
-      this.absenceNotifications.set(absenceAlerts.map((feed: any) => ({
-        id: feed.id,
-        title: feed.title,
-        content: feed.content,
-        createdDate: feed.creationTime,
-        isRead: false // We'll implement read tracking later
-      })));
-
-      // Count unread
-      this.unreadAbsenceCount.set(absenceAlerts.length);
-      
-    } catch (err) {
-      console.error('Error loading absence notifications:', err);
-    }
+  gradePercent(g: ExamGradeDto): number {
+    return g.maxGrade > 0 ? Math.round((g.grade / g.maxGrade) * 100) : 0;
   }
 
-  toggleAbsenceFilter() {
-    this.showOnlyAbsences.set(!this.showOnlyAbsences());
+  overallAttendance(): number {
+    const list = this.children();
+    if (!list.length) return 0;
+    return Math.round(list.reduce((s, c) => s + c.avgAttendance, 0) / list.length);
   }
 
-  getDisplayedNotifications(): NotificationDto[] {
-    const dashboard = this.dashboard();
-    if (!dashboard) return [];
-
-    if (this.showOnlyAbsences()) {
-      return this.absenceNotifications();
-    }
-
-    return dashboard.recentNotifications || [];
+  viewChild(studentId?: string): void {
+    if (studentId) this.router.navigate(['/parent/child', studentId]);
   }
 
-  getStudentName(student: any): string {
-    if (!student) return 'Unknown';
-    return `${student.firstName || ''} ${student.middleName || ''} ${student.lastName || ''}`.trim();
+  goBack(): void {
+    this.router.navigate(['/parent']);
   }
 
-  getAttendanceClass(rate: number): string {
-    if (rate >= 90) return 'text-success';
-    if (rate >= 75) return 'text-warning';
-    return 'text-danger';
-  }
-
-  getGradeClass(grade: number): string {
-    if (grade >= 90) return 'text-success';
-    if (grade >= 75) return 'text-info';
-    if (grade >= 60) return 'text-warning';
-    return 'text-danger';
-  }
-
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  }
-
-  viewStudentDetails(studentId: string) {
-    this.router.navigate(['/parent/child', studentId]);
-  }
-
-  viewAllNotifications() {
-    this.router.navigate(['/feeds']);
-  }
-
-  markAsRead(notificationId: string) {
-    // TODO: Implement mark as read functionality
-    console.log('Mark as read:', notificationId);
-  }
+  trackByStudentId = (_: number, c: ChildSummary) => c.link.studentId;
 }

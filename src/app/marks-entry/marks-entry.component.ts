@@ -450,7 +450,7 @@ export class MarksEntryComponent implements OnInit {
     return this.l('MarksEntry:GradeFailed');
   }
 
-  trackByEnrollment = (_: number, item: StudentGradeEntry) => item.enrollmentId;
+  trackByStudentId = (_: number, item: StudentGradeEntry) => item.studentId;
 
   viewReport(): void {
     const examId = this.selectedExamId();

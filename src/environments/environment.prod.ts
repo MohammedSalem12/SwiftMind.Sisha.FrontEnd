@@ -15,7 +15,11 @@ export const environment = {
     clientId: 'Sesha_App',
     responseType: 'code',
     scope: 'offline_access Sesha',
-    requireHttps: true
+    requireHttps: true,
+    sessionChecksEnabled: false,
+    automaticSilentRefresh: true,
+    useSilentRefresh: false,
+    timeoutFactor: 0.75,
   },
   apis: {
     default: {

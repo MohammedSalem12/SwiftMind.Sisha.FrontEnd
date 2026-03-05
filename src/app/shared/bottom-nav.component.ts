@@ -3,7 +3,7 @@ import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { ConfigStateService } from '@abp/ng.core';
 import { filter, Subscription } from 'rxjs';
-import { getBottomTabsForRole, BottomTabConfig } from '../route.provider';
+import { getBottomTabsForRole, getMoreMenuItemsForRole, BottomTabConfig, MoreMenuItemConfig } from '../route.provider';
 import { RealtimeNotificationService } from './services/realtime-notification.service';
 
 @Component({
@@ -11,7 +11,7 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <nav class="bottom-nav" *ngIf="isVisible() && tabs().length > 0" [class.rtl]="isRtl">
+    <nav class="bottom-nav" *ngIf="tabs().length > 0" [class.rtl]="isRtl">
       <div class="nav-container">
         <a *ngFor="let tab of tabs(); trackBy: trackByPath"
            class="nav-item"
@@ -49,21 +49,12 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
           </button>
         </div>
         <div class="more-menu-items">
-          <a class="more-item" routerLink="/marks-entry" (click)="closeMoreMenu()">
-            <i class="fas fa-star-half-alt"></i>
-            <span>تسجيل الدرجات</span>
-          </a>
-          <a class="more-item" routerLink="/teacher-groups" (click)="closeMoreMenu()">
-            <i class="fas fa-layer-group"></i>
-            <span>مجموعاتي</span>
-          </a>
-          <a class="more-item" routerLink="/feeds" (click)="closeMoreMenu()">
-            <i class="fas fa-rss"></i>
-            <span>النشرات</span>
-          </a>
-          <a class="more-item" routerLink="/profile" (click)="closeMoreMenu()">
-            <i class="fas fa-user-circle"></i>
-            <span>ملفي الشخصي</span>
+          <a *ngFor="let item of moreItems(); trackBy: trackByPath"
+             class="more-item"
+             [routerLink]="item.path"
+             (click)="closeMoreMenu()">
+            <i [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
           </a>
         </div>
       </div>
@@ -81,7 +72,7 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
       padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
       z-index: 1000;
       box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-      display: none; /* Hidden by default, shown via media query */
+      display: block; /* Always visible (desktop + mobile) */
     }
 
     .bottom-nav.rtl {
@@ -262,12 +253,7 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
       font-weight: 500;
     }
 
-    /* Show on mobile devices */
-    @media (max-width: 991px) {
-      .bottom-nav {
-        display: block;
-      }
-    }
+    /* Previously restricted to mobile; now always shown */
 
     /* Safe area for iOS devices */
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
@@ -284,6 +270,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   private routerSubscription?: Subscription;
 
   tabs = signal<BottomTabConfig[]>([]);
+  moreItems = signal<MoreMenuItemConfig[]>([]);
   isVisible = signal(true);
   showMoreMenu = signal(false);
   readonly unreadCount = this.realtimeSvc.unreadCount; // live signal from SignalR
@@ -311,9 +298,10 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     const currentUser = this.configStateService.getOne('currentUser');
     const userRoles: string[] = currentUser?.roles || [];
     this.tabs.set(getBottomTabsForRole(userRoles));
-    
-    // Hide if not logged in (only show login tab)
-    this.isVisible.set(currentUser?.isAuthenticated !== false);
+    this.moreItems.set(getMoreMenuItemsForRole(userRoles));
+
+    // Always show bottom nav (visible for all users)
+    this.isVisible.set(true);
   }
 
   isActive(path: string): boolean {

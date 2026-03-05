@@ -1,0 +1,167 @@
+.qr-page {
+  min-height: 100vh;
+  background: #f4f6fb;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.hero-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.25rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  .back-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    touch-action: manipulation;
+  }
+
+  .hero-text {
+    flex: 1;
+
+    h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: white;
+      margin: 0 0 0.2rem;
+    }
+
+    p {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.85);
+      margin: 0;
+    }
+  }
+}
+
+.loading-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #718096;
+
+  i { font-size: 2.5rem; }
+  p { font-size: 0.95rem; margin: 0; }
+}
+
+.error-state i { color: #e53e3e; }
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.btn-retry {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.qr-container {
+  padding: 1.5rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.qr-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+
+  .student-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    justify-content: center;
+
+    .student-avatar {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      i { color: white; font-size: 1.4rem; }
+    }
+
+    .student-info {
+      text-align: right;
+
+      .student-name {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0 0 0.25rem;
+      }
+
+      .student-code {
+        font-size: 0.85rem;
+        background: #edf2ff;
+        color: #667eea;
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .qr-image-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+
+    .qr-image {
+      width: 240px;
+      height: 240px;
+      display: block;
+      border-radius: 8px;
+    }
+  }
+
+  .qr-instruction {
+    font-size: 0.85rem;
+    color: #718096;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0.75rem;
+    background: #f7fafc;
+    border-radius: 8px;
+
+    i { color: #667eea; }
+  }
+}

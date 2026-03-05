@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
@@ -116,6 +116,7 @@ import type { StudentDto } from '@proxy/students/models';
 })
 export class ParentLinkChildComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly configStateService = inject(ConfigStateService);
   private readonly parentService = inject(ParentService);
   private readonly studentService = inject(StudentService);
@@ -142,6 +143,13 @@ export class ParentLinkChildComponent implements OnInit {
       } catch (error) {
         console.error('Error loading parent info:', error);
       }
+    }
+
+    // Pre-fill student code from ?code= query param (e.g. scanned QR)
+    const codeParam = this.route.snapshot.queryParamMap.get('code');
+    if (codeParam) {
+      this.studentCode = codeParam;
+      await this.searchStudent();
     }
   }
 

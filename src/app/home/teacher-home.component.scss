@@ -467,6 +467,10 @@ $card-radius: 14px;
     &:hover { border-color: $blue; background: #eff6ff; } }
   &.qa-report     { i { color: #8b5cf6; }
     &:hover { border-color: #8b5cf6; background: #f5f3ff; } }
+  &.qa-qr         { i { color: $purple; }
+    &:hover { border-color: $purple; background: #edf2ff; } }
+  &.qa-enroll     { i { color: $orange; }
+    &:hover { border-color: $orange; background: #fff7ed; } }
 }
 
 // ── Loading state ─────────────────────────────────────────

@@ -41,6 +41,11 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
                   <span *ngIf="student()!.currentGrade" class="badge bg-light text-dark"><i class="fas fa-graduation-cap me-1"></i>الصف {{ student()!.currentGrade }}</span>
                   <span *ngIf="student()!.schoolName" class="badge bg-light text-dark"><i class="fas fa-school me-1"></i>{{ student()!.schoolName }}</span>
                 </div>
+                <div class="mt-2">
+                  <button class="btn btn-success btn-sm" (click)="enrollInCourse()">
+                    <i class="fas fa-plus-circle me-1"></i> تسجيل في مقرر
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -64,28 +69,112 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
               <div *ngIf="attendanceReports().length === 0" class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>لا توجد بيانات حضور متاحة
               </div>
-              <div class="row g-3">
-                <div class="col-md-6 col-lg-4" *ngFor="let report of attendanceReports()">
-                  <div class="report-card">
-                    <div class="report-header">
-                      <h5 class="mb-0">{{ report.courseNameAr || report.courseNameEn }}</h5>
-                      <span class="badge" [class.bg-success]="report.attendancePercentage >= 90"
-                            [class.bg-warning]="report.attendancePercentage >= 75 && report.attendancePercentage < 90"
-                            [class.bg-danger]="report.attendancePercentage < 75">
-                        {{ report.attendancePercentage | number:'1.0-0' }}%
-                      </span>
-                    </div>
-                    <div class="report-body">
-                      <div class="progress mb-2" style="height:8px">
-                        <div class="progress-bar" [class.bg-success]="report.attendancePercentage >= 90"
-                             [class.bg-warning]="report.attendancePercentage >= 75 && report.attendancePercentage < 90"
-                             [class.bg-danger]="report.attendancePercentage < 75"
-                             [style.width.%]="report.attendancePercentage"></div>
+              
+              <!-- Overall Attendance Summary -->
+              <div class="attendance-summary mb-4" *ngIf="attendanceReports().length > 0">
+                <div class="summary-card">
+                  <div class="summary-header">
+                    <h4 class="mb-0">
+                      <i class="fas fa-calendar-check me-2 text-success"></i>
+                      ملخص الحضور الإجمالي
+                    </h4>
+                  </div>
+                  <div class="summary-body">
+                    <div class="row text-center">
+                      <div class="col-4">
+                        <div class="summary-stat">
+                          <div class="stat-number text-success">{{ getTotalAttendedDays() }}</div>
+                          <div class="stat-label">جلسات حضرها</div>
+                        </div>
                       </div>
-                      <div class="d-flex justify-content-between text-muted small">
-                        <span><i class="fas fa-check text-success me-1"></i>حضور: {{ report.attendedDays }}</span>
-                        <span><i class="fas fa-times text-danger me-1"></i>غياب: {{ report.absentDays }}</span>
-                        <span><i class="fas fa-calendar me-1"></i>الإجمالي: {{ report.totalDaysInMonth }}</span>
+                      <div class="col-4">
+                        <div class="summary-stat">
+                          <div class="stat-number text-danger">{{ getTotalAbsentDays() }}</div>
+                          <div class="stat-label">جلسات غاب عنها</div>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="summary-stat">
+                          <div class="stat-number text-primary">{{ getTotalSessions() }}</div>
+                          <div class="stat-label">إجمالي الجلسات</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <div class="alert alert-success mb-0" *ngIf="getTotalAbsentDays() === 0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>ممتاز!</strong> الطالب حضر جميع الجلسات الدراسية
+                      </div>
+                      <div class="alert alert-warning mb-0" *ngIf="getTotalAbsentDays() > 0 && getTotalAbsentDays() <= 3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>تنبيه:</strong> الطالب غاب عن {{ getTotalAbsentDays() }} جلسات فقط
+                      </div>
+                      <div class="alert alert-danger mb-0" *ngIf="getTotalAbsentDays() > 3">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>ملاحظة:</strong> الطالب غاب عن {{ getTotalAbsentDays() }} جلسات
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Absent Sessions List (only if there are absences) -->
+              <div *ngIf="getTotalAbsentDays() > 0" class="absent-sessions mb-4">
+                <h5 class="mb-3">
+                  <i class="fas fa-list-ul me-2 text-danger"></i>
+                  الجلسات التي غاب عنها الطالب
+                </h5>
+                <div class="row g-3">
+                  <div class="col-md-6 col-lg-4" *ngFor="let report of getAbsentReports()">
+                    <div class="absent-card">
+                      <div class="absent-header">
+                        <h6 class="mb-0">{{ report.courseNameAr || report.courseNameEn }}</h6>
+                        <span class="badge bg-danger">{{ report.absentDays }} غياب</span>
+                      </div>
+                      <div class="absent-body">
+                        <div class="d-flex justify-content-between text-muted small">
+                          <span><i class="fas fa-times text-danger me-1"></i>غياب: {{ report.absentDays }}</span>
+                          <span><i class="fas fa-check text-success me-1"></i>حضور: {{ report.attendedDays }}</span>
+                          <span><i class="fas fa-calendar me-1"></i>الإجمالي: {{ report.totalDaysInMonth }}</span>
+                        </div>
+                        <div class="progress mt-2" style="height:6px">
+                          <div class="progress-bar bg-danger" [style.width.%]="(report.absentDays / report.totalDaysInMonth) * 100"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Course-wise Attendance Details -->
+              <div class="course-attendance">
+                <h5 class="mb-3">
+                  <i class="fas fa-chart-bar me-2 text-primary"></i>
+                  تفاصيل الحضور حسب المقرر
+                </h5>
+                <div class="row g-3">
+                  <div class="col-md-6 col-lg-4" *ngFor="let report of attendanceReports()">
+                    <div class="report-card">
+                      <div class="report-header">
+                        <h6 class="mb-0">{{ report.courseNameAr || report.courseNameEn }}</h6>
+                        <span class="badge" [class.bg-success]="report.attendancePercentage >= 90"
+                              [class.bg-warning]="report.attendancePercentage >= 75 && report.attendancePercentage < 90"
+                              [class.bg-danger]="report.attendancePercentage < 75">
+                          {{ report.attendancePercentage | number:'1.0-0' }}%
+                        </span>
+                      </div>
+                      <div class="report-body">
+                        <div class="progress mb-2" style="height:8px">
+                          <div class="progress-bar" [class.bg-success]="report.attendancePercentage >= 90"
+                               [class.bg-warning]="report.attendancePercentage >= 75 && report.attendancePercentage < 90"
+                               [class.bg-danger]="report.attendancePercentage < 75"
+                               [style.width.%]="report.attendancePercentage"></div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small">
+                          <span><i class="fas fa-check text-success me-1"></i>حضور: {{ report.attendedDays }}</span>
+                          <span><i class="fas fa-times text-danger me-1"></i>غياب: {{ report.absentDays }}</span>
+                          <span><i class="fas fa-calendar me-1"></i>الإجمالي: {{ report.totalDaysInMonth }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -155,11 +244,76 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
     .tab-btn:hover { color: #667eea; }
     .report-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .report-header { padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
-    .report-header h5 { font-size: 0.95rem; font-weight: 600; color: #1a202c; }
+    .report-header h5, .report-header h6 { font-weight: 600; color: #1a202c; }
     .report-body { padding: 1rem 1.25rem; }
+    
+    /* New Attendance Summary Styles */
+    .attendance-summary .summary-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .summary-header {
+      padding: 1.25rem;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+    }
+    .summary-header h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .summary-body {
+      padding: 1.5rem;
+    }
+    .summary-stat {
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+    
+    /* Absent Sessions Styles */
+    .absent-sessions .absent-card {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .absent-header {
+      padding: 0.75rem 1rem;
+      background: #fee2e2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .absent-header h6 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #991b1b;
+      margin: 0;
+    }
+    .absent-body {
+      padding: 0.75rem 1rem;
+    }
+    
     .table th { font-weight: 600; color: #6b7280; font-size: 0.875rem; border-bottom: 2px solid #e5e7eb; }
     .table td { vertical-align: middle; }
-    @media (max-width: 768px) { .student-header h1 { font-size: 1.25rem; } .tabs { overflow-x: auto; } }
+    @media (max-width: 768px) { 
+      .student-header h1 { font-size: 1.25rem; } 
+      .tabs { overflow-x: auto; }
+      .summary-stat { margin-bottom: 1rem; }
+    }
   `],
 })
 export class ParentChildDetailComponent implements OnInit {
@@ -242,6 +396,26 @@ export class ParentChildDetailComponent implements OnInit {
   getPercentage(grade: ExamGradeDto): number {
     if (!grade.maxGrade || grade.maxGrade === 0) return 0;
     return (grade.grade / grade.maxGrade) * 100;
+  }
+
+  getTotalAttendedDays(): number {
+    return this.attendanceReports().reduce((total, report) => total + (report.attendedDays || 0), 0);
+  }
+
+  getTotalAbsentDays(): number {
+    return this.attendanceReports().reduce((total, report) => total + (report.absentDays || 0), 0);
+  }
+
+  getTotalSessions(): number {
+    return this.attendanceReports().reduce((total, report) => total + (report.totalDaysInMonth || 0), 0);
+  }
+
+  getAbsentReports(): StudentAttendanceReportDto[] {
+    return this.attendanceReports().filter(report => (report.absentDays || 0) > 0);
+  }
+
+  enrollInCourse(): void {
+    this.router.navigate(['/parent/enroll-child', this.studentId]);
   }
 
   goBack(): void {

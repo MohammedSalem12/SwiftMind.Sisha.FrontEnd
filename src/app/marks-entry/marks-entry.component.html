@@ -255,7 +255,7 @@
         </thead>
         <tbody>
           <tr
-            *ngFor="let s of students(); let i = index; trackBy: trackByEnrollment"
+            *ngFor="let s of students(); let i = index; trackBy: trackByStudentId"
             [class.row-graded]="s.savedGrade !== null"
             [class.row-error]="s.rowError"
             [class.row-success]="s.rowSuccess">
@@ -312,7 +312,7 @@
     <!-- Mobile cards -->
     <div class="student-cards mobile-only">
       <div
-        *ngFor="let s of students(); let i = index; trackBy: trackByEnrollment"
+        *ngFor="let s of students(); let i = index; trackBy: trackByStudentId"
         class="student-card"
         [class.card-graded]="s.savedGrade !== null"
         [class.card-error]="s.rowError"

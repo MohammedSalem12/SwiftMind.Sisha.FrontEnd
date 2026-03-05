@@ -88,7 +88,7 @@ import type { TeacherEnrollmentResultDto } from '@proxy/teachers';
                     <span class="badge bg-light text-dark">
                       <i class="fas fa-code me-1"></i>{{ course.code }}
                     </span>
-                    <span *ngIf="course.gradeName" class="badge bg-light text-dark">
+                    <span *ngIf="course.gradeName" class="badge bg-light text-dark grade-badge">
                       <i class="fas fa-graduation-cap me-1"></i>{{ course.gradeName }}
                     </span>
                   </div>
@@ -183,6 +183,22 @@ import type { TeacherEnrollmentResultDto } from '@proxy/teachers';
       border: none;
       padding: 0.5rem 1.5rem;
       border-radius: 8px;
+    }
+
+    .grade-badge {
+      font-size: 0.9rem !important;
+      font-weight: 600 !important;
+      padding: 0.4rem 0.6rem !important;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+      color: white !important;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+      box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+    }
+
+    .grade-badge i {
+      font-size: 0.85rem;
+      opacity: 0.9;
     }
   `],
 })

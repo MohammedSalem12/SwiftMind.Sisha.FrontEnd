@@ -510,6 +510,12 @@ $day-colors: (
     &:hover { background: #bbf7d0; box-shadow: 0 3px 10px rgba(22,163,74,.2); }
   }
 
+  &.schedule {
+    background: #fed7aa;
+    color: #c2410c;
+    &:hover { background: #fdba74; box-shadow: 0 3px 10px rgba(194,65,12,.2); }
+  }
+
   &.marks {
     background: #ede9fe;
     color: #5b21b6;

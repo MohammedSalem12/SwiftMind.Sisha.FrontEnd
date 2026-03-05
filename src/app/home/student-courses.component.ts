@@ -46,7 +46,9 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
         <div *ngIf="!loading() && courses().length > 0" class="courses-grid">
           <div *ngFor="let c of courses(); trackBy: trackById" class="course-card"
                [class.enrolled]="c.isEnrolled"
-               [class.pending]="c.hasPendingRequest && !c.isEnrolled">
+               [class.pending]="c.hasPendingRequest && !c.isEnrolled"
+               (click)="openProfile(c)"
+               style="cursor:pointer">
 
             <div class="card-top">
               <div class="code">{{ c.code || '-' }}</div>
@@ -54,7 +56,10 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
             </div>
 
             <div class="card-body-content">
-              <div class="course-name">{{ c.nameAr }}</div>
+              <div class="course-name">
+                {{ c.nameAr }}
+                <span class="inline-grade" *ngIf="c.gradeName">• {{ c.gradeName }}</span>
+              </div>
               <div class="course-name-en" *ngIf="c.nameEn">{{ c.nameEn }}</div>
             </div>
 
@@ -72,7 +77,7 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
               <!-- Enroll button -->
               <button *ngIf="!c.isEnrolled && !c.hasPendingRequest"
                       class="btn-enroll"
-                      (click)="enrollInCourse(c)">
+                      (click)="enrollInCourse(c); $event.stopPropagation()">
                 <i class="fas fa-plus"></i> سجّل
               </button>
             </div>
@@ -141,6 +146,7 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
 
     .card-body-content { padding: 0.75rem 1rem; flex: 1; }
     .course-name { font-weight: 700; color: #1a202c; font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .inline-grade { color: #6b7280; font-weight: 600; font-size: 0.8rem; margin-left: 0.5rem; }
     .course-name-en { color: #6b7280; font-size: 0.82rem; }
 
     .card-footer {
@@ -193,6 +199,10 @@ export class StudentCoursesComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  openProfile(course: StudentCourseDto): void {
+    this.router.navigate(['/student/course', course.id]);
   }
 
   enrollInCourse(course: StudentCourseDto): void {

@@ -39,20 +39,24 @@ const MENU_ITEMS: MenuItemConfig[] = [
   { path: '/student',  name: 'لوحتي',          iconClass: 'fas fa-home',               order: 1,  roles: [ROLES.STUDENT] },
   { path: '/parent',   name: 'لوحة ولي الأمر', iconClass: 'fas fa-home',               order: 1,  roles: [ROLES.PARENT] },
   { path: '/teacher',  name: 'لوحة المعلم',    iconClass: 'fas fa-home',               order: 1,  roles: [ROLES.TEACHER] },
-  { path: '/',         name: 'الرئيسية',        iconClass: 'fas fa-home',               order: 1,  roles: [ROLES.ADMIN, ROLES.SECRETARY] },
+  { path: '/secretary-assignments',         name: 'الرئيسية',        iconClass: 'fas fa-home',               order: 2,  roles: [ROLES.ADMIN, ROLES.SECRETARY] },
+  // Shared dashboard for all authenticated users
+  { path: '/',            name: 'لوحة القيادة',    iconClass: 'fas fa-tachometer-alt',    order: 1 },
 
   // ── Student ─────────────────────────────────────────────────────────────────
-  { path: '/student/courses',    name: 'مقرراتي',       iconClass: 'fas fa-book-open',      order: 2, roles: [ROLES.STUDENT] },
-  { path: '/student/requests',   name: 'طلباتي',        iconClass: 'fas fa-clipboard-list', order: 3, roles: [ROLES.STUDENT] },
-  { path: '/student/grades',     name: 'درجاتي',        iconClass: 'fas fa-star',           order: 4, roles: [ROLES.STUDENT] },
-  { path: '/student/attendance', name: 'حضوري',         iconClass: 'fas fa-calendar-check', order: 5, roles: [ROLES.STUDENT] },
+  { path: '/student/courses',    name: 'مقرراتي',         iconClass: 'fas fa-book-open',      order: 2, roles: [ROLES.STUDENT] },
+  { path: '/student/requests',   name: 'طلباتي',          iconClass: 'fas fa-clipboard-list', order: 3, roles: [ROLES.STUDENT] },
+  { path: '/student/grades',     name: 'درجاتي',          iconClass: 'fas fa-star',           order: 4, roles: [ROLES.STUDENT] },
+  { path: '/student/attendance', name: 'حضوري',           iconClass: 'fas fa-calendar-check', order: 5, roles: [ROLES.STUDENT] },
+  { path: '/student/qr',        name: 'رمز QR الطالب',   iconClass: 'fas fa-qrcode',         order: 6, roles: [ROLES.STUDENT] },
 
   // ── Parent ──────────────────────────────────────────────────────────────────
   { path: '/parent-enrollment-approval', name: 'طلبات أبنائي', iconClass: 'fas fa-clipboard-check', order: 2, roles: [ROLES.PARENT] },
   { path: '/parent/link-child',          name: 'ربط طالب',      iconClass: 'fas fa-user-plus',        order: 3, roles: [ROLES.PARENT] },
 
   // ── Teacher ─────────────────────────────────────────────────────────────────
-  { path: '/teacher-groups', name: 'مجموعاتي', iconClass: 'fas fa-layer-group', order: 2, roles: [ROLES.TEACHER] },
+  { path: '/teacher-groups',   name: 'مجموعاتي',    iconClass: 'fas fa-layer-group', order: 2, roles: [ROLES.TEACHER] },
+  { path: '/teacher/qr-codes', name: 'QR المقررات', iconClass: 'fas fa-qrcode',      order: 9, roles: [ROLES.TEACHER] },
 
   // ── Teacher + Admin + Secretary ──────────────────────────────────────────────
   { path: '/attendance',         name: 'الحضور',         iconClass: 'fas fa-user-check',     order: 3, roles: [ROLES.TEACHER, ROLES.ADMIN, ROLES.SECRETARY] },
@@ -70,7 +74,6 @@ const MENU_ITEMS: MenuItemConfig[] = [
   // ── Shared (all authenticated) ───────────────────────────────────────────────
   { path: '/feeds',          name: 'النشرات',      iconClass: 'fas fa-rss',      order: 90 },
   { path: '/notifications',  name: 'الإشعارات',    iconClass: 'fas fa-bell',     order: 91 },
-  { path: '/account/manage', name: 'ملفي الشخصي',  iconClass: 'fas fa-user-cog', order: 99 },
 ];
 
 // ─── APP_INITIALIZER ──────────────────────────────────────────────────────────
@@ -129,6 +132,56 @@ export interface BottomTabConfig {
   icon: string;
 }
 
+export interface MoreMenuItemConfig {
+  path: string;
+  label: string;
+  icon: string;
+}
+
+export function getMoreMenuItemsForRole(userRoles: string[]): MoreMenuItemConfig[] {
+  if (userRoles.includes(ROLES.STUDENT)) {
+    return [
+      { path: '/student/attendance', label: 'حضوري',         icon: 'fas fa-calendar-check' },
+      { path: '/student/grades',     label: 'درجاتي',         icon: 'fas fa-star' },
+      { path: '/student/requests',   label: 'طلباتي',         icon: 'fas fa-clipboard-list' },
+      { path: '/student/qr',         label: 'رمز QR الطالب', icon: 'fas fa-qrcode' },
+      { path: '/feeds',              label: 'النشرات',         icon: 'fas fa-rss' },
+    ];
+  }
+  if (userRoles.includes(ROLES.PARENT)) {
+    return [
+      { path: '/parent/link-child',         label: 'ربط طالب',   icon: 'fas fa-user-plus' },
+      { path: '/parent-enrollment-approval', label: 'طلبات أبنائي', icon: 'fas fa-clipboard-check' },
+      { path: '/feeds',                      label: 'النشرات',      icon: 'fas fa-rss' },
+    ];
+  }
+  if (userRoles.includes(ROLES.TEACHER)) {
+    return [
+      { path: '/teacher/qr-codes',   label: 'QR المقررات',     icon: 'fas fa-qrcode' },
+      { path: '/teacher-groups',     label: 'مجموعاتي',         icon: 'fas fa-layer-group' },
+      { path: '/teacher/enroll',     label: 'التسجيل في مقررات', icon: 'fas fa-plus-circle' },
+      { path: '/enrollment-requests', label: 'طلبات التسجيل',  icon: 'fas fa-clipboard-list' },
+      { path: '/feeds',              label: 'النشرات',           icon: 'fas fa-rss' },
+    ];
+  }
+  if (userRoles.includes(ROLES.ADMIN) || userRoles.includes(ROLES.SECRETARY)) {
+    return [
+      { path: '/teachers',          label: 'المعلمون',         icon: 'fas fa-chalkboard-teacher' },
+      { path: '/parents',           label: 'أولياء الأمور',    icon: 'fas fa-users-cog' },
+      { path: '/courses',           label: 'المقررات',          icon: 'fas fa-book' },
+      { path: '/enrollment-requests', label: 'طلبات التسجيل', icon: 'fas fa-clipboard-list' },
+      { path: '/feeds',             label: 'النشرات',           icon: 'fas fa-rss' },
+    ];
+  }
+  // Default tabs for unauthenticated / unknown roles (public view)
+  return [
+    { path: '/', label: 'الرئيسية', icon: 'fas fa-home' },
+    { path: '/feeds', label: 'النشرات', icon: 'fas fa-rss' },
+    { path: '/notifications', label: 'إشعارات', icon: 'fas fa-bell' },
+    { path: '/account/manage', label: 'ملفي', icon: 'fas fa-user' },
+  ];
+}
+
 export function getBottomTabsForRole(userRoles: string[]): BottomTabConfig[] {
   if (userRoles.includes(ROLES.STUDENT)) {
     return [
@@ -156,7 +209,7 @@ export function getBottomTabsForRole(userRoles: string[]): BottomTabConfig[] {
   }
   if (userRoles.includes(ROLES.ADMIN) || userRoles.includes(ROLES.SECRETARY)) {
     return [
-      { path: '/',              label: 'الرئيسية', icon: 'fas fa-home' },
+      { path: '/secretary-assignments',              label: 'الرئيسية', icon: 'fas fa-home' },
       { path: '/students',      label: 'الطلاب',   icon: 'fas fa-user-graduate' },
       { path: '/attendance',    label: 'الحضور',   icon: 'fas fa-user-check' },
       { path: '/notifications', label: 'إشعارات',  icon: 'fas fa-bell' },

@@ -1,5 +1,6 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
 
@@ -18,7 +19,7 @@ interface CourseOption { id: string; name: string; nameAr: string; }
   styleUrls: ['./teacher-attendance-report.component.scss'],
 })
 export class TeacherAttendanceReportComponent implements OnInit {
-  private readonly location           = inject(Location);
+  private readonly router             = inject(Router);
   private readonly attendanceSvc      = inject(AttendanceService);
   private readonly teacherSvc         = inject(TeacherService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
@@ -58,8 +59,16 @@ export class TeacherAttendanceReportComponent implements OnInit {
       if (!id) return;
       this.teacherId.set(id);
       const res: any[] = await lastValueFrom(this.teacherSvc.getTeacherCourses(id));
-      this.courses.set((res || []).map(c => ({ id: c.id, name: c.name || c.nameEn || '', nameAr: c.nameAr || '' })));
-    } catch {
+      console.debug('Teacher courses raw:', res);
+      const mapped = (res || []).map(c => ({ id: c.id, name: (c as any).name || c.nameEn || '', nameAr: c.nameAr || '' }));
+      this.courses.set(mapped);
+      // Auto-select when only one course available
+      if (mapped.length === 1) {
+        this.selectedCourseId.set(mapped[0].id);
+        if (this.selectedMonth()) await this.loadReport();
+      }
+    } catch (err: any) {
+      console.error('Error loading teacher courses:', err);
       this.error.set('حدث خطأ أثناء تحميل المقررات');
     } finally {
       this.coursesLoading.set(false);
@@ -93,9 +102,12 @@ export class TeacherAttendanceReportComponent implements OnInit {
           maxResultCount: 500,
         })
       );
+      console.debug('Attendance report result:', result);
       this.records.set(result?.items || []);
-    } catch {
-      this.error.set('حدث خطأ أثناء تحميل تقرير الحضور');
+    } catch (err: any) {
+      console.error('Error loading attendance report:', err);
+      const msg = err?.message || err?.error?.message || 'حدث خطأ أثناء تحميل تقرير الحضور';
+      this.error.set(msg);
     } finally {
       this.loading.set(false);
     }
@@ -109,5 +121,5 @@ export class TeacherAttendanceReportComponent implements OnInit {
 
   courseName(c: CourseOption): string { return c.nameAr || c.name; }
 
-  goBack(): void { this.location.back(); }
+  goBack(): void { this.router.navigate(['/teacher']); }
 }

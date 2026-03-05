@@ -60,6 +60,12 @@ export const appRoutes: Routes = [
     data: { roles: ['STUDENT'] }
   },
   {
+    path: 'student/course/:courseId',
+    loadComponent: () => import('./home/student-course-profile.component').then(m => m.StudentCourseProfileComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
     path: 'teacher/enroll',
     loadComponent: () => import('./home/teacher-self-enroll.component').then(m => m.TeacherSelfEnrollComponent),
     canActivate: [roleGuard],
@@ -155,6 +161,18 @@ export const appRoutes: Routes = [
     data: { roles: ['ADMIN', 'SECRETARY'] }
   },
   {
+    path: 'teacher/qr-codes',
+    loadComponent: () => import('./home/teacher-qr-codes.component').then(m => m.TeacherQrCodesComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER'] }
+  },
+  {
+    path: 'student/qr',
+    loadComponent: () => import('./home/student-qr.component').then(m => m.StudentQrComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
     path: 'student/enroll/:id',
     loadComponent: () => import('./courses/course-enrollment.component').then(m => m.CourseEnrollmentComponent),
     canActivate: [roleGuard],
@@ -171,6 +189,13 @@ export const appRoutes: Routes = [
     loadComponent: () => import('./secretary-assignments/secretary-assignments.component').then(m => m.SecretaryAssignmentsComponent),
     canActivate: [roleGuard],
     data: { roles: ['ADMIN', 'SECRETARY'] }
+  },
+  {
+    path: 'parent/enroll-child/:studentId',
+    loadComponent: () => import('./parent-enroll-child/parent-enroll-child.component')
+      .then(m => m.ParentEnrollChildComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
   },
   {
     path: 'parent-enrollment-approval',
