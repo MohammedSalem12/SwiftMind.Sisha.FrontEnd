@@ -6,6 +6,8 @@ import { lastValueFrom } from 'rxjs';
 import { AttendanceService } from '@proxy/attendances';
 import type { StudentAttendanceReportDto } from '@proxy/attendances/dtos';
 import { CurrentUserInfoService } from '@proxy/common';
+import { CourseService } from '@proxy/courses';
+import type { CourseDto } from '@proxy/courses/dtos/models';
 import { ExamGradeService } from '@proxy/exam-grades';
 import type { ExamGradeDto } from '@proxy/exam-grades/dtos';
 import { StudentService } from '@proxy/students';
@@ -38,11 +40,13 @@ export class StudentHomeComponent implements OnInit {
   private readonly examGradeSvc = inject(ExamGradeService);
   private readonly enrollmentRequestSvc = inject(EnrollmentRequestService);
   private readonly gradeThemeService = inject(GradeThemeService);
+  private readonly courseService = inject(CourseService);
 
   studentName = signal('');
   studentId = signal<string | null>(null);
   studentGrade = signal<number | null>(null);
   enrolledCourses = signal<EnrolledCourseInfo[]>([]);
+  academyCourseGroups = signal<{ academyName: string; courses: CourseDto[] }[]>([]);
   attendanceStats = signal<StudentAttendanceReportDto[]>([]);
   lastGrades = signal<ExamGradeDto[]>([]);
   pendingRequests = signal<EnrollmentRequestDto[]>([]);
@@ -88,6 +92,7 @@ export class StudentHomeComponent implements OnInit {
         this.loadAttendanceStats(userInfo?.actorId),
         this.loadLastGrades(userInfo?.actorId),
         this.loadPendingParentLinks(),
+        this.loadAcademyCourses(),
       ]);
     } catch (err) {
       console.error('Error loading student home:', err);
@@ -152,6 +157,27 @@ export class StudentHomeComponent implements OnInit {
       this.pendingRequests.set(pending);
     } catch (err) {
       console.error('Error loading enrollment requests:', err);
+    }
+  }
+
+  private async loadAcademyCourses(): Promise<void> {
+    try {
+      const result = await lastValueFrom(
+        this.courseService.getList({ maxResultCount: 100, skipCount: 0, sorting: '' })
+      );
+      const withAcademy = (result?.items || []).filter(c => c.academyId);
+      // Group by academy name
+      const groupMap = new Map<string, CourseDto[]>();
+      for (const c of withAcademy) {
+        const key = c.academyName || c.academyId || 'أكاديمية';
+        if (!groupMap.has(key)) groupMap.set(key, []);
+        groupMap.get(key)!.push(c);
+      }
+      this.academyCourseGroups.set(
+        Array.from(groupMap.entries()).map(([academyName, courses]) => ({ academyName, courses }))
+      );
+    } catch (err) {
+      console.error('Error loading academy courses:', err);
     }
   }
 

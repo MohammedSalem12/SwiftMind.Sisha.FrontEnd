@@ -145,6 +145,26 @@
 
     </div>
 
+    <!-- Academy Card -->
+    <div class="academy-section" *ngIf="myAcademy() || academyMembership()">
+      <div class="academy-bar" (click)="goToAcademy()">
+        <div class="academy-bar-icon"><i class="fas fa-university"></i></div>
+        <div class="academy-bar-info">
+          <strong *ngIf="myAcademy()">{{ myAcademy()!.nameAr }}</strong>
+          <strong *ngIf="!myAcademy() && academyMembership()">عضو في أكاديمية</strong>
+          <small *ngIf="myAcademy()">{{ myAcademy()!.memberCount }} عضو · {{ myAcademy()!.courseCount }} مقرر</small>
+          <small *ngIf="!myAcademy()">{{ academyMembership()!.teacherName }}</small>
+        </div>
+        <div class="academy-bar-arrow"><i class="fas fa-chevron-left"></i></div>
+      </div>
+    </div>
+
+    <div class="academy-section" *ngIf="!myAcademy() && !academyMembership()">
+      <button class="academy-cta" (click)="goToAcademy()">
+        <i class="fas fa-university me-2"></i> إنشاء أكاديمية أو الانضمام لإحداها
+      </button>
+    </div>
+
     <!-- Courses Section -->
     <div class="section" id="courses-section">
       <div class="section-header">
@@ -276,6 +296,10 @@
         <button class="qa-btn qa-qr" (click)="goToQRCodes()">
           <i class="fas fa-qrcode"></i>
           <span>QR المقررات</span>
+        </button>
+        <button class="qa-btn qa-academy" (click)="goToAcademy()">
+          <i class="fas fa-university"></i>
+          <span>أكاديميتي</span>
         </button>
       </div>
     </div>

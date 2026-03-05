@@ -659,3 +659,11 @@
 @media (max-width: 480px) {
   .courses-grid { grid-template-columns: 1fr; }
 }
+
+.academy-group {
+  margin-bottom: 14px;
+  .academy-group-title {
+    font-size: 13px; font-weight: 700; color: #764ba2;
+    margin-bottom: 8px; padding: 4px 0;
+  }
+}

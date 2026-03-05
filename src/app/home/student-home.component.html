@@ -217,6 +217,31 @@
       </div>
     </div>
 
+    <!-- Academy Courses -->
+    <div class="section" *ngIf="academyCourseGroups().length > 0">
+      <h2 class="section-title">
+        <i class="fas fa-university"></i>
+        مقررات الأكاديميات
+      </h2>
+      <div *ngFor="let group of academyCourseGroups()" class="academy-group">
+        <div class="academy-group-title">
+          <i class="fas fa-university me-1"></i>{{ group.academyName }}
+        </div>
+        <div class="courses-grid">
+          <div class="course-card" *ngFor="let course of group.courses" (click)="enrollInCourse()">
+            <div class="course-header">
+              <div class="course-icon-wrap"><i class="fas fa-book"></i></div>
+              <span class="badge-code">{{ course.code }}</span>
+            </div>
+            <h3 class="course-name">{{ course.nameAr }}</h3>
+            <p class="course-teacher" *ngIf="course.description">
+              <i class="fas fa-info-circle"></i> {{ course.description }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="section">
       <h2 class="section-title">

@@ -4,6 +4,8 @@ import { Router, RouterModule } from '@angular/router';
 import { LocalizationPipe } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
+import { AcademyService } from '@proxy/academies';
+import type { AcademyDto, AcademyMemberDto } from '@proxy/academies/models';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
 import type { CourseDto } from '@proxy/courses/dtos/models';
@@ -48,6 +50,7 @@ export class TeacherHomeComponent implements OnInit {
   private readonly currentUserService   = inject(CurrentUserInfoService);
   private readonly teacherService       = inject(TeacherService);
   private readonly enrollmentService    = inject(StudentEnrollmentService);
+  private readonly academyService       = inject(AcademyService);
 
   // State
   loading                = signal(false);
@@ -56,6 +59,8 @@ export class TeacherHomeComponent implements OnInit {
   expandedCourseId       = signal<string | null>(null);
   loadingStudentsCourseId = signal<string | null>(null);
   enrolledStudentsMap    = signal<Record<string, EnrolledStudentDto[]>>({});
+  myAcademy              = signal<AcademyDto | null>(null);
+  academyMembership      = signal<AcademyMemberDto | null>(null);
 
   async ngOnInit(): Promise<void> {
     await this.loadDashboard();
@@ -69,10 +74,14 @@ export class TeacherHomeComponent implements OnInit {
       if (!teacherId) return;
 
       // Load courses and dashboard data in parallel
-      const [courses, dashboardRaw] = await Promise.all([
+      const [courses, dashboardRaw, myAcademy, membership] = await Promise.all([
         lastValueFrom(this.teacherService.getTeacherCourses(teacherId)),
         lastValueFrom(this.teacherService.getDashboard(teacherId)).catch(() => null),
+        lastValueFrom(this.academyService.getMyAcademy()).catch(() => null),
+        lastValueFrom(this.academyService.getMyMembership()).catch(() => null),
       ]);
+      this.myAcademy.set(myAcademy || null);
+      this.academyMembership.set(membership || null);
 
       this.courses.set(courses || []);
 
@@ -150,6 +159,7 @@ export class TeacherHomeComponent implements OnInit {
   goToSelfEnroll(): void         { this.router.navigate(['/teacher/enroll']); }
   goToAttendanceReport(): void   { this.router.navigate(['/teacher/attendance-report']); }
   goToQRCodes(): void            { this.router.navigate(['/teacher/qr-codes']); }
+  goToAcademy(): void            { this.router.navigate(['/teacher/academy']); }
 
   trackById = (_: number, item: CourseDto) => item.id;
 }
