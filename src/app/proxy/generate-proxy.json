@@ -2859,8 +2859,8 @@
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Courses.CourseAppService"
             },
-            "GetCoursesByGradeAsyncByGradeNumber": {
-              "uniqueName": "GetCoursesByGradeAsyncByGradeNumber",
+            "GetCoursesByGradeAsyncByGradeNumberAndStudentId": {
+              "uniqueName": "GetCoursesByGradeAsyncByGradeNumberAndStudentId",
               "name": "GetCoursesByGradeAsync",
               "httpMethod": "GET",
               "url": "api/app/course/courses-by-grade",
@@ -2873,6 +2873,14 @@
                   "typeSimple": "number",
                   "isOptional": false,
                   "defaultValue": null
+                },
+                {
+                  "name": "studentId",
+                  "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": true,
+                  "defaultValue": null
                 }
               ],
               "parameters": [
@@ -2882,6 +2890,18 @@
                   "jsonName": null,
                   "type": "System.Int32",
                   "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "studentId",
+                  "name": "studentId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,

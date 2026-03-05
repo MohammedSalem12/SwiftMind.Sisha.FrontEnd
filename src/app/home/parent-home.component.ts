@@ -7,6 +7,9 @@ import { lastValueFrom } from 'rxjs';
 import { ParentService } from '@proxy/parents';
 import type { ParentDto, ParentStudentDto } from '@proxy/parents/models';
 import { NotificationService, NotificationDto } from '@proxy/notifications';
+import { EnrollmentRequestService } from '@proxy/student-enrollments';
+import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
+import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 
 @Component({
   selector: 'app-parent-home',
@@ -66,7 +69,27 @@ import { NotificationService, NotificationDto } from '@proxy/notifications';
                       <i class="fas fa-phone-alt"></i>
                       <span>جهة اتصال طوارئ</span>
                     </div>
+                    </div>
+
+                  <!-- Enrolled Courses -->
+                  <div *ngIf="getChildCourses(child.studentId!).length > 0" class="child-courses mt-3">
+                    <h6 class="courses-title"><i class="fas fa-book-open me-1"></i>المقررات المسجلة</h6>
+                    <div class="course-item" *ngFor="let req of getChildCourses(child.studentId!)">
+                      <div class="course-name-line">
+                        <i class="fas fa-book"></i>
+                        <span>{{ req.courseName }}</span>
+                        <span class="badge bg-light text-dark ms-auto" *ngIf="req.courseCode">{{ req.courseCode }}</span>
+                      </div>
+                      <div class="course-meta">
+                        <span *ngIf="req.teacherName"><i class="fas fa-chalkboard-teacher me-1"></i>{{ req.teacherName }}</span>
+                        <span *ngIf="req.groupName"><i class="fas fa-users me-1"></i>{{ req.groupName }}</span>
+                      </div>
+                    </div>
                   </div>
+                  <div *ngIf="getChildCourses(child.studentId!).length === 0" class="no-courses mt-3">
+                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i>لا توجد مقررات مسجلة</small>
+                  </div>
+
                   <button class="btn btn-primary btn-sm w-100 mt-3" (click)="viewChildDetails(child)">
                     <i class="fas fa-eye me-1"></i>
                     عرض التفاصيل
@@ -277,6 +300,58 @@ import { NotificationService, NotificationDto } from '@proxy/notifications';
       color: #1a202c;
     }
 
+    .child-courses {
+      border-top: 1px solid #f0f0f0;
+      padding-top: 0.75rem;
+    }
+
+    .courses-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 0.5rem;
+    }
+
+    .course-item {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .course-name-line {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1a202c;
+    }
+
+    .course-name-line i {
+      color: var(--ngx-primary);
+      width: 16px;
+      font-size: 0.75rem;
+    }
+
+    .course-meta {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
+      padding-right: 1.25rem;
+      font-size: 0.78rem;
+      color: #6b7280;
+    }
+
+    .course-meta i {
+      color: #a0aec0;
+    }
+
+    .no-courses {
+      text-align: center;
+      padding: 0.5rem;
+    }
+
     @media (max-width: 768px) {
       .welcome-section h1 {
         font-size: 1.5rem;
@@ -294,8 +369,10 @@ export class ParentHomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly parentService = inject(ParentService);
   private readonly notificationService = inject(NotificationService);
+  private readonly enrollmentRequestService = inject(EnrollmentRequestService);
 
   children = signal<ParentStudentDto[]>([]);
+  childCoursesMap = signal<Record<string, EnrollmentRequestDto[]>>({});
   recentNotifications = signal<NotificationDto[]>([]);
   loading = signal(false);
   currentParent = signal<ParentDto | null>(null);
@@ -334,12 +411,44 @@ export class ParentHomeComponent implements OnInit {
         // Get parent's students
         const students = await lastValueFrom(this.parentService.getLinkedStudentsByParentId(parent.id!));
         this.children.set(students as ParentStudentDto[]);
+
+        // Load enrollment data for all children
+        await this.loadChildrenCourses(students as ParentStudentDto[]);
       }
     } catch (error) {
       console.error('Error loading parent children:', error);
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private async loadChildrenCourses(children: ParentStudentDto[]): Promise<void> {
+    try {
+      const allRequests = await lastValueFrom(this.enrollmentRequestService.getList());
+      if (!allRequests) return;
+
+      const studentIds = new Set(children.map(c => c.studentId));
+      const map: Record<string, EnrollmentRequestDto[]> = {};
+
+      for (const req of allRequests) {
+        if (!req.studentId || !studentIds.has(req.studentId)) continue;
+        if (req.status !== EnrollmentRequestStatus.Approved) continue;
+
+        if (!map[req.studentId]) map[req.studentId] = [];
+        // Avoid duplicate courses
+        if (!map[req.studentId].some(r => r.courseId === req.courseId)) {
+          map[req.studentId].push(req);
+        }
+      }
+
+      this.childCoursesMap.set(map);
+    } catch (error) {
+      console.error('Error loading children courses:', error);
+    }
+  }
+
+  getChildCourses(studentId: string): EnrollmentRequestDto[] {
+    return this.childCoursesMap()[studentId] || [];
   }
 
   viewChildDetails(child: ParentStudentDto): void {

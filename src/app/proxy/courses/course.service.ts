@@ -36,11 +36,11 @@ export class CourseService {
     { apiName: this.apiName,...config });
   
 
-  getCoursesByGrade = (gradeNumber: number, config?: Partial<Rest.Config>) =>
+  getCoursesByGrade = (gradeNumber: number, studentId?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CourseDto[]>({
       method: 'GET',
       url: '/api/app/course/courses-by-grade',
-      params: { gradeNumber },
+      params: { gradeNumber, studentId },
     },
     { apiName: this.apiName,...config });
   

@@ -13,6 +13,7 @@ import type { ParentStudentDto } from '@proxy/parents/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
+import { GradeThemeService } from '../shared/services/grade-theme.service';
 
 interface EnrolledCourseInfo {
   courseId: string;
@@ -36,6 +37,7 @@ export class StudentHomeComponent implements OnInit {
   private readonly attendanceSvc = inject(AttendanceService);
   private readonly examGradeSvc = inject(ExamGradeService);
   private readonly enrollmentRequestSvc = inject(EnrollmentRequestService);
+  private readonly gradeThemeService = inject(GradeThemeService);
 
   studentName = signal('');
   studentId = signal<string | null>(null);
@@ -47,6 +49,12 @@ export class StudentHomeComponent implements OnInit {
   pendingParentLinks = signal<ParentStudentDto[]>([]);
   loading = signal(true);
   cancellingId = signal<string | null>(null);
+
+  // Computed properties for theme
+  currentTheme = computed(() => {
+    const grade = this.studentGrade();
+    return grade ? this.gradeThemeService.getThemeForGrade(grade) : null;
+  });
 
   totalAbsenceDays = computed(() =>
     this.attendanceStats().reduce((sum, s) => sum + (s.absentDays || 0), 0)
@@ -69,6 +77,11 @@ export class StudentHomeComponent implements OnInit {
         this.studentName.set(userInfo.actorName || '');
         this.studentId.set(userInfo.actorId || null);
         this.studentGrade.set(userInfo.currentGrade || null);
+        
+        // Apply grade-based theme
+        if (userInfo.currentGrade) {
+          this.gradeThemeService.setThemeByGrade(userInfo.currentGrade);
+        }
       }
       await Promise.all([
         this.loadEnrollmentRequests(userInfo?.actorId),
