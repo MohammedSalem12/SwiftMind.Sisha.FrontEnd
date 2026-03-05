@@ -211,7 +211,7 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
 
     /* ── Hero ─────────────────────────────────────────────── */
     .hero-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       padding: 1.25rem 1rem;
       display: flex;
       align-items: center;
@@ -261,10 +261,10 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
         white-space: nowrap;
       }
       &.active .step-dot {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--ngx-hero-gradient);
         i { color: white; }
       }
-      &.active span { color: #667eea; font-weight: 600; }
+      &.active span { color: var(--ngx-primary); font-weight: 600; }
       &.done .step-dot {
         background: #48bb78;
         i { color: white; }
@@ -290,11 +290,11 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
     }
     .crumb-btn {
       background: none; border: none;
-      font-size: 0.78rem; color: #667eea;
+      font-size: 0.78rem; color: var(--ngx-primary);
       padding: 0.2rem 0.4rem;
       border-radius: 4px; cursor: pointer;
       display: flex; align-items: center; gap: 0.2rem;
-      &:hover { background: rgba(102,126,234,0.1); }
+      &:hover { background: rgba(51, 102, 255,0.1); }
       .crumb-clear { color: #a0aec0; font-size: 0.7rem; }
     }
     .crumb-sep { font-size: 0.65rem; color: #a0aec0; }
@@ -311,7 +311,7 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
     .spinner {
       width: 36px; height: 36px;
       border: 3px solid #e2e8f0;
-      border-top-color: #667eea;
+      border-top-color: var(--ngx-primary);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -362,11 +362,11 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
       touch-action: manipulation;
       transition: box-shadow 0.15s, transform 0.15s;
       &:active { transform: scale(0.98); }
-      &:hover  { box-shadow: 0 3px 12px rgba(102,126,234,0.18); }
+      &:hover  { box-shadow: 0 3px 12px rgba(51, 102, 255,0.18); }
 
       .card-icon {
         width: 42px; height: 42px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--ngx-hero-gradient);
         border-radius: 10px;
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
@@ -393,7 +393,7 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
       padding: 0.15rem 0.45rem; border-radius: 4px;
       display: inline-flex; align-items: center;
     }
-    .grade-chip { background: #edf2ff; color: #667eea; }
+    .grade-chip { background: #edf2ff; color: var(--ngx-primary); }
     .code-chip  { background: #f0fff4; color: #38a169; }
     .sessions-chip { background: #fff8e1; color: #b7791f; }
 
@@ -412,7 +412,7 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
 
         .group-icon {
           width: 42px; height: 42px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: var(--ngx-hero-gradient);
           border-radius: 10px;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
@@ -436,7 +436,7 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
         font-size: 0.8rem;
       }
       .day-chip {
-        background: #edf2ff; color: #667eea;
+        background: #edf2ff; color: var(--ngx-primary);
         padding: 0.15rem 0.5rem; border-radius: 4px;
         font-weight: 600; font-size: 0.75rem;
       }
@@ -447,7 +447,7 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
     .btn-enroll {
       width: 100%;
       padding: 0.7rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       color: white; border: none;
       border-radius: 10px; font-size: 0.9rem; font-weight: 500;
       cursor: pointer; touch-action: manipulation;
@@ -475,13 +475,13 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
       .success-row {
         font-size: 0.88rem; color: #4a5568;
         display: flex; align-items: center;
-        i { color: #667eea; width: 20px; }
+        i { color: var(--ngx-primary); width: 20px; }
       }
     }
     .btn-done {
       width: 100%; max-width: 300px;
       padding: 0.75rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       color: white; border: none;
       border-radius: 12px; font-size: 0.95rem; font-weight: 600;
       cursor: pointer; margin-top: 0.5rem;

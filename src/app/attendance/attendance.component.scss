@@ -13,12 +13,12 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   color: white;
   padding: 1.5rem 2rem;
   border-radius: 16px;
   margin-bottom: 1.5rem;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.35);
+  box-shadow: 0 4px 20px rgba(51, 102, 255, 0.35);
 
   .header-icon {
     width: 56px;
@@ -100,9 +100,9 @@
 
     &:focus {
       outline: none;
-      border-color: #667eea;
+      border-color: var(--ngx-primary);
       background: white;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+      box-shadow: 0 0 0 3px rgba(51, 102, 255, 0.15);
     }
 
     &:disabled {
@@ -173,7 +173,7 @@
 
   &.dot-present { background: #22c55e; }
   &.dot-absent  { background: #ef4444; }
-  &.dot-total   { background: #667eea; }
+  &.dot-total   { background: var(--ngx-primary); }
 }
 
 .legend-body {
@@ -231,13 +231,13 @@
   input[type='checkbox'] {
     width: 18px;
     height: 18px;
-    accent-color: #667eea;
+    accent-color: var(--ngx-primary);
     cursor: pointer;
   }
 }
 
 .selected-badge {
-  background: #667eea;
+  background: var(--ngx-primary);
   color: white;
   padding: 0.2rem 0.8rem;
   border-radius: 20px;
@@ -406,7 +406,7 @@
   input[type='checkbox'] {
     width: 17px;
     height: 17px;
-    accent-color: #667eea;
+    accent-color: var(--ngx-primary);
     cursor: pointer;
   }
 }
@@ -438,7 +438,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--ngx-primary), var(--ngx-hero-end));
   color: white;
   display: flex;
   align-items: center;
@@ -563,7 +563,7 @@
   input[type='checkbox'] {
     width: 18px;
     height: 18px;
-    accent-color: #667eea;
+    accent-color: var(--ngx-primary);
     cursor: pointer;
   }
 }
@@ -618,7 +618,7 @@
   width: 40px;
   height: 40px;
   border: 3px solid #e5e7eb;
-  border-top-color: #667eea;
+  border-top-color: var(--ngx-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 1rem;

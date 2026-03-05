@@ -177,7 +177,7 @@ import { NotificationService, NotificationDto } from '@proxy/notifications';
     }
 
     .child-card-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       padding: 2rem;
       text-align: center;
     }
@@ -225,12 +225,12 @@ import { NotificationService, NotificationDto } from '@proxy/notifications';
     }
 
     .info-item i {
-      color: #667eea;
+      color: var(--ngx-primary);
       width: 20px;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       border: none;
       padding: 0.5rem 1rem;
       border-radius: 8px;

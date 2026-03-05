@@ -22,7 +22,7 @@ export class ProfileComponent implements OnInit {
 
   readonly roleConfig: Record<string, { label: string; color: string; bg: string; icon: string }> = {
     STUDENT:   { label: 'طالب',     color: '#22c55e', bg: '#f0fdf4', icon: 'fa-graduation-cap' },
-    TEACHER:   { label: 'معلم',     color: '#667eea', bg: '#f5f3ff', icon: 'fa-chalkboard-teacher' },
+    TEACHER:   { label: 'معلم',     color: '#3366ff', bg: '#f5f3ff', icon: 'fa-chalkboard-teacher' },
     PARENT:    { label: 'ولي أمر', color: '#f59e0b', bg: '#fffbeb', icon: 'fa-user-friends' },
     SECRETARY: { label: 'سكرتير',  color: '#0ea5e9', bg: '#f0f9ff', icon: 'fa-user-tie' },
     ADMIN:     { label: 'مدير',    color: '#8b5cf6', bg: '#faf5ff', icon: 'fa-shield-alt' },

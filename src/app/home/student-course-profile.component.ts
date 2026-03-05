@@ -188,7 +188,7 @@ import { StudentService } from '@proxy/students';
 
     /* ── Hero ────────────────────────────────────── */
     .hero-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       padding: 1.25rem 1rem;
       display: flex; align-items: flex-start; gap: 0.75rem;
     }
@@ -218,7 +218,7 @@ import { StudentService } from '@proxy/students';
     }
     .spinner {
       width: 36px; height: 36px;
-      border: 3px solid #e2e8f0; border-top-color: #667eea;
+      border: 3px solid #e2e8f0; border-top-color: var(--ngx-primary);
       border-radius: 50%; animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -240,7 +240,7 @@ import { StudentService } from '@proxy/students';
     .section-title {
       font-size: 0.88rem; font-weight: 700; color: #4a5568;
       margin-bottom: 0.875rem;
-      i { color: #667eea; }
+      i { color: var(--ngx-primary); }
     }
 
     /* ── Enrollment ───────────────────────────────── */
@@ -249,7 +249,7 @@ import { StudentService } from '@proxy/students';
       font-size: 0.88rem; color: #718096;
     }
     .btn-enroll {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       color: white; border: none; border-radius: 8px;
       padding: 0.4rem 0.9rem; font-size: 0.82rem;
       cursor: pointer; white-space: nowrap;
@@ -279,7 +279,7 @@ import { StudentService } from '@proxy/students';
       padding: 0.5rem 0.75rem; font-size: 0.82rem;
     }
     .day-chip {
-      background: #edf2ff; color: #667eea;
+      background: #edf2ff; color: var(--ngx-primary);
       padding: 0.15rem 0.5rem; border-radius: 4px;
       font-weight: 700; font-size: 0.75rem;
     }

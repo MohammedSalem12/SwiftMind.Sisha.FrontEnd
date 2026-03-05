@@ -46,7 +46,7 @@ export class StudentQrComponent implements OnInit {
       const dataUrl = await QRCode.toDataURL(linkUrl, {
         width: 280,
         margin: 2,
-        color: { dark: '#667eea', light: '#ffffff' },
+        color: { dark: '#3366ff', light: '#ffffff' },
       });
       this.qrDataUrl.set(dataUrl);
     } catch (err) {

@@ -1,6 +1,6 @@
 // ── Design tokens ───────────────────────────────────────
-$purple:      #667eea;
-$purple-dark: #764ba2;
+$purple:      var(--ngx-primary);
+$purple-dark: var(--ngx-hero-end);
 $blue:        #3b82f6;
 $green:       #10b981;
 $orange:      #f59e0b;

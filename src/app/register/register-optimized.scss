@@ -10,7 +10,7 @@
 .auth-card { @include auth-card; }
 
 .register-card .auth-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   color: white; padding: 2rem 2rem 1.5rem; text-align: center;
   &::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); }
   .logo-container { margin-bottom: 1rem; }
@@ -29,7 +29,7 @@
   .form-step:last-child { border-bottom: none; margin-bottom: 1rem; }
   .step-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
   .step-header h3 { color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0; }
-  .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; font-size: 0.875rem; font-weight: 600; }
+  .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--ngx-hero-gradient); color: white; border-radius: 50%; font-size: 0.875rem; font-weight: 600; }
 }
 
 .input-group {
@@ -38,10 +38,10 @@
   .input-wrapper, .select-wrapper { position: relative; }
   .input-icon { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.9rem; z-index: 1; }
   .form-input, .form-select { @include form-input; padding: 0.875rem 2.5rem 0.875rem 1rem; font-size: 0.9rem; }
-  .form-input:focus, .form-select:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+  .form-input:focus, .form-select:focus { border-color: var(--ngx-primary); box-shadow: 0 0 0 3px rgba(51, 102, 255, 0.1); }
   .form-select { cursor: pointer; appearance: none; background-image: none; }
   .form-textarea { width: 100%; padding: 0.875rem 2.5rem 0.875rem 1rem; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 0.9rem; transition: all 0.2s ease; background: white; color: #374151; box-sizing: border-box; resize: vertical; min-height: 80px; font-family: inherit; }
-  .form-textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+  .form-textarea:focus { outline: none; border-color: var(--ngx-primary); box-shadow: 0 0 0 3px rgba(51, 102, 255, 0.1); }
   .form-textarea::placeholder { color: #9ca3af; }
   .select-arrow { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.75rem; pointer-events: none; z-index: 1; }
 }
@@ -50,7 +50,7 @@
 .input-row:has(.input-group:nth-child(3)) { grid-template-columns: 1fr 1fr 1fr; }
 
 .role-fields {
-  padding: 1rem; border-radius: 12px; border: 1px solid rgba(102, 126, 234, 0.1);
+  padding: 1rem; border-radius: 12px; border: 1px solid rgba(51, 102, 255, 0.1);
   &.student-fields { background: rgba(34, 197, 94, 0.05); border-color: rgba(34, 197, 94, 0.1); }
   &.teacher-fields { background: rgba(249, 115, 22, 0.05); border-color: rgba(249, 115, 22, 0.1); }
   &.parent-fields { background: rgba(168, 85, 247, 0.05); border-color: rgba(168, 85, 247, 0.1); }
@@ -62,12 +62,12 @@
   display: inline-flex; align-items: center; justify-content: center; padding: 1rem 1.5rem; border-radius: 12px; font-size: 1rem; font-weight: 600; text-decoration: none; border: 2px solid transparent; cursor: pointer; transition: all 0.2s ease; gap: 0.5rem; min-height: 48px;
   &:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
   &.btn-large { width: 100%; padding: 1.1rem 1.5rem; font-size: 1rem; }
-  &.btn-primary { @include btn-primary; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-  &.btn-primary:hover:not(:disabled) { box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); }
+  &.btn-primary { @include btn-primary; background: var(--ngx-hero-gradient); }
+  &.btn-primary:hover:not(:disabled) { box-shadow: 0 8px 25px rgba(51, 102, 255, 0.3); }
   &.btn-primary.loading .loading-content { display: flex; align-items: center; gap: 0.5rem; }
   &.btn-primary.loading .loading-content i { animation: spin 1s linear infinite; }
-  &.btn-outline { background: transparent; color: #667eea; border-color: #667eea; }
-  &.btn-outline:hover { background: #667eea; color: white; transform: translateY(-1px); }
+  &.btn-outline { background: transparent; color: var(--ngx-primary); border-color: var(--ngx-primary); }
+  &.btn-outline:hover { background: var(--ngx-primary); color: white; transform: translateY(-1px); }
 }
 
 .auth-divider { position: relative; margin: 1.5rem 0; text-align: center; color: #9ca3af; font-size: 0.875rem; }

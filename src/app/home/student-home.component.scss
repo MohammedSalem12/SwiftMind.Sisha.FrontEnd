@@ -5,7 +5,7 @@
 }
 
 .page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   padding: 2rem 1.5rem 3rem;
   color: white;
 }
@@ -100,11 +100,11 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  i { color: #667eea; }
+  i { color: var(--ngx-primary); }
 }
 
 .badge-count {
-  background: #667eea;
+  background: var(--ngx-primary);
   color: white;
   border-radius: 20px;
   padding: 0.1rem 0.55rem;
@@ -115,7 +115,7 @@
 .btn-view-all {
   background: none;
   border: none;
-  color: #667eea;
+  color: var(--ngx-primary);
   font-size: 0.82rem;
   cursor: pointer;
   margin-right: auto;
@@ -124,7 +124,7 @@
 }
 
 .btn-enroll {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   color: white;
   border: none;
   border-radius: 8px;
@@ -151,7 +151,7 @@
 }
 
 .link-info { display: flex; align-items: center; gap: 0.75rem; }
-.link-icon { font-size: 1.5rem; color: #667eea; }
+.link-icon { font-size: 1.5rem; color: var(--ngx-primary); }
 .link-name { font-weight: 600; color: #1a202c; margin: 0; font-size: 0.95rem; }
 .link-relation { font-size: 0.8rem; color: #6b7280; margin: 0; }
 .link-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
@@ -180,7 +180,7 @@
   cursor: pointer;
   transition: all 0.25s ease;
   border: 2px solid transparent;
-  &:hover { background: #ede9fe; border-color: #667eea; transform: translateY(-2px); }
+  &:hover { background: #ede9fe; border-color: var(--ngx-primary); transform: translateY(-2px); }
 }
 
 .course-header {
@@ -193,7 +193,7 @@
 .course-icon-wrap {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -238,7 +238,7 @@
 
 .attendance-fill {
   height: 100%;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, var(--ngx-primary), var(--ngx-hero-end));
   border-radius: 2px;
   transition: width 0.5s ease;
 }
@@ -249,7 +249,7 @@
 .empty-icon { font-size: 3rem; color: #d1d5db; display: block; margin-bottom: 0.75rem; }
 
 .btn-primary-action {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   color: white;
   border: none;
   border-radius: 8px;
@@ -357,9 +357,9 @@
   gap: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  i { font-size: 1.5rem; color: #667eea; }
+  i { font-size: 1.5rem; color: var(--ngx-primary); }
   span { font-size: 0.8rem; font-weight: 500; color: #374151; }
-  &:hover { border-color: #667eea; background: #ede9fe; }
+  &:hover { border-color: var(--ngx-primary); background: #ede9fe; }
 }
 
 @media (max-width: 768px) {

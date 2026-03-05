@@ -44,7 +44,7 @@ export class RegisterComponent implements OnInit {
       label: 'معلم',
       description: 'سجّل كمعلم لإدارة طلابك وفصولك',
       icon: 'fa-chalkboard-teacher',
-      color: '#667eea',
+      color: '#3366ff',
       bg: '#f5f3ff',
       border: '#c4b5fd',
     },

@@ -115,7 +115,7 @@ import type { SecretaryTeacherDto } from '@proxy/teachers/models';
   styles: [`
     .page-container { min-height: calc(100vh - 200px); background: #f8f9fa; }
     .card { box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
-    .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .card-header { background: var(--ngx-hero-gradient); color: white; }
   `]
 })
 export class SecretaryAssignmentsComponent implements OnInit {

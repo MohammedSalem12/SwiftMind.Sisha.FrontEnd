@@ -115,7 +115,7 @@ import type { TeacherEnrollmentResultDto } from '@proxy/teachers';
 
     .page-header {
       padding: 1.5rem 2rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       color: white;
       border-radius: 12px;
     }
@@ -157,18 +157,18 @@ import type { TeacherEnrollmentResultDto } from '@proxy/teachers';
     }
 
     .course-select-card:hover {
-      border-color: #667eea;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+      border-color: var(--ngx-primary);
+      box-shadow: 0 4px 12px rgba(51, 102, 255, 0.15);
     }
 
     .course-select-card.selected {
-      border-color: #667eea;
+      border-color: var(--ngx-primary);
       background: #f0f0ff;
     }
 
     .select-indicator {
       font-size: 1.5rem;
-      color: #667eea;
+      color: var(--ngx-primary);
       padding-top: 0.25rem;
     }
 
@@ -179,7 +179,7 @@ import type { TeacherEnrollmentResultDto } from '@proxy/teachers';
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       border: none;
       padding: 0.5rem 1.5rem;
       border-radius: 8px;

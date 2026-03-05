@@ -19,12 +19,12 @@
 }
 .blob-1 {
   width: 400px; height: 400px;
-  background: #667eea;
+  background: var(--ngx-primary);
   top: -100px; right: -100px;
 }
 .blob-2 {
   width: 300px; height: 300px;
-  background: #764ba2;
+  background: var(--ngx-hero-end);
   bottom: -80px; left: -80px;
 }
 
@@ -42,7 +42,7 @@
 
 /* ─── Header ─── */
 .reg-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   padding: 2rem 2rem 1.75rem;
   text-align: center;
   color: white;
@@ -92,7 +92,7 @@
   justify-content: center;
   gap: 0.5rem;
 
-  i { color: #667eea; font-size: 1.1rem; }
+  i { color: var(--ngx-primary); font-size: 1.1rem; }
 }
 
 /* ─── Role Cards ─── */
@@ -230,8 +230,8 @@
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    border-color: var(--ngx-primary);
+    box-shadow: 0 0 0 3px rgba(51, 102, 255, 0.12);
   }
 }
 
@@ -315,7 +315,7 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.95rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   color: white;
   border: none;
   border-radius: 12px;
@@ -327,7 +327,7 @@
   margin-top: 0.25rem;
 
   &:hover:not(:disabled) {
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+    box-shadow: 0 6px 20px rgba(51, 102, 255, 0.35);
     transform: translateY(-1px);
   }
 
@@ -364,7 +364,7 @@
   color: #6b7280;
 
   a {
-    color: #667eea;
+    color: var(--ngx-primary);
     font-weight: 600;
     text-decoration: none;
     &:hover { text-decoration: underline; }

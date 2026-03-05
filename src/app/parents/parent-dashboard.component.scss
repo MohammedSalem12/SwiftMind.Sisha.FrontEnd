@@ -6,7 +6,7 @@
 
 // ── Hero ──────────────────────────────────────────────────
 .hero-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   padding: 1.25rem 1rem;
   display: flex;
   align-items: center;
@@ -55,14 +55,14 @@
 .spinner {
   width: 40px; height: 40px;
   border: 3px solid #e2e8f0;
-  border-top-color: #667eea;
+  border-top-color: var(--ngx-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .btn-retry {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   color: white; border: none;
   padding: 0.6rem 1.5rem;
   border-radius: 8px; font-size: 0.9rem; cursor: pointer;
@@ -89,7 +89,7 @@
 
   .stat-icon {
     width: 40px; height: 40px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--ngx-hero-gradient);
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
     i { color: white; font-size: 1rem; }
@@ -127,7 +127,7 @@
 
     .child-avatar {
       width: 48px; height: 48px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
@@ -142,7 +142,7 @@
   }
 
   .badge-code {
-    font-size: 0.72rem; background: #edf2ff; color: #667eea;
+    font-size: 0.72rem; background: #edf2ff; color: var(--ngx-primary);
     padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600;
   }
   .badge-grade {
@@ -173,7 +173,7 @@
       &.val-good  { color: #38a169; }
       &.val-mid   { color: #d69e2e; }
       &.val-bad   { color: #e53e3e; }
-      &.grade-val { color: #667eea; }
+      &.grade-val { color: var(--ngx-primary); }
     }
   }
 
@@ -207,7 +207,7 @@
 .btn-details {
   width: 100%;
   padding: 0.65rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   color: white; border: none;
   border-radius: 10px; font-size: 0.9rem; font-weight: 500;
   cursor: pointer; margin-top: 0.5rem;

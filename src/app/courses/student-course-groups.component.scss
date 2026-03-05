@@ -5,7 +5,7 @@
 }
 
 .page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   padding: 1.5rem;
   color: white;
 }
@@ -67,7 +67,7 @@
 
 .search-wrap { position: relative; display: flex; align-items: center; }
 .search-icon { position: absolute; right: 0.9rem; color: #9ca3af; font-size: 1rem; pointer-events: none; }
-.search-input { width: 100%; border: 2px solid #e5e7eb; border-radius: 10px; padding: 0.65rem 2.5rem; font-size: 0.95rem; outline: none; direction: rtl; transition: border-color 0.2s; &:focus { border-color: #667eea; } }
+.search-input { width: 100%; border: 2px solid #e5e7eb; border-radius: 10px; padding: 0.65rem 2.5rem; font-size: 0.95rem; outline: none; direction: rtl; transition: border-color 0.2s; &:focus { border-color: var(--ngx-primary); } }
 .clear-btn { position: absolute; left: 0.9rem; background: none; border: none; color: #9ca3af; cursor: pointer; padding: 0; &:hover { color: #374151; } }
 .results-hint { font-size: 0.8rem; color: #9ca3af; margin: 0.5rem 0 0; }
 
@@ -80,19 +80,19 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   border: 2px solid transparent;
   transition: border-color 0.2s;
-  &.expanded { border-color: #667eea; }
+  &.expanded { border-color: var(--ngx-primary); }
 }
 
 .teacher-row { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; cursor: pointer; transition: background 0.15s; &:hover { background: #f8f9ff; } }
 
-.teacher-avatar { width: 44px; height: 44px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; flex-shrink: 0; }
+.teacher-avatar { width: 44px; height: 44px; background: var(--ngx-hero-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; flex-shrink: 0; }
 
 .teacher-meta { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
 .teacher-name { font-weight: 600; color: #1a202c; font-size: 0.95rem; }
-.teacher-code { font-size: 0.78rem; color: #667eea; font-weight: 600; background: #ede9fe; border-radius: 4px; padding: 0.1rem 0.45rem; display: inline-block; }
+.teacher-code { font-size: 0.78rem; color: var(--ngx-primary); font-weight: 600; background: #ede9fe; border-radius: 4px; padding: 0.1rem 0.45rem; display: inline-block; }
 
 .teacher-action { flex-shrink: 0; }
-.action-label { font-size: 0.82rem; color: #667eea; font-weight: 500; display: flex; align-items: center; gap: 0.3rem; &.active { color: #764ba2; } }
+.action-label { font-size: 0.82rem; color: var(--ngx-primary); font-weight: 500; display: flex; align-items: center; gap: 0.3rem; &.active { color: var(--ngx-hero-end); } }
 
 .groups-panel { border-top: 1px solid #f0f0f0; padding: 1rem 1.25rem 1.25rem; background: #fafbff; }
 
@@ -107,10 +107,10 @@
 .group-code { background: #e8eaf6; color: #5c6bc0; border-radius: 5px; padding: 0.15rem 0.45rem; font-size: 0.7rem; font-weight: 600; white-space: nowrap; }
 
 .schedules { display: flex; flex-direction: column; gap: 0.4rem; }
-.schedule-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; font-size: 0.8rem; color: #374151; background: #f8f9fa; border-radius: 6px; padding: 0.4rem 0.6rem; i { color: #667eea; margin-left: 0.2rem; } .day { font-weight: 600; } .time { color: #4b5563; } .location { color: #6b7280; } }
+.schedule-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; font-size: 0.8rem; color: #374151; background: #f8f9fa; border-radius: 6px; padding: 0.4rem 0.6rem; i { color: var(--ngx-primary); margin-left: 0.2rem; } .day { font-weight: 600; } .time { color: #4b5563; } .location { color: #6b7280; } }
 .no-schedule { font-size: 0.8rem; color: #9ca3af; margin: 0; }
 
-.btn-join { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 9px; padding: 0.6rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: auto; transition: opacity 0.2s; &:hover:not(:disabled) { opacity: 0.9; } &:disabled { opacity: 0.6; cursor: not-allowed; } }
+.btn-join { width: 100%; background: var(--ngx-hero-gradient); color: white; border: none; border-radius: 9px; padding: 0.6rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: auto; transition: opacity 0.2s; &:hover:not(:disabled) { opacity: 0.9; } &:disabled { opacity: 0.6; cursor: not-allowed; } }
 
 @media (max-width: 600px) {
   .groups-grid { grid-template-columns: 1fr; }

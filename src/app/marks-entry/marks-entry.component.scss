@@ -322,7 +322,7 @@
 
 .btn-view-report {
   border: none; border-radius: 20px; cursor: pointer;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--ngx-primary), var(--ngx-hero-end));
   color: white; padding: 0.4rem 1rem;
   font-size: 0.82rem; font-weight: 600; white-space: nowrap;
   &:hover { opacity: 0.9; }
@@ -524,7 +524,7 @@
   color: white;
 
   &.btn-update {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, var(--ngx-primary), var(--ngx-hero-end));
   }
   &:hover:not(:disabled) {
     transform: translateY(-1px);

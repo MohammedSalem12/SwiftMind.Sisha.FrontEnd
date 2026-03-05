@@ -104,7 +104,7 @@ import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.
     .request-header h5 { font-size: 1rem; font-weight: 600; color: #1a202c; }
     .request-body { padding: 1rem 1.25rem; }
     .info-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem; }
-    .info-row i { color: #667eea; width: 18px; }
+    .info-row i { color: var(--ngx-primary); width: 18px; }
     .approval-status { background: #f8f9fa; border-radius: 8px; padding: 0.75rem; }
     .approval-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; }
   `],

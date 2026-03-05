@@ -1,4 +1,4 @@
-$purple: #667eea; $purple-dark: #764ba2;
+$purple: var(--ngx-primary); $purple-dark: var(--ngx-hero-end);
 $green: #10b981; $orange: #f59e0b; $blue: #3b82f6; $red: #ef4444;
 $bg: #f0f2f5; $radius: 14px; $shadow: 0 2px 12px rgba(0,0,0,0.07);
 

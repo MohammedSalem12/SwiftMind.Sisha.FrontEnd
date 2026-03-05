@@ -84,7 +84,7 @@
 }
 
 .welcome-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ngx-hero-gradient);
   border-radius: 20px;
   color: white;
   margin-bottom: 40px;
@@ -140,7 +140,7 @@
 
 .welcome-actions .btn-primary:hover {
   background: white;
-  color: #667eea;
+  color: var(--ngx-primary);
   transform: translateY(-2px);
 }
 

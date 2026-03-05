@@ -1,6 +1,6 @@
 // ─── Design Tokens ──────────────────────────────────────────────
-$grad-start: #667eea;
-$grad-end:   #764ba2;
+$grad-start: var(--ngx-primary);
+$grad-end:   var(--ngx-hero-end);
 $white:      #ffffff;
 $text-dark:  #1a1a2e;
 $text-mid:   #4a4a6a;
@@ -55,7 +55,7 @@ $radius-field: 14px;
   background: $white;
   border-radius: $radius-card;
   padding: 2.25rem 1.75rem 1.75rem;
-  box-shadow: 0 24px 64px rgba(102, 126, 234, 0.35);
+  box-shadow: 0 24px 64px rgba(51, 102, 255, 0.35);
 }
 
 // ─── Brand Section ──────────────────────────────────────────────
@@ -72,7 +72,7 @@ $radius-field: 14px;
   height: 90px;
   border-radius: 50%;
   background: linear-gradient(135deg, $grad-start, $grad-end);
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 24px rgba(51, 102, 255, 0.4);
   margin-bottom: 1rem;
 }
 
@@ -161,7 +161,7 @@ $radius-field: 14px;
     outline: none;
     border-color: $grad-start;
     background: $white;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    box-shadow: 0 0 0 3px rgba(51, 102, 255, 0.12);
   }
 }
 
@@ -262,7 +262,7 @@ $radius-field: 14px;
   gap: 0.5rem;
   min-height: 52px;
   transition: opacity 0.2s, transform 0.15s;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(51, 102, 255, 0.4);
 
   &:hover:not(:disabled) {
     opacity: 0.92;
@@ -311,7 +311,7 @@ $radius-field: 14px;
   padding: 0.875rem;
   background: $white;
   color: $grad-start;
-  border: 1.5px solid rgba(102, 126, 234, 0.35);
+  border: 1.5px solid rgba(51, 102, 255, 0.35);
   border-radius: $radius-field;
   font-size: 0.9375rem;
   font-weight: 500;
@@ -324,7 +324,7 @@ $radius-field: 14px;
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
-    background: rgba(102, 126, 234, 0.06);
+    background: rgba(51, 102, 255, 0.06);
     border-color: $grad-start;
   }
 

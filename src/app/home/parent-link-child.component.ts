@@ -106,10 +106,10 @@ import type { StudentDto } from '@proxy/students/models';
     .link-child { min-height: calc(100vh - 200px); background: #f8f9fa; }
     .form-card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 700px; }
     .form-card h2 { font-size: 1.5rem; font-weight: 600; color: #1a202c; }
-    .student-found { background: #f0f9ff; border: 2px solid #667eea; border-radius: 10px; padding: 1.25rem; }
-    .avatar { width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .student-found { background: #f0f9ff; border: 2px solid var(--ngx-primary); border-radius: 10px; padding: 1.25rem; }
+    .avatar { width: 48px; height: 48px; background: var(--ngx-hero-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
     .avatar i { font-size: 1.25rem; color: white; }
-    .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; }
+    .btn-primary { background: var(--ngx-hero-gradient); border: none; }
     .btn-primary:hover { background: linear-gradient(135deg, #5568d3 0%, #6a4190 100%); }
     .btn-success { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); border: none; padding: 0.75rem; font-weight: 500; }
   `],

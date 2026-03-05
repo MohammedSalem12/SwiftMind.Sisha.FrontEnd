@@ -236,12 +236,12 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
     .child-detail { min-height: calc(100vh - 200px); background: #f8f9fa; }
     .student-header { padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .student-header h1 { font-size: 1.5rem; font-weight: 600; color: #1a202c; }
-    .avatar { width: 64px; height: 64px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .avatar { width: 64px; height: 64px; background: var(--ngx-hero-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
     .avatar i { font-size: 1.5rem; color: white; }
     .tabs { display: flex; gap: 0.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0; }
     .tab-btn { background: none; border: none; padding: 0.75rem 1.5rem; font-weight: 500; color: #6b7280; border-bottom: 3px solid transparent; margin-bottom: -2px; cursor: pointer; transition: all 0.2s; }
-    .tab-btn.active { color: #667eea; border-bottom-color: #667eea; }
-    .tab-btn:hover { color: #667eea; }
+    .tab-btn.active { color: var(--ngx-primary); border-bottom-color: var(--ngx-primary); }
+    .tab-btn:hover { color: var(--ngx-primary); }
     .report-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .report-header { padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
     .report-header h5, .report-header h6 { font-weight: 600; color: #1a202c; }

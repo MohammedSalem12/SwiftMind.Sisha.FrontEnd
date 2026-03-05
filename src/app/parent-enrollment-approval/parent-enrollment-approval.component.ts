@@ -277,10 +277,10 @@ import { CurrentUserInfoService } from '@proxy/common';
       gap: 8px;
       position: relative;
     }
-    .tab-btn.active { color: #667eea; border-bottom-color: #667eea; background: rgba(102, 126, 234, 0.05); }
-    .tab-btn:hover { color: #667eea; }
+    .tab-btn.active { color: var(--ngx-primary); border-bottom-color: var(--ngx-primary); background: rgba(51, 102, 255, 0.05); }
+    .tab-btn:hover { color: var(--ngx-primary); }
     .tab-badge { 
-      background: #667eea; 
+      background: var(--ngx-primary); 
       color: white; 
       border-radius: 12px; 
       padding: 2px 8px; 
@@ -289,7 +289,7 @@ import { CurrentUserInfoService } from '@proxy/common';
       min-width: 20px; 
       text-align: center;
     }
-    .tab-btn.active .tab-badge { background: #667eea; }
+    .tab-btn.active .tab-badge { background: var(--ngx-primary); }
     .tab-btn:not(.active) .tab-badge { background: #6c757d; }
     
     .approved-info .alert { margin-bottom: 0; border: none; background: #d4edda; color: #155724; }

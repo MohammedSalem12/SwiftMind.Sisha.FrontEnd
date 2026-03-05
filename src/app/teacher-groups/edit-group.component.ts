@@ -53,7 +53,7 @@ import { GroupService } from '@proxy/groups';
   styles: [`
     .page { display: flex; justify-content: center; padding: 2rem; background: #f8f9fa; min-height: 100vh; }
     .form-card { width: 100%; max-width: 600px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
-    .card-header-section { padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex; align-items: center; gap: 1rem; }
+    .card-header-section { padding: 1.5rem; background: var(--ngx-hero-gradient); color: white; display: flex; align-items: center; gap: 1rem; }
     .card-header-section h2 { margin: 0; font-size: 1.5rem; }
     .card-header-section .subtitle { margin: 0.25rem 0 0; opacity: 0.85; font-size: 0.9rem; }
     .btn-back { background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; }
@@ -63,10 +63,10 @@ import { GroupService } from '@proxy/groups';
     .field label { font-weight: 600; margin-bottom: 0.5rem; color: #333; }
     .field .required { color: #dc3545; }
     .field input { padding: 0.75rem; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 1rem; }
-    .field input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+    .field input:focus { outline: none; border-color: var(--ngx-primary); box-shadow: 0 0 0 3px rgba(51, 102, 255,0.15); }
     .error-msg { color: #dc3545; background: #fff5f5; padding: 0.75rem; border-radius: 8px; border: 1px solid #ffe0e0; }
     .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
-    .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    .btn-primary { background: var(--ngx-hero-gradient); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-outline { background: transparent; border: 1px solid #ccc; padding: 0.75rem 1.5rem; border-radius: 10px; cursor: pointer; }
   `],

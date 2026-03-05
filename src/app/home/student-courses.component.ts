@@ -92,9 +92,9 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
 
     .page-header {
       display: flex; align-items: center; gap: 1rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       color: white; padding: 1.5rem; border-radius: 14px;
-      box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+      box-shadow: 0 4px 12px rgba(51, 102, 255,0.3);
     }
     .page-header h1 { font-size: 1.5rem; font-weight: 700; color: white; }
     .page-header .subtitle { color: rgba(255,255,255,0.85); font-size: 0.9rem; }
@@ -164,7 +164,7 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
     .pending-badge { background: #fffbeb; color: #d97706; }
 
     .btn-enroll {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-hero-gradient);
       color: white; border: none; border-radius: 8px;
       padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 600;
       cursor: pointer; display: flex; align-items: center; gap: 0.35rem;

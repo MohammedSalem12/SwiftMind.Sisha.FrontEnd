@@ -68,7 +68,7 @@ import { lastValueFrom } from 'rxjs';
       transition: all 0.15s; position: relative;
     }
     .notif-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .notif-item.unread { border-right: 3px solid #667eea; }
+    .notif-item.unread { border-right: 3px solid var(--ngx-primary); }
 
     .notif-icon {
       width: 40px; height: 40px; border-radius: 50%;
@@ -88,7 +88,7 @@ import { lastValueFrom } from 'rxjs';
 
     .new-dot {
       width: 8px; height: 8px; border-radius: 50%;
-      background: #667eea; flex-shrink: 0; margin-top: 4px;
+      background: var(--ngx-primary); flex-shrink: 0; margin-top: 4px;
     }
   `]
 })

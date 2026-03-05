@@ -108,11 +108,11 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
     }
 
     .nav-item.active {
-      color: #667eea;
+      color: var(--ngx-primary);
     }
 
     .nav-item.active .nav-icon {
-      background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+      background: linear-gradient(135deg, #3366ff20 0%, #1a45cc20 100%);
     }
 
     .nav-icon {
@@ -131,7 +131,7 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
     }
 
     .nav-item.active .nav-icon i {
-      color: #667eea;
+      color: var(--ngx-primary);
     }
 
     .badge {
@@ -244,7 +244,7 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #667eea;
+      color: var(--ngx-primary);
       font-size: 1rem;
     }
 
