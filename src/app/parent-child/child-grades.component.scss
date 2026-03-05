@@ -1,0 +1,144 @@
+$purple: #667eea; $purple-dark: #764ba2;
+$green: #10b981; $orange: #f59e0b; $blue: #3b82f6; $red: #ef4444;
+$bg: #f0f2f5; $radius: 14px; $shadow: 0 2px 12px rgba(0,0,0,0.07);
+
+.child-page { min-height: 100vh; background: $bg; direction: rtl; }
+
+// ── Hero ──────────────────────────────────────────────────
+.child-hero {
+  background: linear-gradient(135deg, $purple 0%, $purple-dark 100%);
+  padding: 1.5rem 1.25rem 2rem;
+  color: white;
+  display: flex; align-items: center; gap: 1rem;
+  position: relative;
+
+  .btn-back {
+    background: rgba(255,255,255,0.2); border: none; color: white;
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; cursor: pointer; flex-shrink: 0;
+    &:hover { background: rgba(255,255,255,0.3); }
+  }
+  .child-hero-avatar {
+    width: 52px; height: 52px; flex-shrink: 0;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 700;
+  }
+  .child-hero-info {
+    h1 { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.2rem; }
+    p  { margin: 0; opacity: 0.85; font-size: 0.85rem; }
+  }
+}
+
+// ── Tab nav ───────────────────────────────────────────────
+.tab-nav {
+  display: flex; background: white;
+  border-bottom: 2px solid #e5e7eb;
+  position: sticky; top: 0; z-index: 10;
+  .tab-btn {
+    flex: 1; border: none; background: none;
+    padding: 0.85rem 0.5rem; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    color: #6b7280; font-size: 0.72rem; font-weight: 600;
+    i { font-size: 1rem; }
+    &.active { color: $purple; border-bottom: 2px solid $purple; margin-bottom: -2px; }
+  }
+}
+
+// ── Body ─────────────────────────────────────────────────
+.page-body { padding: 1rem; max-width: 900px; margin: 0 auto; }
+
+// ── States ───────────────────────────────────────────────
+.loading-state, .error-state {
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+  padding: 3rem 1rem; color: #6b7280; font-size: 0.9rem; text-align: center;
+  i { font-size: 2rem; }
+}
+.error-state i { color: $red; }
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #e5e7eb; border-top-color: $purple;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Stats row ─────────────────────────────────────────────
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;
+  margin-bottom: 1rem;
+  @media (max-width: 600px) { grid-template-columns: repeat(2, 1fr); }
+}
+.stat-card {
+  background: white; border-radius: $radius; box-shadow: $shadow;
+  padding: 0.9rem; display: flex; align-items: center; gap: 0.7rem;
+  &::before { content:''; width: 4px; align-self: stretch; border-radius: 4px; }
+  &.stat-purple::before { background: $purple; }
+  &.stat-green::before  { background: $green; }
+  &.stat-orange::before { background: $orange; }
+  &.stat-blue::before   { background: $blue; }
+  &.stat-red::before    { background: $red; }
+  .stat-icon {
+    width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: white;
+  }
+  &.stat-purple .stat-icon { background: linear-gradient(135deg,$purple,$purple-dark); }
+  &.stat-green  .stat-icon { background: linear-gradient(135deg,$green,#059669); }
+  &.stat-orange .stat-icon { background: linear-gradient(135deg,$orange,#d97706); }
+  &.stat-blue   .stat-icon { background: linear-gradient(135deg,$blue,#1d4ed8); }
+  &.stat-red    .stat-icon { background: linear-gradient(135deg,$red,#b91c1c); }
+  .stat-num   { font-size: 1.3rem; font-weight: 800; color: #1a202c; }
+  .stat-label { font-size: 0.68rem; color: #6b7280; }
+}
+
+// ── Empty ─────────────────────────────────────────────────
+.empty-state {
+  background: white; border-radius: $radius; box-shadow: $shadow;
+  padding: 3rem; text-align: center; color: #9ca3af;
+  i { font-size: 3rem; display: block; margin-bottom: 0.75rem; }
+  p { margin: 0; font-size: 0.9rem; }
+}
+
+// ── Grade cards ───────────────────────────────────────────
+.grades-list { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.grade-card {
+  background: white; border-radius: $radius; box-shadow: $shadow;
+  padding: 0.9rem 1rem; display: flex; align-items: center; gap: 1rem;
+}
+
+.grade-card-left {
+  flex-shrink: 0;
+  .grade-badge {
+    border-radius: 8px; padding: 0.35rem 0.65rem;
+    font-size: 0.85rem; font-weight: 700; white-space: nowrap;
+    &.badge-excellent  { background: #dcfce7; color: #15803d; }
+    &.badge-very-good  { background: #d1fae5; color: #065f46; }
+    &.badge-good       { background: #dbeafe; color: #1d4ed8; }
+    &.badge-acceptable { background: #fef9c3; color: #854d0e; }
+    &.badge-failed     { background: #fee2e2; color: #dc2626; }
+  }
+}
+
+.grade-card-mid {
+  flex: 1; min-width: 0;
+  .grade-exam-name { font-weight: 700; color: #1a202c; font-size: 0.92rem; }
+  .grade-course    { color: #6b7280; font-size: 0.78rem; margin-top: 0.15rem; }
+  .grade-code      { color: #9ca3af; font-size: 0.7rem; }
+}
+
+.grade-card-right {
+  flex-shrink: 0; text-align: center;
+  .pct-ring {
+    width: 50px; height: 50px; border-radius: 50%; border: 3px solid;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 800;
+    &.ring-excellent  { border-color: #16a34a; color: #15803d; }
+    &.ring-very-good  { border-color: #059669; color: #065f46; }
+    &.ring-good       { border-color: #2563eb; color: #1d4ed8; }
+    &.ring-acceptable { border-color: #d97706; color: #854d0e; }
+    &.ring-failed     { border-color: #dc2626; color: #dc2626; }
+  }
+  .grade-label { font-size: 0.65rem; color: #6b7280; margin-top: 0.2rem; }
+}

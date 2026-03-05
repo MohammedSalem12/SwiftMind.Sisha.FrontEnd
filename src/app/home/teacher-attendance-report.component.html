@@ -1,0 +1,120 @@
+<div class="report-page" dir="rtl">
+
+  <!-- Hero -->
+  <div class="report-hero">
+    <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
+    <div class="report-hero-icon"><i class="fas fa-calendar-check"></i></div>
+    <div class="report-hero-info">
+      <h1>تقرير الحضور</h1>
+      <p>متابعة حضور الطلاب شهرياً</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label><i class="fas fa-book me-1"></i>المقرر</label>
+      <div *ngIf="coursesLoading()" class="loading-inline"><div class="spinner-sm"></div></div>
+      <select *ngIf="!coursesLoading()"
+              [ngModel]="selectedCourseId()"
+              (ngModelChange)="onCourseChange($event)"
+              class="filter-select">
+        <option value="">-- اختر مقرراً --</option>
+        <option *ngFor="let c of courses()" [value]="c.id">{{ courseName(c) }}</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label><i class="fas fa-calendar-alt me-1"></i>الشهر</label>
+      <input type="month"
+             [ngModel]="selectedMonth()"
+             (ngModelChange)="selectedMonth.set($event)"
+             (change)="onMonthChange()"
+             class="filter-input" />
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading()">
+      <div class="spinner"></div>
+      <span>جاري تحميل التقرير...</span>
+    </div>
+
+    <!-- Error -->
+    <div class="error-state" *ngIf="error() && !loading()">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error() }}</p>
+    </div>
+
+    <!-- Prompt -->
+    <div class="prompt-state" *ngIf="!loading() && !error() && !selectedCourseId()">
+      <i class="fas fa-hand-point-up"></i>
+      <p>اختر مقرراً وشهراً لعرض تقرير الحضور</p>
+    </div>
+
+    <ng-container *ngIf="!loading() && !error() && selectedCourseId()">
+
+      <!-- Stats row -->
+      <div class="stats-row" *ngIf="records().length > 0">
+        <div class="stat-card stat-purple">
+          <div class="stat-icon"><i class="fas fa-users"></i></div>
+          <div><div class="stat-num">{{ totalStudents() }}</div><div class="stat-label">إجمالي الطلاب</div></div>
+        </div>
+        <div class="stat-card" [class.stat-green]="avgRate() >= 90" [class.stat-orange]="avgRate() >= 75 && avgRate() < 90" [class.stat-red]="avgRate() < 75">
+          <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+          <div><div class="stat-num">{{ avgRate() }}%</div><div class="stat-label">معدل الحضور</div></div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><i class="fas fa-star"></i></div>
+          <div><div class="stat-num">{{ excellentCount() }}</div><div class="stat-label">حضور ممتاز</div></div>
+        </div>
+        <div class="stat-card" [class.stat-red]="atRiskCount() > 0" [class.stat-blue]="atRiskCount() === 0">
+          <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+          <div><div class="stat-num">{{ atRiskCount() }}</div><div class="stat-label">يحتاج متابعة</div></div>
+        </div>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" *ngIf="records().length === 0">
+        <i class="fas fa-calendar-times"></i>
+        <p>لا توجد بيانات حضور لهذا الشهر والمقرر</p>
+      </div>
+
+      <!-- Students table -->
+      <div class="report-card" *ngIf="records().length > 0">
+        <div class="report-card-header">
+          <span>تفاصيل الحضور</span>
+          <span class="record-count">{{ records().length }} طالب</span>
+        </div>
+        <div class="student-row" *ngFor="let r of sortedRecords(); let i = index">
+          <div class="rank">{{ i + 1 }}</div>
+          <div class="student-info">
+            <div class="student-avatar">{{ (r.studentNameAr || r.displayName || '?').charAt(0) }}</div>
+            <div>
+              <div class="student-name">{{ r.studentNameAr || r.displayName }}</div>
+              <div class="student-code" *ngIf="r.studentCode">{{ r.studentCode }}</div>
+            </div>
+          </div>
+          <div class="attendance-stats">
+            <span class="stat-chip chip-present"><i class="fas fa-check"></i>{{ r.attendedDays }}</span>
+            <span class="stat-chip chip-absent" *ngIf="r.absentDays > 0"><i class="fas fa-times"></i>{{ r.absentDays }}</span>
+            <span class="stat-chip chip-total"><i class="fas fa-calendar"></i>{{ r.totalDaysInMonth }}</span>
+          </div>
+          <div class="pct-col">
+            <div class="pct-ring" [class]="'ring-' + rateClass(r.attendancePercentage)">
+              {{ r.attendancePercentage | number:'1.0-0' }}%
+            </div>
+          </div>
+          <div class="bar-col">
+            <div class="mini-bar-track">
+              <div class="mini-bar-fill" [class]="'fill-' + rateClass(r.attendancePercentage)"
+                   [style.width.%]="r.attendancePercentage"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

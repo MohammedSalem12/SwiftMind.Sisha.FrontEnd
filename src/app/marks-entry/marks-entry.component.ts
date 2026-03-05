@@ -1,7 +1,7 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LocalizationPipe, LocalizationService } from '@abp/ng.core';
 import { AttendanceService } from '@proxy/attendances';
 import { CurrentUserInfoService } from '@proxy/common';
@@ -48,6 +48,7 @@ export class MarksEntryComponent implements OnInit {
   private readonly groupSvc           = inject(GroupService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
   private readonly route              = inject(ActivatedRoute);
+  private readonly router             = inject(Router);
   private readonly location           = inject(Location);
   private readonly localization       = inject(LocalizationService);
 
@@ -450,6 +451,11 @@ export class MarksEntryComponent implements OnInit {
   }
 
   trackByEnrollment = (_: number, item: StudentGradeEntry) => item.enrollmentId;
+
+  viewReport(): void {
+    const examId = this.selectedExamId();
+    if (examId) this.router.navigate(['/marks-entry/report', examId]);
+  }
 
   goBack(): void { this.location.back(); }
 

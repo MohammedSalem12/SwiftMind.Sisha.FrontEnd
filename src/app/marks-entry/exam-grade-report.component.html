@@ -1,0 +1,127 @@
+<div class="report-page" dir="rtl">
+
+  <!-- Hero -->
+  <div class="report-hero">
+    <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
+    <div class="report-hero-icon"><i class="fas fa-chart-bar"></i></div>
+    <div class="report-hero-info">
+      <h1>تقرير الدرجات</h1>
+      <p *ngIf="examName()">{{ examName() }}</p>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading()">
+      <div class="spinner"></div>
+      <span>جاري تحميل التقرير...</span>
+    </div>
+
+    <!-- Error -->
+    <div class="error-state" *ngIf="error() && !loading()">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error() }}</p>
+    </div>
+
+    <ng-container *ngIf="!loading() && !error()">
+
+      <!-- Empty -->
+      <div class="empty-state" *ngIf="entries().length === 0">
+        <i class="fas fa-clipboard-check"></i>
+        <p>لا توجد درجات مسجلة لهذا الاختبار بعد</p>
+      </div>
+
+      <ng-container *ngIf="entries().length > 0">
+
+        <!-- Key stats -->
+        <div class="stats-row">
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div><div class="stat-num">{{ gradedCount() }}</div><div class="stat-label">طالب مقيَّم</div></div>
+          </div>
+          <div class="stat-card" [class.stat-green]="avgPct() >= 75" [class.stat-orange]="avgPct() >= 50 && avgPct() < 75" [class.stat-red]="avgPct() < 50">
+            <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+            <div><div class="stat-num">{{ avgPct() }}%</div><div class="stat-label">المعدل</div></div>
+          </div>
+          <div class="stat-card stat-green">
+            <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+            <div><div class="stat-num">{{ highestPct() }}%</div><div class="stat-label">أعلى درجة</div></div>
+          </div>
+          <div class="stat-card" [class.stat-blue]="passRate() === 100" [class.stat-orange]="passRate() >= 70 && passRate() < 100" [class.stat-red]="passRate() < 70">
+            <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+            <div><div class="stat-num">{{ passCount() }}/{{ gradedCount() }}</div><div class="stat-label">النجاح ({{ passRate() }}%)</div></div>
+          </div>
+        </div>
+
+        <!-- Distribution -->
+        <div class="dist-card">
+          <div class="dist-header">توزيع الدرجات</div>
+          <div class="dist-row">
+            <span class="dist-label excellent-text">ممتاز (≥90%)</span>
+            <div class="dist-bar-track">
+              <div class="dist-bar-fill fill-excellent" [style.width.%]="barWidth(distribution().excellent)"></div>
+            </div>
+            <span class="dist-count">{{ distribution().excellent }}</span>
+          </div>
+          <div class="dist-row">
+            <span class="dist-label very-good-text">جيد جداً (75-89%)</span>
+            <div class="dist-bar-track">
+              <div class="dist-bar-fill fill-very-good" [style.width.%]="barWidth(distribution().veryGood)"></div>
+            </div>
+            <span class="dist-count">{{ distribution().veryGood }}</span>
+          </div>
+          <div class="dist-row">
+            <span class="dist-label good-text">جيد (60-74%)</span>
+            <div class="dist-bar-track">
+              <div class="dist-bar-fill fill-good" [style.width.%]="barWidth(distribution().good)"></div>
+            </div>
+            <span class="dist-count">{{ distribution().good }}</span>
+          </div>
+          <div class="dist-row">
+            <span class="dist-label acceptable-text">مقبول (50-59%)</span>
+            <div class="dist-bar-track">
+              <div class="dist-bar-fill fill-acceptable" [style.width.%]="barWidth(distribution().acceptable)"></div>
+            </div>
+            <span class="dist-count">{{ distribution().acceptable }}</span>
+          </div>
+          <div class="dist-row">
+            <span class="dist-label failed-text">راسب (&lt;50%)</span>
+            <div class="dist-bar-track">
+              <div class="dist-bar-fill fill-failed" [style.width.%]="barWidth(distribution().failed)"></div>
+            </div>
+            <span class="dist-count">{{ distribution().failed }}</span>
+          </div>
+        </div>
+
+        <!-- Ranked list -->
+        <div class="report-card">
+          <div class="report-card-header">
+            <span>ترتيب الطلاب</span>
+            <span class="max-grade-chip">من {{ maxGrade() }}</span>
+          </div>
+          <div class="student-row" *ngFor="let e of ranked(); let i = index">
+            <div class="rank" [class.rank-gold]="i === 0" [class.rank-silver]="i === 1" [class.rank-bronze]="i === 2">
+              {{ i + 1 }}
+            </div>
+            <div class="student-info">
+              <div class="student-avatar">{{ e.studentName.charAt(0) }}</div>
+              <div class="student-name">{{ e.studentName }}</div>
+            </div>
+            <div class="grade-badge" [class]="'badge-' + e.gradeClass">
+              {{ e.grade }}/{{ e.maxGrade }}
+            </div>
+            <div class="pct-ring" [class]="'ring-' + e.gradeClass">{{ e.pct }}%</div>
+            <div class="grade-label-col">{{ e.gradeLabel }}</div>
+            <div class="bar-col">
+              <div class="mini-bar-track">
+                <div class="mini-bar-fill" [class]="'fill-' + e.gradeClass" [style.width.%]="e.pct"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

@@ -203,6 +203,9 @@
       <div class="exam-badge" *ngIf="selectedExamName()">
         <i class="fas fa-file-alt me-1"></i>{{ selectedExamName() }}
       </div>
+      <button class="btn-view-report" *ngIf="gradedCount() > 0" (click)="viewReport()">
+        <i class="fas fa-chart-bar me-1"></i>تقرير الصف
+      </button>
     </div>
 
     <!-- Actions bar -->

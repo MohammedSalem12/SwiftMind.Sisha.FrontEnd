@@ -1,0 +1,132 @@
+<div class="child-page" dir="rtl">
+
+  <!-- Hero Header -->
+  <div class="child-hero">
+    <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
+    <div class="child-hero-avatar">{{ childName().charAt(0) || '؟' }}</div>
+    <div class="child-hero-info">
+      <h1>حضور {{ childName() }}</h1>
+      <p>{{ childCode() }}<span *ngIf="childGrade()"> — {{ childGrade() }}</span></p>
+    </div>
+  </div>
+
+  <!-- Tab Nav -->
+  <div class="tab-nav">
+    <button class="tab-btn" (click)="navigateTo('grades')">
+      <i class="fas fa-chart-line"></i><span>الدرجات</span>
+    </button>
+    <button class="tab-btn active" (click)="navigateTo('attendance')">
+      <i class="fas fa-calendar-check"></i><span>الحضور</span>
+    </button>
+    <button class="tab-btn" (click)="navigateTo('courses')">
+      <i class="fas fa-book"></i><span>المقررات</span>
+    </button>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Month picker -->
+    <div class="month-filter">
+      <label><i class="fas fa-calendar-alt me-1"></i>الشهر</label>
+      <input type="month" [ngModel]="selectedMonth()" (ngModelChange)="selectedMonth.set($event)" (change)="loadAttendance()" />
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading()">
+      <div class="spinner"></div>
+      <span>جاري تحميل سجل الحضور...</span>
+    </div>
+
+    <!-- Error -->
+    <div class="error-state" *ngIf="error() && !loading()">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error() }}</p>
+    </div>
+
+    <ng-container *ngIf="!loading() && !error()">
+
+      <!-- Summary Cards -->
+      <div class="stats-row">
+        <div class="stat-card stat-purple">
+          <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ totalDays() }}</div>
+            <div class="stat-label">إجمالي الأيام</div>
+          </div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ attendedDays() }}</div>
+            <div class="stat-label">أيام الحضور</div>
+          </div>
+        </div>
+        <div class="stat-card" [class.stat-red]="absentDays() > 0" [class.stat-blue]="absentDays() === 0">
+          <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ absentDays() }}</div>
+            <div class="stat-label">أيام الغياب</div>
+          </div>
+        </div>
+        <div class="stat-card" [class.stat-green]="attendanceRate() >= 90"
+             [class.stat-orange]="attendanceRate() >= 75 && attendanceRate() < 90"
+             [class.stat-red]="attendanceRate() < 75">
+          <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ attendanceRate() }}%</div>
+            <div class="stat-label">نسبة الحضور</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="rate-bar-card" *ngIf="totalDays() > 0">
+        <div class="rate-bar-header">
+          <span>نسبة الحضور الإجمالية</span>
+          <span class="rate-value" [class]="'rate-' + rateClass(attendanceRate())">
+            {{ attendanceRate() }}%
+            <span *ngIf="attendanceRate() >= 90"> — ممتاز</span>
+            <span *ngIf="attendanceRate() >= 75 && attendanceRate() < 90"> — مقبول</span>
+            <span *ngIf="attendanceRate() < 75"> — يحتاج متابعة</span>
+          </span>
+        </div>
+        <div class="rate-bar-track">
+          <div class="rate-bar-fill" [class]="'fill-' + rateClass(attendanceRate())"
+               [style.width.%]="attendanceRate()"></div>
+        </div>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" *ngIf="records().length === 0">
+        <i class="fas fa-calendar-times"></i>
+        <p>لا توجد بيانات حضور لهذا الشهر</p>
+      </div>
+
+      <!-- Per-course table -->
+      <div class="courses-attendance" *ngIf="records().length > 0">
+        <h3>سجل الحضور حسب المقرر</h3>
+        <div class="course-row" *ngFor="let r of records()">
+          <div class="course-row-header">
+            <div class="course-info">
+              <span class="course-name">{{ r.courseNameAr || r.courseNameEn }}</span>
+              <span class="course-code" *ngIf="r.courseCode">{{ r.courseCode }}</span>
+            </div>
+            <div class="course-pct" [class]="'pct-' + rateClass(r.attendancePercentage)">
+              {{ r.attendancePercentage | number:'1.0-0' }}%
+            </div>
+          </div>
+          <div class="course-row-stats">
+            <span class="cs attended"><i class="fas fa-check"></i>{{ r.attendedDays }} حضور</span>
+            <span class="cs absent"   *ngIf="r.absentDays > 0"><i class="fas fa-times"></i>{{ r.absentDays }} غياب</span>
+            <span class="cs total"><i class="fas fa-calendar"></i>{{ r.totalDaysInMonth }} يوم</span>
+          </div>
+          <div class="mini-bar-track">
+            <div class="mini-bar-fill" [class]="'fill-' + rateClass(r.attendancePercentage)"
+                 [style.width.%]="r.attendancePercentage"></div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

@@ -1,0 +1,105 @@
+<div class="child-page" dir="rtl">
+
+  <!-- Hero Header -->
+  <div class="child-hero">
+    <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
+    <div class="child-hero-avatar">{{ childName().charAt(0) || '؟' }}</div>
+    <div class="child-hero-info">
+      <h1>درجات {{ childName() }}</h1>
+      <p>{{ childCode() }}<span *ngIf="childGrade()"> — {{ childGrade() }}</span></p>
+    </div>
+  </div>
+
+  <!-- Tab Nav -->
+  <div class="tab-nav">
+    <button class="tab-btn" (click)="navigateTo('grades')" [class.active]="true">
+      <i class="fas fa-chart-line"></i><span>الدرجات</span>
+    </button>
+    <button class="tab-btn" (click)="navigateTo('attendance')">
+      <i class="fas fa-calendar-check"></i><span>الحضور</span>
+    </button>
+    <button class="tab-btn" (click)="navigateTo('courses')">
+      <i class="fas fa-book"></i><span>المقررات</span>
+    </button>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading()">
+      <div class="spinner"></div>
+      <span>جاري تحميل الدرجات...</span>
+    </div>
+
+    <!-- Error -->
+    <div class="error-state" *ngIf="error() && !loading()">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error() }}</p>
+    </div>
+
+    <ng-container *ngIf="!loading() && !error()">
+
+      <!-- Summary Cards -->
+      <div class="stats-row">
+        <div class="stat-card stat-purple">
+          <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ totalExams() }}</div>
+            <div class="stat-label">عدد الاختبارات</div>
+          </div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ averageGrade() | number:'1.0-0' }}%</div>
+            <div class="stat-label">المعدل العام</div>
+          </div>
+        </div>
+        <div class="stat-card stat-orange">
+          <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ highestGrade() | number:'1.0-0' }}%</div>
+            <div class="stat-label">أعلى درجة</div>
+          </div>
+        </div>
+        <div class="stat-card" [class.stat-blue]="passCount() === totalExams()"
+             [class.stat-red]="passCount() < totalExams()">
+          <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ passCount() }}/{{ totalExams() }}</div>
+            <div class="stat-label">النجاح</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" *ngIf="grades().length === 0">
+        <i class="fas fa-clipboard-check"></i>
+        <p>لم يتم تسجيل أي درجات بعد</p>
+      </div>
+
+      <!-- Grades list -->
+      <div class="grades-list" *ngIf="grades().length > 0">
+        <div class="grade-card" *ngFor="let g of grades()">
+          <div class="grade-card-left">
+            <div class="grade-badge" [class]="'badge-' + gradeClass(getPct(g))">
+              {{ g.grade }}/{{ g.maxGrade }}
+            </div>
+          </div>
+          <div class="grade-card-mid">
+            <div class="grade-exam-name">{{ g.examName || 'اختبار' }}</div>
+            <div class="grade-course">{{ g.courseName }}</div>
+            <div class="grade-code" *ngIf="g.examCode">{{ g.examCode }}</div>
+          </div>
+          <div class="grade-card-right">
+            <div class="pct-ring" [class]="'ring-' + gradeClass(getPct(g))">
+              {{ getPct(g) }}%
+            </div>
+            <div class="grade-label">{{ gradeLabel(getPct(g)) }}</div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

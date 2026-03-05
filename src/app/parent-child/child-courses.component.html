@@ -1,0 +1,85 @@
+<div class="child-page" dir="rtl">
+
+  <!-- Hero Header -->
+  <div class="child-hero">
+    <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
+    <div class="child-hero-avatar">{{ childName().charAt(0) || '؟' }}</div>
+    <div class="child-hero-info">
+      <h1>مقررات {{ childName() }}</h1>
+      <p>{{ childCode() }}<span *ngIf="childGrade()"> — {{ childGrade() }}</span></p>
+    </div>
+  </div>
+
+  <!-- Tab Nav -->
+  <div class="tab-nav">
+    <button class="tab-btn" (click)="navigateTo('grades')">
+      <i class="fas fa-chart-line"></i><span>الدرجات</span>
+    </button>
+    <button class="tab-btn" (click)="navigateTo('attendance')">
+      <i class="fas fa-calendar-check"></i><span>الحضور</span>
+    </button>
+    <button class="tab-btn active" (click)="navigateTo('courses')">
+      <i class="fas fa-book"></i><span>المقررات</span>
+    </button>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading()">
+      <div class="spinner"></div>
+      <span>جاري تحميل المقررات...</span>
+    </div>
+
+    <!-- Error -->
+    <div class="error-state" *ngIf="error() && !loading()">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error() }}</p>
+    </div>
+
+    <ng-container *ngIf="!loading() && !error()">
+
+      <!-- Summary -->
+      <div class="summary-bar">
+        <div class="summary-pill">
+          <i class="fas fa-book"></i>
+          <span>{{ courses().length }} مقرر مسجل</span>
+        </div>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" *ngIf="courses().length === 0">
+        <i class="fas fa-book-open"></i>
+        <p>لا توجد مقررات مسجلة بعد</p>
+      </div>
+
+      <!-- Courses list -->
+      <div class="courses-list" *ngIf="courses().length > 0">
+        <div class="course-card" *ngFor="let c of courses()">
+          <div class="course-card-accent" [class]="'accent-' + rateClass(c.averagePct)"></div>
+          <div class="course-card-body">
+            <div class="course-name">{{ c.courseName }}</div>
+            <div class="course-code" *ngIf="c.courseCode">{{ c.courseCode }}</div>
+            <div class="course-stats">
+              <span class="cs-item">
+                <i class="fas fa-clipboard-list"></i>{{ c.examCount }} اختبار
+              </span>
+              <span class="cs-item" *ngIf="c.examCount > 0" [class]="'avg-' + rateClass(c.averagePct)">
+                <i class="fas fa-percentage"></i>معدل {{ c.averagePct }}%
+              </span>
+            </div>
+            <div class="course-actions">
+              <button class="action-btn btn-grades" (click)="navigateTo('grades')">
+                <i class="fas fa-chart-line"></i>الدرجات
+              </button>
+              <button class="action-btn btn-attendance" (click)="navigateTo('attendance')">
+                <i class="fas fa-calendar-check"></i>الحضور
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

@@ -1,0 +1,116 @@
+$purple: #667eea; $purple-dark: #764ba2;
+$green: #10b981; $orange: #f59e0b; $red: #ef4444;
+$bg: #f0f2f5; $radius: 14px; $shadow: 0 2px 12px rgba(0,0,0,0.07);
+
+.child-page { min-height: 100vh; background: $bg; direction: rtl; }
+
+.child-hero {
+  background: linear-gradient(135deg, $purple 0%, $purple-dark 100%);
+  padding: 1.5rem 1.25rem 2rem; color: white;
+  display: flex; align-items: center; gap: 1rem;
+  .btn-back {
+    background: rgba(255,255,255,0.2); border: none; color: white;
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; cursor: pointer; flex-shrink: 0;
+    &:hover { background: rgba(255,255,255,0.3); }
+  }
+  .child-hero-avatar {
+    width: 52px; height: 52px; flex-shrink: 0;
+    background: rgba(255,255,255,0.25); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 700;
+  }
+  .child-hero-info {
+    h1 { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.2rem; }
+    p  { margin: 0; opacity: 0.85; font-size: 0.85rem; }
+  }
+}
+
+.tab-nav {
+  display: flex; background: white; border-bottom: 2px solid #e5e7eb;
+  position: sticky; top: 0; z-index: 10;
+  .tab-btn {
+    flex: 1; border: none; background: none;
+    padding: 0.85rem 0.5rem; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    color: #6b7280; font-size: 0.72rem; font-weight: 600;
+    i { font-size: 1rem; }
+    &.active { color: $purple; border-bottom: 2px solid $purple; margin-bottom: -2px; }
+  }
+}
+
+.page-body { padding: 1rem; max-width: 900px; margin: 0 auto; }
+
+.loading-state, .error-state {
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+  padding: 3rem 1rem; color: #6b7280; font-size: 0.9rem; text-align: center;
+  i { font-size: 2rem; }
+}
+.error-state i { color: $red; }
+.spinner {
+  width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: $purple;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.summary-bar {
+  display: flex; margin-bottom: 0.875rem;
+  .summary-pill {
+    background: white; border-radius: 20px; box-shadow: $shadow;
+    padding: 0.4rem 1rem; display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.82rem; font-weight: 600; color: $purple;
+    i { font-size: 0.82rem; }
+  }
+}
+
+.empty-state {
+  background: white; border-radius: $radius; box-shadow: $shadow;
+  padding: 3rem; text-align: center; color: #9ca3af;
+  i { font-size: 3rem; display: block; margin-bottom: 0.75rem; }
+  p { margin: 0; font-size: 0.9rem; }
+}
+
+.courses-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.course-card {
+  background: white; border-radius: $radius; box-shadow: $shadow;
+  display: flex; overflow: hidden;
+  .course-card-accent {
+    width: 5px; flex-shrink: 0;
+    &.accent-excellent { background: $green; }
+    &.accent-good      { background: $orange; }
+    &.accent-poor      { background: $red; }
+  }
+  .course-card-body {
+    flex: 1; padding: 0.9rem 1rem;
+  }
+  .course-name {
+    font-weight: 700; color: #1a202c; font-size: 0.95rem; margin-bottom: 0.15rem;
+  }
+  .course-code {
+    color: #9ca3af; font-size: 0.72rem; margin-bottom: 0.6rem;
+  }
+  .course-stats {
+    display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;
+    .cs-item {
+      font-size: 0.78rem; color: #6b7280;
+      display: flex; align-items: center; gap: 0.3rem;
+      i { font-size: 0.72rem; }
+    }
+    .avg-excellent { color: $green; font-weight: 600; }
+    .avg-good      { color: $orange; font-weight: 600; }
+    .avg-poor      { color: $red; font-weight: 600; }
+  }
+  .course-actions {
+    display: flex; gap: 0.5rem;
+    .action-btn {
+      flex: 1; border: none; border-radius: 8px; padding: 0.4rem 0.5rem;
+      font-size: 0.75rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.35rem;
+      i { font-size: 0.72rem; }
+    }
+    .btn-grades    { background: #ede9fe; color: $purple; &:hover { background: #ddd6fe; } }
+    .btn-attendance { background: #dcfce7; color: #15803d; &:hover { background: #bbf7d0; } }
+  }
+}

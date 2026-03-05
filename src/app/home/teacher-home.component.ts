@@ -145,8 +145,9 @@ export class TeacherHomeComponent implements OnInit {
     }
   }
 
-  goToMarksEntry(): void { this.router.navigate(['/marks-entry']); }
-  goToFeeds(): void       { this.router.navigate(['/feeds']); }
+  goToMarksEntry(): void        { this.router.navigate(['/marks-entry']); }
+  goToFeeds(): void              { this.router.navigate(['/feeds']); }
+  goToAttendanceReport(): void   { this.router.navigate(['/teacher/attendance-report']); }
 
   trackById = (_: number, item: CourseDto) => item.id;
 }

@@ -65,6 +65,12 @@ export const appRoutes: Routes = [
     canActivate: [roleGuard],
     data: { roles: ['TEACHER'] }
   },
+  {
+    path: 'teacher/attendance-report',
+    loadComponent: () => import('./home/teacher-attendance-report.component').then(m => m.TeacherAttendanceReportComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
+  },
   // Redirect ABP's default account/login to our custom login page
   { path: 'account/login', redirectTo: '/login', pathMatch: 'full' },
   {
