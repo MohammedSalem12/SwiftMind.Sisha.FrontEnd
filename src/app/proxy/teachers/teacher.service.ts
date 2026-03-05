@@ -1,4 +1,4 @@
-import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherDto, TeacherEnrollmentResultDto } from './models';
+import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherDashboardDto, TeacherDto, TeacherEnrollmentResultDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -41,6 +41,14 @@ export class TeacherService {
     this.restService.request<any, TeacherDto>({
       method: 'GET',
       url: `/api/app/teacher/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getDashboard = (teacherId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherDashboardDto>({
+      method: 'GET',
+      url: `/api/app/teacher/dashboard/${teacherId}`,
     },
     { apiName: this.apiName,...config });
   

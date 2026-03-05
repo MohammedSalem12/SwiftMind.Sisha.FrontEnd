@@ -1,0 +1,272 @@
+<div class="teacher-dashboard" dir="rtl">
+
+  <!-- Hero Header -->
+  <div class="hero-header">
+    <div class="hero-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1>{{ '::TeacherDashboard:Welcome' | abpLocalization }}</h1>
+        <p>{{ '::TeacherDashboard:Subtitle' | abpLocalization }}</p>
+      </div>
+      <div class="hero-avatar">
+        <i class="fas fa-chalkboard-teacher"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Skeleton -->
+  <div class="dashboard-body" *ngIf="loading()">
+    <div class="stats-grid">
+      <div class="stat-card skeleton" *ngFor="let i of [1,2,3,4,5]"></div>
+    </div>
+    <div class="loading-text">
+      <div class="spinner-inline"></div>
+      {{ '::TeacherDashboard:Loading' | abpLocalization }}
+    </div>
+  </div>
+
+  <!-- Main Dashboard Body -->
+  <div class="dashboard-body" *ngIf="!loading()">
+
+    <!-- Stats Row -->
+    <div class="stats-grid">
+      <div class="stat-card stat-purple" (click)="scrollTo('courses-section')">
+        <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+        <div class="stat-info">
+          <div class="stat-num">{{ dashboard()?.totalCourses ?? 0 }}</div>
+          <div class="stat-label">{{ '::TeacherDashboard:TotalCourses' | abpLocalization }}</div>
+        </div>
+      </div>
+      <div class="stat-card stat-blue" (click)="scrollTo('courses-section')">
+        <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+        <div class="stat-info">
+          <div class="stat-num">{{ dashboard()?.totalStudents ?? 0 }}</div>
+          <div class="stat-label">{{ '::TeacherDashboard:TotalStudents' | abpLocalization }}</div>
+        </div>
+      </div>
+      <div class="stat-card stat-green" (click)="goToMarksEntry()">
+        <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+        <div class="stat-info">
+          <div class="stat-num">{{ dashboard()?.totalExams ?? 0 }}</div>
+          <div class="stat-label">{{ '::TeacherDashboard:TotalExams' | abpLocalization }}</div>
+        </div>
+      </div>
+      <div class="stat-card stat-orange" [class.stat-alert]="(dashboard()?.absentTodayCount ?? 0) > 0"
+           (click)="goToAttendance()">
+        <div class="stat-icon"><i class="fas fa-user-times"></i></div>
+        <div class="stat-info">
+          <div class="stat-num">{{ dashboard()?.absentTodayCount ?? 0 }}</div>
+          <div class="stat-label">{{ '::TeacherDashboard:AbsentToday' | abpLocalization }}</div>
+        </div>
+        <div class="stat-badge" *ngIf="(dashboard()?.absentTodayCount ?? 0) > 0">!</div>
+      </div>
+      <div class="stat-card stat-pink" [class.stat-alert]="(dashboard()?.unreadNotifications ?? 0) > 0"
+           (click)="scrollTo('notif-section')">
+        <div class="stat-icon"><i class="fas fa-bell"></i></div>
+        <div class="stat-info">
+          <div class="stat-num">{{ dashboard()?.unreadNotifications ?? 0 }}</div>
+          <div class="stat-label">{{ '::TeacherDashboard:Unread' | abpLocalization }}</div>
+        </div>
+        <div class="stat-badge" *ngIf="(dashboard()?.unreadNotifications ?? 0) > 0">
+          {{ dashboard()!.unreadNotifications }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-column panels -->
+    <div class="panels-row">
+
+      <!-- Recent Absences -->
+      <div class="panel" id="absences-section">
+        <div class="panel-header panel-header-orange">
+          <div class="panel-title">
+            <i class="fas fa-user-times me-2"></i>
+            {{ '::TeacherDashboard:RecentAbsences' | abpLocalization }}
+          </div>
+          <span class="panel-subtitle">{{ '::TeacherDashboard:RecentAbsencesSubtitle' | abpLocalization }}</span>
+        </div>
+        <div class="panel-body">
+          <div class="empty-panel" *ngIf="!dashboard()?.recentAbsences?.length">
+            <i class="fas fa-check-circle text-success"></i>
+            <span>{{ '::TeacherDashboard:NoAbsences' | abpLocalization }}</span>
+          </div>
+          <div class="absence-list" *ngIf="dashboard()?.recentAbsences?.length">
+            <div class="absence-item" *ngFor="let a of dashboard()!.recentAbsences">
+              <div class="absence-avatar">{{ a.studentName?.charAt(0) ?? '?' }}</div>
+              <div class="absence-info">
+                <div class="absence-name">{{ a.studentName }}</div>
+                <div class="absence-meta">
+                  <span class="absence-code">{{ a.studentCode }}</span>
+                  <span class="absence-course">{{ a.courseName }}</span>
+                </div>
+              </div>
+              <button class="btn-attend" (click)="goToAttendance(a.courseId)"
+                      [title]="'::TeacherDashboard:Attendance' | abpLocalization">
+                <i class="fas fa-clipboard-list"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Notifications -->
+      <div class="panel" id="notif-section">
+        <div class="panel-header panel-header-purple">
+          <div class="panel-title">
+            <i class="fas fa-bell me-2"></i>
+            {{ '::TeacherDashboard:RecentNotifications' | abpLocalization }}
+          </div>
+          <span class="notif-badge" *ngIf="(dashboard()?.unreadNotifications ?? 0) > 0">
+            {{ dashboard()!.unreadNotifications }}
+          </span>
+        </div>
+        <div class="panel-body">
+          <div class="empty-panel" *ngIf="!dashboard()?.recentNotifications?.length">
+            <i class="fas fa-bell-slash"></i>
+            <span>{{ '::TeacherDashboard:NoNotifications' | abpLocalization }}</span>
+          </div>
+          <div class="notif-list" *ngIf="dashboard()?.recentNotifications?.length">
+            <div class="notif-item" *ngFor="let n of dashboard()!.recentNotifications"
+                 [class.notif-unread]="!n.isRead">
+              <div class="notif-dot" [class.dot-unread]="!n.isRead"></div>
+              <div class="notif-content">
+                <div class="notif-title">{{ n.title }}</div>
+                <div class="notif-msg">{{ n.message }}</div>
+                <div class="notif-time">{{ formatDate(n.createdAt) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Courses Section -->
+    <div class="section" id="courses-section">
+      <div class="section-header">
+        <div>
+          <h2>{{ '::TeacherDashboard:MyCourses' | abpLocalization }}</h2>
+          <p>{{ '::TeacherDashboard:MyCoursesSubtitle' | abpLocalization }}</p>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="courses().length === 0">
+        <i class="fas fa-book-open"></i>
+        <p>{{ '::TeacherDashboard:NoCourses' | abpLocalization }}</p>
+      </div>
+
+      <div class="courses-list">
+        <div
+          *ngFor="let course of courses(); trackBy: trackById"
+          class="course-block"
+          [class.expanded]="expandedCourseId() === course.id">
+
+          <div class="course-row">
+            <div class="course-icon">
+              <i class="fas fa-book-open"></i>
+            </div>
+            <div class="course-meta">
+              <div class="course-name">{{ course.nameAr || course.nameEn }}</div>
+              <div class="course-badges">
+                <span class="badge-code">{{ course.code }}</span>
+                <span class="badge-grade" *ngIf="course.gradeName">{{ course.gradeName }}</span>
+              </div>
+            </div>
+            <div class="course-actions">
+              <button class="btn-action btn-students"
+                      (click)="toggleStudents(course)"
+                      [class.active]="expandedCourseId() === course.id">
+                <i class="fas fa-users"></i>
+                <span *ngIf="expandedCourseId() !== course.id">
+                  {{ '::TeacherDashboard:Students' | abpLocalization }}
+                </span>
+                <span *ngIf="expandedCourseId() === course.id">
+                  {{ '::TeacherDashboard:HideStudents' | abpLocalization }}
+                </span>
+                <span class="count-pill" *ngIf="enrolledStudentsMap()[course.id!]?.length">
+                  {{ enrolledStudentsMap()[course.id!]?.length }}
+                </span>
+              </button>
+              <button class="btn-action btn-groups" (click)="goToGroups(course)">
+                <i class="fas fa-layer-group"></i>
+                <span>{{ '::TeacherDashboard:Groups' | abpLocalization }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Students Panel -->
+          <div class="students-panel" *ngIf="expandedCourseId() === course.id">
+
+            <div class="students-loading" *ngIf="loadingStudentsCourseId() === course.id">
+              <div class="spinner-sm"></div>
+              <span>{{ '::TeacherDashboard:LoadingStudents' | abpLocalization }}</span>
+            </div>
+
+            <ng-container *ngIf="loadingStudentsCourseId() !== course.id">
+              <div class="no-students" *ngIf="!enrolledStudentsMap()[course.id!]?.length">
+                <i class="fas fa-user-slash"></i>
+                <span>{{ '::TeacherDashboard:NoStudentsInCourse' | abpLocalization }}</span>
+              </div>
+
+              <div *ngIf="enrolledStudentsMap()[course.id!]?.length">
+                <div class="students-count-bar">
+                  <i class="fas fa-user-graduate me-1"></i>
+                  {{ '::TeacherDashboard:EnrolledStudents' | abpLocalization : (enrolledStudentsMap()[course.id!]?.length?.toString() ?? '0') }}
+                </div>
+                <div class="students-table-wrap">
+                  <table class="students-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>{{ '::TeacherDashboard:ColStudentName' | abpLocalization }}</th>
+                        <th>{{ '::TeacherDashboard:ColStudentCode' | abpLocalization }}</th>
+                        <th>{{ '::TeacherDashboard:ColEnrolledAt' | abpLocalization }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let s of enrolledStudentsMap()[course.id!]; let i = index">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ s.studentName }}</td>
+                        <td><span class="code-badge">{{ s.studentCode }}</span></td>
+                        <td>{{ formatDate(s.enrolledAt) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </ng-container>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section quick-actions-section">
+      <h3>{{ '::TeacherDashboard:QuickActions' | abpLocalization }}</h3>
+      <div class="quick-actions-grid">
+        <button class="qa-btn qa-attendance" (click)="goToAttendance()">
+          <i class="fas fa-clipboard-check"></i>
+          <span>{{ '::TeacherDashboard:Attendance' | abpLocalization }}</span>
+        </button>
+        <button class="qa-btn qa-marks" (click)="goToMarksEntry()">
+          <i class="fas fa-star-half-alt"></i>
+          <span>{{ '::TeacherDashboard:MarksEntry' | abpLocalization }}</span>
+        </button>
+        <button class="qa-btn qa-groups" (click)="goToGroups()">
+          <i class="fas fa-users"></i>
+          <span>{{ '::TeacherDashboard:Groups' | abpLocalization }}</span>
+        </button>
+        <button class="qa-btn qa-feeds" (click)="goToFeeds()">
+          <i class="fas fa-rss"></i>
+          <span>{{ '::TeacherDashboard:Feeds' | abpLocalization }}</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

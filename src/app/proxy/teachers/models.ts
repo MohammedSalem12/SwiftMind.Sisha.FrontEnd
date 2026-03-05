@@ -28,6 +28,32 @@ export interface TeacherAutocompleteDto {
   displayName?: string;
 }
 
+export interface TeacherDashboardAbsentDto {
+  studentName?: string;
+  studentCode?: string;
+  courseName?: string;
+  courseId?: string;
+}
+
+export interface TeacherDashboardDto {
+  totalCourses: number;
+  totalStudents: number;
+  totalExams: number;
+  absentTodayCount: number;
+  unreadNotifications: number;
+  recentAbsences: TeacherDashboardAbsentDto[];
+  recentNotifications: TeacherDashboardNotificationDto[];
+}
+
+export interface TeacherDashboardNotificationDto {
+  id?: string;
+  title?: string;
+  message?: string;
+  isRead: boolean;
+  createdAt?: string;
+  type: number;
+}
+
 export interface TeacherDto extends ExtensibleAuditedEntityDto<string> {
   firstName?: string;
   lastName?: string;

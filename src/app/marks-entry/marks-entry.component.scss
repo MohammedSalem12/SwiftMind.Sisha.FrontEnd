@@ -471,11 +471,11 @@
   font-weight: 700;
   white-space: nowrap;
 
-  &.grade-ممتاز   { background: #dcfce7; color: #15803d; }
-  &.grade-جيد\ جداً { background: #d1fae5; color: #065f46; }
-  &.grade-جيد     { background: #dbeafe; color: #1d4ed8; }
-  &.grade-مقبول   { background: #fef9c3; color: #854d0e; }
-  &.grade-راسب    { background: #fee2e2; color: #dc2626; }
+  &.grade-excellent  { background: #dcfce7; color: #15803d; }
+  &.grade-very-good  { background: #d1fae5; color: #065f46; }
+  &.grade-good       { background: #dbeafe; color: #1d4ed8; }
+  &.grade-acceptable { background: #fef9c3; color: #854d0e; }
+  &.grade-failed     { background: #fee2e2; color: #dc2626; }
 }
 
 .pct-text { opacity: 0.7; font-size: 0.73rem; }

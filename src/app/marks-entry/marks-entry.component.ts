@@ -2,6 +2,7 @@ import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { LocalizationPipe, LocalizationService } from '@abp/ng.core';
 import { AttendanceService } from '@proxy/attendances';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
@@ -34,32 +35,33 @@ interface GroupOption {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LocalizationPipe],
   templateUrl: './marks-entry.component.html',
   styleUrls: ['./marks-entry.component.scss'],
 })
 export class MarksEntryComponent implements OnInit {
-  private readonly attendanceSvc = inject(AttendanceService);
-  private readonly examSvc = inject(ExamService);
-  private readonly examGradeSvc = inject(ExamGradeService);
-  private readonly courseSvc = inject(CourseService);
-  private readonly teacherSvc = inject(TeacherService);
-  private readonly groupSvc = inject(GroupService);
+  private readonly attendanceSvc      = inject(AttendanceService);
+  private readonly examSvc            = inject(ExamService);
+  private readonly examGradeSvc       = inject(ExamGradeService);
+  private readonly courseSvc          = inject(CourseService);
+  private readonly teacherSvc         = inject(TeacherService);
+  private readonly groupSvc           = inject(GroupService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly location = inject(Location);
+  private readonly route              = inject(ActivatedRoute);
+  private readonly location           = inject(Location);
+  private readonly localization       = inject(LocalizationService);
 
   // Role
   isTeacher = signal(false);
   teacherId = signal<string | null>(null);
 
   // Course
-  courses = signal<any[]>([]);
+  courses         = signal<any[]>([]);
   selectedCourseId = signal<string | null>(null);
 
   // Exam
-  exams = signal<any[]>([]);
-  selectedExamId = signal<string | null>(null);
+  exams            = signal<any[]>([]);
+  selectedExamId   = signal<string | null>(null);
   selectedExamName = signal<string>('');
 
   // Date (for grade record)
@@ -69,8 +71,8 @@ export class MarksEntryComponent implements OnInit {
   globalMaxGrade = signal<string>('100');
 
   // Group
-  groups = signal<GroupOption[]>([]);
-  selectedGroupId = signal<string | null>(null);
+  groups            = signal<GroupOption[]>([]);
+  selectedGroupId   = signal<string | null>(null);
   effectiveTeacherId = signal<string | null>(null);
 
   // Students
@@ -78,19 +80,19 @@ export class MarksEntryComponent implements OnInit {
 
   // Add exam form
   showAddExamForm = signal(false);
-  newExamName = signal('');
-  addingExam = signal(false);
+  newExamName     = signal('');
+  addingExam      = signal(false);
 
   // UI
-  loading = signal(false);
-  saving = signal(false);
-  message = signal<string | null>(null);
+  loading     = signal(false);
+  saving      = signal(false);
+  message     = signal<string | null>(null);
   messageType = signal<'success' | 'error'>('success');
 
   // Stats
-  gradedCount = computed(() => this.students().filter(s => s.savedGrade !== null).length);
+  gradedCount   = computed(() => this.students().filter(s => s.savedGrade !== null).length);
   ungradedCount = computed(() => this.students().filter(s => s.savedGrade === null).length);
-  totalCount = computed(() => this.students().length);
+  totalCount    = computed(() => this.students().length);
 
   async ngOnInit(): Promise<void> {
     await this.init();
@@ -100,7 +102,7 @@ export class MarksEntryComponent implements OnInit {
     try {
       const userInfo = await lastValueFrom(this.currentUserInfoSvc.getCurrentUserActorInfo());
       const actorType = userInfo?.actorType;
-      const actorId = userInfo?.actorId;
+      const actorId   = userInfo?.actorId;
 
       if (actorType === 'Teacher' && actorId) {
         this.isTeacher.set(true);
@@ -242,11 +244,9 @@ export class MarksEntryComponent implements OnInit {
   }
 
   async addExam(): Promise<void> {
-    const name = this.newExamName().trim();
-    if (!name) return;
-
+    const name     = this.newExamName().trim();
     const courseId = this.selectedCourseId();
-    if (!courseId) return;
+    if (!name || !courseId) return;
 
     this.addingExam.set(true);
     try {
@@ -254,7 +254,7 @@ export class MarksEntryComponent implements OnInit {
         examName: name,
         courseId,
         teacherId: this.effectiveTeacherId() || '',
-        groupId: this.selectedGroupId() || undefined,
+        groupId:   this.selectedGroupId() || undefined,
       };
       const created: any = await lastValueFrom(
         this.examSvc.create(dto, { skipHandleError: true })
@@ -262,11 +262,9 @@ export class MarksEntryComponent implements OnInit {
       this.newExamName.set('');
       this.showAddExamForm.set(false);
       await this.loadExams(courseId);
-      if (created?.id) {
-        await this.onExamChange(created.id);
-      }
+      if (created?.id) await this.onExamChange(created.id);
     } catch (e: any) {
-      const msg = e?.error?.error?.message || 'فشل إنشاء الاختبار';
+      const msg = e?.error?.error?.message || this.l('MarksEntry:ErrorCreateExamFailed');
       this.showMessage(msg, 'error');
     } finally {
       this.addingExam.set(false);
@@ -275,7 +273,7 @@ export class MarksEntryComponent implements OnInit {
 
   private async loadStudents(): Promise<void> {
     const courseId = this.selectedCourseId();
-    const examId = this.selectedExamId();
+    const examId   = this.selectedExamId();
     if (!courseId || !examId) return;
 
     this.loading.set(true);
@@ -288,33 +286,30 @@ export class MarksEntryComponent implements OnInit {
         skipCount: 0,
         maxResultCount: 1000,
       };
-      if (this.effectiveTeacherId()) {
-        params.teacherId = this.effectiveTeacherId();
-      }
+      if (this.effectiveTeacherId()) params.teacherId = this.effectiveTeacherId();
 
       const [studentsRes, gradesRes] = await Promise.all([
         lastValueFrom(this.attendanceSvc.getStudentAttendanceStatus(params)),
         lastValueFrom(this.examGradeSvc.getGradesByExam(examId)),
       ]);
 
-      const grades: any[] = (gradesRes as any) || [];
-      const gradeLookup = new Map(grades.map((g: any) => [g.enrollmentId, g]));
+      const grades: any[]  = (gradesRes as any) || [];
+      const gradeLookup    = new Map(grades.map((g: any) => [g.enrollmentId, g]));
 
       const rawEntries: StudentGradeEntry[] = ((studentsRes as any)?.items || []).map((item: any) => {
         const existing = gradeLookup.get(item.enrollmentId);
         return {
           enrollmentId: item.enrollmentId,
-          studentId: item.studentId,
-          studentCode: item.studentCode || '',
-          studentName:
-            item.fullName || `${item.firstName || ''} ${item.lastName || ''}`.trim(),
-          gradeId: existing?.id || null,
-          inputGrade: existing != null ? String(existing.grade) : '',
-          savedGrade: existing?.grade ?? null,
+          studentId:    item.studentId,
+          studentCode:  item.studentCode || '',
+          studentName:  item.fullName || `${item.firstName || ''} ${item.lastName || ''}`.trim(),
+          gradeId:      existing?.id || null,
+          inputGrade:   existing != null ? String(existing.grade) : '',
+          savedGrade:   existing?.grade ?? null,
           savedMaxGrade: existing?.maxGrade ?? null,
-          saving: false,
-          rowError: null,
-          rowSuccess: false,
+          saving:       false,
+          rowError:     null,
+          rowSuccess:   false,
         };
       });
 
@@ -336,21 +331,21 @@ export class MarksEntryComponent implements OnInit {
   }
 
   async saveGrade(index: number): Promise<void> {
-    const student = this.students()[index];
-    const grade = parseFloat(student.inputGrade);
+    const student  = this.students()[index];
+    const grade    = parseFloat(student.inputGrade);
     const maxGrade = parseFloat(this.globalMaxGrade());
 
     if (isNaN(grade) || grade < 0) {
-      this.updateStudent(index, { rowError: 'يرجى إدخال درجة صحيحة', rowSuccess: false });
+      this.updateStudent(index, { rowError: this.l('MarksEntry:ErrorInvalidGrade'), rowSuccess: false });
       return;
     }
     if (isNaN(maxGrade) || maxGrade <= 0) {
-      this.updateStudent(index, { rowError: 'يرجى تحديد الدرجة العظمى', rowSuccess: false });
+      this.updateStudent(index, { rowError: this.l('MarksEntry:ErrorInvalidMaxGrade'), rowSuccess: false });
       return;
     }
     if (grade > maxGrade) {
       this.updateStudent(index, {
-        rowError: `الدرجة لا يمكن أن تتجاوز ${maxGrade}`,
+        rowError: this.l('MarksEntry:ErrorGradeExceedsMax', String(maxGrade)),
         rowSuccess: false,
       });
       return;
@@ -360,7 +355,7 @@ export class MarksEntryComponent implements OnInit {
     try {
       const dto = {
         enrollmentId: student.enrollmentId,
-        examId: this.selectedExamId()!,
+        examId:       this.selectedExamId()!,
         grade,
         maxGrade,
         date: new Date(this.gradeDate()).toISOString(),
@@ -377,15 +372,10 @@ export class MarksEntryComponent implements OnInit {
         this.updateStudent(index, { gradeId: created?.id || null });
       }
 
-      this.updateStudent(index, {
-        savedGrade: grade,
-        savedMaxGrade: maxGrade,
-        rowSuccess: true,
-        rowError: null,
-      });
+      this.updateStudent(index, { savedGrade: grade, savedMaxGrade: maxGrade, rowSuccess: true, rowError: null });
       setTimeout(() => this.updateStudent(index, { rowSuccess: false }), 2500);
     } catch (e: any) {
-      const msg = e?.error?.error?.message || 'فشل الحفظ، يرجى المحاولة مرة أخرى';
+      const msg = e?.error?.error?.message || this.l('MarksEntry:ErrorSaveFailed');
       this.updateStudent(index, { rowError: msg, rowSuccess: false });
     } finally {
       this.updateStudent(index, { saving: false });
@@ -399,7 +389,7 @@ export class MarksEntryComponent implements OnInit {
       .map(({ i }) => i);
 
     if (indices.length === 0) {
-      this.showMessage('لا يوجد درجات لحفظها — أدخل الدرجات أولاً', 'error');
+      this.showMessage(this.l('MarksEntry:ErrorNoGrades'), 'error');
       return;
     }
 
@@ -409,11 +399,11 @@ export class MarksEntryComponent implements OnInit {
     this.saving.set(false);
 
     const errors = this.students().filter(s => s.rowError !== null).length;
-    const ok = indices.length - errors;
+    const ok     = indices.length - errors;
     this.showMessage(
       errors > 0
-        ? `تم حفظ ${ok} درجة — فشل ${errors}`
-        : `تم حفظ ${ok} درجة بنجاح وإرسال الإشعارات`,
+        ? this.l('MarksEntry:SaveAllPartial', String(ok), String(errors))
+        : this.l('MarksEntry:SaveAllSuccess', String(ok)),
       errors > 0 ? 'error' : 'success'
     );
   }
@@ -441,15 +431,30 @@ export class MarksEntryComponent implements OnInit {
     return Math.round((entry.savedGrade / entry.savedMaxGrade) * 100);
   }
 
+  /** CSS-safe class suffix — always English, language-independent */
+  gradeClass(pct: number): string {
+    if (pct >= 90) return 'excellent';
+    if (pct >= 75) return 'very-good';
+    if (pct >= 60) return 'good';
+    if (pct >= 50) return 'acceptable';
+    return 'failed';
+  }
+
+  /** Localized display label */
   gradeLabel(pct: number): string {
-    if (pct >= 90) return 'ممتاز';
-    if (pct >= 75) return 'جيد جداً';
-    if (pct >= 60) return 'جيد';
-    if (pct >= 50) return 'مقبول';
-    return 'راسب';
+    if (pct >= 90) return this.l('MarksEntry:GradeExcellent');
+    if (pct >= 75) return this.l('MarksEntry:GradeVeryGood');
+    if (pct >= 60) return this.l('MarksEntry:GradeGood');
+    if (pct >= 50) return this.l('MarksEntry:GradeAcceptable');
+    return this.l('MarksEntry:GradeFailed');
   }
 
   trackByEnrollment = (_: number, item: StudentGradeEntry) => item.enrollmentId;
 
   goBack(): void { this.location.back(); }
+
+  /** Shorthand for `this.localization.instant('::' + key, ...params)` */
+  private l(key: string, ...params: string[]): string {
+    return this.localization.instant(`::${key}`, ...params);
+  }
 }

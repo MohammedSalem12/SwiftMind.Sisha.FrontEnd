@@ -1,0 +1,171 @@
+<div class="tg-page" dir="rtl">
+
+  <!-- ══════════ HERO HEADER ══════════ -->
+  <div class="tg-hero">
+    <div class="tg-hero-bg"></div>
+    <div class="tg-hero-shapes">
+      <span class="shape s1"></span>
+      <span class="shape s2"></span>
+      <span class="shape s3"></span>
+    </div>
+
+    <div class="tg-hero-body">
+      <!-- Left: title block -->
+      <div class="tg-hero-title">
+        <div class="tg-hero-icon">
+          <i class="fas fa-layer-group"></i>
+        </div>
+        <div>
+          <h1>{{ '::TeacherGroups:Title' | abpLocalization }}</h1>
+          <p *ngIf="courseName()">
+            <i class="fas fa-book-open me-1"></i>
+            {{ '::TeacherGroups:GroupsOfCourse' | abpLocalization : courseName()! }}
+          </p>
+          <p *ngIf="!courseName()">{{ '::TeacherGroups:Subtitle' | abpLocalization }}</p>
+        </div>
+      </div>
+
+      <!-- Right: teacher pill + create button -->
+      <div class="tg-hero-actions">
+        <div class="teacher-pill" *ngIf="teacherName()">
+          <div class="teacher-avatar">{{ teacherName()!.charAt(0) }}</div>
+          <div class="teacher-meta">
+            <span class="teacher-name">{{ teacherName() }}</span>
+            <span class="teacher-code">{{ teacherCode() }}</span>
+          </div>
+        </div>
+        <button class="btn-create" [routerLink]="['create']"
+          [queryParams]="courseId() ? { courseId: courseId() } : {}">
+          <i class="fas fa-plus"></i>
+          <span>{{ '::TeacherGroups:NewGroup' | abpLocalization }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="tg-stats">
+      <div class="stat-pill">
+        <i class="fas fa-layer-group"></i>
+        <strong>{{ groups().length }}</strong>
+        {{ '::TeacherGroups:Group' | abpLocalization }}
+      </div>
+      <div class="stat-pill filter-pill" *ngIf="courseId()" (click)="clearFilter()">
+        <i class="fas fa-filter"></i>
+        {{ '::TeacherGroups:FilteredByCourse' | abpLocalization }}
+        <i class="fas fa-times-circle clear-icon"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ LOADING ══════════ -->
+  <div class="tg-loading" *ngIf="loading()">
+    <div class="loader-ring"></div>
+    <span>{{ '::TeacherGroups:LoadingGroups' | abpLocalization }}</span>
+  </div>
+
+  <!-- ══════════ ERROR ══════════ -->
+  <div class="tg-error" *ngIf="error() && !loading()">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{ error() }}</span>
+  </div>
+
+  <!-- ══════════ EMPTY ══════════ -->
+  <div class="tg-empty" *ngIf="!loading() && !error() && groups().length === 0">
+    <div class="empty-icon">
+      <i class="fas fa-users"></i>
+    </div>
+    <h3>{{ '::TeacherGroups:NoGroupsTitle' | abpLocalization }}</h3>
+    <p>{{ '::TeacherGroups:NoGroupsDescription' | abpLocalization }}</p>
+    <button class="btn-create-empty" [routerLink]="['create']">
+      <i class="fas fa-plus me-2"></i>
+      {{ '::TeacherGroups:CreateFirstGroup' | abpLocalization }}
+    </button>
+  </div>
+
+  <!-- ══════════ GROUPS GRID ══════════ -->
+  <div class="tg-grid" *ngIf="!loading() && !error() && groups().length > 0">
+    <div
+      *ngFor="let g of groups(); let i = index; trackBy: trackById"
+      class="group-card"
+      [style.animation-delay]="(i * 60) + 'ms'">
+
+      <!-- Card accent strip (cycles through 6 palettes) -->
+      <div class="card-accent" [class]="'accent-' + (i % 6)"></div>
+
+      <!-- Card header -->
+      <div class="card-head">
+        <div class="group-avatar" [class]="'avatar-' + (i % 6)">
+          {{ g.name.charAt(0) }}
+        </div>
+        <div class="group-title-block">
+          <h3 class="group-name">{{ g.name }}</h3>
+          <span class="group-code">{{ g.groupCode }}</span>
+        </div>
+        <div class="schedules-badge" *ngIf="g.schedules?.length">
+          <i class="fas fa-clock"></i>
+          {{ g.schedules.length }}
+        </div>
+      </div>
+
+      <!-- Course row -->
+      <div class="card-course">
+        <i class="fas fa-book-open"></i>
+        <span>{{ g.courseName || ('::TeacherGroups:NotSpecified' | abpLocalization) }}</span>
+      </div>
+
+      <!-- Schedules chips -->
+      <div class="schedules-list" *ngIf="g.schedules && g.schedules.length > 0">
+        <div
+          *ngFor="let s of g.schedules | slice:0:4"
+          class="schedule-chip"
+          [class]="'chip-' + s.dayOfWeek">
+          <i class="fas fa-calendar-day"></i>
+          <span>{{ getDayName(s.dayOfWeek) }}</span>
+          <span class="chip-time">{{ formatTime(s.startTime) }}</span>
+        </div>
+        <div class="chip-more" *ngIf="g.schedules.length > 4">
+          {{ '::TeacherGroups:MoreSchedules' | abpLocalization : (g.schedules.length - 4).toString() }}
+        </div>
+      </div>
+      <div class="no-schedules" *ngIf="!g.schedules || g.schedules.length === 0">
+        <i class="fas fa-calendar-times"></i>
+        {{ '::TeacherGroups:NoSchedules' | abpLocalization }}
+      </div>
+
+      <!-- Divider -->
+      <div class="card-divider"></div>
+
+      <!-- Actions -->
+      <div class="card-actions">
+        <button class="act-btn attend" (click)="takeAttendance(g)"
+          [title]="'::TeacherGroups:RecordAttendance' | abpLocalization">
+          <i class="fas fa-clipboard-check"></i>
+          <span>{{ '::TeacherGroups:Attendance' | abpLocalization }}</span>
+        </button>
+        <button class="act-btn marks" (click)="goToMarks(g)"
+          [title]="'::TeacherGroups:RecordGrades' | abpLocalization">
+          <i class="fas fa-star-half-alt"></i>
+          <span>{{ '::TeacherGroups:Grades' | abpLocalization }}</span>
+        </button>
+        <button class="act-btn edit" [routerLink]="['edit', g.groupId]"
+          [title]="'::TeacherGroups:Edit' | abpLocalization">
+          <i class="fas fa-edit"></i>
+          <span>{{ '::TeacherGroups:Edit' | abpLocalization }}</span>
+        </button>
+        <button class="act-btn delete" (click)="deleteGroup(g)"
+          [title]="'::TeacherGroups:Delete' | abpLocalization">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refresh row -->
+  <div class="tg-footer" *ngIf="!loading() && groups().length > 0">
+    <button class="btn-refresh" (click)="loadTeacherGroups()">
+      <i class="fas fa-sync-alt"></i>
+      {{ '::TeacherGroups:Refresh' | abpLocalization }}
+    </button>
+  </div>
+
+</div>
