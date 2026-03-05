@@ -18,18 +18,9 @@
             <h1>{{ getFullName() }}</h1>
             <div class="sub">Grade: {{ student()?.currentGrade ?? '-' }} · Code: {{ student()?.studentCode || '-' }}</div>
           </div>
-          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-            <a class="btn-edit-profile" [routerLink]="['/students', studentId(), 'edit']">
-              <i class="fas fa-edit"></i> Edit Profile
-            </a>
-            <button class="btn-promote"
-                    *ngIf="(student()?.currentGrade ?? 0) < 12"
-                    [disabled]="promoting()"
-                    (click)="promoteToNextGrade()">
-              <i class="fas fa-arrow-up"></i>
-              {{ promoting() ? 'جاري الترقية…' : 'ترقية للصف ' + ((student()?.currentGrade ?? 0) + 1) }}
-            </button>
-          </div>
+          <a class="btn-edit-profile" [routerLink]="['/students', studentId(), 'edit']">
+            <i class="fas fa-edit"></i> Edit Profile
+          </a>
         </div>
 
         <div class="card stats" style="margin-top:0.75rem; display:flex; gap:1rem; align-items:center">
@@ -58,6 +49,21 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Grade promotion action -->
+    <div class="promote-section" *ngIf="(student()?.currentGrade ?? 0) < 12">
+      <div class="promote-info">
+        <i class="fas fa-graduation-cap"></i>
+        <div>
+          <div class="promote-title">ترقية الصف الدراسي</div>
+          <div class="promote-sub">الصف الحالي: {{ student()?.currentGrade }} &larr; الصف التالي: {{ (student()?.currentGrade ?? 0) + 1 }}</div>
+        </div>
+      </div>
+      <button class="btn-promote" [disabled]="promoting()" (click)="promoteToNextGrade()">
+        <i class="fas fa-arrow-up"></i>
+        {{ promoting() ? 'جاري الترقية…' : 'ترقية للصف ' + ((student()?.currentGrade ?? 0) + 1) }}
+      </button>
     </div>
 
     <div class="grid">
