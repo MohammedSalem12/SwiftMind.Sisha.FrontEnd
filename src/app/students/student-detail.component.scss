@@ -72,5 +72,24 @@
   }
 }
 
+.btn-promote {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--ngx-primary);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover:not(:disabled) { opacity: 0.88; }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  i { font-size: 0.875rem; }
+}
 
 @media (max-width:920px){ .grid{ grid-template-columns:1fr } .profile-top{ flex-direction:column; align-items:flex-start } }

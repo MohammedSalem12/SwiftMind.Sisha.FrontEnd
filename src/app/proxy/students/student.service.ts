@@ -79,6 +79,14 @@ export class StudentService {
     { apiName: this.apiName,...config });
   
 
+  promoteToNextGrade = (studentId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentDto>({
+      method: 'POST',
+      url: `/api/app/student/promote-to-next-grade/${studentId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   rejectParentStudentLink = (parentId: string, studentId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',

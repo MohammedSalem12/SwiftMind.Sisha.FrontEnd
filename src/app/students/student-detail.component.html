@@ -18,9 +18,18 @@
             <h1>{{ getFullName() }}</h1>
             <div class="sub">Grade: {{ student()?.currentGrade ?? '-' }} · Code: {{ student()?.studentCode || '-' }}</div>
           </div>
-          <a class="btn-edit-profile" [routerLink]="['/students', studentId(), 'edit']">
-            <i class="fas fa-edit"></i> Edit Profile
-          </a>
+          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <a class="btn-edit-profile" [routerLink]="['/students', studentId(), 'edit']">
+              <i class="fas fa-edit"></i> Edit Profile
+            </a>
+            <button class="btn-promote"
+                    *ngIf="(student()?.currentGrade ?? 0) < 12"
+                    [disabled]="promoting()"
+                    (click)="promoteToNextGrade()">
+              <i class="fas fa-arrow-up"></i>
+              {{ promoting() ? 'جاري الترقية…' : 'ترقية للصف ' + ((student()?.currentGrade ?? 0) + 1) }}
+            </button>
+          </div>
         </div>
 
         <div class="card stats" style="margin-top:0.75rem; display:flex; gap:1rem; align-items:center">
