@@ -652,30 +652,77 @@ body.auth-page {
   }
 }
 
-// ── App content padding — only needed on mobile (bottom nav present) ──
-@media (max-width: 767px) {
-  .app-content {
-    padding-bottom: 70px;
+// ── App content padding — bottom nav is now always visible ──
+.app-content {
+  padding-bottom: 70px;
 
-    @supports (padding-bottom: env(safe-area-inset-bottom)) {
-      padding-bottom: calc(70px + env(safe-area-inset-bottom));
-    }
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
   }
+}
+
+// ─────────────────────────────────────────────────────────────
+// HIDE ABP SIDEBAR & TOPBAR — bottom nav replaces them on mobile
+// ─────────────────────────────────────────────────────────────
+.lpx-sidebar-container,
+.lpx-sidebar,
+lpx-side-menu,
+.lpx-sidebar-toggle,
+.lpx-hamburger,
+.lpx-mobile-menu-toggle,
+.menu-collapse-icon,
+lpx-mobile-sidebar,
+.lpx-mobile-sidebar,
+lpx-mobile-nav,
+.lpx-mobile-nav,
+.lpx-mobile-header,
+lpx-mobile-header,
+[class*="lpx-mobile"],
+[class*="lpx-sidebar"] {
+  display: none !important;
+}
+
+// Hide topbar on mobile — bottom nav handles navigation
+@media (max-width: 767px) {
+  .lpx-topbar-container,
+  lpx-topbar-container,
+  .lpx-toolbar-container,
+  lpx-toolbar-container,
+  .lpx-topbar,
+  lpx-topbar,
+  .lpx-toolbar,
+  lpx-toolbar,
+  .lpx-navbar,
+  lpx-navbar,
+  .lpx-header,
+  lpx-header,
+  [class*="lpx-topbar"],
+  [class*="lpx-toolbar"],
+  [class*="lpx-header"] {
+    display: none !important;
+  }
+}
+
+// Hide hamburger/menu buttons in the topbar
+.lpx-toolbar button[class*="menu"],
+.lpx-toolbar button[class*="hamburger"],
+.lpx-topbar button[class*="menu"],
+.lpx-topbar button[class*="hamburger"],
+.lpx-navbar-nav .lpx-menu-btn,
+button.lpx-sidebar-toggle {
+  display: none !important;
+}
+
+.lpx-content-container {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 // ─────────────────────────────────────────────────────────────
 // RESPONSIVE — Mobile-first (360px–430px primary target)
 // ─────────────────────────────────────────────────────────────
 
-// Hide sidebar on mobile — bottom nav takes over
 @media (max-width: 767px) {
-  .lpx-sidebar-container {
-    display: none !important;
-  }
-  .lpx-content-container {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
 
   .page-container { padding: 0.75rem; }
 
