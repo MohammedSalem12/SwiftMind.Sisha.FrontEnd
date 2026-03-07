@@ -122,6 +122,14 @@
           <i class="fas fa-calendar-day"></i>
           <span>{{ getDayName(s.dayOfWeek) }}</span>
           <span class="chip-time">{{ formatTime(s.startTime) }}</span>
+          <button class="chip-btn chip-edit" (click)="editSchedule(s.id); $event.stopPropagation()"
+            [title]="'::TeacherGroups:Edit' | abpLocalization">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button class="chip-btn chip-delete" (click)="deleteSchedule(s.id, g); $event.stopPropagation()"
+            [title]="'::TeacherGroups:Delete' | abpLocalization">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
         <div class="chip-more" *ngIf="g.schedules.length > 4">
           {{ '::TeacherGroups:MoreSchedules' | abpLocalization : (g.schedules.length - 4).toString() }}
@@ -130,6 +138,10 @@
       <div class="no-schedules" *ngIf="!g.schedules || g.schedules.length === 0">
         <i class="fas fa-calendar-times"></i>
         {{ '::TeacherGroups:NoSchedules' | abpLocalization }}
+        <button class="btn-add-schedule-inline" (click)="manageSchedule(g)">
+          <i class="fas fa-plus"></i>
+          {{ '::TeacherGroups:Schedule' | abpLocalization }}
+        </button>
       </div>
 
       <!-- Divider -->

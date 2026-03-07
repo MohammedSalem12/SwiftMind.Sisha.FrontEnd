@@ -1,132 +1,56 @@
-import type { AcademyDto, AcademyMemberDto, CreateAcademyDto } from './models';
-import { RestService, Rest } from '@abp/ng.core';
-import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CourseDto, CreateUpdateCourseDto } from '../courses/dtos/models';
+import { RestService } from '@abp/ng.core';
+import { Observable, of } from 'rxjs';
+import type { AcademyDto, AcademyMemberDto, CreateAcademyDto } from './models';
 
-@Injectable({
-  providedIn: 'root',
-})
+// Stub service — will be replaced when Academy backend is deployed and proxy regenerated
+@Injectable({ providedIn: 'root' })
 export class AcademyService {
   apiName = 'Default';
-  
-
-  addCourseToAcademy = (academyId: string, courseId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: '/api/app/academy/course-to-academy',
-      params: { academyId, courseId },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  approveMember = (academyId: string, teacherId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: '/api/app/academy/approve-member',
-      params: { academyId, teacherId },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  create = (input: CreateAcademyDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, AcademyDto>({
-      method: 'POST',
-      url: '/api/app/academy',
-      body: input,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  createCourseForAcademy = (academyId: string, input: CreateUpdateCourseDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, CourseDto>({
-      method: 'POST',
-      url: `/api/app/academy/course-for-academy/${academyId}`,
-      body: input,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  get = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, AcademyDto>({
-      method: 'GET',
-      url: `/api/app/academy/${id}`,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getAcademyCourses = (academyId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, CourseDto[]>({
-      method: 'GET',
-      url: `/api/app/academy/academy-courses/${academyId}`,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, PagedResultDto<AcademyDto>>({
-      method: 'GET',
-      url: '/api/app/academy',
-      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getMembers = (academyId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, AcademyMemberDto[]>({
-      method: 'GET',
-      url: `/api/app/academy/members/${academyId}`,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getMyAcademy = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, AcademyDto>({
-      method: 'GET',
-      url: '/api/app/academy/my-academy',
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getMyMembership = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, AcademyMemberDto>({
-      method: 'GET',
-      url: '/api/app/academy/my-membership',
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getPendingRequests = (academyId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, AcademyMemberDto[]>({
-      method: 'GET',
-      url: `/api/app/academy/pending-requests/${academyId}`,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  rejectMember = (academyId: string, teacherId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: '/api/app/academy/reject-member',
-      params: { academyId, teacherId },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  removeCourseFromAcademy = (courseId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'DELETE',
-      url: `/api/app/academy/course-from-academy/${courseId}`,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  requestToJoin = (academyId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/academy/request-to-join/${academyId}`,
-    },
-    { apiName: this.apiName,...config });
-
   constructor(private restService: RestService) {}
+
+  getList = (input: any): Observable<any> =>
+    this.restService.request<any, any>({ method: 'GET', url: '/api/sesha/academies', params: input }, { apiName: this.apiName });
+
+  get = (id: string): Observable<AcademyDto> =>
+    this.restService.request<any, AcademyDto>({ method: 'GET', url: `/api/sesha/academies/${id}` }, { apiName: this.apiName });
+
+  create = (input: CreateAcademyDto): Observable<AcademyDto> =>
+    this.restService.request<any, AcademyDto>({ method: 'POST', url: '/api/sesha/academies', body: input }, { apiName: this.apiName });
+
+  getMyAcademy = (): Observable<AcademyDto | null> =>
+    this.restService.request<any, AcademyDto>({ method: 'GET', url: '/api/sesha/academies/my-academy' }, { apiName: this.apiName, skipHandleError: true });
+
+  getMyMembership = (): Observable<AcademyMemberDto | null> =>
+    this.restService.request<any, AcademyMemberDto>({ method: 'GET', url: '/api/sesha/academies/my-membership' }, { apiName: this.apiName, skipHandleError: true });
+
+  requestToJoin = (academyId: string): Observable<void> =>
+    this.restService.request<any, void>({ method: 'POST', url: `/api/sesha/academies/${academyId}/join` }, { apiName: this.apiName });
+
+  approveMembers = (academyId: string, teacherId: string): Observable<void> =>
+    this.restService.request<any, void>({ method: 'POST', url: `/api/sesha/academies/${academyId}/approve/${teacherId}` }, { apiName: this.apiName });
+
+  approveMember = (academyId: string, teacherId: string): Observable<void> =>
+    this.restService.request<any, void>({ method: 'POST', url: `/api/sesha/academies/${academyId}/approve/${teacherId}` }, { apiName: this.apiName });
+
+  rejectMember = (academyId: string, teacherId: string): Observable<void> =>
+    this.restService.request<any, void>({ method: 'POST', url: `/api/sesha/academies/${academyId}/reject/${teacherId}` }, { apiName: this.apiName });
+
+  createCourseForAcademy = (academyId: string, input: any): Observable<any> =>
+    this.restService.request<any, any>({ method: 'POST', url: `/api/sesha/academies/${academyId}/courses`, body: input }, { apiName: this.apiName });
+
+  getMembers = (academyId: string): Observable<AcademyMemberDto[]> =>
+    this.restService.request<any, AcademyMemberDto[]>({ method: 'GET', url: `/api/sesha/academies/${academyId}/members` }, { apiName: this.apiName });
+
+  getPendingRequests = (academyId: string): Observable<AcademyMemberDto[]> =>
+    this.restService.request<any, AcademyMemberDto[]>({ method: 'GET', url: `/api/sesha/academies/${academyId}/pending-requests` }, { apiName: this.apiName });
+
+  getAcademyCourses = (academyId: string): Observable<any[]> =>
+    this.restService.request<any, any[]>({ method: 'GET', url: `/api/sesha/academies/${academyId}/courses` }, { apiName: this.apiName });
+
+  addCourseToAcademy = (academyId: string, courseId: string): Observable<void> =>
+    this.restService.request<any, void>({ method: 'POST', url: `/api/sesha/academies/${academyId}/courses/${courseId}` }, { apiName: this.apiName });
+
+  removeCourseFromAcademy = (courseId: string): Observable<void> =>
+    this.restService.request<any, void>({ method: 'DELETE', url: `/api/sesha/academies/courses/${courseId}` }, { apiName: this.apiName });
 }

@@ -86,6 +86,41 @@ $green-ring: rgba(16, 185, 129, 0.18);
   }
 }
 
+.academy-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+  padding: 0.3rem 0.6rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  
+  i {
+    font-size: 0.65rem;
+  }
+}
+
+.exam-academy-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: #f3f4f6;
+  color: #6b7280;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  
+  i {
+    font-size: 0.65rem;
+    color: #764ba2;
+  }
+}
+
 .label-row {
   display: flex;
   align-items: center;
@@ -109,34 +144,97 @@ $green-ring: rgba(16, 185, 129, 0.18);
 // ── Add exam form ────────────────────────────────────────
 .add-exam-form {
   background: white;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1.5px solid #a7f3d0;
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 
-  .form-icon { color: $green; font-size: 1.1rem; flex-shrink: 0; }
+  .form-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
 
-  input {
-    flex: 1;
-    padding: 0.5rem 0.75rem;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    background: #f9fafb;
-    transition: border-color 0.15s, box-shadow 0.15s;
-
-    &:focus {
-      outline: none;
-      border-color: $green;
-      background: white;
-      box-shadow: 0 0 0 3px $green-ring;
+    .form-icon { 
+      color: $green; 
+      font-size: 1.1rem; 
+      flex-shrink: 0;
     }
-    &:disabled  { opacity: 0.55; }
-    &::placeholder { color: #c4c9d4; }
+
+    .form-title {
+      flex: 1;
+
+      strong {
+        display: block;
+        font-size: 0.9rem;
+        color: #1a202c;
+        margin-bottom: 0.25rem;
+      }
+
+      .academy-context {
+        display: flex;
+        align-items: center;
+        font-size: 0.75rem;
+        color: #764ba2;
+        font-weight: 600;
+        
+        i {
+          font-size: 0.7rem;
+        }
+      }
+    }
+  }
+
+  .form-body {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+
+    input {
+      flex: 1;
+      padding: 0.6rem 0.85rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      background: #f9fafb;
+      transition: border-color 0.15s, box-shadow 0.15s;
+
+      &:focus {
+        outline: none;
+        border-color: $green;
+        background: white;
+        box-shadow: 0 0 0 3px $green-ring;
+      }
+      &:disabled  { opacity: 0.55; }
+      &::placeholder { color: #c4c9d4; }
+    }
+  }
+
+  .form-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #0369a1;
+
+    i {
+      color: #0284c7;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    strong {
+      color: #0c4a6e;
+      font-weight: 700;
+    }
   }
 }
 

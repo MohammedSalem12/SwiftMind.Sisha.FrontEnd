@@ -19,9 +19,13 @@
       <select [ngModel]="selectedCourseId()" (ngModelChange)="onCourseChange($event)" [disabled]="loading()">
         <option value="">— اختر مقرراً —</option>
         <option *ngFor="let c of courses()" [value]="c.id">
-          {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' · ' + c.gradeName : '' }}
+          {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' · ' + c.gradeName : '' }}{{ c.academyName ? ' · ' + c.academyName : '' }}
         </option>
       </select>
+      <div class="academy-badge" *ngIf="selectedCourse()?.academyName">
+        <i class="fas fa-university"></i>
+        {{ selectedCourse().academyName }}
+      </div>
     </div>
 
     <div class="setup-field" *ngIf="selectedCourseId()">
@@ -35,9 +39,13 @@
       <select [ngModel]="selectedExamId()" (ngModelChange)="onExamChange($event)" [disabled]="loading()">
         <option value="">— اختر امتحاناً —</option>
         <option *ngFor="let e of exams()" [value]="e.id">
-          {{ e.examName }}{{ e.groupName ? ' (' + e.groupName + ')' : '' }}
+          {{ e.examName }}{{ e.groupName ? ' (' + e.groupName + ')' : '' }}{{ e.academyName ? ' · ' + e.academyName : '' }}
         </option>
       </select>
+      <div class="exam-academy-info" *ngIf="selectedExam()?.academyName">
+        <i class="fas fa-university"></i>
+        {{ selectedExam().academyName }}
+      </div>
     </div>
 
     <div class="setup-field setup-field--sm"
@@ -61,18 +69,37 @@
 
   <!-- Add exam inline form -->
   <div class="add-exam-form" *ngIf="showAddExamForm() && selectedCourseId()">
-    <i class="fas fa-file-plus form-icon"></i>
-    <input type="text"
-           [ngModel]="newExamName()" (ngModelChange)="newExamName.set($event)"
-           placeholder="اسم الامتحان (مثال: الاختبار الشهري الأول)"
-           [disabled]="addingExam()"
-           (keyup.enter)="addExam()" />
-    <button class="btn-create" (click)="addExam()"
-            [disabled]="addingExam() || !newExamName().trim()">
-      <span class="btn-spinner-sm" *ngIf="addingExam()"></span>
-      <i class="fas fa-save" *ngIf="!addingExam()"></i>
-      {{ addingExam() ? 'جاري الحفظ…' : 'حفظ' }}
-    </button>
+    <div class="form-header">
+      <i class="fas fa-file-plus form-icon"></i>
+      <div class="form-title">
+        <strong>إضافة امتحان جديد</strong>
+        <span *ngIf="selectedCourse()?.academyName" class="academy-context">
+          <i class="fas fa-university me-1"></i>
+          {{ selectedCourse().academyName }}
+        </span>
+      </div>
+    </div>
+    <div class="form-body">
+      <input type="text"
+             [ngModel]="newExamName()" (ngModelChange)="newExamName.set($event)"
+             placeholder="اسم الامتحان (مثال: الاختبار الشهري الأول)"
+             [disabled]="addingExam()"
+             (keyup.enter)="addExam()" />
+      <button class="btn-create" (click)="addExam()"
+              [disabled]="addingExam() || !newExamName().trim()">
+        <span class="btn-spinner-sm" *ngIf="addingExam()"></span>
+        <i class="fas fa-save" *ngIf="!addingExam()"></i>
+        {{ addingExam() ? 'جاري الحفظ…' : 'حفظ' }}
+      </button>
+    </div>
+    <div class="form-info" *ngIf="selectedCourse()">
+      <i class="fas fa-info-circle"></i>
+      سيتم ربط هذا الامتحان بـ:
+      <strong>{{ selectedCourse().nameAr || selectedCourse().nameEn }}</strong>
+      <span *ngIf="selectedCourse().academyName">
+        في أكاديمية <strong>{{ selectedCourse().academyName }}</strong>
+      </span>
+    </div>
   </div>
 
   <!-- Loading -->

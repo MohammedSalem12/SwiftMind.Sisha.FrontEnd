@@ -21,14 +21,16 @@ export class StudentsComponent implements OnInit {
   private readonly router = inject(Router);
 
   filter = signal<string>('');
-  // expose Math for template
+  teacherCodeFilter = signal<string>('');
+  teacherCodeResult = signal<StudentDto | null | 'not-found'>('not-found');
+  teacherCodeSearchDone = signal(false);
+  teacherCodeLoading = signal(false);
   readonly Math = Math;
 
   students = signal<StudentDto[]>([]);
   totalCount = signal(0);
   loading = signal(false);
 
-  // pagination
   page = signal(1);
   pageSize = signal(10);
 
@@ -77,6 +79,36 @@ export class StudentsComponent implements OnInit {
     this.list.get();
   }
 
+  async searchByTeacherCode() {
+    const code = this.teacherCodeFilter().trim();
+    if (!code) return;
+
+    this.teacherCodeLoading.set(true);
+    this.teacherCodeSearchDone.set(false);
+    this.teacherCodeResult.set('not-found');
+
+    try {
+      const result = await this.studentsSvc.getByTeacherStudentCode(code).toPromise();
+      this.teacherCodeResult.set(result ?? 'not-found');
+      this.teacherCodeSearchDone.set(true);
+    } catch {
+      this.teacherCodeResult.set('not-found');
+      this.teacherCodeSearchDone.set(true);
+    } finally {
+      this.teacherCodeLoading.set(false);
+    }
+  }
+
+  clearTeacherCodeSearch() {
+    this.teacherCodeFilter.set('');
+    this.teacherCodeResult.set('not-found');
+    this.teacherCodeSearchDone.set(false);
+  }
+
+  isStudentDto(val: any): val is StudentDto {
+    return val && typeof val === 'object' && 'id' in val;
+  }
+
   goToAddStudent() {
     this.router.navigate(['/add-student']);
   }
@@ -89,7 +121,6 @@ export class StudentsComponent implements OnInit {
     this.router.navigate(['/students', s.id]);
   }
 
-  // helper to get avatar URL from extra properties (if available) or return null
   getAvatarUrl(s: StudentDto | null) {
     try {
       const anys = s as any;

@@ -1,165 +1,50 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { LocalizationPipe } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
-
-import { AcademyService } from '@proxy/academies';
-import type { AcademyDto, AcademyMemberDto } from '@proxy/academies/models';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
 import type { CourseDto } from '@proxy/courses/dtos/models';
-import { StudentEnrollmentService } from '@proxy/student-enrollments';
-import type { EnrolledStudentDto } from '@proxy/student-enrollments/dtos/models';
-
-interface DashboardData {
-  totalCourses: number;
-  totalStudents: number;
-  totalExams: number;
-  absentTodayCount: number;
-  unreadNotifications: number;
-  recentAbsences: AbsentEntry[];
-  recentNotifications: NotifEntry[];
-}
-
-interface AbsentEntry {
-  studentName: string;
-  studentCode: string;
-  courseName: string;
-  courseId: string;
-}
-
-interface NotifEntry {
-  id: string;
-  title: string;
-  message: string;
-  isRead: boolean;
-  createdAt: string;
-  type: number;
-}
 
 @Component({
   selector: 'app-teacher-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, LocalizationPipe],
+  imports: [CommonModule, RouterModule],
   templateUrl: './teacher-home.component.html',
   styleUrls: ['./teacher-home.component.scss'],
 })
 export class TeacherHomeComponent implements OnInit {
-  private readonly router               = inject(Router);
-  private readonly currentUserService   = inject(CurrentUserInfoService);
-  private readonly teacherService       = inject(TeacherService);
-  private readonly enrollmentService    = inject(StudentEnrollmentService);
-  private readonly academyService       = inject(AcademyService);
+  private readonly router             = inject(Router);
+  private readonly currentUserService = inject(CurrentUserInfoService);
+  private readonly teacherService     = inject(TeacherService);
 
-  // State
-  loading                = signal(false);
-  dashboard              = signal<DashboardData | null>(null);
-  courses                = signal<CourseDto[]>([]);
-  expandedCourseId       = signal<string | null>(null);
-  loadingStudentsCourseId = signal<string | null>(null);
-  enrolledStudentsMap    = signal<Record<string, EnrolledStudentDto[]>>({});
-  myAcademy              = signal<AcademyDto | null>(null);
-  academyMembership      = signal<AcademyMemberDto | null>(null);
+  loading     = signal(false);
+  teacherName = signal<string>('');
+  courses     = signal<CourseDto[]>([]);
 
   async ngOnInit(): Promise<void> {
-    await this.loadDashboard();
+    await this.loadCourses();
   }
 
-  private async loadDashboard(): Promise<void> {
+  private async loadCourses(): Promise<void> {
     this.loading.set(true);
     try {
       const userInfo = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
+      this.teacherName.set(userInfo?.actorName ?? '');
       const teacherId = userInfo?.actorId;
       if (!teacherId) return;
-
-      // Load courses and dashboard data in parallel
-      const [courses, dashboardRaw, myAcademy, membership] = await Promise.all([
-        lastValueFrom(this.teacherService.getTeacherCourses(teacherId)),
-        lastValueFrom(this.teacherService.getDashboard(teacherId)).catch(() => null),
-        lastValueFrom(this.academyService.getMyAcademy()).catch(() => null),
-        lastValueFrom(this.academyService.getMyMembership()).catch(() => null),
-      ]);
-      this.myAcademy.set(myAcademy || null);
-      this.academyMembership.set(membership || null);
-
+      const courses = await lastValueFrom(this.teacherService.getTeacherCourses(teacherId));
       this.courses.set(courses || []);
-
-      if (dashboardRaw) {
-        this.dashboard.set(dashboardRaw as unknown as DashboardData);
-      } else {
-        // Fallback: compute basic stats from courses only
-        this.dashboard.set({
-          totalCourses: (courses || []).length,
-          totalStudents: 0,
-          totalExams: 0,
-          absentTodayCount: 0,
-          unreadNotifications: 0,
-          recentAbsences: [],
-          recentNotifications: [],
-        });
-      }
     } catch (error) {
-      console.error('Error loading teacher dashboard:', error);
+      console.error('Error loading teacher courses:', error);
     } finally {
       this.loading.set(false);
     }
   }
 
-  async toggleStudents(course: CourseDto): Promise<void> {
-    if (this.expandedCourseId() === course.id) {
-      this.expandedCourseId.set(null);
-      return;
-    }
-    this.expandedCourseId.set(course.id!);
-    if (this.enrolledStudentsMap()[course.id!]) return;
-
-    this.loadingStudentsCourseId.set(course.id!);
-    try {
-      const students = await lastValueFrom(
-        this.enrollmentService.getEnrolledStudentsByCourse(course.id!)
-      );
-      this.enrolledStudentsMap.update(m => ({ ...m, [course.id!]: students || [] }));
-    } catch {
-      this.enrolledStudentsMap.update(m => ({ ...m, [course.id!]: [] }));
-    } finally {
-      this.loadingStudentsCourseId.set(null);
-    }
+  selectCourse(course: CourseDto): void {
+    this.router.navigate(['/home/teacher/course', course.id]);
   }
-
-  formatDate(dateStr?: string): string {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('ar-SA', {
-      year: 'numeric', month: 'short', day: 'numeric',
-    });
-  }
-
-  scrollTo(id: string): void {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  goToGroups(course?: CourseDto): void {
-    if (course) {
-      this.router.navigate(['/teacher-groups'], { queryParams: { courseId: course.id } });
-    } else {
-      this.router.navigate(['/teacher-groups']);
-    }
-  }
-
-  goToAttendance(courseId?: string): void {
-    if (courseId) {
-      this.router.navigate(['/attendance'], { queryParams: { courseId } });
-    } else {
-      this.router.navigate(['/attendance']);
-    }
-  }
-
-  goToMarksEntry(): void        { this.router.navigate(['/marks-entry']); }
-  goToFeeds(): void              { this.router.navigate(['/feeds']); }
-  goToSelfEnroll(): void         { this.router.navigate(['/teacher/enroll']); }
-  goToAttendanceReport(): void   { this.router.navigate(['/teacher/attendance-report']); }
-  goToQRCodes(): void            { this.router.navigate(['/teacher/qr-codes']); }
-  goToAcademy(): void            { this.router.navigate(['/teacher/academy']); }
 
   trackById = (_: number, item: CourseDto) => item.id;
 }

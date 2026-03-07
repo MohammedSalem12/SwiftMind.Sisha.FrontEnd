@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
@@ -14,7 +15,7 @@ import { lastValueFrom } from 'rxjs';
 @Component({
   selector: 'app-course-enrollment',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="course-enrollment-container">
       <div class="container py-4">
@@ -60,6 +61,26 @@ import { lastValueFrom } from 'rxjs';
             </button>
           </div>
           <h4 class="mb-3">اختر المجموعة - المعلم: {{ selectedTeacher()?.displayName }}</h4>
+
+          <!-- Optional teacher internal code -->
+          <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+              <label class="form-label fw-semibold">
+                <i class="eva eva-hash-outline me-1"></i>
+                رمز الطالب الداخلي لدى المعلم
+                <span class="text-muted fw-normal">(اختياري)</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="teacherStudentCodeInput"
+                placeholder="أدخل الرمز الداخلي إن وُجد"
+                maxlength="32"
+              />
+              <div class="form-text">إذا زوّدك المعلم برمز خاص بك في نظامه، أدخله هنا</div>
+            </div>
+          </div>
+
           <div class="row g-3">
             <div class="col-md-6" *ngFor="let group of groups()">
               <div class="card group-card h-100">
@@ -70,7 +91,7 @@ import { lastValueFrom } from 'rxjs';
                       <p class="text-muted mb-0">كود المجموعة: {{ group.groupCode }}</p>
                     </div>
                   </div>
-                  
+
                   <!-- Schedules -->
                   <div class="schedules mb-3" *ngIf="group.schedules && group.schedules.length > 0">
                     <h6 class="mb-2">المواعيد:</h6>
@@ -85,8 +106,8 @@ import { lastValueFrom } from 'rxjs';
                     </div>
                   </div>
 
-                  <button 
-                    class="btn btn-success w-100" 
+                  <button
+                    class="btn btn-success w-100"
                     (click)="selectGroup(group)"
                     [disabled]="submitting()">
                     <span *ngIf="!submitting()">انضم لهذه المجموعة</span>
@@ -120,7 +141,7 @@ import { lastValueFrom } from 'rxjs';
       transition: transform 0.2s, box-shadow 0.2s;
       border: 2px solid transparent;
     }
-    
+
     .teacher-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -155,6 +176,7 @@ export class CourseEnrollmentComponent implements OnInit {
   submitting = signal(false);
   enrollmentSuccess = signal(false);
   errorMessage = signal('');
+  teacherStudentCodeInput = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -177,7 +199,7 @@ export class CourseEnrollmentComponent implements OnInit {
   loadTeachers() {
     this.loading.set(true);
     this.errorMessage.set('');
-    
+
     this.teacherService.getTeachersByCourse(this.courseId(), undefined, 100).subscribe({
       next: (teachers) => {
         this.teachers.set(teachers);
@@ -193,6 +215,7 @@ export class CourseEnrollmentComponent implements OnInit {
 
   selectTeacher(teacher: TeacherAutocompleteDto) {
     this.selectedTeacher.set(teacher);
+    this.teacherStudentCodeInput = '';
     this.loading.set(true);
     this.errorMessage.set('');
 
@@ -219,22 +242,25 @@ export class CourseEnrollmentComponent implements OnInit {
     this.errorMessage.set('');
 
     try {
-      // Get current user's actor info (student ID) from the backend
       const userInfo = await lastValueFrom(this.currentUserInfoService.getCurrentUserActorInfo());
-      
+
       if (!userInfo || !userInfo.actorId) {
         this.errorMessage.set('غير قادر على تحديد معلومات الطالب. يرجى تسجيل الدخول مرة أخرى.');
         this.submitting.set(false);
         return;
       }
 
-      const request = {
+      const request: any = {
         studentId: userInfo.actorId,
         courseId: this.courseId(),
         teacherId: this.selectedTeacher()!.id!,
         groupId: group.groupId!,
-        initiator: EnrollmentRequestInitiator.Student
+        initiator: EnrollmentRequestInitiator.Student,
       };
+
+      if (this.teacherStudentCodeInput?.trim()) {
+        request.teacherStudentCode = this.teacherStudentCodeInput.trim();
+      }
 
       await lastValueFrom(this.enrollmentRequestService.create(request));
       this.submitting.set(false);
@@ -242,12 +268,11 @@ export class CourseEnrollmentComponent implements OnInit {
     } catch (error: any) {
       console.error('Error submitting enrollment request:', error);
       let errorMsg = 'حدث خطأ أثناء إرسال طلب التسجيل. يرجى المحاولة مرة أخرى.';
-      
-      // Check if it's a duplicate enrollment error
+
       if (error?.error?.error?.message) {
         errorMsg = error.error.error.message;
       }
-      
+
       this.errorMessage.set(errorMsg);
       this.submitting.set(false);
     }
@@ -256,6 +281,7 @@ export class CourseEnrollmentComponent implements OnInit {
   backToTeachers() {
     this.selectedTeacher.set(null);
     this.groups.set([]);
+    this.teacherStudentCodeInput = '';
   }
 
   goBack() {
@@ -269,7 +295,6 @@ export class CourseEnrollmentComponent implements OnInit {
 
   formatTime(time: string): string {
     if (!time) return '';
-    // Assuming time is in format "HH:mm:ss"
     const parts = time.split(':');
     if (parts.length >= 2) {
       const hours = parseInt(parts[0]);

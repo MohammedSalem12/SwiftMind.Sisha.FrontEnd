@@ -48,10 +48,10 @@
   color: var(--grade-text-color);
 }
 
-.loading-container { 
-  text-align: center; 
-  padding: 5rem 1rem; 
-  color: var(--grade-text-color);
+.loading-container {
+  text-align: center;
+  padding: 5rem 1rem;
+  color: #6b7280;
 }
 
 .content-container {
@@ -120,20 +120,19 @@
   border: 2px solid #3498db;
 }
 
-.stat-value { 
-  font-size: 1.5rem; 
-  font-weight: 700; 
-  color: var(--grade-text-color); 
-  line-height: 1; 
-  display: block; 
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  line-height: 1;
+  display: block;
 }
 
-.stat-label { 
-  font-size: 0.72rem; 
-  color: var(--grade-text-color); 
-  opacity: 0.7;
-  margin-top: 0.25rem; 
-  display: block; 
+.stat-label {
+  font-size: 0.72rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  display: block;
 }
 
 .section {
@@ -160,17 +159,13 @@
 .section-title {
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--grade-text-color);
+  color: #1a202c;
   margin: 0 0 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: color 0.3s ease;
-  
-  i { 
-    color: var(--grade-primary); 
-    transition: color 0.3s ease;
-  }
+
+  i { color: var(--grade-primary); }
 }
 
 .badge-count {
@@ -246,20 +241,17 @@
   transition: color 0.3s ease;
 }
 
-.link-name { 
-  font-weight: 600; 
-  color: var(--grade-text-color); 
-  margin: 0; 
-  font-size: 0.95rem; 
-  transition: color 0.3s ease;
+.link-name {
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+  font-size: 0.95rem;
 }
 
-.link-relation { 
-  font-size: 0.8rem; 
-  color: var(--grade-text-color); 
-  opacity: 0.7;
-  margin: 0; 
-  transition: color 0.3s ease;
+.link-relation {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
 }
 
 .link-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
@@ -353,32 +345,27 @@
   transition: all 0.3s ease;
 }
 
-.course-name { 
-  font-size: 0.95rem; 
-  font-weight: 600; 
-  color: var(--grade-text-color); 
-  margin-bottom: 0.25rem; 
-  transition: color 0.3s ease;
+.course-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 0.25rem;
 }
 
-.course-name-en { 
-  font-size: 0.75rem; 
-  color: var(--grade-text-color); 
-  opacity: 0.7;
-  margin-bottom: 0.75rem; 
-  transition: color 0.3s ease;
+.course-name-en {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
 }
 
-.course-teacher, .course-group { 
-  font-size: 0.75rem; 
-  color: var(--grade-text-color); 
-  opacity: 0.8;
-  margin: 0.15rem 0; 
-  
-  i { 
-    margin-left: 0.3rem; 
+.course-teacher, .course-group {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0.15rem 0;
+
+  i {
+    margin-left: 0.3rem;
     color: var(--grade-primary);
-    transition: color 0.3s ease;
   }
 }
 
@@ -389,23 +376,18 @@
   align-items: center;
   gap: 0.3rem;
   font-size: 0.75rem;
-  color: var(--grade-text-color);
-  opacity: 0.8;
-  transition: color 0.3s ease;
-  
-  i { 
-    color: var(--grade-primary);
-    transition: color 0.3s ease;
+  color: #6b7280;
+
+  i { color: var(--grade-primary); }
+
+  &.has-absence {
+    color: #dc2626;
+    i { color: #dc2626; }
   }
-  
-  &.has-absence { 
-    color: #dc2626; 
-    i { color: #dc2626; } 
-  }
-  
-  &.grade-stat  { 
-    color: var(--grade-secondary); 
-    i { color: var(--grade-secondary); } 
+
+  &.grade-stat {
+    color: var(--grade-secondary);
+    i { color: var(--grade-secondary); }
   }
 }
 
@@ -425,12 +407,10 @@
   transition: width 0.5s ease;
 }
 
-.attendance-pct-label { 
-  font-size: 0.7rem; 
-  color: var(--grade-text-color); 
-  opacity: 0.7;
-  margin: 0; 
-  transition: color 0.3s ease;
+.attendance-pct-label {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin: 0;
 }
 
 // Responsive design
@@ -538,11 +518,10 @@
   }
 }
 
-.empty-state { 
-  text-align: center; 
-  padding: 2rem; 
-  color: var(--grade-text-color); 
-  opacity: 0.7;
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
 }
 
 .empty-icon { 
@@ -666,4 +645,9 @@
     font-size: 13px; font-weight: 700; color: #764ba2;
     margin-bottom: 8px; padding: 4px 0;
   }
+}
+
+.course-enroll-hint {
+  font-size: 11px; color: #764ba2; margin: 4px 0 0;
+  display: flex; align-items: center; gap: 4px;
 }

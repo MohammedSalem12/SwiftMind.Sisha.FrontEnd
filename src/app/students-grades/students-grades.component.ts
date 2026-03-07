@@ -127,6 +127,25 @@ export class StudentsGradesComponent implements OnInit {
 
   trackById = (_: number, item: StudentWithGrades) => item.id;
 
+  // Helper methods for enhanced UI
+  getInitials(firstName: string, lastName: string): string {
+    return (firstName?.charAt(0) || '') + (lastName?.charAt(0) || '');
+  }
+
+  getPercentage(grade: number, maxGrade: number): number {
+    if (!maxGrade || maxGrade === 0) return 0;
+    return Math.round((grade / maxGrade) * 100);
+  }
+
+  getGradeClass(grade: number, maxGrade: number): string {
+    const percentage = this.getPercentage(grade, maxGrade);
+    if (percentage >= 90) return 'excellent';
+    if (percentage >= 80) return 'very-good';
+    if (percentage >= 70) return 'good';
+    if (percentage >= 60) return 'acceptable';
+    return 'poor';
+  }
+
   // palette taken from the logo/theme: ancient gold, lapis, sand, teal, deep maroon
   private readonly palette = ['#b58c00', '#2b6fb6', '#e6caa3', '#6bb1a8', '#8c3b3b'];
 

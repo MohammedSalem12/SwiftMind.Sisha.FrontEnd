@@ -165,11 +165,11 @@ export class StudentHomeComponent implements OnInit {
       const result = await lastValueFrom(
         this.courseService.getList({ maxResultCount: 100, skipCount: 0, sorting: '' })
       );
-      const withAcademy = (result?.items || []).filter(c => c.academyId);
+      const withAcademy = (result?.items || []).filter(c => (c as any).academyId);
       // Group by academy name
       const groupMap = new Map<string, CourseDto[]>();
       for (const c of withAcademy) {
-        const key = c.academyName || c.academyId || 'أكاديمية';
+        const key = (c as any).academyName || (c as any).academyId || 'أكاديمية';
         if (!groupMap.has(key)) groupMap.set(key, []);
         groupMap.get(key)!.push(c);
       }
@@ -243,6 +243,14 @@ export class StudentHomeComponent implements OnInit {
 
   enrollInCourse(): void {
     this.router.navigate(['/student/courses']);
+  }
+
+  enrollInAcademyCourse(course: CourseDto): void {
+    this.router.navigate(['/student/enroll', course.id]);
+  }
+
+  browseAcademies(): void {
+    this.router.navigate(['/academies']);
   }
 
   goToMyRequests(): void {

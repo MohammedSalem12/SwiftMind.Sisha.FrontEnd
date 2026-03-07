@@ -1,6 +1,10 @@
 import { Environment } from '@abp/ng.core';
 
-const baseUrl = 'http://localhost:4200';
+// Frontend production URL (Firebase hosting)
+const baseUrl = 'https://sesha-9999.web.app';
+
+// ngrok tunnel URL — update this each time you restart ngrok
+const backendUrl = 'https://overvaluable-nonequilateral-henriette.ngrok-free.dev';
 
 export const environment = {
   production: true,
@@ -10,7 +14,7 @@ export const environment = {
     logoUrl: '',
   },
   oAuthConfig: {
-    issuer: 'https://localhost:44367/',
+    issuer: `${backendUrl}/`,
     redirectUri: baseUrl,
     clientId: 'Sesha_App',
     responseType: 'code',
@@ -23,7 +27,7 @@ export const environment = {
   },
   apis: {
     default: {
-      url: 'https://localhost:44367',
+      url: backendUrl,
       rootNamespace: 'SwiftMind.Sesha',
     },
   },

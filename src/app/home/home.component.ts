@@ -32,6 +32,9 @@ export class HomeComponent implements OnInit {
   teachersCount = signal<number | null>(null);
   parentsCount = signal<number | null>(null);
   loadingCounts = signal(false);
+  
+  // Track if we're redirecting (to prevent flash of dashboard)
+  redirecting = signal(false);
 
   // Mock ads and suggestions (UI-only, not real ads)
   ads = signal<any[]>([
@@ -61,11 +64,19 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Check if user is a student and redirect to student home
     if (this.authService.isAuthenticated) {
       this.checkUserRoleAndRedirect();
     }
-    void this.loadCounts();
+    // Only load counts for ADMIN/SECRETARY — other roles are redirected immediately
+    // and may not have permission to call these endpoints (causes error toasts)
+    const currentUser = this.configStateService.getOne('currentUser') as any;
+    const roles: string[] = currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [];
+    const isAdminOrSecretary = Array.isArray(roles) && roles.some(
+      (r: any) => typeof r === 'string' && (r.toUpperCase() === 'ADMIN' || r.toUpperCase() === 'SECRETARY')
+    );
+    if (!this.authService.isAuthenticated || isAdminOrSecretary) {
+      void this.loadCounts();
+    }
   }
 
   private checkUserRoleAndRedirect(): void {
@@ -84,6 +95,11 @@ export class HomeComponent implements OnInit {
       const isTeacher = Array.isArray(roles)
         ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'teacher')
         : false;
+
+      // Set redirecting flag BEFORE navigating to prevent flash of dashboard
+      if (isStudent || isParent || isTeacher) {
+        this.redirecting.set(true);
+      }
 
       if (isStudent) {
         this.router.navigate(['/student']);

@@ -1,135 +1,163 @@
 <div class="login-page" dir="rtl">
 
-  <!-- Decorative background shapes -->
-  <div class="bg-shape shape-top"></div>
-  <div class="bg-shape shape-bottom"></div>
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
 
-  <div class="card-wrapper">
-    <div class="login-card">
-
-      <!-- Logo & App Name -->
-      <div class="brand-section">
-        <div class="logo-ring">
-          <img src="/assets/images/logo/logo.png" alt="SwiftMind" class="logo-img" />
-        </div>
-        <h1 class="app-name">SwiftMind</h1>
-        <p class="app-tagline">نظام إدارة التعليم</p>
+    <div class="brand">
+      <div class="logo-ring">
+        <img src="/assets/images/logo/logo.png" alt="SwiftMind" class="logo-img" />
       </div>
-
-      <!-- Error Banner -->
-      @if (error()) {
-        <div class="error-banner">
-          <i class="fas fa-exclamation-circle"></i>
-          <span>{{ error() }}</span>
-        </div>
-      }
-
-      <!-- Login Form -->
-      <form (ngSubmit)="submit()" #loginForm="ngForm" class="login-form">
-
-        <!-- Username -->
-        <div class="field-wrap">
-          <div class="field-inner">
-            <i class="fas fa-user field-icon"></i>
-            <input
-              id="usernameInput"
-              name="userNameOrEmailAddress"
-              type="text"
-              class="field-input"
-              placeholder="اسم المستخدم أو البريد الإلكتروني"
-              [ngModel]="model().userNameOrEmailAddress"
-              (ngModelChange)="updateUsername($event)"
-              required
-              autocomplete="username"
-              dir="ltr"
-            />
-          </div>
-        </div>
-
-        <!-- Password -->
-        <div class="field-wrap">
-          <div class="field-inner">
-            <i class="fas fa-lock field-icon"></i>
-            <input
-              id="passwordInput"
-              name="password"
-              [type]="showPassword() ? 'text' : 'password'"
-              class="field-input"
-              placeholder="كلمة المرور"
-              [ngModel]="model().password"
-              (ngModelChange)="updatePassword($event)"
-              required
-              autocomplete="current-password"
-              dir="ltr"
-            />
-            <button type="button" class="toggle-pw" (click)="togglePassword()" tabindex="-1">
-              <i [class]="showPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Options Row -->
-        <div class="options-row">
-          <label class="remember-label">
-            <input
-              type="checkbox"
-              name="rememberMe"
-              [ngModel]="model().rememberMe"
-              (ngModelChange)="updateRememberMe($event)"
-              class="remember-checkbox"
-            />
-            <span class="custom-check"></span>
-            <span>تذكرني</span>
-          </label>
-          <a routerLink="/forgot-password" class="forgot-link">نسيت كلمة المرور؟</a>
-        </div>
-
-        <!-- Submit Button -->
-        <button
-          type="submit"
-          class="btn-login"
-          [disabled]="loading() || biometricLoading() || !loginForm.valid"
-        >
-          @if (loading()) {
-            <i class="fas fa-spinner fa-spin"></i>
-            <span>جارٍ تسجيل الدخول...</span>
-          } @else {
-            <span>تسجيل الدخول</span>
-          }
-        </button>
-
-      </form>
-
-      <!-- Biometric Section -->
-      @if (biometricAvailable()) {
-        <div class="biometric-section">
-          <div class="divider-line">
-            <span class="divider-text">أو</span>
-          </div>
-          <button
-            type="button"
-            class="btn-biometric"
-            (click)="loginWithBiometric()"
-            [disabled]="loading() || biometricLoading()"
-          >
-            @if (biometricLoading()) {
-              <i class="fas fa-spinner fa-spin"></i>
-              <span>جارٍ التحقق...</span>
-            } @else {
-              <i class="fas fa-fingerprint biometric-icon"></i>
-              <span>الدخول ببصمة الإصبع</span>
-            }
-          </button>
-        </div>
-      }
-
-      <!-- Register Link -->
-      <div class="register-row">
-        <span>ليس لديك حساب؟</span>
-        <a routerLink="/register" class="register-link">إنشاء حساب جديد</a>
-      </div>
-
+      <h1 class="app-name">SwiftMind</h1>
+      <p class="app-tagline">نظام إدارة التعليم</p>
+      <p class="app-tagline-en">Education Management System</p>
     </div>
   </div>
+
+  <!-- Form Sheet -->
+  <div class="form-sheet">
+    <div class="sheet-handle"></div>
+
+    <h2 class="sheet-title">تسجيل الدخول <span class="sheet-title-en">Sign In</span></h2>
+
+    <!-- Error Banner -->
+    @if (error()) {
+      <div class="error-banner">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ error() }}</span>
+      </div>
+    }
+
+    <!-- Login Form -->
+    <form (ngSubmit)="submit()" #loginForm="ngForm" class="login-form">
+
+      <!-- Username -->
+      <div class="field-wrap">
+        <label class="field-label">اسم المستخدم / Username</label>
+        <div class="field-inner">
+          <i class="fas fa-user field-icon"></i>
+          <input
+            id="usernameInput"
+            name="userNameOrEmailAddress"
+            type="text"
+            class="field-input"
+            placeholder="اسم المستخدم أو البريد الإلكتروني"
+            [ngModel]="model().userNameOrEmailAddress"
+            (ngModelChange)="updateUsername($event)"
+            required
+            autocomplete="username"
+            dir="ltr"
+          />
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="field-wrap">
+        <label class="field-label">كلمة المرور / Password</label>
+        <div class="field-inner">
+          <i class="fas fa-lock field-icon"></i>
+          <input
+            id="passwordInput"
+            name="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            class="field-input"
+            placeholder="كلمة المرور"
+            [ngModel]="model().password"
+            (ngModelChange)="updatePassword($event)"
+            required
+            autocomplete="current-password"
+            dir="ltr"
+          />
+          <button type="button" class="toggle-pw" (click)="togglePassword()" tabindex="-1">
+            <i [class]="showPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Options Row -->
+      <div class="options-row">
+        <label class="remember-label">
+          <input
+            type="checkbox"
+            name="rememberMe"
+            [ngModel]="model().rememberMe"
+            (ngModelChange)="updateRememberMe($event)"
+            class="remember-checkbox"
+          />
+          <span class="custom-check"></span>
+          <span>تذكرني</span>
+        </label>
+        <a routerLink="/forgot-password" class="forgot-link">نسيت كلمة المرور؟</a>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn-login"
+        [disabled]="loading() || biometricLoading() || !loginForm.valid"
+      >
+        @if (loading()) {
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>جارٍ تسجيل الدخول...</span>
+        } @else {
+          <i class="fas fa-sign-in-alt"></i>
+          <span>تسجيل الدخول</span>
+        }
+      </button>
+
+    </form>
+
+    <!-- Biometric Section -->
+    @if (biometricAvailable()) {
+      <div class="biometric-section">
+        <div class="divider-line">
+          <span class="divider-text">أو / or</span>
+        </div>
+        <button
+          type="button"
+          class="btn-biometric"
+          (click)="loginWithBiometric()"
+          [disabled]="loading() || biometricLoading()"
+        >
+          @if (biometricLoading()) {
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>جارٍ التحقق...</span>
+          } @else {
+            <i class="fas fa-fingerprint biometric-icon"></i>
+            <span>الدخول ببصمة الإصبع</span>
+          }
+        </button>
+      </div>
+    }
+
+    <!-- Register Link -->
+    <div class="register-row">
+      <span>ليس لديك حساب؟</span>
+      <a routerLink="/register" class="register-link">إنشاء حساب جديد</a>
+    </div>
+
+  </div>
+
+  <!-- Fixed Quick Links Bar -->
+  <nav class="quick-links" dir="rtl">
+    <a href="#" class="quick-link">
+      <i class="fas fa-headset"></i>
+      <span>الدعم</span>
+    </a>
+    <a href="#" class="quick-link">
+      <i class="fas fa-info-circle"></i>
+      <span>حول التطبيق</span>
+    </a>
+    <a href="#" class="quick-link">
+      <i class="fas fa-shield-alt"></i>
+      <span>الخصوصية</span>
+    </a>
+    <a href="#" class="quick-link">
+      <i class="fas fa-file-alt"></i>
+      <span>الشروط</span>
+    </a>
+  </nav>
 
 </div>

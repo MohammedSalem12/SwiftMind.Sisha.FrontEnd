@@ -111,6 +111,65 @@ export class ParentDashboardComponent implements OnInit {
     return Math.round(list.reduce((s, c) => s + c.avgAttendance, 0) / list.length);
   }
 
+  totalGrades(): number {
+    const list = this.children();
+    return list.reduce((total, child) => total + child.grades.length, 0);
+  }
+
+  lowAttendanceCount(): number {
+    const list = this.children();
+    return list.filter(child => child.avgAttendance < 75).length;
+  }
+
+  recentActivities(): number {
+    const list = this.children();
+    return list.reduce((total, child) => {
+      return total + child.attendance.length + child.grades.length;
+    }, 0);
+  }
+
+  getChildColor(studentId: string): string {
+    const colors = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
+    ];
+    const index = studentId.charCodeAt(0) % colors.length;
+    return colors[index];
+  }
+
+  scrollToSection(sectionId: string): void {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  toggleChildMenu(studentId: string): void {
+    // Implementation for child menu toggle
+    console.log('Toggle menu for student:', studentId);
+  }
+
+  goToAttendance(): void {
+    this.router.navigate(['/attendance']);
+  }
+
+  goToGrades(): void {
+    this.router.navigate(['/grades']);
+  }
+
+  goToReports(): void {
+    this.router.navigate(['/reports']);
+  }
+
+  contactTeacher(studentId: string): void {
+    // Implementation for contacting teacher
+    console.log('Contact teacher for student:', studentId);
+  }
+
   viewChild(studentId?: string): void {
     if (studentId) this.router.navigate(['/parent/child', studentId]);
   }

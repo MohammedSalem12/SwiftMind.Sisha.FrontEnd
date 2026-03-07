@@ -43,8 +43,16 @@
     </div>
   </div>
 
-  <!-- Content for authenticated users -->
-  <div *ngIf="hasLoggedIn" class="landing-grid">
+  <!-- Loading state during redirect -->
+  <div *ngIf="hasLoggedIn && redirecting()" class="redirect-loading">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>جاري التحميل...</p>
+    </div>
+  </div>
+
+  <!-- Content for authenticated users (only show if not redirecting) -->
+  <div *ngIf="hasLoggedIn && !redirecting()" class="landing-grid">
     <div class="left-col">
       <div class="hero card mb-3">
         <div class="card-body text-center">

@@ -17,8 +17,9 @@ import type { CourseDto } from '@proxy/courses/dtos/models';
     <div class="profile-page" dir="rtl">
       <!-- Header -->
       <div class="page-header">
-        <button class="btn-back" (click)="router.navigate(['/academies'])">
+        <button class="btn-back" (click)="goBack()" aria-label="العودة">
           <i class="fas fa-arrow-right"></i>
+          <span class="back-text">العودة</span>
         </button>
         <h1>ملف الأكاديمية</h1>
         <button *ngIf="isSupervisorOrAdmin()" class="btn-manage"
@@ -91,6 +92,10 @@ import type { CourseDto } from '@proxy/courses/dtos/models';
                 <small>{{ course.nameEn }}</small>
                 <span class="code-badge-sm">{{ course.code }}</span>
               </div>
+              <button *ngIf="isStudent()" class="btn-enroll-course"
+                      (click)="enrollInCourse(course)">
+                <i class="fas fa-plus"></i> سجّل
+              </button>
             </div>
           </div>
         </div>
@@ -109,6 +114,8 @@ import type { CourseDto } from '@proxy/courses/dtos/models';
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; color: #555;
     }
+    .btn-back { padding: 0 10px; border-radius: 8px; width: auto; height: 36px; }
+    .btn-back .back-text { margin-right: 6px; font-weight: 600; color: #333; }
     .btn-manage { border-radius: 10px; width: auto; padding: 0 14px; font-size: 13px; font-weight: 600; }
     .loading-state { text-align: center; padding: 40px; color: #666; }
     .spinner {
@@ -192,10 +199,16 @@ import type { CourseDto } from '@proxy/courses/dtos/models';
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 16px; flex-shrink: 0;
     }
-    .course-info { display: flex; flex-direction: column; gap: 2px; }
+    .course-info { display: flex; flex-direction: column; gap: 2px; flex: 1; }
     .course-info strong { font-size: 14px; color: #333; }
     .course-info small { font-size: 12px; color: #777; }
     .code-badge-sm { font-size: 10px; color: #764ba2; background: #ede7f6; padding: 1px 6px; border-radius: 5px; }
+    .btn-enroll-course {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; border: none; border-radius: 8px;
+      padding: 7px 14px; font-size: 12px; font-weight: 700;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
   `]
 })
 export class AcademyProfileComponent implements OnInit {
@@ -243,6 +256,16 @@ export class AcademyProfileComponent implements OnInit {
     }
   }
 
+  goBack(): void {
+    try {
+      if (window.history.length > 1) {
+        window.history.back();
+        return;
+      }
+    } catch {}
+    this.router.navigate(['/academies']);
+  }
+
   isSupervisorOrAdmin(): boolean {
     const ac = this.academy();
     if (!ac) return false;
@@ -259,6 +282,14 @@ export class AcademyProfileComponent implements OnInit {
 
   isPending(): boolean {
     return this.memberStatus === AcademyTeacherStatus.Pending;
+  }
+
+  isStudent(): boolean {
+    return this.actorType === 'Student';
+  }
+
+  enrollInCourse(course: CourseDto): void {
+    this.router.navigate(['/student/enroll', course.id]);
   }
 
   async requestJoin(): Promise<void> {

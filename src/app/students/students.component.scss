@@ -44,6 +44,24 @@
 
 ul { margin:6px 0 12px 18px }
 
+.teacher-code-search-bar {
+  background: #f9f6ee; border: 1px solid #efe3c8; border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 10px;
+}
+.tcs-label { font-weight: 600; color: #5a4200; display: flex; align-items: center; gap: 6px; }
+.tcs-input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tcs-input { padding: 8px 12px; border-radius: 8px; border: 1px solid #efe3c8; min-width: 220px; flex: 1; }
+.tcs-result-card {
+  display: flex; gap: 12px; align-items: center; background: white;
+  border-radius: 10px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.tcs-empty { color: #999; font-style: italic; padding: 4px 0; }
+.badge-code {
+  display: inline-block; background: #fff3cc; color: #7a5800;
+  border: 1px solid #e8d080; border-radius: 6px; padding: 1px 7px; font-size: 12px; font-weight: 600;
+}
+.card-avatar.small { width: 42px; height: 42px; font-size: 15px; }
+
 .pager { display:flex; gap:12px; align-items:center; justify-content:center; margin-top:18px }
 
 .fab-add { position:fixed; right:22px; bottom:22px; background:#b58c00; color:white; padding:9px 14px; border-radius:8px; box-shadow:0 10px 24px rgba(181,140,0,0.18); border:none; font-weight:700 }

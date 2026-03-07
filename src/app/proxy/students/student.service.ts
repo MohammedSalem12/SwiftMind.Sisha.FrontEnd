@@ -54,6 +54,15 @@ export class StudentService {
     { apiName: this.apiName,...config });
   
 
+  getByTeacherStudentCode = (teacherStudentCode: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentDto>({
+      method: 'GET',
+      url: '/api/app/student/by-teacher-student-code',
+      params: { teacherStudentCode },
+    },
+    { apiName: this.apiName,...config });
+  
+
   getCurrentStudent = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, StudentDto>({
       method: 'GET',
