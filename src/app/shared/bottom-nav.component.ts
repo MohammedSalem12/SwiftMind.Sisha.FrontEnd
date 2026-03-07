@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, signal, OnDestroy, effect } from '@angular/core';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { ConfigStateService, AuthService } from '@abp/ng.core';
-import { filter, Subscription } from 'rxjs';
-import { getBottomTabsForRole, getMoreMenuItemsForRole, BottomTabConfig, MoreMenuItemConfig } from '../route.provider';
+import { filter, Subscription, lastValueFrom } from 'rxjs';
+import { getBottomTabsForRole, getMoreMenuItemsForRole, BottomTabConfig, MoreMenuItemConfig, ROLES } from '../route.provider';
 import { RealtimeNotificationService } from './services/realtime-notification.service';
+import { EnrollmentRequestService } from '@proxy/student-enrollments';
 
 @Component({
   selector: 'app-bottom-nav',
@@ -23,8 +24,8 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
            (click)="onTabClick(tab)">
           <div class="bn-icon-wrap">
             <i [class]="tab.icon"></i>
-            <span class="bn-badge" *ngIf="tab.path === '/notifications' && unreadCount() > 0">
-              {{ unreadCount() > 9 ? '9+' : unreadCount() }}
+            <span class="bn-badge" *ngIf="tabBadge(tab) > 0">
+              {{ tabBadge(tab) > 9 ? '9+' : tabBadge(tab) }}
             </span>
           </div>
           <span class="bn-label">{{ tab.label }}</span>
@@ -471,18 +472,25 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   private readonly configStateService = inject(ConfigStateService);
   private readonly authService = inject(AuthService);
   private readonly realtimeSvc = inject(RealtimeNotificationService);
+  private readonly enrollmentRequestService = inject(EnrollmentRequestService);
   private routerSubscription?: Subscription;
+  private notifEffect = effect(() => {
+    const notif = this.realtimeSvc.latestNotification();
+    if (notif && this.isTeacher) this.loadPendingRequestsCount();
+  });
 
   tabs = signal<BottomTabConfig[]>([]);
   moreItems = signal<MoreMenuItemConfig[]>([]);
   showMoreMenu = signal(false);
   readonly unreadCount = this.realtimeSvc.unreadCount;
+  pendingRequestsCount = signal(0);
   currentPath = signal('');
 
   userInitials = signal('?');
   displayName = signal('');
   userEmail = signal('');
   isAuthenticated = signal(false);
+  private isTeacher = false;
 
   isRtl = true;
 
@@ -500,12 +508,30 @@ export class BottomNavComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routerSubscription?.unsubscribe();
+    this.notifEffect.destroy();
+  }
+
+  private async loadPendingRequestsCount(): Promise<void> {
+    try {
+      const requests = await lastValueFrom(
+        this.enrollmentRequestService.getPendingRequestsForCurrentTeacher()
+      );
+      this.pendingRequestsCount.set(requests?.length || 0);
+    } catch { /* silent */ }
+  }
+
+  tabBadge(tab: BottomTabConfig): number {
+    if (tab.path === '/notifications') return this.unreadCount();
+    if (tab.path === '/teacher/enrollment-requests') return this.pendingRequestsCount();
+    return 0;
   }
 
   private loadUserAndTabs(): void {
     const currentUser = this.configStateService.getOne('currentUser') as any;
     const userRoles: string[] = currentUser?.roles || [];
     const isAuth: boolean = currentUser?.isAuthenticated ?? false;
+    this.isTeacher = userRoles.includes(ROLES.TEACHER);
+    if (this.isTeacher) this.loadPendingRequestsCount();
 
     // Build display name from available fields
     const firstName: string = currentUser?.name || '';

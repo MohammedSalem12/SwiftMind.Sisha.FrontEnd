@@ -662,6 +662,20 @@ body.auth-page {
 }
 
 // ─────────────────────────────────────────────────────────────
+// HIDE ABP FLOATING OPTIONS / QUICK-SETTINGS BUTTON
+// ─────────────────────────────────────────────────────────────
+lpx-quick-settings,
+.lpx-quick-settings,
+[class*="lpx-quick-settings"],
+lpx-settings-btn,
+.lpx-settings-btn,
+[class*="lpx-settings-btn"],
+abp-quick-settings,
+.abp-quick-settings {
+  display: none !important;
+}
+
+// ─────────────────────────────────────────────────────────────
 // HIDE ABP SIDEBAR & TOPBAR — bottom nav replaces them on mobile
 // ─────────────────────────────────────────────────────────────
 .lpx-sidebar-container,

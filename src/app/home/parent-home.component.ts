@@ -10,6 +10,7 @@ import { NotificationService, NotificationDto } from '@proxy/notifications';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
+import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status.enum';
 
 @Component({
   selector: 'app-parent-home',
@@ -83,9 +84,12 @@ export class ParentHomeComponent implements OnInit {
         this.parentName.set(`${parent.firstName || ''} ${parent.lastName || ''}`.trim());
 
         const students = await lastValueFrom(this.parentService.getLinkedStudentsByParentId(parent.id!));
-        this.children.set(students as ParentStudentDto[]);
+        const confirmed = (students as ParentStudentDto[]).filter(
+          s => s.linkStatus === ParentStudentLinkStatus.Confirmed
+        );
+        this.children.set(confirmed);
 
-        await this.loadChildrenCourses(students as ParentStudentDto[]);
+        await this.loadChildrenCourses(confirmed);
       }
     } catch (error) {
       console.error('Error loading parent children:', error);

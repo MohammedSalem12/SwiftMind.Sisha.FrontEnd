@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { TeacherService } from '@proxy/teachers';
-import { CourseService } from '@proxy/courses';
 import type { CourseDto } from '@proxy/courses/dtos/models';
 
 @Component({
@@ -14,193 +13,270 @@ import type { CourseDto } from '@proxy/courses/dtos/models';
   template: `
     <div class="page" dir="rtl">
 
-      <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="goBack()">
+      <!-- Hero header with back button -->
+      <div class="hero">
+        <div class="hero-blob hero-blob-1"></div>
+        <div class="hero-blob hero-blob-2"></div>
+        <button class="btn-back" (click)="goBack()">
           <i class="fas fa-arrow-right"></i>
         </button>
-        <div class="header-info">
-          <h1>{{ teacherName() || 'المعلم' }}</h1>
-          <p class="opacity-75 mb-0">{{ courses().length }} مقرر</p>
+        <div class="hero-content">
+          <div class="hero-greeting">
+            <span class="hero-label">مقررات المعلم</span>
+            <span class="hero-name">{{ teacherName() || 'المعلم' }}</span>
+          </div>
+          <p class="hero-sub">اختر مقرراً لتسجيل الحضور أو الدرجات</p>
+          <p class="hero-sub-en">Select a course to record attendance or marks</p>
+        </div>
+        <div class="hero-icon">
+          <i class="fas fa-book"></i>
         </div>
       </div>
 
-      <!-- Loading -->
-      <div *ngIf="loading()" class="loading-state">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-2 text-muted">جاري تحميل المقررات...</p>
-      </div>
+      <!-- Skeleton loading -->
+      @if (loading()) {
+        <div class="loading-area">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+        </div>
+      }
 
       <!-- Error -->
-      <div *ngIf="error()" class="alert alert-danger mx-3 mt-3">
-        <i class="fas fa-exclamation-circle me-2"></i>{{ error() }}
-      </div>
+      @if (error()) {
+        <div class="error-msg">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ error() }}
+        </div>
+      }
 
-      <!-- Course list -->
-      <div class="course-list" *ngIf="!loading()">
-        <div *ngIf="courses().length === 0 && !error()" class="empty-state">
-          <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-          <h4>لا توجد مقررات</h4>
-          <p class="text-muted">لم يتم تسجيل أي مقرر لهذا المعلم بعد</p>
+      <!-- Empty state -->
+      @if (!loading() && !error() && courses().length === 0) {
+        <div class="empty-state">
+          <i class="fas fa-book-open"></i>
+          <p>لا توجد مقررات لهذا المعلم</p>
+          <small>No courses assigned yet</small>
+        </div>
+      }
+
+      <!-- Section label + course list -->
+      @if (!loading() && courses().length > 0) {
+        <div class="section-label">
+          <i class="fas fa-layer-group"></i>
+          <span>المقررات · Courses</span>
+          <span class="count-pill">{{ courses().length }}</span>
         </div>
 
-        <div
-          class="course-card"
-          *ngFor="let course of courses(); trackBy: trackById">
-
-          <div class="course-info">
-            <div class="course-icon">
-              <i class="fas fa-book"></i>
+        <div class="courses-grid">
+          @for (course of courses(); track course.id) {
+            <div class="course-card">
+              <!-- Course info row -->
+              <div class="course-info">
+                <div class="course-card-icon">
+                  <i class="fas fa-book"></i>
+                </div>
+                <div class="course-card-body">
+                  <div class="course-name">{{ course.nameAr || course.nameEn }}</div>
+                  @if (course.nameEn) {
+                    <div class="course-name-en">{{ course.nameEn }}</div>
+                  }
+                  <div class="course-meta">
+                    @if (course.code) {
+                      <span class="meta-chip chip-code">{{ course.code }}</span>
+                    }
+                    @if (course.gradeName) {
+                      <span class="meta-chip chip-grade">{{ course.gradeName }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+              <!-- Action buttons -->
+              <div class="course-actions">
+                <button class="action-btn action-attendance" (click)="goToAttendance(course)">
+                  <i class="fas fa-user-check"></i>
+                  <span>الحضور والغياب</span>
+                  <span class="action-en">Attendance</span>
+                </button>
+                <button class="action-btn action-marks" (click)="goToMarks(course)">
+                  <i class="fas fa-star-half-alt"></i>
+                  <span>إدخال الدرجات</span>
+                  <span class="action-en">Marks Entry</span>
+                </button>
+              </div>
             </div>
-            <div class="course-details">
-              <h3>{{ course.nameAr || course.nameEn }}</h3>
-              <span class="course-code" *ngIf="course.code">
-                <i class="fas fa-hashtag me-1"></i>{{ course.code }}
-              </span>
-            </div>
-          </div>
-
-          <div class="course-actions">
-            <button
-              class="action-btn attendance"
-              (click)="goToAttendance(course)">
-              <i class="fas fa-clipboard-list"></i>
-              <span>الحضور والغياب</span>
-            </button>
-            <button
-              class="action-btn marks"
-              (click)="goToMarks(course)">
-              <i class="fas fa-star-half-alt"></i>
-              <span>إدخال الدرجات</span>
-            </button>
-          </div>
+          }
         </div>
-      </div>
+      }
+
     </div>
   `,
   styles: [`
+    :host {
+      --grad-start: #667eea;
+      --grad-end:   #764ba2;
+      --bg:         #f4f5fb;
+      --white:      #ffffff;
+      --text-dark:  #1a1a2e;
+      --text-mid:   #4a4a6a;
+      --text-light: #9090aa;
+      --radius:     18px;
+    }
+
     .page {
       min-height: 100vh;
-      background: #f8f9fa;
-      padding-bottom: calc(80px + env(safe-area-inset-bottom));
+      background: var(--bg);
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     }
 
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: calc(.75rem + env(safe-area-inset-top)) 1rem .75rem;
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(145deg, var(--grad-start) 0%, var(--grad-end) 100%);
+      padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 2rem;
+      position: relative;
+      overflow: hidden;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: .875rem;
-      position: sticky;
-      top: 0;
-      z-index: 50;
     }
+    .hero-blob {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,.07); pointer-events: none;
+    }
+    .hero-blob-1 { width: 200px; height: 200px; top: -70px; right: -50px; }
+    .hero-blob-2 { width: 120px; height: 120px; bottom: -40px; left: -20px; }
 
-    .back-btn {
+    .btn-back {
+      flex-shrink: 0; z-index: 1;
       width: 40px; height: 40px; border-radius: 50%;
       background: rgba(255,255,255,.2); border: none;
-      color: white; font-size: 1rem; cursor: pointer;
+      color: #fff; font-size: 1rem; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      margin-top: .1rem;
     }
 
-    .header-info h1 { font-size: 1.2rem; font-weight: 700; margin: 0; }
+    .hero-content { z-index: 1; flex: 1; }
+    .hero-greeting { display: flex; flex-direction: column; margin-bottom: .35rem; }
+    .hero-label { font-size: .78rem; color: rgba(255,255,255,.7); }
+    .hero-name  { font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1.2; }
+    .hero-sub   { font-size: .82rem; color: rgba(255,255,255,.8); margin: 0; }
+    .hero-sub-en { font-size: .7rem; color: rgba(255,255,255,.55); margin: .1rem 0 0; }
 
-    .loading-state {
-      text-align: center;
-      padding: 3rem 1rem;
+    .hero-icon {
+      z-index: 1; flex-shrink: 0;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      border: 2px solid rgba(255,255,255,.25);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-icon i { font-size: 1.3rem; color: #fff; }
+
+    /* ── Skeleton ── */
+    .loading-area { padding: 1rem 1rem 0; display: flex; flex-direction: column; gap: .75rem; }
+    .skeleton-card {
+      height: 130px; border-radius: var(--radius);
+      background: linear-gradient(90deg, #e8e8f0 25%, #f0f0f8 50%, #e8e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ── Error ── */
+    .error-msg {
+      margin: 1rem; padding: .875rem 1rem; border-radius: 12px;
+      background: #fff5f5; border: 1px solid #ffe0e0; color: #dc2626;
+      font-size: .9rem; display: flex; align-items: center; gap: .5rem;
     }
 
-    .course-list {
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: .875rem;
-    }
-
+    /* ── Empty ── */
     .empty-state {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: #6c757d;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 4rem 2rem; text-align: center;
     }
-    .empty-state h4 { color: #343a40; margin-top: .75rem; }
+    .empty-state i { font-size: 3rem; color: var(--text-light); margin-bottom: 1rem; }
+    .empty-state p { font-size: 1rem; font-weight: 600; color: var(--text-mid); margin: 0 0 .25rem; }
+    .empty-state small { font-size: .8rem; color: var(--text-light); }
+
+    /* ── Section label ── */
+    .section-label {
+      display: flex; align-items: center; gap: .5rem;
+      padding: 1rem 1.25rem .5rem;
+      font-size: .8rem; font-weight: 700;
+      color: var(--text-mid); text-transform: uppercase; letter-spacing: .04em;
+    }
+    .section-label i { color: var(--grad-start); font-size: .85rem; }
+    .count-pill {
+      background: rgba(102,126,234,.12); color: var(--grad-start);
+      font-size: .75rem; font-weight: 700;
+      padding: .15rem .5rem; border-radius: 20px; min-width: 22px; text-align: center;
+    }
+
+    /* ── Course cards ── */
+    .courses-grid {
+      padding: 0 1rem 1rem;
+      display: flex; flex-direction: column; gap: .75rem;
+    }
 
     .course-card {
-      background: white;
-      border-radius: 16px;
-      border: 1.5px solid #e9ecef;
+      background: var(--white);
+      border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
     }
 
     .course-info {
-      display: flex;
-      align-items: center;
-      gap: .875rem;
-      padding: 1rem 1rem .75rem;
+      display: flex; align-items: center; gap: .75rem;
+      padding: .875rem .875rem .75rem 1rem;
     }
 
-    .course-icon {
-      width: 48px; height: 48px; border-radius: 12px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+    .course-card-icon {
+      flex-shrink: 0; width: 48px; height: 48px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(102,126,234,.12), rgba(118,75,162,.12));
       display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 1.25rem; flex-shrink: 0;
     }
+    .course-card-icon i { font-size: 1.2rem; color: var(--grad-start); }
 
-    .course-details { flex: 1; min-width: 0; }
-    .course-details h3 {
-      margin: 0 0 .2rem;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #1a1a2e;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .course-code {
-      font-size: .8rem;
-      color: #667eea;
-      font-weight: 500;
-    }
+    .course-card-body { flex: 1; min-width: 0; }
 
+    .course-name {
+      font-size: .95rem; font-weight: 700; color: var(--text-dark);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: .1rem;
+    }
+    .course-name-en {
+      font-size: .78rem; color: var(--text-light);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: .3rem;
+    }
+    .course-meta { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .meta-chip {
+      font-size: .68rem; font-weight: 600;
+      padding: .15rem .5rem; border-radius: 20px;
+    }
+    .chip-code  { background: rgba(102,126,234,.1); color: var(--grad-start); }
+    .chip-grade { background: rgba(118,75,162,.1);  color: var(--grad-end); }
+
+    /* ── Action buttons inside card ── */
     .course-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border-top: 1px solid #f0f0f0;
+      display: grid; grid-template-columns: 1fr 1fr;
+      border-top: 1px solid #f0f0f5;
     }
 
     .action-btn {
-      border: none;
-      padding: .875rem .5rem;
-      font-size: .85rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: .35rem;
-      min-height: 64px;
-      transition: background .15s;
+      border: none; padding: .8rem .5rem;
+      cursor: pointer; display: flex; flex-direction: column;
+      align-items: center; gap: .2rem; min-height: 68px;
+      transition: background .15s; font-weight: 600;
     }
     .action-btn i { font-size: 1.1rem; }
+    .action-btn span { font-size: .8rem; }
+    .action-en { font-size: .65rem !important; opacity: .7; }
 
-    .action-btn.attendance {
-      background: #f0f9ff;
-      color: #0284c7;
+    .action-attendance {
+      background: #f0f9ff; color: #0284c7;
       border-left: 1px solid #e0f2fe;
     }
-    .action-btn.attendance:hover, .action-btn.attendance:active {
-      background: #e0f2fe;
-    }
+    .action-attendance:active { background: #e0f2fe; }
 
-    .action-btn.marks {
-      background: #fefce8;
-      color: #ca8a04;
-    }
-    .action-btn.marks:hover, .action-btn.marks:active {
-      background: #fef9c3;
-    }
+    .action-marks { background: #fefce8; color: #ca8a04; }
+    .action-marks:active { background: #fef9c3; }
   `],
 })
 export class SecretaryTeacherCoursesComponent implements OnInit {
@@ -221,6 +297,8 @@ export class SecretaryTeacherCoursesComponent implements OnInit {
       return;
     }
     this.currentTeacherId = teacherId;
+    const navState = window.history.state as any;
+    if (navState?.teacherName) this.teacherName.set(navState.teacherName);
     await this.loadCourses(teacherId);
   }
 
@@ -232,12 +310,6 @@ export class SecretaryTeacherCoursesComponent implements OnInit {
         this.teacherService.getTeacherCourses(teacherId, { skipHandleError: true })
       );
       this.courses.set(courses ?? []);
-
-      // Try to get teacher name from state or a separate call
-      const history = window.history.state as any;
-      if (history?.teacherName) {
-        this.teacherName.set(history.teacherName);
-      }
     } catch (err: any) {
       this.error.set(err?.error?.error?.message || 'حدث خطأ أثناء تحميل المقررات');
       console.error('Error loading teacher courses:', err);

@@ -44,6 +44,10 @@ export class TeacherCourseActionComponent implements OnInit {
     this.router.navigate(['/marks-entry'], { queryParams: { courseId: this.courseId() } });
   }
 
+  goToGroups(): void {
+    this.router.navigate(['/teacher-groups'], { queryParams: { courseId: this.courseId() } });
+  }
+
   goBack(): void {
     this.router.navigate(['/teacher']);
   }

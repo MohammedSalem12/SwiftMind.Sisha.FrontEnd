@@ -287,6 +287,12 @@ export const appRoutes: Routes = [
     data: { roles: ['TEACHER', 'SECRETARY'] },
   },
   {
+    path: 'teacher/enrollment-requests',
+    loadComponent: () => import('./home/teacher-enrollment-requests.component').then(m => m.TeacherEnrollmentRequestsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER'] },
+  },
+  {
     path: 'teacher/academies',
     loadComponent: () => import('./home/teacher-academies.component').then(m => m.TeacherAcademiesComponent),
     canActivate: [roleGuard],

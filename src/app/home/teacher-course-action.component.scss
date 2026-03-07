@@ -134,6 +134,14 @@ $text-light:   #9090aa;
   .card-cta  { background: rgba(0,0,0,0.12); }
 }
 
+// ─── Groups: teal/green gradient ─────────────────────────────
+.card-groups {
+  background: linear-gradient(160deg, #10b981 0%, #059669 100%);
+
+  .card-icon { background: rgba(255,255,255,0.18); }
+  .card-cta  { background: rgba(0,0,0,0.12); }
+}
+
 // ─── Card inner layout ────────────────────────────────────────
 .card-inner {
   flex: 1;

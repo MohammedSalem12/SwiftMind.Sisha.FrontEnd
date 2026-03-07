@@ -35,11 +35,11 @@ import { GroupService } from '@proxy/groups';
           <div class="field-row">
             <div class="field">
               <label>وقت البداية <span class="required">*</span></label>
-              <input type="time" name="startTime" [(ngModel)]="startTime" required />
+              <input type="time" name="startTime" [(ngModel)]="startTime" step="3600" required />
             </div>
             <div class="field">
               <label>وقت النهاية <span class="required">*</span></label>
-              <input type="time" name="endTime" [(ngModel)]="endTime" required />
+              <input type="time" name="endTime" [(ngModel)]="endTime" step="3600" required />
             </div>
           </div>
 
@@ -107,10 +107,11 @@ export class AddScheduleComponent implements OnInit {
     this.saving.set(true);
     this.errorMsg.set(null);
     try {
+      const toExactHour = (t: string) => t.slice(0, 2) + ':00';
       await lastValueFrom(this.groupService.addScheduleToGroup(this.groupId, {
         dayOfWeek: Number(this.dayOfWeek),
-        startTime: this.startTime,
-        endTime: this.endTime,
+        startTime: toExactHour(this.startTime),
+        endTime: toExactHour(this.endTime),
       }));
       this.router.navigate(['/teacher-groups']);
     } catch (err: any) {

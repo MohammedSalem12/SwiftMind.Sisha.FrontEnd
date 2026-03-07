@@ -8,6 +8,8 @@ import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { ParentService } from '@proxy/parents';
+import type { ParentStudentDto } from '@proxy/parents/models';
+import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status.enum';
 
 interface RequestItem {
   id: string;
@@ -45,15 +47,23 @@ interface RequestItem {
 
       <!-- Tabs -->
       <div class="tabs-container">
-        <button class="tab" [class.active]="activeTab() === 'pending'" 
+        <button class="tab" [class.active]="activeTab() === 'pending'"
                 (click)="setTab('pending')">
           <i class="fas fa-clock"></i>
-          <span>بانتظار ردي</span>
+          <span>موافقتي</span>
           <span class="badge" *ngIf="pendingRequests().length > 0">
             {{ pendingRequests().length }}
           </span>
         </button>
-        <button class="tab" [class.active]="activeTab() === 'ended'" 
+        <button class="tab" [class.active]="activeTab() === 'links'"
+                (click)="setTab('links')">
+          <i class="fas fa-user-plus"></i>
+          <span>الربط</span>
+          <span class="badge badge--amber" *ngIf="linkRequests().length > 0">
+            {{ linkRequests().length }}
+          </span>
+        </button>
+        <button class="tab" [class.active]="activeTab() === 'ended'"
                 (click)="setTab('ended')">
           <i class="fas fa-check-circle"></i>
           <span>منتهية</span>
@@ -110,6 +120,42 @@ interface RequestItem {
                 <button class="action-btn reject" (click)="rejectRequest(req)">
                   <i class="fas fa-times"></i>
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Links Tab -->
+        <div *ngIf="activeTab() === 'links'">
+          <div *ngIf="linkRequests().length === 0" class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-user-check"></i>
+            </div>
+            <h3>لا توجد طلبات ربط معلقة</h3>
+            <p>جميع طلبات الربط اكتملت</p>
+          </div>
+
+          <div class="requests-list">
+            <div class="request-card" *ngFor="let link of linkRequests()">
+              <div class="request-icon" [ngClass]="link.linkStatus === 0 ? 'pending' : 'rejected'">
+                <i class="fas fa-child"></i>
+              </div>
+              <div class="request-content">
+                <h3>{{ link.studentName }}</h3>
+                <p class="subtitle">{{ link.studentCode }}</p>
+                <div class="request-details">
+                  <span *ngIf="link.gradeName">
+                    <i class="fas fa-graduation-cap"></i> {{ link.gradeName }}
+                  </span>
+                  <span *ngIf="link.relationshipType">
+                    <i class="fas fa-link"></i> {{ link.relationshipType }}
+                  </span>
+                </div>
+              </div>
+              <div class="request-status">
+                <span class="status-badge" [ngClass]="link.linkStatus === 0 ? 'pending-badge' : 'rejected'">
+                  {{ link.linkStatus === 0 ? 'بانتظار موافقة الطالب' : 'مرفوض' }}
+                </span>
               </div>
             </div>
           </div>
@@ -255,6 +301,15 @@ interface RequestItem {
 
     .tab.active .badge {
       background: #667eea;
+    }
+
+    .badge--amber {
+      background: #f59e0b;
+    }
+
+    .status-badge.pending-badge {
+      background: #fef3c7;
+      color: #d97706;
     }
 
     /* ─── Loading ─── */
@@ -532,12 +587,13 @@ export class ParentRequestsComponent implements OnInit {
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
   private readonly parentService = inject(ParentService);
 
-  activeTab = signal<'pending' | 'ended'>('pending');
+  activeTab = signal<'pending' | 'links' | 'ended'>('pending');
   loading = signal(false);
   
   allRequests = signal<RequestItem[]>([]);
   pendingRequests = signal<RequestItem[]>([]);
   endedRequests = signal<RequestItem[]>([]);
+  linkRequests = signal<ParentStudentDto[]>([]);
   
   toastMessage = signal('');
   toastType = signal<'success' | 'error'>('success');
@@ -546,7 +602,7 @@ export class ParentRequestsComponent implements OnInit {
     await this.loadRequests();
   }
 
-  setTab(tab: 'pending' | 'ended'): void {
+  setTab(tab: 'pending' | 'links' | 'ended'): void {
     this.activeTab.set(tab);
   }
 
@@ -576,12 +632,23 @@ export class ParentRequestsComponent implements OnInit {
         this.enrollmentRequestService.getList()
       ).catch(() => []);
 
-      // Get children IDs
+      // Get all linked students (all statuses)
       const linkedStudents = await lastValueFrom(
         this.parentService.getLinkedStudentsByParentId(parent.id!)
       ).catch(() => []);
 
-      const childrenIds = new Set(linkedStudents?.map(s => s.studentId) || []);
+      // Link requests = pending or rejected (not yet confirmed)
+      const links = (linkedStudents || []).filter(
+        s => s.linkStatus === ParentStudentLinkStatus.Pending ||
+             s.linkStatus === ParentStudentLinkStatus.Rejected
+      );
+      this.linkRequests.set(links);
+
+      const childrenIds = new Set(
+        (linkedStudents || [])
+          .filter(s => s.linkStatus === ParentStudentLinkStatus.Confirmed)
+          .map(s => s.studentId)
+      );
 
       // Map pending enrollments (waiting for parent approval)
       const pending: RequestItem[] = (pendingEnrollments || []).map(req => ({
