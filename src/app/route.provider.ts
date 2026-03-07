@@ -151,10 +151,10 @@ export function getMoreMenuItemsForRole(userRoles: string[]): MoreMenuItemConfig
   }
   if (userRoles.includes(ROLES.PARENT)) {
     return [
-      { path: '/parent/link-child',         label: 'ربط طالب',   icon: 'fas fa-user-plus' },
-      { path: '/parent-enrollment-approval', label: 'طلبات أبنائي', icon: 'fas fa-clipboard-check' },
-      { path: '/feeds',                      label: 'النشرات',      icon: 'fas fa-rss' },
-      { path: '/account/manage',             label: 'ملفي الشخصي',  icon: 'fas fa-user-circle' },
+      { path: '/parent/link-child',   label: 'ربط طالب',       icon: 'fas fa-user-plus' },
+      { path: '/parent/requests',     label: 'طلباتي',         icon: 'fas fa-clipboard-list' },
+      { path: '/feeds',               label: 'النشرات',        icon: 'fas fa-rss' },
+      { path: '/account/manage',      label: 'ملفي الشخصي',    icon: 'fas fa-user-circle' },
     ];
   }
   if (userRoles.includes(ROLES.TEACHER)) {
