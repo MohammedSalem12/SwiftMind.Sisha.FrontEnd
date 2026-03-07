@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, effect, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { NotificationService } from '@proxy/notifications';
 import type { NotificationDto } from '@proxy/notifications/models';
 import { NotificationType } from '@proxy/notifications/notification-type.enum';
@@ -17,6 +18,9 @@ import { lastValueFrom } from 'rxjs';
       <!-- Modern Header with Grade Theme -->
       <div class="page-header" [style.background]="currentTheme().gradient">
         <div class="header-content">
+          <button class="back-btn" (click)="goBack()">
+            <i class="fas fa-arrow-right"></i>
+          </button>
           <div class="header-icon">
             <i class="fas fa-bell"></i>
           </div>
@@ -127,9 +131,29 @@ import { lastValueFrom } from 'rxjs';
         margin: 0 auto;
         display: flex;
         align-items: center;
-        gap: 1.5rem;
+        gap: 1rem;
         position: relative;
         z-index: 1;
+      }
+
+      .back-btn {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        flex-shrink: 0;
+      }
+
+      .back-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
       }
 
       .header-icon {
@@ -458,10 +482,13 @@ import { lastValueFrom } from 'rxjs';
   `]
 })
 export class NotificationsComponent implements OnInit {
+  private readonly router = inject(Router);
   private readonly notificationSvc = inject(NotificationService);
   private readonly realtimeSvc = inject(RealtimeNotificationService);
   private readonly gradeThemeService = inject(GradeThemeService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
+
+  private userRole = '';
 
   notifications = signal<NotificationDto[]>([]);
   loading = signal(false);
@@ -492,6 +519,7 @@ export class NotificationsComponent implements OnInit {
     try {
       const userInfo = await lastValueFrom(this.currentUserInfoSvc.getCurrentUserActorInfo());
       this.currentGrade.set(userInfo?.currentGrade || null);
+      this.userRole = userInfo?.userRoles?.[0] || '';
       
       // Apply theme based on grade
       if (userInfo?.currentGrade) {
@@ -596,5 +624,17 @@ export class NotificationsComponent implements OnInit {
       badgeColor: '#667eea',
       progressColor: '#667eea'
     };
+  }
+
+  goBack(): void {
+    if (this.userRole === 'PARENT') {
+      this.router.navigate(['/parent']);
+    } else if (this.userRole === 'STUDENT') {
+      this.router.navigate(['/student']);
+    } else if (this.userRole === 'TEACHER') {
+      this.router.navigate(['/teacher']);
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 }

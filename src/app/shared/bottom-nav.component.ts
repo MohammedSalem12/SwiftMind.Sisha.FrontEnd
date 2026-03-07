@@ -37,7 +37,7 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
             <span *ngIf="userInitials() !== '?'">{{ userInitials() }}</span>
             <i *ngIf="userInitials() === '?'" class="fas fa-user"></i>
           </div>
-          <span class="bn-label">{{ isAuthenticated() ? 'حسابي' : 'القائمة' }}</span>
+          <span class="bn-label">خيارات</span>
         </button>
 
       </div>
@@ -445,11 +445,24 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
       .bn { padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
     }
 
-    /* ── Desktop: hide bottom nav, show ABP sidebar instead ── */
+    /* ── Desktop: show bottom nav with enhanced styling ── */
     @media (min-width: 768px) {
-      .bn           { display: none !important; }
-      .sd           { display: none !important; }
-      .sd-backdrop  { display: none !important; }
+      .bn-inner {
+        max-width: 600px;
+      }
+      .bn-tab {
+        gap: 4px;
+      }
+      .bn-label {
+        font-size: 0.65rem;
+      }
+      .bn-icon-wrap {
+        width: 40px;
+        height: 32px;
+      }
+      .bn-icon-wrap i {
+        font-size: 1.25rem;
+      }
     }
   `]
 })

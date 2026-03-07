@@ -11,17 +11,20 @@ export const appRoutes: Routes = [
   {
     path: 'student',
     loadComponent: () => import('./home/student-home.component').then(m => m.StudentHomeComponent),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
   },
   {
     path: 'parent',
     loadComponent: () => import('./home/parent-home.component').then(m => m.ParentHomeComponent),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
   },
   {
     path: 'teacher',
     loadComponent: () => import('./home/teacher-home.component').then(m => m.TeacherHomeComponent),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER'] }
   },
   {
     path: 'parent/child/:studentId',
@@ -32,6 +35,12 @@ export const appRoutes: Routes = [
   {
     path: 'parent/link-child',
     loadComponent: () => import('./home/parent-link-child.component').then(m => m.ParentLinkChildComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
+    path: 'parent/requests',
+    loadComponent: () => import('./home/parent-requests.component').then(m => m.ParentRequestsComponent),
     canActivate: [roleGuard],
     data: { roles: ['PARENT'] }
   },

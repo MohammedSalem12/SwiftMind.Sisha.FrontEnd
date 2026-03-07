@@ -1,0 +1,182 @@
+<div class="parent-home" dir="rtl">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-blob hero-blob-1"></div>
+    <div class="hero-blob hero-blob-2"></div>
+
+    <div class="hero-main-row">
+      <div class="hero-content">
+        <div class="hero-greeting">
+          <div class="hero-name-block">
+            <span class="hero-name">{{ parentName() || 'ولي الأمر' }}</span>
+            @if (children().length > 0) {
+              <span class="hero-children-line">
+                <i class="fas fa-users"></i>
+                @for (c of children(); track c.studentId; let last = $last) {
+                  {{ c.studentName }}@if (!last) { · }
+                }
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Info pills -->
+        <div class="hero-pills">
+          <span class="hero-pill">
+            <i class="fas fa-child"></i> {{ children().length }} أبناء
+          </span>
+          @if (pendingRequestsCount() > 0) {
+            <span class="hero-pill hero-pill--alert">
+              <i class="fas fa-clock"></i> {{ pendingRequestsCount() }} طلبات معلقة
+            </span>
+          }
+        </div>
+
+        <!-- Code Button -->
+        <button class="code-btn" (click)="goToLinkChild()">
+          <i class="fas fa-user-plus"></i>
+          <span>ربط طالب جديد</span>
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      </div>
+
+      <div class="hero-icon">
+        <i class="fas fa-heart"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <button class="quick-action-btn" (click)="goToRequests()">
+      <div class="qa-icon">
+        <i class="fas fa-clipboard-list"></i>
+        @if (pendingRequestsCount() > 0) {
+          <span class="qa-badge">{{ pendingRequestsCount() }}</span>
+        }
+      </div>
+      <span class="qa-label">طلباتي</span>
+      <span class="qa-sub">My Requests</span>
+    </button>
+    <button class="quick-action-btn" (click)="goToLinkChild()">
+      <div class="qa-icon qa-icon--secondary">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <span class="qa-label">ربط طالب</span>
+      <span class="qa-sub">Link Student</span>
+    </button>
+  </div>
+
+  <!-- Loading Skeleton -->
+  @if (loading()) {
+    <div class="loading-area">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+  }
+
+  <!-- My Children -->
+  @if (!loading() && children().length > 0) {
+    <div class="section-label">
+      <i class="fas fa-child"></i>
+      <span>أبنائي · My Children</span>
+      <span class="count-pill">{{ children().length }}</span>
+    </div>
+    <div class="children-grid">
+      @for (child of children(); track child.studentId) {
+        <div class="child-card" (click)="viewChildDetails(child)">
+          <div class="child-card-icon">
+            <span>{{ getInitials(child.studentName) }}</span>
+          </div>
+          <div class="child-card-body">
+            <div class="child-name">{{ child.studentName }}</div>
+            <div class="child-meta">
+              <span class="meta-chip chip-code"><i class="fas fa-id-card"></i>{{ child.studentCode }}</span>
+              @if (child.gradeName) {
+                <span class="meta-chip chip-grade"><i class="fas fa-graduation-cap"></i>{{ child.gradeName }}</span>
+              }
+              @if (child.relationshipType) {
+                <span class="meta-chip chip-relation"><i class="fas fa-link"></i>{{ child.relationshipType }}</span>
+              }
+            </div>
+          </div>
+          <div class="child-card-badges">
+            @if (child.isEmergencyContact) {
+              <div class="badge-emergency"><i class="fas fa-phone-alt"></i></div>
+            }
+            @if (getChildCourses(child.studentId!).length > 0) {
+              <div class="courses-count">{{ getChildCourses(child.studentId!).length }} مقرر</div>
+            }
+          </div>
+          <i class="fas fa-chevron-left child-arrow"></i>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading() && children().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-child"></i>
+      </div>
+      <h3>لا يوجد أبناء مرتبطين</h3>
+      <p>اضغط على "ربط طالب جديد" لإضافة ابنك</p>
+      <button class="empty-action-btn" (click)="goToLinkChild()">
+        <i class="fas fa-user-plus"></i>
+        ربط طالب الآن
+      </button>
+    </div>
+  }
+
+  <!-- Quick Links Section -->
+  @if (!loading()) {
+    <div class="section-label" style="margin-top: 1.25rem;">
+      <i class="fas fa-bolt"></i>
+      <span>روابط سريعة · Quick Links</span>
+    </div>
+    <div class="quick-links-grid">
+      <button class="quick-link-item" (click)="goToFeeds()">
+        <div class="ql-icon"><i class="fas fa-rss"></i></div>
+        <span>النشرات</span>
+      </button>
+      <button class="quick-link-item" (click)="goToNotifications()">
+        <div class="ql-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+          <i class="fas fa-bell"></i>
+        </div>
+        <span>الإشعارات</span>
+      </button>
+      <button class="quick-link-item" (click)="goToProfile()">
+        <div class="ql-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+          <i class="fas fa-user-cog"></i>
+        </div>
+        <span>حسابي</span>
+      </button>
+    </div>
+  }
+
+  <!-- Recent Notifications -->
+  @if (!loading() && recentNotifications().length > 0) {
+    <div class="section-label" style="margin-top: 1.25rem;">
+      <i class="fas fa-bell"></i>
+      <span>آخر الإشعارات · Notifications</span>
+      <button class="see-all-btn" (click)="goToNotifications()">عرض الكل</button>
+    </div>
+    <div class="notifications-list">
+      @for (n of recentNotifications(); track n.id) {
+        <div class="notif-item" [class.notif-unread]="!n.isRead">
+          <div class="notif-icon">
+            <i class="fas fa-bell"></i>
+          </div>
+          <div class="notif-body">
+            <span class="notif-title">{{ n.title }}</span>
+            <span class="notif-msg">{{ n.message }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>

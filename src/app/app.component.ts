@@ -24,18 +24,14 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
     <app-toasts />
   `,
   styles: [`
-    /* Reserve space for fixed bottom nav — mobile only */
-    @media (max-width: 767px) {
-      .app-content {
-        padding-bottom: 70px;
-      }
+    /* Reserve space for fixed bottom nav — always visible */
+    .app-content {
+      padding-bottom: 70px;
     }
 
-    @media (max-width: 767px) {
-      @supports (padding-bottom: env(safe-area-inset-bottom)) {
-        .app-content {
-          padding-bottom: calc(70px + env(safe-area-inset-bottom));
-        }
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .app-content {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom));
       }
     }
   `],
