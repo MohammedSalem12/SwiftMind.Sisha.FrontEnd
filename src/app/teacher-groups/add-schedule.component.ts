@@ -35,11 +35,11 @@ import { GroupService } from '@proxy/groups';
           <div class="field-row">
             <div class="field">
               <label>وقت البداية <span class="required">*</span></label>
-              <input type="time" name="startTime" [(ngModel)]="startTime" step="3600" required />
+              <input type="time" name="startTime" [(ngModel)]="startTime" required />
             </div>
             <div class="field">
               <label>وقت النهاية <span class="required">*</span></label>
-              <input type="time" name="endTime" [(ngModel)]="endTime" step="3600" required />
+              <input type="time" name="endTime" [(ngModel)]="endTime" required />
             </div>
           </div>
 
@@ -89,6 +89,7 @@ export class AddScheduleComponent implements OnInit {
   errorMsg = signal<string | null>(null);
 
   groupId = '';
+  courseId = '';
   dayOfWeek = -1;
   startTime = '';
   endTime = '';
@@ -97,8 +98,9 @@ export class AddScheduleComponent implements OnInit {
 
   ngOnInit() {
     this.groupId = this.route.snapshot.paramMap.get('groupId') || '';
+    this.courseId = this.route.snapshot.queryParamMap.get('courseId') || '';
     if (!this.groupId) {
-      this.router.navigate(['/teacher-groups']);
+      this.goBack();
     }
   }
 
@@ -107,13 +109,12 @@ export class AddScheduleComponent implements OnInit {
     this.saving.set(true);
     this.errorMsg.set(null);
     try {
-      const toExactHour = (t: string) => t.slice(0, 2) + ':00';
       await lastValueFrom(this.groupService.addScheduleToGroup(this.groupId, {
         dayOfWeek: Number(this.dayOfWeek),
-        startTime: toExactHour(this.startTime),
-        endTime: toExactHour(this.endTime),
+        startTime: this.startTime,
+        endTime: this.endTime,
       }));
-      this.router.navigate(['/teacher-groups']);
+      this.goBack();
     } catch (err: any) {
       console.error('Error adding schedule:', err);
       this.errorMsg.set('حدث خطأ أثناء إضافة الموعد. يرجى المحاولة مرة أخرى.');
@@ -123,6 +124,8 @@ export class AddScheduleComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/teacher-groups']);
+    const qp: any = {};
+    if (this.courseId) qp['courseId'] = this.courseId;
+    this.router.navigate(['/teacher-groups'], { queryParams: qp });
   }
 }

@@ -64,7 +64,11 @@ export class TeacherGroupsComponent implements OnInit {
         currentUserActor.userRoles?.some(role => role.toLowerCase() === 'teacher') ||
         currentUserActor.actorType?.toLowerCase() === 'teacher';
 
-      if (!isTeacher) {
+      const isSecretary =
+        currentUserActor.userRoles?.some(role => role.toLowerCase() === 'secretary') ||
+        currentUserActor.actorType?.toLowerCase() === 'secretary';
+
+      if (!isTeacher && !isSecretary) {
         this.error.set(this.l('TeacherGroups:TeachersOnly'));
         return;
       }
@@ -260,7 +264,20 @@ export class TeacherGroupsComponent implements OnInit {
   }
 
   manageSchedule(group: GroupWithSchedulesDto) {
-    this.router.navigate(['/teacher-groups/add-schedule', group.groupId]);
+    const qp: any = {};
+    if (this.courseId()) qp['courseId'] = this.courseId();
+    this.router.navigate(['/teacher-groups/add-schedule', group.groupId], { queryParams: qp });
+  }
+
+  goBack() {
+    const currentUser = this.configStateService.getOne('currentUser') as any;
+    const roles: string[] = currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [];
+    const isSecretary = roles.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'secretary');
+    if (isSecretary) {
+      this.router.navigate(['/secretary']);
+    } else {
+      this.router.navigate(['/teacher']);
+    }
   }
 
   editSchedule(scheduleId: string) {
