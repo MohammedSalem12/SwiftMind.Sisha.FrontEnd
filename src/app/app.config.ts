@@ -1,5 +1,7 @@
 import { ApplicationConfig, importProvidersFrom, APP_INITIALIZER } from '@angular/core';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter, Router, withInMemoryScrolling } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { ngrokInterceptor } from './shared/ngrok.interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -19,6 +21,7 @@ import { ThemeLeptonXModule } from '@abp/ng.theme.lepton-x';
 import { provideSideMenuLayout, SideMenuLayoutModule } from '@abp/ng.theme.lepton-x/layouts';
 import { AccountLayoutModule } from '@abp/ng.theme.lepton-x/account';
 import { ThemeSharedModule, withHttpErrorConfig, withValidationBluePrint, provideAbpThemeShared } from '@abp/ng.theme.shared';
+import { OAuthService } from 'angular-oauth2-oidc';
 
 // Patch AuthService.navigateToLogin() so every ABP component (including the
 // LeptonX navbar login button) uses our Angular /login page instead of
@@ -32,9 +35,24 @@ function patchAuthServiceLogin(authService: AuthService, router: Router) {
   };
 }
 
+// Patch AuthService.logout() to skip the end_session redirect entirely.
+// OpenIddict rejects the post_logout_redirect_uri unless it is registered in
+// the DB, which requires running the DbMigrator against the live SQL Server.
+// Instead we clear tokens locally and navigate to /login — identical UX.
+function patchAuthServiceLogout(authService: AuthService, oauthService: OAuthService, router: Router) {
+  return () => {
+    (authService as any).logout = async () => {
+      // noRedirectToWellKnownEndSession = true → skips the end_session call
+      oauthService.logOut(true);
+      await router.navigate(['/login']);
+    };
+  };
+}
+
 export const appConfig: ApplicationConfig = {
     providers: [
-    provideRouter(appRoutes),
+    provideRouter(appRoutes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
+    provideHttpClient(withInterceptors([ngrokInterceptor])),
     APP_ROUTE_PROVIDER,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideAbpCore(withOptions({
@@ -47,6 +65,12 @@ export const appConfig: ApplicationConfig = {
       provide: APP_INITIALIZER,
       useFactory: patchAuthServiceLogin,
       deps: [AuthService, Router],
+      multi: true,
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: patchAuthServiceLogout,
+      deps: [AuthService, OAuthService, Router],
       multi: true,
     },
     provideSettingManagementConfig(),

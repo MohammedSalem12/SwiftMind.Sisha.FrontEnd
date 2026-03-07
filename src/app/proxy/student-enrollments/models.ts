@@ -13,6 +13,7 @@ export interface EnrollmentRequestCreateDto {
   teacherId?: string;
   groupId?: string;
   initiator?: EnrollmentRequestInitiator;
+  teacherStudentCode?: string;
 }
 
 export interface EnrollmentRequestDto {

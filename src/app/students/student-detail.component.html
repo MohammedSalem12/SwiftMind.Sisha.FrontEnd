@@ -51,6 +51,21 @@
       </div>
     </div>
 
+    <!-- Grade promotion action -->
+    <div class="promote-section" *ngIf="(student()?.currentGrade ?? 0) < 12">
+      <div class="promote-info">
+        <i class="fas fa-graduation-cap"></i>
+        <div>
+          <div class="promote-title">ترقية الصف الدراسي</div>
+          <div class="promote-sub">الصف الحالي: {{ student()?.currentGrade }} &larr; الصف التالي: {{ (student()?.currentGrade ?? 0) + 1 }}</div>
+        </div>
+      </div>
+      <button class="btn-promote" [disabled]="promoting()" (click)="promoteToNextGrade()">
+        <i class="fas fa-arrow-up"></i>
+        {{ promoting() ? 'جاري الترقية…' : 'ترقية للصف ' + ((student()?.currentGrade ?? 0) + 1) }}
+      </button>
+    </div>
+
     <div class="grid">
       <div class="card">
         <h3>Enrolled Courses</h3>

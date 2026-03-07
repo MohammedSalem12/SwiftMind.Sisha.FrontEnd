@@ -534,7 +534,7 @@ export class ParentEnrollChildComponent implements OnInit {
     try {
       const grade = this.student()?.currentGrade;
       if (grade != null) {
-        const res = await lastValueFrom(this.courseService.getCoursesByGrade(grade));
+        const res = await lastValueFrom(this.courseService.getCoursesByGrade(grade, this.studentId()));
         this.courses.set(res ?? []);
       } else {
         // Fallback when student grade is unavailable

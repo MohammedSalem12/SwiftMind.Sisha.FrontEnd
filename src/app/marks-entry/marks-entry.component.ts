@@ -59,11 +59,19 @@ export class MarksEntryComponent implements OnInit {
   // Course
   courses         = signal<any[]>([]);
   selectedCourseId = signal<string | null>(null);
+  selectedCourse   = computed(() => {
+    const courseId = this.selectedCourseId();
+    return this.courses().find(c => c.id === courseId) || null;
+  });
 
   // Exam
   exams            = signal<any[]>([]);
   selectedExamId   = signal<string | null>(null);
   selectedExamName = signal<string>('');
+  selectedExam     = computed(() => {
+    const examId = this.selectedExamId();
+    return this.exams().find(e => e.id === examId) || null;
+  });
 
   // Date (for grade record)
   gradeDate = signal<string>(new Date().toISOString().slice(0, 10));
@@ -94,6 +102,19 @@ export class MarksEntryComponent implements OnInit {
   gradedCount   = computed(() => this.students().filter(s => s.savedGrade !== null).length);
   ungradedCount = computed(() => this.students().filter(s => s.savedGrade === null).length);
   totalCount    = computed(() => this.students().length);
+
+  // Academy helpers
+  isAcademyCourse = computed(() => {
+    const course = this.selectedCourse();
+    return !!(course?.academyId && course?.academyName);
+  });
+
+  getAcademyInfo = () => {
+    const course = this.selectedCourse();
+    return course?.academyId && course?.academyName 
+      ? { id: course.academyId, name: course.academyName }
+      : null;
+  };
 
   async ngOnInit(): Promise<void> {
     await this.init();
@@ -207,7 +228,16 @@ export class MarksEntryComponent implements OnInit {
       const res: any = await lastValueFrom(
         this.examSvc.getExamsByCourse(courseId, { skipCount: 0, maxResultCount: 200 } as any)
       );
-      this.exams.set(res?.items || []);
+      const exams = res?.items || [];
+      // Enrich exams with academy information from the selected course
+      const course = this.selectedCourse();
+      const enrichedExams = exams.map((exam: any) => ({
+        ...exam,
+        academyId: course?.academyId,
+        academyName: course?.academyName,
+        courseName: course?.nameAr || course?.nameEn,
+      }));
+      this.exams.set(enrichedExams);
     } catch (e) {
       console.error('Failed to load exams', e);
       this.exams.set([]);
@@ -247,6 +277,7 @@ export class MarksEntryComponent implements OnInit {
   async addExam(): Promise<void> {
     const name     = this.newExamName().trim();
     const courseId = this.selectedCourseId();
+    const course   = this.selectedCourse();
     if (!name || !courseId) return;
 
     this.addingExam.set(true);
@@ -256,6 +287,11 @@ export class MarksEntryComponent implements OnInit {
         courseId,
         teacherId: this.effectiveTeacherId() || '',
         groupId:   this.selectedGroupId() || undefined,
+        // Include academy information if course is academy-related
+        academyId: course?.academyId || undefined,
+        examDescription: course?.academyName 
+          ? `امتحان لمقرر "${course.nameAr || course.nameEn}" في أكاديمية ${course.academyName}`
+          : undefined,
       };
       const created: any = await lastValueFrom(
         this.examSvc.create(dto, { skipHandleError: true })
@@ -264,6 +300,12 @@ export class MarksEntryComponent implements OnInit {
       this.showAddExamForm.set(false);
       await this.loadExams(courseId);
       if (created?.id) await this.onExamChange(created.id);
+      
+      // Show success message with academy context
+      const successMsg = course?.academyName 
+        ? `تم إنشاء الامتحان بنجاح لمقرر "${course.nameAr || course.nameEn}" في أكاديمية ${course.academyName}`
+        : 'تم إنشاء الامتحان بنجاح';
+      this.showMessage(successMsg, 'success');
     } catch (e: any) {
       const msg = e?.error?.error?.message || this.l('MarksEntry:ErrorCreateExamFailed');
       this.showMessage(msg, 'error');

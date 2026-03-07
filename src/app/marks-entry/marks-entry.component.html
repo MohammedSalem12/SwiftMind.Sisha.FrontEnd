@@ -2,361 +2,212 @@
 
   <!-- Header -->
   <div class="page-header">
-    <button class="btn-back" (click)="goBack()" [title]="'::MarksEntry:Back' | abpLocalization">
+    <button class="btn-back" (click)="goBack()">
       <i class="fas fa-arrow-right"></i>
     </button>
-    <div class="header-icon">
-      <i class="fas fa-star-half-alt"></i>
-    </div>
     <div>
-      <h1>{{ '::MarksEntry:Title' | abpLocalization }}</h1>
-      <p>{{ '::MarksEntry:Subtitle' | abpLocalization }}</p>
+      <h1>إدخال الدرجات</h1>
+      <p>اختر المقرر والامتحان ثم أدخل درجات الطلاب</p>
     </div>
   </div>
 
-  <!-- Filters Card -->
-  <div class="filters-card">
-    <!-- Course -->
-    <div class="filter-group">
-      <label>
-        <i class="fas fa-book me-1"></i>
-        {{ '::MarksEntry:SelectCourse' | abpLocalization }}
-        <span class="required">*</span>
-      </label>
-      <select
-        [ngModel]="selectedCourseId()"
-        (ngModelChange)="onCourseChange($event)"
-        [disabled]="loading()">
-        <option value="">{{ '::MarksEntry:SelectCoursePlaceholder' | abpLocalization }}</option>
+  <!-- Setup strip -->
+  <div class="setup-strip">
+
+    <div class="setup-field">
+      <label>المقرر</label>
+      <select [ngModel]="selectedCourseId()" (ngModelChange)="onCourseChange($event)" [disabled]="loading()">
+        <option value="">— اختر مقرراً —</option>
         <option *ngFor="let c of courses()" [value]="c.id">
-          {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' — ' + c.gradeName : '' }}
+          {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' · ' + c.gradeName : '' }}{{ c.academyName ? ' · ' + c.academyName : '' }}
         </option>
       </select>
+      <div class="academy-badge" *ngIf="selectedCourse()?.academyName">
+        <i class="fas fa-university"></i>
+        {{ selectedCourse().academyName }}
+      </div>
     </div>
 
-    <!-- Exam -->
-    <div class="filter-group" *ngIf="selectedCourseId()">
-      <label class="label-with-action">
-        <span>
-          <i class="fas fa-file-alt me-1"></i>
-          {{ '::MarksEntry:SelectExam' | abpLocalization }}
-          <span class="required">*</span>
-        </span>
-        <button
-          class="btn-add-exam"
-          (click)="showAddExamForm.set(!showAddExamForm())"
-          [class.active]="showAddExamForm()"
-          [title]="'::MarksEntry:NewExam' | abpLocalization">
+    <div class="setup-field" *ngIf="selectedCourseId()">
+      <div class="label-row">
+        <label>الامتحان</label>
+        <button class="link-btn" (click)="showAddExamForm.set(!showAddExamForm())">
           <i class="fas" [class.fa-plus]="!showAddExamForm()" [class.fa-times]="showAddExamForm()"></i>
-          {{ showAddExamForm()
-              ? ('::MarksEntry:Cancel' | abpLocalization)
-              : ('::MarksEntry:NewExam' | abpLocalization) }}
+          {{ showAddExamForm() ? 'إلغاء' : 'امتحان جديد' }}
         </button>
-      </label>
-      <select
-        [ngModel]="selectedExamId()"
-        (ngModelChange)="onExamChange($event)"
-        [disabled]="loading()">
-        <option value="">{{ '::MarksEntry:SelectExamPlaceholder' | abpLocalization }}</option>
+      </div>
+      <select [ngModel]="selectedExamId()" (ngModelChange)="onExamChange($event)" [disabled]="loading()">
+        <option value="">— اختر امتحاناً —</option>
         <option *ngFor="let e of exams()" [value]="e.id">
-          {{ e.examName }}{{ e.groupName ? ' (' + e.groupName + ')' : '' }}
+          {{ e.examName }}{{ e.groupName ? ' (' + e.groupName + ')' : '' }}{{ e.academyName ? ' · ' + e.academyName : '' }}
         </option>
       </select>
-      <span class="hint-text" *ngIf="exams().length === 0 && !loading() && !showAddExamForm()">
-        {{ '::MarksEntry:NoExamsHint' | abpLocalization }}
-      </span>
+      <div class="exam-academy-info" *ngIf="selectedExam()?.academyName">
+        <i class="fas fa-university"></i>
+        {{ selectedExam().academyName }}
+      </div>
     </div>
 
-    <!-- Group -->
-    <div class="filter-group" *ngIf="selectedCourseId() && groups().length > 0">
-      <label>
-        <i class="fas fa-users me-1"></i>
-        {{ '::MarksEntry:SelectGroup' | abpLocalization }}
-        <span class="optional">{{ '::MarksEntry:Optional' | abpLocalization }}</span>
-      </label>
-      <select
-        [ngModel]="selectedGroupId()"
-        (ngModelChange)="onGroupChange($event)"
-        [disabled]="loading()">
-        <option value="">{{ '::MarksEntry:AllGroups' | abpLocalization }}</option>
-        <option *ngFor="let g of groups()" [value]="g.id">
-          {{ g.name }}{{ g.teacherName ? ' — ' + g.teacherName : '' }}
-        </option>
+    <div class="setup-field setup-field--sm"
+         *ngIf="selectedCourseId() && groups().length > 0">
+      <label>المجموعة <span class="opt-tag">اختياري</span></label>
+      <select [ngModel]="selectedGroupId()" (ngModelChange)="onGroupChange($event)" [disabled]="loading()">
+        <option value="">الكل</option>
+        <option *ngFor="let g of groups()" [value]="g.id">{{ g.name }}</option>
       </select>
     </div>
 
-    <!-- Max Grade -->
-    <div class="filter-group max-grade-group" *ngIf="selectedExamId()">
-      <label>
-        <i class="fas fa-sort-numeric-up me-1"></i>
-        {{ '::MarksEntry:MaxGrade' | abpLocalization }}
-      </label>
-      <input
-        type="number"
-        min="1"
-        [ngModel]="globalMaxGrade()"
-        (ngModelChange)="globalMaxGrade.set($event)"
-        placeholder="100" />
+    <div class="setup-field setup-field--xs" *ngIf="selectedExamId()">
+      <label>الدرجة العظمى</label>
+      <input type="number" min="1"
+             [ngModel]="globalMaxGrade()"
+             (ngModelChange)="globalMaxGrade.set($event)"
+             placeholder="100" />
     </div>
+
   </div>
 
-  <!-- Add Exam Inline Form -->
-  <div class="add-exam-card" *ngIf="showAddExamForm() && selectedCourseId()">
-    <div class="add-exam-title">
-      <i class="fas fa-file-plus me-2"></i>{{ '::MarksEntry:AddExamTitle' | abpLocalization }}
+  <!-- Add exam inline form -->
+  <div class="add-exam-form" *ngIf="showAddExamForm() && selectedCourseId()">
+    <div class="form-header">
+      <i class="fas fa-file-plus form-icon"></i>
+      <div class="form-title">
+        <strong>إضافة امتحان جديد</strong>
+        <span *ngIf="selectedCourse()?.academyName" class="academy-context">
+          <i class="fas fa-university me-1"></i>
+          {{ selectedCourse().academyName }}
+        </span>
+      </div>
     </div>
-    <div class="add-exam-body">
-      <div class="add-exam-field">
-        <label>
-          {{ '::MarksEntry:ExamNameLabel' | abpLocalization }}
-          <span class="required">*</span>
-        </label>
-        <input
-          type="text"
-          class="exam-name-input"
-          [ngModel]="newExamName()"
-          (ngModelChange)="newExamName.set($event)"
-          [placeholder]="'::MarksEntry:ExamNamePlaceholder' | abpLocalization"
-          [disabled]="addingExam()"
-          (keyup.enter)="addExam()" />
-      </div>
-      <div class="add-exam-context" *ngIf="selectedGroupId()">
-        <i class="fas fa-info-circle me-1"></i>
-        {{ '::MarksEntry:GroupExamNote' | abpLocalization }}
-      </div>
-      <div class="add-exam-actions">
-        <button
-          class="btn-create-exam"
-          (click)="addExam()"
-          [disabled]="addingExam() || !newExamName().trim()">
-          <span *ngIf="!addingExam()">
-            <i class="fas fa-save me-1"></i>{{ '::MarksEntry:SaveExam' | abpLocalization }}
-          </span>
-          <span *ngIf="addingExam()">
-            <span class="btn-spinner-sm"></span>{{ '::MarksEntry:Saving' | abpLocalization }}
-          </span>
-        </button>
-        <button
-          class="btn-cancel-exam"
-          (click)="showAddExamForm.set(false); newExamName.set('')"
-          [disabled]="addingExam()">
-          {{ '::MarksEntry:Cancel' | abpLocalization }}
-        </button>
-      </div>
+    <div class="form-body">
+      <input type="text"
+             [ngModel]="newExamName()" (ngModelChange)="newExamName.set($event)"
+             placeholder="اسم الامتحان (مثال: الاختبار الشهري الأول)"
+             [disabled]="addingExam()"
+             (keyup.enter)="addExam()" />
+      <button class="btn-create" (click)="addExam()"
+              [disabled]="addingExam() || !newExamName().trim()">
+        <span class="btn-spinner-sm" *ngIf="addingExam()"></span>
+        <i class="fas fa-save" *ngIf="!addingExam()"></i>
+        {{ addingExam() ? 'جاري الحفظ…' : 'حفظ' }}
+      </button>
+    </div>
+    <div class="form-info" *ngIf="selectedCourse()">
+      <i class="fas fa-info-circle"></i>
+      سيتم ربط هذا الامتحان بـ:
+      <strong>{{ selectedCourse().nameAr || selectedCourse().nameEn }}</strong>
+      <span *ngIf="selectedCourse().academyName">
+        في أكاديمية <strong>{{ selectedCourse().academyName }}</strong>
+      </span>
     </div>
   </div>
 
   <!-- Loading -->
-  <div class="loading-state" *ngIf="loading()">
+  <div class="state-box" *ngIf="loading()">
     <div class="spinner"></div>
-    <span>{{ '::MarksEntry:Loading' | abpLocalization }}</span>
+    <span>جاري التحميل…</span>
   </div>
 
-  <!-- No course selected -->
-  <div class="empty-state" *ngIf="!selectedCourseId() && !loading()">
+  <!-- Empty states -->
+  <div class="state-box" *ngIf="!selectedCourseId() && !loading()">
     <i class="fas fa-book-open"></i>
-    <p>{{ '::MarksEntry:SelectCourseFirst' | abpLocalization }}</p>
+    <p>اختر مقرراً للبدء</p>
   </div>
 
-  <!-- Course selected but no exam -->
-  <div class="empty-state" *ngIf="selectedCourseId() && !selectedExamId() && !loading()">
+  <div class="state-box" *ngIf="selectedCourseId() && !selectedExamId() && !loading()">
     <i class="fas fa-file-alt"></i>
-    <p>{{ '::MarksEntry:SelectExamFirst' | abpLocalization }}</p>
+    <p>اختر امتحاناً لعرض الطلاب</p>
   </div>
 
-  <!-- No students -->
-  <div
-    class="empty-state warning"
-    *ngIf="selectedExamId() && students().length === 0 && !loading()">
+  <div class="state-box state-warn"
+       *ngIf="selectedExamId() && students().length === 0 && !loading()">
     <i class="fas fa-user-slash"></i>
-    <p>{{ '::MarksEntry:NoStudents' | abpLocalization }}</p>
+    <p>لا يوجد طلاب مسجلون في هذا المقرر</p>
   </div>
 
   <!-- Students section -->
   <div *ngIf="students().length > 0 && !loading()">
 
-    <!-- Stats Panel -->
-    <div class="stats-panel">
-      <div class="stat-item stat-graded">
-        <span class="stat-num">{{ gradedCount() }}</span>
-        <span class="stat-label">
-          <i class="fas fa-check-circle me-1"></i>
-          {{ '::MarksEntry:Graded' | abpLocalization }}
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="pills">
+        <span class="pill pill-done">
+          <i class="fas fa-check-circle"></i> {{ gradedCount() }} مدخلة
+        </span>
+        <span class="pill pill-pending">{{ ungradedCount() }} متبقية</span>
+        <span class="pill pill-total">{{ totalCount() }} طالب</span>
+        <span class="exam-tag" *ngIf="selectedExamName()">
+          <i class="fas fa-file-alt"></i> {{ selectedExamName() }}
         </span>
       </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item stat-ungraded">
-        <span class="stat-num">{{ ungradedCount() }}</span>
-        <span class="stat-label">
-          <i class="fas fa-clock me-1"></i>
-          {{ '::MarksEntry:Ungraded' | abpLocalization }}
-        </span>
+      <div class="top-actions">
+        <button class="btn-report" *ngIf="gradedCount() > 0" (click)="viewReport()">
+          <i class="fas fa-chart-bar"></i> تقرير
+        </button>
+        <button class="btn-save-all" (click)="saveAll()" [disabled]="saving()">
+          <span class="btn-spinner-sm" *ngIf="saving()"></span>
+          <i class="fas fa-save" *ngIf="!saving()"></i>
+          {{ saving() ? 'جاري الحفظ…' : 'حفظ الكل' }}
+        </button>
       </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item stat-total">
-        <span class="stat-num">{{ totalCount() }}</span>
-        <span class="stat-label">
-          <i class="fas fa-users me-1"></i>
-          {{ '::MarksEntry:Total' | abpLocalization }}
-        </span>
-      </div>
-      <div class="exam-badge" *ngIf="selectedExamName()">
-        <i class="fas fa-file-alt me-1"></i>{{ selectedExamName() }}
-      </div>
-      <button class="btn-view-report" *ngIf="gradedCount() > 0" (click)="viewReport()">
-        <i class="fas fa-chart-bar me-1"></i>تقرير الصف
-      </button>
-    </div>
-
-    <!-- Actions bar -->
-    <div class="actions-bar">
-      <div class="max-grade-pill">
-        <i class="fas fa-sort-numeric-up me-1"></i>
-        {{ '::MarksEntry:MaxGradeDisplay' | abpLocalization : globalMaxGrade() }}
-      </div>
-      <button
-        class="btn-save-all"
-        (click)="saveAll()"
-        [disabled]="saving()">
-        <span *ngIf="!saving()">
-          <i class="fas fa-save me-1"></i>{{ '::MarksEntry:SaveAll' | abpLocalization }}
-        </span>
-        <span *ngIf="saving()">
-          <span class="btn-spinner"></span>{{ '::MarksEntry:SavingAll' | abpLocalization }}
-        </span>
-      </button>
     </div>
 
     <!-- Message -->
-    <div
-      class="message-bar"
-      *ngIf="message()"
-      [class.success]="messageType() === 'success'"
-      [class.error]="messageType() === 'error'">
-      <i
-        class="fas me-2"
-        [class.fa-check-circle]="messageType() === 'success'"
-        [class.fa-exclamation-circle]="messageType() === 'error'"></i>
+    <div class="msg-bar" *ngIf="message()"
+         [class.success]="messageType() === 'success'"
+         [class.error]="messageType() === 'error'">
+      <i class="fas"
+         [class.fa-check-circle]="messageType() === 'success'"
+         [class.fa-times-circle]="messageType() === 'error'"></i>
       {{ message() }}
     </div>
 
-    <!-- Desktop table -->
-    <div class="students-table-wrapper desktop-only">
-      <table class="students-table">
-        <thead>
-          <tr>
-            <th class="col-num">{{ '::MarksEntry:ColNumber' | abpLocalization }}</th>
-            <th class="col-name">{{ '::MarksEntry:ColStudent' | abpLocalization }}</th>
-            <th class="col-code">{{ '::MarksEntry:ColCode' | abpLocalization }}</th>
-            <th class="col-prev">{{ '::MarksEntry:ColCurrentGrade' | abpLocalization }}</th>
-            <th class="col-input">{{ '::MarksEntry:ColNewGrade' | abpLocalization }}</th>
-            <th class="col-action">{{ '::MarksEntry:ColSave' | abpLocalization }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            *ngFor="let s of students(); let i = index; trackBy: trackByStudentId"
-            [class.row-graded]="s.savedGrade !== null"
-            [class.row-error]="s.rowError"
-            [class.row-success]="s.rowSuccess">
-            <td class="col-num">{{ i + 1 }}</td>
-            <td class="col-name">
-              <div class="student-info">
-                <div class="avatar" [class.avatar-graded]="s.savedGrade !== null">
-                  {{ s.studentName.charAt(0) }}
-                </div>
-                <span class="student-name">{{ s.studentName }}</span>
-              </div>
-            </td>
-            <td class="col-code">{{ s.studentCode }}</td>
-            <td class="col-prev">
-              <span *ngIf="s.savedGrade !== null" class="grade-badge" [class]="'grade-' + gradeClass(gradePct(s))">
-                {{ s.savedGrade }}/{{ s.savedMaxGrade }}
-                <span class="pct-text">({{ gradePct(s) }}%)</span>
-              </span>
-              <span *ngIf="s.savedGrade === null" class="no-grade">—</span>
-            </td>
-            <td class="col-input">
-              <input
-                class="grade-input"
-                type="number"
-                min="0"
-                [max]="globalMaxGrade()"
-                [ngModel]="s.inputGrade"
-                (ngModelChange)="updateGradeInput(i, $event)"
-                [placeholder]="('::MarksEntry:GradeInputPlaceholder' | abpLocalization : globalMaxGrade())"
-                [disabled]="s.saving || saving()" />
-            </td>
-            <td class="col-action">
-              <button
-                class="btn-save-row"
-                [class.btn-update]="s.gradeId"
-                (click)="saveGrade(i)"
-                [disabled]="s.saving || saving() || s.inputGrade === ''">
-                <span *ngIf="s.saving"><span class="btn-spinner-sm"></span></span>
-                <span *ngIf="s.rowSuccess && !s.saving"><i class="fas fa-check"></i></span>
-                <span *ngIf="!s.saving && !s.rowSuccess">
-                  <i class="fas" [class.fa-save]="!s.gradeId" [class.fa-edit]="s.gradeId"></i>
-                  {{ s.gradeId
-                      ? ('::MarksEntry:EditRow' | abpLocalization)
-                      : ('::MarksEntry:SaveRow' | abpLocalization) }}
-                </span>
-              </button>
-              <div class="row-error" *ngIf="s.rowError">{{ s.rowError }}</div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- Grade list -->
+    <div class="grade-list">
+      <div *ngFor="let s of students(); let i = index; trackBy: trackByStudentId"
+           class="grade-row"
+           [class.row-saved]="s.savedGrade !== null"
+           [class.row-error]="!!s.rowError"
+           [class.row-flash]="s.rowSuccess">
 
-    <!-- Mobile cards -->
-    <div class="student-cards mobile-only">
-      <div
-        *ngFor="let s of students(); let i = index; trackBy: trackByStudentId"
-        class="student-card"
-        [class.card-graded]="s.savedGrade !== null"
-        [class.card-error]="s.rowError"
-        [class.card-success]="s.rowSuccess">
+        <span class="row-num">{{ i + 1 }}</span>
 
-        <div class="card-top">
-          <div class="avatar" [class.avatar-graded]="s.savedGrade !== null">
-            {{ s.studentName.charAt(0) }}
-          </div>
-          <div class="card-info">
-            <span class="student-name">{{ s.studentName }}</span>
-            <span class="card-code">{{ s.studentCode }}</span>
-          </div>
-          <span *ngIf="s.savedGrade !== null" class="grade-badge" [class]="'grade-' + gradeClass(gradePct(s))">
-            {{ s.savedGrade }}/{{ s.savedMaxGrade }}
+        <div class="row-avatar" [class.avatar-saved]="s.savedGrade !== null">
+          {{ s.studentName.charAt(0) }}
+        </div>
+
+        <div class="row-name">
+          <span class="name-text">{{ s.studentName }}</span>
+          <span class="code-text">{{ s.studentCode }}</span>
+        </div>
+
+        <div class="row-badge" *ngIf="s.savedGrade !== null">
+          <span class="saved-val">
+            {{ s.savedGrade }}<span class="max-val">/{{ s.savedMaxGrade }}</span>
+          </span>
+          <span class="pct-badge" [ngClass]="'pct-' + gradeClass(gradePct(s))">
+            {{ gradePct(s) }}%
           </span>
         </div>
 
-        <div class="card-input-row">
-          <input
-            class="grade-input grade-input-full"
-            type="number"
-            min="0"
-            [max]="globalMaxGrade()"
-            [ngModel]="s.inputGrade"
-            (ngModelChange)="updateGradeInput(i, $event)"
-            [placeholder]="('::MarksEntry:GradeInputMobilePlaceholder' | abpLocalization : globalMaxGrade())"
-            [disabled]="s.saving || saving()" />
-          <button
-            class="btn-save-row"
-            [class.btn-update]="s.gradeId"
-            (click)="saveGrade(i)"
-            [disabled]="s.saving || saving() || s.inputGrade === ''">
-            <span *ngIf="s.saving"><span class="btn-spinner-sm"></span></span>
-            <span *ngIf="s.rowSuccess && !s.saving"><i class="fas fa-check"></i></span>
-            <span *ngIf="!s.saving && !s.rowSuccess">
-              {{ s.gradeId
-                  ? ('::MarksEntry:EditRow' | abpLocalization)
-                  : ('::MarksEntry:SaveRow' | abpLocalization) }}
-            </span>
-          </button>
-        </div>
+        <input class="grade-input"
+               type="number" min="0" [max]="globalMaxGrade()"
+               [ngModel]="s.inputGrade"
+               (ngModelChange)="updateGradeInput(i, $event)"
+               [placeholder]="'/' + globalMaxGrade()"
+               [disabled]="s.saving || saving()" />
 
-        <div class="row-error" *ngIf="s.rowError">{{ s.rowError }}</div>
+        <button class="btn-row-save"
+                [class.btn-row-saved]="s.rowSuccess"
+                (click)="saveGrade(i)"
+                [disabled]="s.saving || saving() || s.inputGrade === ''">
+          <span class="btn-spinner-sm" *ngIf="s.saving"></span>
+          <i class="fas fa-check" *ngIf="s.rowSuccess && !s.saving"></i>
+          <i class="fas fa-save"  *ngIf="!s.saving && !s.rowSuccess"></i>
+        </button>
+
+        <div class="row-err" *ngIf="s.rowError">{{ s.rowError }}</div>
+
       </div>
     </div>
 

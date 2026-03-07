@@ -1,75 +1,155 @@
-<div class="wrapper">
-  <div class="toolbar">
-    <input
-      type="text"
-      [ngModel]="filter()"
-      (ngModelChange)="filter.set($event)"
-      (keyup.enter)="onSearch()"
-      placeholder="ابحث بالاسم أو كود الطالب..."
-      class="search"
-    />
-    <button class="btn" (click)="onSearch()">بحث</button>
+<div class="grades-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div>
+        <h1>درجات الطلاب</h1>
+        <p>عرض وتتبع أداء الطلاب الأكاديمي</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        [ngModel]="filter()"
+        (ngModelChange)="filter.set($event)"
+        (keyup.enter)="onSearch()"
+        placeholder="ابحث بالاسم أو كود الطالب..."
+        class="search-input"
+      />
+    </div>
+    <button class="btn-search" (click)="onSearch()">
+      <i class="fas fa-search me-1"></i> بحث
+    </button>
 
     <div class="spacer"></div>
 
-    <label class="pagesize">
-      حجم الصفحة
+    <div class="page-size-control">
+      <label>حجم الصفحة</label>
       <select [ngModel]="pageSize()" (ngModelChange)="onPageSizeChange($event)">
         <option [ngValue]="5">5</option>
         <option [ngValue]="10">10</option>
         <option [ngValue]="20">20</option>
+        <option [ngValue]="50">50</option>
       </select>
-    </label>
+    </div>
   </div>
 
-  <div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
+  <!-- Error Message -->
+  <div class="message-box error" *ngIf="errorMsg()">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{ errorMsg() }}</span>
+  </div>
 
-  <div *ngIf="loading()" class="loading">جارِ التحميل...</div>
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="loading-spinner"></div>
+    <span>جارِ التحميل...</span>
+  </div>
 
-  <ul class="students" *ngIf="!loading()">
-    <li class="student" *ngFor="let s of students(); let i = index; trackBy: trackById">
-      <div class="accent" [style.background]="getColor(i)"></div>
-      <div class="header">
-        <div class="name">
-          <span class="fullname">{{ s.firstName }} {{ s.lastName }}</span>
-          <span class="meta">الصف: {{ s.currentGrade }} • المدرسة: {{ s.schoolName }}</span>
+  <!-- Students List -->
+  <div class="students-grid" *ngIf="!loading()">
+    <div class="student-card" *ngFor="let s of students(); let i = index; trackBy: trackById">
+      <div class="card-accent" [style.background]="getColor(i)"></div>
+      
+      <div class="card-header">
+        <div class="student-info">
+          <div class="student-avatar">
+            {{ getInitials(s.firstName, s.lastName) }}
+          </div>
+          <div class="student-details">
+            <h3 class="student-name">{{ s.firstName }} {{ s.lastName }}</h3>
+            <div class="student-meta">
+              <span class="meta-item">
+                <i class="fas fa-graduation-cap"></i>
+                الصف: {{ s.currentGrade }}
+              </span>
+              <span class="meta-item">
+                <i class="fas fa-school"></i>
+                {{ s.schoolName }}
+              </span>
+            </div>
+          </div>
         </div>
-        <div class="code">كود: {{ s.studentCode }}</div>
+        <div class="student-code">
+          <span class="code-label">كود الطالب</span>
+          <span class="code-value">{{ s.studentCode }}</span>
+        </div>
       </div>
 
-      <div class="grades">
-        <div class="title">آخر درجتين:</div>
-        <ul class="grade-list" *ngIf="s.lastTwoGrades?.length; else noGrades">
-          <li *ngFor="let g of s.lastTwoGrades">
-            <div class="exam">
-              <span class="exam-name">{{ g.examName }}</span>
-              <span class="exam-date">{{ (g.date | date:'mediumDate') || '-' }}</span>
+      <div class="grades-section">
+        <div class="grades-header">
+          <h4 class="grades-title">
+            <i class="fas fa-star-half-alt me-2"></i>
+            آخر درجتين
+          </h4>
+          <div class="grades-count" *ngIf="s.lastTwoGrades?.length">
+            {{ s.lastTwoGrades.length }} امتحان
+          </div>
+        </div>
+        
+        <div class="grades-list" *ngIf="s.lastTwoGrades?.length; else noGrades">
+          <div class="grade-item" *ngFor="let g of s.lastTwoGrades">
+            <div class="grade-info">
+              <div class="exam-name">{{ g.examName }}</div>
+              <div class="exam-date">
+                <i class="fas fa-calendar-alt me-1"></i>
+                {{ (g.date | date:'mediumDate') || '-' }}
+              </div>
             </div>
-            <div class="score">
-              {{ g.grade }} / {{ g.maxGrade }}
+            <div class="grade-score">
+              <div class="score-value">{{ g.grade }}</div>
+              <div class="score-max">/ {{ g.maxGrade }}</div>
+              <div class="score-percent" [ngClass]="getGradeClass(g.grade, g.maxGrade)">
+                {{ getPercentage(g.grade, g.maxGrade) }}%
+              </div>
             </div>
-          </li>
-        </ul>
+          </div>
+        </div>
+        
         <ng-template #noGrades>
-          <div class="empty">لا توجد درجات مسجّلة بعد.</div>
+          <div class="empty-grades">
+            <i class="fas fa-inbox"></i>
+            <span>لا توجد درجات مسجّلة بعد</span>
+          </div>
         </ng-template>
       </div>
-    </li>
-  </ul>
-
-  <div class="pager" *ngIf="totalCount() > pageSize()">
-
-        <!-- Floating Add Student button -->
-        <button
-          class="fab-add-student"
-          title="Add Student"
-          (click)="goToAddStudent()"
-          aria-label="Add Student"
-        >
-          <i class="fas fa-plus"></i>
-        </button>
-    <button class="btn" [disabled]="page() === 1" (click)="onPageChange(page()-1)">السابق</button>
-    <span class="pinfo">صفحة {{ page() }} من {{ Math.ceil(totalCount()/pageSize()) }}</span>
-    <button class="btn" [disabled]="page() >= Math.ceil(totalCount()/pageSize())" (click)="onPageChange(page()+1)">التالي</button>
+    </div>
   </div>
+
+  <!-- Pagination -->
+  <div class="pagination-section" *ngIf="totalCount() > pageSize()">
+    <button class="page-btn" [disabled]="page() === 1" (click)="onPageChange(page()-1)">
+      <i class="fas fa-chevron-right"></i>
+      السابق
+    </button>
+    
+    <div class="page-info">
+      <span class="current-page">{{ page() }}</span>
+      <span class="page-separator">من</span>
+      <span class="total-pages">{{ Math.ceil(totalCount()/pageSize()) }}</span>
+    </div>
+    
+    <button class="page-btn" [disabled]="page() >= Math.ceil(totalCount()/pageSize())" (click)="onPageChange(page()+1)">
+      التالي
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button
+    class="fab-add"
+    title="إضافة طالب"
+    (click)="goToAddStudent()"
+    aria-label="إضافة طالب"
+  >
+    <i class="fas fa-plus"></i>
+  </button>
 </div>

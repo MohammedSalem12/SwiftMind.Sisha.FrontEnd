@@ -30,22 +30,43 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
         </div>
 
         <div *ngIf="!loading() && student()">
-          <!-- Student Header -->
-          <div class="student-header mb-4">
-            <div class="d-flex align-items-center gap-3">
-              <div class="avatar"><i class="fas fa-user-graduate"></i></div>
-              <div>
-                <h1 class="mb-1">{{ getStudentName() }}</h1>
-                <div class="d-flex gap-3 flex-wrap">
-                  <span class="badge bg-light text-dark"><i class="fas fa-id-card me-1"></i>{{ student()!.studentCode }}</span>
-                  <span *ngIf="student()!.currentGrade" class="badge bg-light text-dark"><i class="fas fa-graduation-cap me-1"></i>الصف {{ student()!.currentGrade }}</span>
-                  <span *ngIf="student()!.schoolName" class="badge bg-light text-dark"><i class="fas fa-school me-1"></i>{{ student()!.schoolName }}</span>
+          <!-- Student Profile Header -->
+          <div class="student-profile mb-4">
+            <div class="profile-card">
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar"><i class="fas fa-user-graduate"></i></div>
+                <div>
+                  <h1 class="mb-1">{{ getStudentName() }}</h1>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <span class="badge bg-light text-dark"><i class="fas fa-id-card me-1"></i>{{ student()!.studentCode }}</span>
+                    <span *ngIf="student()!.currentGrade" class="badge bg-light text-dark"><i class="fas fa-graduation-cap me-1"></i>الصف {{ student()!.currentGrade }}</span>
+                    <span *ngIf="student()!.schoolName" class="badge bg-light text-dark"><i class="fas fa-school me-1"></i>{{ student()!.schoolName }}</span>
+                  </div>
+                  <div class="mt-2 small text-muted" *ngIf="student()!.address">{{ student()!.address }}</div>
                 </div>
-                <div class="mt-2">
-                  <button class="btn btn-success btn-sm" (click)="enrollInCourse()">
-                    <i class="fas fa-plus-circle me-1"></i> تسجيل في مقرر
-                  </button>
-                </div>
+              </div>
+              <div class="profile-actions mt-3">
+                <button class="btn btn-success btn-sm" (click)="enrollInCourse()">
+                  <i class="fas fa-plus-circle me-1"></i> تسجيل في مقرر
+                </button>
+                <button class="btn btn-outline-secondary btn-sm ms-2" (click)="goBack()">
+                  <i class="fas fa-arrow-right me-1"></i> العودة
+                </button>
+              </div>
+            </div>
+
+            <div class="profile-stats">
+              <div class="stat-card">
+                <div class="stat-value">{{ getOverallAttendancePercent() }}%</div>
+                <div class="stat-label">معدل الحضور الإجمالي</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">{{ getAverageGradePercent() }}%</div>
+                <div class="stat-label">متوسط الدرجات</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">{{ getTotalAbsentDays() }}</div>
+                <div class="stat-label">إجمالي الغيابات</div>
               </div>
             </div>
           </div>
@@ -238,6 +259,13 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
     .student-header h1 { font-size: 1.5rem; font-weight: 600; color: #1a202c; }
     .avatar { width: 64px; height: 64px; background: var(--ngx-hero-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
     .avatar i { font-size: 1.5rem; color: white; }
+    .student-profile { display: flex; gap: 1rem; align-items: flex-start; }
+    .profile-card { flex: 1; padding: 1.25rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .profile-actions { display:flex; gap:0.5rem; }
+    .profile-stats { width: 220px; display: flex; flex-direction: column; gap: 0.75rem; }
+    .stat-card { background: white; border-radius: 10px; padding: 0.8rem; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .stat-value { font-size: 1.3rem; font-weight: 700; color: #1a202c; }
+    .stat-label { font-size: 0.85rem; color: #6b7280; }
     .tabs { display: flex; gap: 0.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0; }
     .tab-btn { background: none; border: none; padding: 0.75rem 1.5rem; font-weight: 500; color: #6b7280; border-bottom: 3px solid transparent; margin-bottom: -2px; cursor: pointer; transition: all 0.2s; }
     .tab-btn.active { color: var(--ngx-primary); border-bottom-color: var(--ngx-primary); }
@@ -420,5 +448,19 @@ export class ParentChildDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/parent']);
+  }
+
+  getOverallAttendancePercent(): number {
+    const total = this.getTotalSessions();
+    if (!total) return 0;
+    const attended = this.getTotalAttendedDays();
+    return Math.round((attended / total) * 100);
+  }
+
+  getAverageGradePercent(): number {
+    const g = this.grades();
+    if (!g || g.length === 0) return 0;
+    const sum = g.reduce((s, x) => s + this.getPercentage(x), 0);
+    return Math.round(sum / g.length);
   }
 }

@@ -9,6 +9,51 @@
   </div>
 </div>
 
+<!-- Search by Teacher Internal Code -->
+<div class="teacher-code-search-bar">
+  <div class="tcs-label">
+    <i class="eva eva-hash-outline"></i>
+    Search by internal code
+  </div>
+  <div class="tcs-input-row">
+    <input
+      class="tcs-input"
+      type="text"
+      placeholder="Teacher's internal student code…"
+      [ngModel]="teacherCodeFilter()"
+      (ngModelChange)="teacherCodeFilter.set($event)"
+      (keyup.enter)="searchByTeacherCode()"
+    />
+    <button class="btn-primary" (click)="searchByTeacherCode()" [disabled]="teacherCodeLoading()">
+      <span *ngIf="!teacherCodeLoading()">Find</span>
+      <span *ngIf="teacherCodeLoading()">…</span>
+    </button>
+    <button class="btn-outline" *ngIf="teacherCodeSearchDone()" (click)="clearTeacherCodeSearch()">Clear</button>
+  </div>
+
+  <!-- Result -->
+  <div *ngIf="teacherCodeSearchDone()">
+    <div *ngIf="isStudentDto(teacherCodeResult())" class="tcs-result-card">
+      <div class="card-avatar small">
+        <span>{{ (teacherCodeResult()?.firstName?.[0] || '-') + (teacherCodeResult()?.lastName?.[0] || '') }}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">{{ teacherCodeResult()?.firstName }} {{ teacherCodeResult()?.lastName }}</div>
+        <div class="card-sub">Grade {{ teacherCodeResult()?.currentGrade }} • {{ teacherCodeResult()?.schoolName || '-' }}</div>
+        <div class="card-meta">System Code: <span class="muted">{{ teacherCodeResult()?.studentCode }}</span></div>
+        <div class="card-meta">Internal Code: <span class="badge-code">{{ teacherCodeResult()?.teacherStudentCode }}</span></div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-outline" (click)="showDetails(teacherCodeResult()!)">Details</button>
+        <button class="btn" (click)="goToEnroll(teacherCodeResult()!.id)">Enroll</button>
+      </div>
+    </div>
+    <div *ngIf="!isStudentDto(teacherCodeResult())" class="tcs-empty">
+      No student found with that internal code.
+    </div>
+  </div>
+</div>
+
 <div *ngIf="loading()" class="loading">Loading students...</div>
 
 <div class="cards-grid">
@@ -21,6 +66,9 @@
       <div class="card-title">{{ s.firstName }} {{ s.lastName }}</div>
       <div class="card-sub">Grade {{ s.currentGrade }} • {{ s.schoolName || '-' }}</div>
       <div class="card-meta">Code: <span class="muted">{{ s.studentCode }}</span></div>
+      <div class="card-meta" *ngIf="s.teacherStudentCode">
+        Internal: <span class="badge-code">{{ s.teacherStudentCode }}</span>
+      </div>
     </div>
     <div class="card-actions">
       <button class="btn-outline" (click)="showDetails(s)">Details</button>
@@ -28,7 +76,6 @@
     </div>
   </div>
 </div>
-
 
 <div class="pager">
   <button (click)="onPageChange(page() - 1)" [disabled]="page() <= 1">Prev</button>

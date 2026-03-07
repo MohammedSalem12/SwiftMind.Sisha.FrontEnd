@@ -2859,8 +2859,8 @@
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Courses.CourseAppService"
             },
-            "GetCoursesByGradeAsyncByGradeNumber": {
-              "uniqueName": "GetCoursesByGradeAsyncByGradeNumber",
+            "GetCoursesByGradeAsyncByGradeNumberAndStudentId": {
+              "uniqueName": "GetCoursesByGradeAsyncByGradeNumberAndStudentId",
               "name": "GetCoursesByGradeAsync",
               "httpMethod": "GET",
               "url": "api/app/course/courses-by-grade",
@@ -2873,6 +2873,14 @@
                   "typeSimple": "number",
                   "isOptional": false,
                   "defaultValue": null
+                },
+                {
+                  "name": "studentId",
+                  "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": true,
+                  "defaultValue": null
                 }
               ],
               "parameters": [
@@ -2882,6 +2890,18 @@
                   "jsonName": null,
                   "type": "System.Int32",
                   "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "studentId",
+                  "name": "studentId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -7717,6 +7737,23 @@
                   }
                 },
                 {
+                  "name": "GetByTeacherStudentCodeAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "teacherStudentCode",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
                   "name": "GetPendingLinksForCurrentStudentAsync",
                   "parametersOnMethod": [],
                   "returnValue": {
@@ -7772,6 +7809,23 @@
                   "returnValue": {
                     "type": "System.Void",
                     "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "PromoteToNextGradeAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "studentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
                   }
                 },
                 {
@@ -7923,6 +7977,43 @@
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
             },
+            "GetByTeacherStudentCodeAsyncByTeacherStudentCode": {
+              "uniqueName": "GetByTeacherStudentCodeAsyncByTeacherStudentCode",
+              "name": "GetByTeacherStudentCodeAsync",
+              "httpMethod": "GET",
+              "url": "api/app/student/by-teacher-student-code",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "teacherStudentCode",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "teacherStudentCode",
+                  "name": "teacherStudentCode",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
             "GetPendingLinksForCurrentStudentAsync": {
               "uniqueName": "GetPendingLinksForCurrentStudentAsync",
               "name": "GetPendingLinksForCurrentStudentAsync",
@@ -8048,6 +8139,43 @@
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "PromoteToNextGradeAsyncByStudentId": {
+              "uniqueName": "PromoteToNextGradeAsyncByStudentId",
+              "name": "PromoteToNextGradeAsync",
+              "httpMethod": "POST",
+              "url": "api/app/student/promote-to-next-grade/{studentId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "studentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "studentId",
+                  "name": "studentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
@@ -13192,6 +13320,23 @@
                   }
                 },
                 {
+                  "name": "GetByTeacherStudentCodeAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "teacherStudentCode",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
                   "name": "GetPendingLinksForCurrentStudentAsync",
                   "parametersOnMethod": [],
                   "returnValue": {
@@ -13247,6 +13392,23 @@
                   "returnValue": {
                     "type": "System.Void",
                     "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "PromoteToNextGradeAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "studentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
                   }
                 },
                 {
@@ -13627,6 +13789,43 @@
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
             },
+            "GetByTeacherStudentCodeAsyncByTeacherStudentCode": {
+              "uniqueName": "GetByTeacherStudentCodeAsyncByTeacherStudentCode",
+              "name": "GetByTeacherStudentCodeAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/students/by-teacher-code/{teacherStudentCode}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "teacherStudentCode",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "teacherStudentCode",
+                  "name": "teacherStudentCode",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
             "GetPendingLinksForCurrentStudentAsync": {
               "uniqueName": "GetPendingLinksForCurrentStudentAsync",
               "name": "GetPendingLinksForCurrentStudentAsync",
@@ -13752,6 +13951,43 @@
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "PromoteToNextGradeAsyncByStudentId": {
+              "uniqueName": "PromoteToNextGradeAsyncByStudentId",
+              "name": "PromoteToNextGradeAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/students/{studentId}/promote",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "studentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "studentId",
+                  "name": "studentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
@@ -18993,6 +19229,18 @@
           "jsonName": null,
           "type": "SwiftMind.Sesha.Enums.EnrollmentRequestInitiator",
           "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TeacherStudentCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

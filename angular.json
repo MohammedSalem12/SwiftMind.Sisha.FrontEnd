@@ -96,6 +96,11 @@
                 "bundleName": "fontawesome-v4-shims.min"
               },
               {
+                "input": "node_modules/eva-icons/style/eva-icons.css",
+                "inject": true,
+                "bundleName": "eva-icons"
+              },
+              {
                 "input": "node_modules/@swimlane/ngx-datatable/index.css",
                 "inject": true,
                 "bundleName": "ngx-datatable-index"
@@ -124,8 +129,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "8kb"
+                  "maximumWarning": "16kb",
+                  "maximumError": "20kb"
                 }
               ],
               "fileReplacements": [

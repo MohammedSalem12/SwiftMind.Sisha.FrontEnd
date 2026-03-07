@@ -22,4 +22,9 @@ export const homeRoutes: Routes = [
     loadComponent: () => import('./teacher-home.component').then(m => m.TeacherHomeComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'teacher/course/:courseId',
+    loadComponent: () => import('./teacher-course-action.component').then(m => m.TeacherCourseActionComponent),
+    canActivate: [authGuard]
+  },
 ];

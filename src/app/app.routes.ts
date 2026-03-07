@@ -242,6 +242,17 @@ export const appRoutes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'academies',
+    loadChildren: () => import('./academies/academies.routes').then(m => m.academiesRoutes),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'teacher/academy',
+    loadComponent: () => import('./home/teacher-academy-hub.component').then(m => m.TeacherAcademyHubComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER'] },
+  },
+  {
     path: '**',
     redirectTo: '/'
   }

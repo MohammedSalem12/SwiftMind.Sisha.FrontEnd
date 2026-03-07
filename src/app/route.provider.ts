@@ -146,6 +146,7 @@ export function getMoreMenuItemsForRole(userRoles: string[]): MoreMenuItemConfig
       { path: '/student/requests',   label: 'طلباتي',         icon: 'fas fa-clipboard-list' },
       { path: '/student/qr',         label: 'رمز QR الطالب', icon: 'fas fa-qrcode' },
       { path: '/feeds',              label: 'النشرات',         icon: 'fas fa-rss' },
+      { path: '/account/manage',     label: 'ملفي الشخصي',    icon: 'fas fa-user-circle' },
     ];
   }
   if (userRoles.includes(ROLES.PARENT)) {
@@ -153,6 +154,7 @@ export function getMoreMenuItemsForRole(userRoles: string[]): MoreMenuItemConfig
       { path: '/parent/link-child',         label: 'ربط طالب',   icon: 'fas fa-user-plus' },
       { path: '/parent-enrollment-approval', label: 'طلبات أبنائي', icon: 'fas fa-clipboard-check' },
       { path: '/feeds',                      label: 'النشرات',      icon: 'fas fa-rss' },
+      { path: '/account/manage',             label: 'ملفي الشخصي',  icon: 'fas fa-user-circle' },
     ];
   }
   if (userRoles.includes(ROLES.TEACHER)) {
@@ -162,6 +164,7 @@ export function getMoreMenuItemsForRole(userRoles: string[]): MoreMenuItemConfig
       { path: '/teacher/enroll',     label: 'التسجيل في مقررات', icon: 'fas fa-plus-circle' },
       { path: '/enrollment-requests', label: 'طلبات التسجيل',  icon: 'fas fa-clipboard-list' },
       { path: '/feeds',              label: 'النشرات',           icon: 'fas fa-rss' },
+      { path: '/account/manage',     label: 'ملفي الشخصي',      icon: 'fas fa-user-circle' },
     ];
   }
   if (userRoles.includes(ROLES.ADMIN) || userRoles.includes(ROLES.SECRETARY)) {
@@ -171,6 +174,7 @@ export function getMoreMenuItemsForRole(userRoles: string[]): MoreMenuItemConfig
       { path: '/courses',           label: 'المقررات',          icon: 'fas fa-book' },
       { path: '/enrollment-requests', label: 'طلبات التسجيل', icon: 'fas fa-clipboard-list' },
       { path: '/feeds',             label: 'النشرات',           icon: 'fas fa-rss' },
+      { path: '/account/manage',    label: 'ملفي الشخصي',       icon: 'fas fa-user-circle' },
     ];
   }
   // Default tabs for unauthenticated / unknown roles (public view)

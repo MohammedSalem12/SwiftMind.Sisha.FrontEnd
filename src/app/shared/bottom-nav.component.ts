@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
-import { ConfigStateService } from '@abp/ng.core';
+import { ConfigStateService, AuthService } from '@abp/ng.core';
 import { filter, Subscription } from 'rxjs';
 import { getBottomTabsForRole, getMoreMenuItemsForRole, BottomTabConfig, MoreMenuItemConfig } from '../route.provider';
 import { RealtimeNotificationService } from './services/realtime-notification.service';
@@ -11,282 +11,470 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <nav class="bottom-nav" *ngIf="tabs().length > 0" [class.rtl]="isRtl">
-      <div class="nav-container">
+    <!-- ───────────── Bottom Navigation Bar ───────────── -->
+    <nav class="bn" [class.rtl]="isRtl">
+      <div class="bn-inner">
+
+        <!-- Regular tabs -->
         <a *ngFor="let tab of tabs(); trackBy: trackByPath"
-           class="nav-item"
+           class="bn-tab"
            [routerLink]="tab.path"
            [class.active]="isActive(tab.path)"
            (click)="onTabClick(tab)">
-          <div class="nav-icon">
+          <div class="bn-icon-wrap">
             <i [class]="tab.icon"></i>
-            <span class="badge" *ngIf="tab.path === '/notifications' && unreadCount() > 0">
+            <span class="bn-badge" *ngIf="tab.path === '/notifications' && unreadCount() > 0">
               {{ unreadCount() > 9 ? '9+' : unreadCount() }}
             </span>
           </div>
-          <span class="nav-label">{{ tab.label }}</span>
+          <span class="bn-label">{{ tab.label }}</span>
+          <span class="bn-active-bar" *ngIf="isActive(tab.path)"></span>
         </a>
-        
-        <!-- More menu trigger -->
-        <button class="nav-item nav-more" (click)="toggleMoreMenu()">
-          <div class="nav-icon">
-            <i class="fas fa-bars"></i>
+
+        <!-- Menu / Profile button (always visible) -->
+        <button class="bn-tab bn-profile-btn" (click)="openDrawer()">
+          <div class="bn-avatar" [class.has-name]="userInitials() !== '?'">
+            <span *ngIf="userInitials() !== '?'">{{ userInitials() }}</span>
+            <i *ngIf="userInitials() === '?'" class="fas fa-user"></i>
           </div>
-          <span class="nav-label">المزيد</span>
+          <span class="bn-label">{{ isAuthenticated() ? 'حسابي' : 'القائمة' }}</span>
         </button>
+
       </div>
     </nav>
 
-    <!-- More Menu Overlay -->
-    <div class="more-menu-overlay" 
-         *ngIf="showMoreMenu()" 
-         (click)="closeMoreMenu()">
-      <div class="more-menu" (click)="$event.stopPropagation()">
-        <div class="more-menu-header">
-          <h3>القائمة</h3>
-          <button class="close-btn" (click)="closeMoreMenu()">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="more-menu-items">
-          <a *ngFor="let item of moreItems(); trackBy: trackByPath"
-             class="more-item"
-             [routerLink]="item.path"
-             (click)="closeMoreMenu()">
-            <i [class]="item.icon"></i>
-            <span>{{ item.label }}</span>
-          </a>
-        </div>
-      </div>
+    <!-- ───────────── Backdrop (always in DOM, fades in/out) ───────────── -->
+    <div class="sd-backdrop"
+         [class.visible]="showMoreMenu()"
+         (click)="closeDrawer()">
     </div>
+
+    <!-- ───────────── Side Drawer (always in DOM, slides in/out) ───────────── -->
+    <aside class="sd" [class.open]="showMoreMenu()" dir="rtl">
+
+      <!-- User Profile Header -->
+      <div class="sd-profile">
+        <div class="sd-avatar-lg">
+          <span *ngIf="userInitials() !== '?'">{{ userInitials() }}</span>
+          <i *ngIf="userInitials() === '?'" class="fas fa-user"></i>
+        </div>
+        <div class="sd-user-info" *ngIf="isAuthenticated()">
+          <p class="sd-user-name">{{ displayName() || 'مستخدم' }}</p>
+          <p class="sd-user-email" *ngIf="userEmail()">{{ userEmail() }}</p>
+        </div>
+        <div class="sd-user-info" *ngIf="!isAuthenticated()">
+          <p class="sd-user-name">مرحباً</p>
+          <p class="sd-user-email">سجّل دخولك للمتابعة</p>
+        </div>
+        <button class="sd-close" (click)="closeDrawer()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Items -->
+      <div class="sd-items">
+        <a *ngFor="let item of moreItems(); trackBy: trackByPath"
+           class="sd-item"
+           [routerLink]="item.path"
+           [class.active]="isActive(item.path)"
+           (click)="closeDrawer()">
+          <div class="sd-item-icon">
+            <i [class]="item.icon"></i>
+          </div>
+          <span class="sd-item-label">{{ item.label }}</span>
+          <i class="fas fa-chevron-left sd-chevron"></i>
+        </a>
+      </div>
+
+      <!-- Footer -->
+      <div class="sd-footer" *ngIf="isAuthenticated()">
+        <button class="sd-logout" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>تسجيل الخروج</span>
+        </button>
+      </div>
+
+    </aside>
   `,
   styles: [`
-    .bottom-nav {
+    /* ────────────────────────────────────────────────────
+       BOTTOM NAV
+    ──────────────────────────────────────────────────── */
+    .bn {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: white;
-      border-top: 1px solid #e2e8f0;
-      padding: 0.5rem 0;
-      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
       z-index: 1000;
-      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-      display: block; /* Always visible (desktop + mobile) */
+      /* Glass-morphism panel */
+      background: rgba(255, 255, 255, 0.92);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0, 0, 0, 0.07);
+      box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.08);
+      padding-bottom: max(6px, env(safe-area-inset-bottom));
     }
 
-    .bottom-nav.rtl {
-      direction: rtl;
-    }
+    .bn.rtl { direction: rtl; }
 
-    .nav-container {
+    .bn-inner {
       display: flex;
       justify-content: space-around;
-      align-items: center;
-      max-width: 500px;
+      align-items: stretch;
+      max-width: 520px;
       margin: 0 auto;
+      height: 60px;
     }
 
-    .nav-item {
+    /* ── Each tab ── */
+    .bn-tab {
+      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      flex: 1;
       text-decoration: none;
-      color: #6b7280;
-      padding: 0.5rem 1rem;
-      border-radius: 12px;
-      transition: all 0.2s ease;
-      min-width: 60px;
+      color: #9ca3af;
       background: transparent;
       border: none;
       cursor: pointer;
+      gap: 3px;
+      transition: color 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      padding: 0 4px;
     }
 
-    .nav-item:hover, .nav-item:focus {
-      background: #f3f4f6;
-    }
+    .bn-tab.active { color: #5b21b6; }
 
-    .nav-item.active {
-      color: var(--ngx-primary);
-    }
-
-    .nav-item.active .nav-icon {
-      background: linear-gradient(135deg, #3366ff20 0%, #1a45cc20 100%);
-    }
-
-    .nav-icon {
+    .bn-icon-wrap {
       position: relative;
-      width: 40px;
-      height: 32px;
+      width: 36px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 16px;
-      transition: all 0.2s ease;
+      border-radius: 12px;
+      transition: background 0.2s ease;
     }
 
-    .nav-icon i {
-      font-size: 1.25rem;
+    .bn-tab.active .bn-icon-wrap {
+      background: linear-gradient(135deg, rgba(91,33,182,0.12) 0%, rgba(124,58,237,0.12) 100%);
     }
 
-    .nav-item.active .nav-icon i {
-      color: var(--ngx-primary);
+    .bn-icon-wrap i { font-size: 1.15rem; }
+
+    .bn-label {
+      font-size: 0.575rem;
+      font-weight: 600;
+      white-space: nowrap;
+      letter-spacing: 0.01em;
     }
 
-    .badge {
+    /* Active indicator bar at the top */
+    .bn-active-bar {
       position: absolute;
-      top: -4px;
-      right: -4px;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 3px;
+      border-radius: 0 0 3px 3px;
+      background: linear-gradient(90deg, #7c3aed, #5b21b6);
+    }
+
+    /* Notification badge */
+    .bn-badge {
+      position: absolute;
+      top: -3px;
+      right: -3px;
       background: #ef4444;
-      color: white;
-      font-size: 0.625rem;
+      color: #fff;
+      font-size: 0.55rem;
       font-weight: 700;
-      min-width: 16px;
-      height: 16px;
+      min-width: 15px;
+      height: 15px;
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 4px;
+      padding: 0 3px;
+      border: 1.5px solid white;
     }
 
-    .nav-label {
-      font-size: 0.625rem;
-      font-weight: 500;
-      margin-top: 2px;
-      white-space: nowrap;
+    /* ── Profile / Menu button avatar ── */
+    .bn-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 2px solid rgba(255,255,255,0.9);
     }
 
-    /* More Menu Overlay */
-    .more-menu-overlay {
+    .bn-profile-btn:active .bn-avatar {
+      transform: scale(0.92);
+      box-shadow: 0 1px 6px rgba(124, 58, 237, 0.3);
+    }
+
+    .bn-avatar i { font-size: 0.85rem; }
+
+    /* ────────────────────────────────────────────────────
+       BACKDROP
+    ──────────────────────────────────────────────────── */
+    .sd-backdrop {
       position: fixed;
       inset: 0;
+      background: rgba(0, 0, 0, 0);
+      z-index: 1099;
+      pointer-events: none;
+      transition: background 0.35s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .sd-backdrop.visible {
       background: rgba(0, 0, 0, 0.5);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
+      pointer-events: auto;
+    }
+
+    /* ────────────────────────────────────────────────────
+       SIDE DRAWER
+    ──────────────────────────────────────────────────── */
+    .sd {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(82vw, 310px);
+      height: 100%;
+      height: 100dvh;
+      background: #ffffff;
       z-index: 1100;
       display: flex;
-      align-items: flex-end;
-      justify-content: center;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: -8px 0 40px rgba(0, 0, 0, 0.2);
+      /* Hidden off-screen by default */
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+      will-change: transform;
     }
 
-    .more-menu {
-      background: white;
-      border-radius: 20px 20px 0 0;
-      width: 100%;
-      max-height: 70vh;
-      overflow-y: auto;
-      animation: slideUp 0.3s ease;
-    }
+    .sd.open { transform: translateX(0); }
 
-    @keyframes slideUp {
-      from {
-        transform: translateY(100%);
-      }
-      to {
-        transform: translateY(0);
-      }
-    }
-
-    .more-menu-header {
+    /* ── Profile Header ── */
+    .sd-profile {
+      position: relative;
+      background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 60%, #4c1d95 100%);
+      padding: 2.5rem 1.25rem 1.5rem;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid #e2e8f0;
+      gap: 0.6rem;
+      text-align: center;
+      /* Decorative circles */
+      overflow: hidden;
     }
 
-    .more-menu-header h3 {
-      margin: 0;
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #1a202c;
-    }
-
-    .close-btn {
-      background: #f3f4f6;
-      border: none;
-      width: 32px;
-      height: 32px;
+    .sd-profile::before,
+    .sd-profile::after {
+      content: '';
+      position: absolute;
       border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+    }
+    .sd-profile::before { width: 140px; height: 140px; top: -40px; left: -30px; }
+    .sd-profile::after  { width: 100px; height: 100px; bottom: -20px; right: -20px; }
+
+    .sd-avatar-lg {
+      position: relative;
+      z-index: 1;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 3px solid rgba(255, 255, 255, 0.5);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 1.7rem;
+      font-weight: 800;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .sd-avatar-lg i { font-size: 1.5rem; }
+
+    .sd-user-info { position: relative; z-index: 1; }
+
+    .sd-user-name {
+      margin: 0;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    .sd-user-email {
+      margin: 2px 0 0;
+      color: rgba(255,255,255,0.75);
+      font-size: 0.75rem;
+      direction: ltr;
+    }
+
+    .sd-close {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      font-size: 0.9rem;
       cursor: pointer;
-      color: #6b7280;
-    }
-
-    .close-btn:hover {
-      background: #e5e7eb;
-    }
-
-    .more-menu-items {
-      padding: 1rem;
-    }
-
-    .more-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-      text-decoration: none;
-      color: #1a202c;
-      border-radius: 12px;
-      transition: all 0.2s ease;
-    }
-
-    .more-item:hover {
-      background: #f3f4f6;
-    }
-
-    .more-item i {
-      width: 24px;
-      height: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--ngx-primary);
-      font-size: 1rem;
+      transition: background 0.2s;
+      z-index: 2;
+    }
+    .sd-close:hover { background: rgba(255,255,255,0.35); }
+
+    /* ── Items list ── */
+    .sd-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.75rem 0.75rem 0.5rem;
+      overscroll-behavior: contain;
     }
 
-    .more-item span {
-      font-size: 1rem;
+    .sd-item {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.8rem 0.9rem;
+      border-radius: 14px;
+      text-decoration: none;
+      color: #374151;
+      font-size: 0.93rem;
       font-weight: 500;
+      transition: background 0.15s, color 0.15s, transform 0.15s;
+      min-height: 50px;
+      margin-bottom: 2px;
     }
 
-    /* Previously restricted to mobile; now always shown */
+    .sd-item:active { transform: scale(0.98); }
 
-    /* Safe area for iOS devices */
+    .sd-item:hover, .sd-item.active {
+      background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(91,33,182,0.08) 100%);
+      color: #7c3aed;
+    }
+
+    .sd-item-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.1) 0%, rgba(91,33,182,0.1) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .sd-item.active .sd-item-icon {
+      background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+    }
+
+    .sd-item-icon i {
+      font-size: 0.9rem;
+      color: #7c3aed;
+    }
+
+    .sd-item.active .sd-item-icon i { color: #fff; }
+
+    .sd-item-label { flex: 1; }
+
+    .sd-chevron {
+      font-size: 0.65rem;
+      color: #d1d5db;
+      transition: color 0.15s;
+    }
+
+    .sd-item.active .sd-chevron,
+    .sd-item:hover .sd-chevron { color: #7c3aed; }
+
+    /* ── Drawer footer / logout ── */
+    .sd-footer {
+      padding: 0.75rem;
+      border-top: 1px solid #f3f4f6;
+    }
+
+    .sd-logout {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 0.8rem;
+      border-radius: 14px;
+      border: 1.5px solid #fee2e2;
+      background: #fff5f5;
+      color: #dc2626;
+      font-size: 0.93rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    }
+
+    .sd-logout:hover { background: #fee2e2; border-color: #fca5a5; }
+    .sd-logout:active { transform: scale(0.97); }
+
+    /* ── iOS safe area ── */
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
-      .bottom-nav {
-        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
-      }
+      .bn { padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
     }
   `]
 })
 export class BottomNavComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly configStateService = inject(ConfigStateService);
+  private readonly authService = inject(AuthService);
   private readonly realtimeSvc = inject(RealtimeNotificationService);
   private routerSubscription?: Subscription;
 
   tabs = signal<BottomTabConfig[]>([]);
   moreItems = signal<MoreMenuItemConfig[]>([]);
-  isVisible = signal(true);
   showMoreMenu = signal(false);
-  readonly unreadCount = this.realtimeSvc.unreadCount; // live signal from SignalR
+  readonly unreadCount = this.realtimeSvc.unreadCount;
   currentPath = signal('');
-  isRtl = true; // Arabic is RTL
+
+  userInitials = signal('?');
+  displayName = signal('');
+  userEmail = signal('');
+  isAuthenticated = signal(false);
+
+  isRtl = true;
 
   ngOnInit(): void {
-    this.loadTabs();
+    this.loadUserAndTabs();
     this.currentPath.set(this.router.url);
-    
-    // Listen to route changes
+
     this.routerSubscription = this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        this.currentPath.set(event.urlAfterRedirects);
-        this.closeMoreMenu();
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe((e: NavigationEnd) => {
+        this.currentPath.set(e.urlAfterRedirects);
+        this.closeDrawer();
       });
   }
 
@@ -294,37 +482,53 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     this.routerSubscription?.unsubscribe();
   }
 
-  private loadTabs(): void {
-    const currentUser = this.configStateService.getOne('currentUser');
+  private loadUserAndTabs(): void {
+    const currentUser = this.configStateService.getOne('currentUser') as any;
     const userRoles: string[] = currentUser?.roles || [];
+    const isAuth: boolean = currentUser?.isAuthenticated ?? false;
+
+    // Build display name from available fields
+    const firstName: string = currentUser?.name || '';
+    const lastName: string  = currentUser?.surName || '';
+    const userName: string  = currentUser?.userName || '';
+    const fullName = [firstName, lastName].filter(Boolean).join(' ') || userName;
+
+    // Compute two-letter initials
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    const initials = parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : (parts[0]?.[0]?.toUpperCase() || '?');
+
+    this.userInitials.set(initials);
+    this.displayName.set(fullName);
+    this.userEmail.set(currentUser?.email || '');
+    this.isAuthenticated.set(isAuth);
+
     this.tabs.set(getBottomTabsForRole(userRoles));
     this.moreItems.set(getMoreMenuItemsForRole(userRoles));
-
-    // Always show bottom nav (visible for all users)
-    this.isVisible.set(true);
   }
 
   isActive(path: string): boolean {
     const current = this.currentPath();
-    if (path === '/') {
-      return current === '/' || current === '';
-    }
+    if (path === '/') return current === '/' || current === '';
     return current.startsWith(path);
   }
 
-  onTabClick(tab: BottomTabConfig): void {
-    // Haptic feedback for native apps could be added here
+  onTabClick(_tab: BottomTabConfig): void {}
+
+  openDrawer(): void { this.showMoreMenu.set(true); }
+
+  closeDrawer(): void { this.showMoreMenu.set(false); }
+
+  // Keep for template compatibility (router subscription calls this)
+  closeMoreMenu(): void { this.showMoreMenu.set(false); }
+
+  async logout(): Promise<void> {
+    this.closeDrawer();
+    await this.authService.logout();
   }
 
-  toggleMoreMenu(): void {
-    this.showMoreMenu.update(v => !v);
-  }
-
-  closeMoreMenu(): void {
-    this.showMoreMenu.set(false);
-  }
-
-  trackByPath(_: number, tab: BottomTabConfig): string {
-    return tab.path;
+  trackByPath(_: number, item: { path: string }): string {
+    return item.path;
   }
 }

@@ -48,6 +48,7 @@ export class StudentDetailComponent implements OnInit {
   editingEnrollmentId = signal<string | null>(null);
   editTeacherId = signal<string | null>(null);
   savingEdit = signal(false);
+  promoting = signal(false);
 
   // derived signals/helpers
   getFullName() {
@@ -246,6 +247,22 @@ export class StudentDetailComponent implements OnInit {
   cancelEdit() {
     this.editingEnrollmentId.set(null);
     this.editTeacherId.set(null);
+  }
+
+  async promoteToNextGrade() {
+    const id = this.studentId();
+    if (!id) return;
+    if (!confirm(`هل تريد ترقية الطالب إلى الصف ${(this.student()?.currentGrade ?? 0) + 1}؟`)) return;
+    this.promoting.set(true);
+    try {
+      await lastValueFrom(this.studentSvc.promoteToNextGrade(id));
+      await this.loadDetails(id);
+    } catch (err) {
+      console.error('Promote failed', err);
+      alert('حدث خطأ أثناء الترقية');
+    } finally {
+      this.promoting.set(false);
+    }
   }
 
   async saveEdit() {

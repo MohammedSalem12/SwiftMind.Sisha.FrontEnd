@@ -54,6 +54,15 @@ export class StudentService {
     { apiName: this.apiName,...config });
   
 
+  getByTeacherStudentCode = (teacherStudentCode: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentDto>({
+      method: 'GET',
+      url: '/api/app/student/by-teacher-student-code',
+      params: { teacherStudentCode },
+    },
+    { apiName: this.apiName,...config });
+  
+
   getCurrentStudent = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, StudentDto>({
       method: 'GET',
@@ -75,6 +84,14 @@ export class StudentService {
     this.restService.request<any, ParentStudentDto[]>({
       method: 'GET',
       url: '/api/app/student/pending-links-for-current-student',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  promoteToNextGrade = (studentId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentDto>({
+      method: 'POST',
+      url: `/api/app/student/promote-to-next-grade/${studentId}`,
     },
     { apiName: this.apiName,...config });
   

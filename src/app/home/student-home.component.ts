@@ -6,6 +6,8 @@ import { lastValueFrom } from 'rxjs';
 import { AttendanceService } from '@proxy/attendances';
 import type { StudentAttendanceReportDto } from '@proxy/attendances/dtos';
 import { CurrentUserInfoService } from '@proxy/common';
+import { CourseService } from '@proxy/courses';
+import type { CourseDto } from '@proxy/courses/dtos/models';
 import { ExamGradeService } from '@proxy/exam-grades';
 import type { ExamGradeDto } from '@proxy/exam-grades/dtos';
 import { StudentService } from '@proxy/students';
@@ -13,6 +15,7 @@ import type { ParentStudentDto } from '@proxy/parents/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
+import { GradeThemeService } from '../shared/services/grade-theme.service';
 
 interface EnrolledCourseInfo {
   courseId: string;
@@ -36,17 +39,26 @@ export class StudentHomeComponent implements OnInit {
   private readonly attendanceSvc = inject(AttendanceService);
   private readonly examGradeSvc = inject(ExamGradeService);
   private readonly enrollmentRequestSvc = inject(EnrollmentRequestService);
+  private readonly gradeThemeService = inject(GradeThemeService);
+  private readonly courseService = inject(CourseService);
 
   studentName = signal('');
   studentId = signal<string | null>(null);
   studentGrade = signal<number | null>(null);
   enrolledCourses = signal<EnrolledCourseInfo[]>([]);
+  academyCourseGroups = signal<{ academyName: string; courses: CourseDto[] }[]>([]);
   attendanceStats = signal<StudentAttendanceReportDto[]>([]);
   lastGrades = signal<ExamGradeDto[]>([]);
   pendingRequests = signal<EnrollmentRequestDto[]>([]);
   pendingParentLinks = signal<ParentStudentDto[]>([]);
   loading = signal(true);
   cancellingId = signal<string | null>(null);
+
+  // Computed properties for theme
+  currentTheme = computed(() => {
+    const grade = this.studentGrade();
+    return grade ? this.gradeThemeService.getThemeForGrade(grade) : null;
+  });
 
   totalAbsenceDays = computed(() =>
     this.attendanceStats().reduce((sum, s) => sum + (s.absentDays || 0), 0)
@@ -69,12 +81,18 @@ export class StudentHomeComponent implements OnInit {
         this.studentName.set(userInfo.actorName || '');
         this.studentId.set(userInfo.actorId || null);
         this.studentGrade.set(userInfo.currentGrade || null);
+        
+        // Apply grade-based theme
+        if (userInfo.currentGrade) {
+          this.gradeThemeService.setThemeByGrade(userInfo.currentGrade);
+        }
       }
       await Promise.all([
         this.loadEnrollmentRequests(userInfo?.actorId),
         this.loadAttendanceStats(userInfo?.actorId),
         this.loadLastGrades(userInfo?.actorId),
         this.loadPendingParentLinks(),
+        this.loadAcademyCourses(),
       ]);
     } catch (err) {
       console.error('Error loading student home:', err);
@@ -142,6 +160,27 @@ export class StudentHomeComponent implements OnInit {
     }
   }
 
+  private async loadAcademyCourses(): Promise<void> {
+    try {
+      const result = await lastValueFrom(
+        this.courseService.getList({ maxResultCount: 100, skipCount: 0, sorting: '' })
+      );
+      const withAcademy = (result?.items || []).filter(c => (c as any).academyId);
+      // Group by academy name
+      const groupMap = new Map<string, CourseDto[]>();
+      for (const c of withAcademy) {
+        const key = (c as any).academyName || (c as any).academyId || 'أكاديمية';
+        if (!groupMap.has(key)) groupMap.set(key, []);
+        groupMap.get(key)!.push(c);
+      }
+      this.academyCourseGroups.set(
+        Array.from(groupMap.entries()).map(([academyName, courses]) => ({ academyName, courses }))
+      );
+    } catch (err) {
+      console.error('Error loading academy courses:', err);
+    }
+  }
+
   private async loadPendingParentLinks(): Promise<void> {
     try {
       const links = await lastValueFrom(this.studentService.getPendingLinksForCurrentStudent());
@@ -204,6 +243,14 @@ export class StudentHomeComponent implements OnInit {
 
   enrollInCourse(): void {
     this.router.navigate(['/student/courses']);
+  }
+
+  enrollInAcademyCourse(course: CourseDto): void {
+    this.router.navigate(['/student/enroll', course.id]);
+  }
+
+  browseAcademies(): void {
+    this.router.navigate(['/academies']);
   }
 
   goToMyRequests(): void {

@@ -1,0 +1,58 @@
+<div class="action-page" dir="rtl">
+
+  <!-- Header / Back -->
+  <div class="page-header">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-right"></i>
+    </button>
+    <div class="header-info">
+      @if (loading()) {
+        <div class="header-skeleton"></div>
+      } @else {
+        <h1 class="header-title">{{ course()?.nameAr || course()?.nameEn || 'المقرر' }}</h1>
+        <div class="header-meta">
+          @if (course()?.code) {
+            <span class="header-chip">{{ course()!.code }}</span>
+          }
+          @if (course()?.gradeName) {
+            <span class="header-chip">{{ course()!.gradeName }}</span>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Sub-title -->
+  <div class="sub-title">
+    <p>اختر الإجراء المطلوب</p>
+    <small>Choose an action</small>
+  </div>
+
+  <!-- Action Cards -->
+  <div class="actions-grid">
+
+    <!-- Attendance -->
+    <button class="action-card card-attendance" (click)="goToAttendance()">
+      <div class="action-icon-wrap">
+        <i class="fas fa-clipboard-check"></i>
+      </div>
+      <div class="action-label">تسجيل الغياب</div>
+      <div class="action-label-en">Attendance</div>
+      <div class="action-hint">تسجيل حضور وغياب الطلاب</div>
+      <div class="action-arrow"><i class="fas fa-arrow-left"></i></div>
+    </button>
+
+    <!-- Marks -->
+    <button class="action-card card-marks" (click)="goToMarks()">
+      <div class="action-icon-wrap">
+        <i class="fas fa-star"></i>
+      </div>
+      <div class="action-label">إدخال الدرجات</div>
+      <div class="action-label-en">Marks Entry</div>
+      <div class="action-hint">رصد درجات الامتحانات والأعمال</div>
+      <div class="action-arrow"><i class="fas fa-arrow-left"></i></div>
+    </button>
+
+  </div>
+
+</div>
