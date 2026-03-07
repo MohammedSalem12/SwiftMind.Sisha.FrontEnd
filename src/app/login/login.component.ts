@@ -123,6 +123,18 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  loginWithGoogle(): void {
+    this.loading.set(true);
+    const params = new URLSearchParams({ provider: 'Google', returnUrl: '/' });
+    window.location.href = `/connect/authorize?${params.toString()}`;
+  }
+
+  loginWithFacebook(): void {
+    this.loading.set(true);
+    const params = new URLSearchParams({ provider: 'Facebook', returnUrl: '/' });
+    window.location.href = `/connect/authorize?${params.toString()}`;
+  }
+
   togglePassword(): void {
     this.showPassword.update(v => !v);
   }

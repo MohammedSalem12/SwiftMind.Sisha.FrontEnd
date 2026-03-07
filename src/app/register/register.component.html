@@ -42,6 +42,37 @@
         </button>
       </div>
 
+      <div class="social-divider">
+        <span>أو اختر دورك وسجّل بـ</span>
+      </div>
+
+      <div class="role-social-grid">
+        <div *ngFor="let role of roles" class="role-social-row">
+          <span class="role-social-label" [style.color]="role.color">
+            <i class="fas" [ngClass]="role.icon"></i>
+            {{ role.label }}
+          </span>
+          <div class="role-social-btns">
+            <button
+              type="button"
+              class="btn-social-sm btn-google"
+              (click)="form.userType = role.type; registerWithGoogle()"
+              title="تسجيل {{ role.label }} بـ Google"
+            >
+              <i class="fab fa-google"></i>
+            </button>
+            <button
+              type="button"
+              class="btn-social-sm btn-facebook"
+              (click)="form.userType = role.type; registerWithFacebook()"
+              title="تسجيل {{ role.label }} بـ Facebook"
+            >
+              <i class="fab fa-facebook-f"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="reg-footer-link">
         لديك حساب؟ <a routerLink="/login">تسجيل الدخول</a>
       </div>
@@ -188,6 +219,31 @@
             جاري إنشاء الحساب...
           </span>
         </button>
+
+        <!-- Social Registration -->
+        <div class="social-divider">
+          <span>أو أنشئ حسابك بـ</span>
+        </div>
+        <div class="form-social-btns">
+          <button
+            type="button"
+            class="btn-social-wide btn-google"
+            (click)="registerWithGoogle()"
+            [disabled]="registering()"
+          >
+            <i class="fab fa-google"></i>
+            <span>التسجيل بـ Google</span>
+          </button>
+          <button
+            type="button"
+            class="btn-social-wide btn-facebook"
+            (click)="registerWithFacebook()"
+            [disabled]="registering()"
+          >
+            <i class="fab fa-facebook-f"></i>
+            <span>التسجيل بـ Facebook</span>
+          </button>
+        </div>
 
       </form>
 
