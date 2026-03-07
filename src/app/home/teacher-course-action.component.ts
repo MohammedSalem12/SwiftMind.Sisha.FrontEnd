@@ -45,6 +45,6 @@ export class TeacherCourseActionComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/home/teacher']);
+    this.router.navigate(['/teacher']);
   }
 }

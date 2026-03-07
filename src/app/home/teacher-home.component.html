@@ -33,7 +33,7 @@
     </div>
   }
 
-  <!-- Courses Grid -->
+  <!-- My Courses Grid -->
   @if (!loading() && courses().length > 0) {
     <div class="section-label">
       <i class="fas fa-layer-group"></i>
@@ -59,6 +59,10 @@
               }
             </div>
           </div>
+          <!-- QR Code Button -->
+          <button class="qr-btn" (click)="openQrCodes($event, course)" title="QR Code">
+            <i class="fas fa-qrcode"></i>
+          </button>
           <div class="course-card-arrow">
             <i class="fas fa-chevron-left"></i>
           </div>
@@ -66,5 +70,63 @@
       }
     </div>
   }
+
+  <!-- Academy Courses Sections -->
+  @if (!loadingAcademies() && academyGroups().length > 0) {
+    @for (group of academyGroups(); track group.academy.id) {
+      <div class="section-label section-label-academy">
+        <i class="fas fa-university"></i>
+        <span>{{ group.academy.nameAr || group.academy.nameEn }}</span>
+        @if (group.academy.nameEn && group.academy.nameAr) {
+          <span class="academy-name-en">· {{ group.academy.nameEn }}</span>
+        }
+        <span class="count-pill">{{ group.courses.length }}</span>
+      </div>
+
+      <div class="courses-grid">
+        @for (course of group.courses; track course.id) {
+          <button class="course-card" (click)="selectAcademyCourse(course)">
+            <div class="course-card-icon course-card-icon--academy">
+              <i class="fas fa-book-reader"></i>
+            </div>
+            <div class="course-card-body">
+              <div class="course-name">{{ course.nameAr || course.nameEn || course.name }}</div>
+              <div class="course-name-en">{{ course.nameEn }}</div>
+              <div class="course-meta">
+                @if (course.code) {
+                  <span class="meta-chip chip-code">{{ course.code }}</span>
+                }
+                @if (course.gradeName) {
+                  <span class="meta-chip chip-grade">{{ course.gradeName }}</span>
+                }
+              </div>
+            </div>
+            <button class="qr-btn" (click)="openQrCodes($event, course)" title="QR Code">
+              <i class="fas fa-qrcode"></i>
+            </button>
+            <div class="course-card-arrow">
+              <i class="fas fa-chevron-left"></i>
+            </div>
+          </button>
+        }
+      </div>
+    }
+  }
+
+  <!-- Bottom Actions -->
+  <div class="bottom-actions">
+    <!-- Academies Button (always visible) -->
+    <button class="action-btn action-btn-academy" (click)="goToAddAcademy()">
+      <i class="fas fa-university"></i>
+      <span>الأكاديميات</span>
+      <span class="action-btn-en">Academies</span>
+    </button>
+    <!-- Enroll Button -->
+    <button class="action-btn action-btn-enroll" (click)="goToEnroll()">
+      <i class="fas fa-user-plus"></i>
+      <span>تسجيل مقرر</span>
+      <span class="action-btn-en">Enroll Course</span>
+    </button>
+  </div>
 
 </div>

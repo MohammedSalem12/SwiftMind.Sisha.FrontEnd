@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CurrentUserInfoService } from '@proxy/common';
-import { CourseService } from '@proxy/courses';
 import { EnrollmentRequestInitiator } from '@proxy/enums/enrollment-request-initiator.enum';
 import { GroupService } from '@proxy/groups';
-import { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
+import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { TeacherService } from '@proxy/teachers';
 import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
@@ -17,178 +16,469 @@ import { lastValueFrom } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="course-enrollment-container">
-      <div class="container py-4">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h2>التسجيل في المقرر</h2>
-          <button class="btn btn-secondary" (click)="goBack()">
-            <i class="bi bi-arrow-right"></i> رجوع
-          </button>
-        </div>
+    <div class="enroll-page" dir="rtl">
 
-        <!-- Loading State -->
-        <div *ngIf="loading()" class="text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">جاري التحميل...</span>
-          </div>
-        </div>
-
-        <!-- Step 1: Select Teacher -->
-        <div *ngIf="!loading() && !selectedTeacher()" class="teachers-section">
-          <h4 class="mb-3">اختر المعلم</h4>
-          <div class="row g-3">
-            <div class="col-md-4" *ngFor="let teacher of teachers()">
-              <div class="card teacher-card h-100" (click)="selectTeacher(teacher)" style="cursor: pointer;">
-                <div class="card-body text-center">
-                  <i class="bi bi-person-circle fs-1 text-primary mb-2"></i>
-                  <h5 class="card-title">{{ teacher.displayName }}</h5>
-                  <button class="btn btn-primary btn-sm mt-2">اختيار</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div *ngIf="teachers().length === 0" class="alert alert-info">
-            لا يوجد معلمون متاحون لهذا المقرر حالياً
-          </div>
-        </div>
-
-        <!-- Step 2: Select Group -->
-        <div *ngIf="!loading() && selectedTeacher() && !selectedGroup()" class="groups-section">
-          <div class="mb-3">
-            <button class="btn btn-link" (click)="backToTeachers()">
-              <i class="bi bi-arrow-right"></i> تغيير المعلم
-            </button>
-          </div>
-          <h4 class="mb-3">اختر المجموعة - المعلم: {{ selectedTeacher()?.displayName }}</h4>
-
-          <!-- Optional teacher internal code -->
-          <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-body">
-              <label class="form-label fw-semibold">
-                <i class="eva eva-hash-outline me-1"></i>
-                رمز الطالب الداخلي لدى المعلم
-                <span class="text-muted fw-normal">(اختياري)</span>
-              </label>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="teacherStudentCodeInput"
-                placeholder="أدخل الرمز الداخلي إن وُجد"
-                maxlength="32"
-              />
-              <div class="form-text">إذا زوّدك المعلم برمز خاص بك في نظامه، أدخله هنا</div>
-            </div>
-          </div>
-
-          <div class="row g-3">
-            <div class="col-md-6" *ngFor="let group of groups()">
-              <div class="card group-card h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                      <h5 class="card-title">{{ group.name }}</h5>
-                      <p class="text-muted mb-0">كود المجموعة: {{ group.groupCode }}</p>
-                    </div>
-                  </div>
-
-                  <!-- Schedules -->
-                  <div class="schedules mb-3" *ngIf="group.schedules && group.schedules.length > 0">
-                    <h6 class="mb-2">المواعيد:</h6>
-                    <div class="schedule-item" *ngFor="let schedule of group.schedules">
-                      <i class="bi bi-calendar3"></i>
-                      <span class="me-2">{{ getDayName(schedule.dayOfWeek) }}</span>
-                      <i class="bi bi-clock"></i>
-                      <span>{{ formatTime(schedule.startTime) }} - {{ formatTime(schedule.endTime) }}</span>
-                      <span class="text-muted ms-2" *ngIf="schedule.location">
-                        <i class="bi bi-geo-alt"></i> {{ schedule.location }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    class="btn btn-success w-100"
-                    (click)="selectGroup(group)"
-                    [disabled]="submitting()">
-                    <span *ngIf="!submitting()">انضم لهذه المجموعة</span>
-                    <span *ngIf="submitting()">جاري الإرسال...</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div *ngIf="groups().length === 0" class="alert alert-warning">
-            لا توجد مجموعات متاحة لهذا المعلم حالياً
-          </div>
-        </div>
-
-        <!-- Success Message -->
-        <div *ngIf="enrollmentSuccess()" class="alert alert-success">
-          <h5><i class="bi bi-check-circle"></i> تم إرسال طلب التسجيل بنجاح!</h5>
-          <p>سيتم مراجعة طلبك من قبل المعلم والموافقة عليه قريباً.</p>
-          <button class="btn btn-primary" (click)="goBack()">العودة للرئيسية</button>
-        </div>
-
-        <!-- Error Message -->
-        <div *ngIf="errorMessage()" class="alert alert-danger">
-          <i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}
+      <!-- Header -->
+      <div class="enroll-header">
+        <button class="back-btn" (click)="goBack()">
+          <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="header-text">
+          <span class="header-title">التسجيل في مقرر</span>
+          <span class="header-sub">اختر المعلم ثم المجموعة</span>
         </div>
       </div>
+
+      <!-- Step Indicator -->
+      @if (!enrollmentSuccess()) {
+        <div class="steps-bar">
+          <div class="step" [class.step--active]="!selectedTeacher()" [class.step--done]="!!selectedTeacher()">
+            <div class="step-dot">
+              @if (selectedTeacher()) { <i class="fas fa-check"></i> } @else { 1 }
+            </div>
+            <span class="step-label">المعلم</span>
+          </div>
+          <div class="step-line" [class.step-line--done]="!!selectedTeacher()"></div>
+          <div class="step" [class.step--active]="!!selectedTeacher()">
+            <div class="step-dot">2</div>
+            <span class="step-label">المجموعة</span>
+          </div>
+        </div>
+      }
+
+      <!-- Error Banner -->
+      @if (errorMessage()) {
+        <div class="error-banner">
+          <i class="fas fa-exclamation-triangle"></i> {{ errorMessage() }}
+        </div>
+      }
+
+      <!-- Loading -->
+      @if (loading()) {
+        <div class="loading-area">
+          <div class="sk-card"></div>
+          <div class="sk-card"></div>
+          <div class="sk-card"></div>
+        </div>
+      }
+
+      <!-- Step 1: Teachers -->
+      @if (!loading() && !selectedTeacher() && !enrollmentSuccess()) {
+        <div class="step-content">
+          <div class="section-lbl">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <span>اختر المعلم</span>
+            <span class="lbl-count">{{ teachers().length }}</span>
+          </div>
+
+          @if (teachers().length === 0) {
+            <div class="empty-state">
+              <i class="fas fa-user-slash"></i>
+              <p>لا يوجد معلمون متاحون لهذا المقرر حالياً</p>
+            </div>
+          }
+
+          <div class="teachers-grid">
+            @for (t of teachers(); track t.id) {
+              <div class="teacher-card" (click)="selectTeacher(t)">
+                <div class="teacher-avatar">{{ getInitials(t.displayName) }}</div>
+                <div class="teacher-name">{{ t.displayName }}</div>
+                <button class="select-btn">
+                  اختيار <i class="fas fa-chevron-left"></i>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Step 2: Groups -->
+      @if (!loading() && selectedTeacher() && !enrollmentSuccess()) {
+        <div class="step-content">
+
+          <!-- Selected teacher bar -->
+          <div class="selected-teacher-bar">
+            <div class="st-avatar">{{ getInitials(selectedTeacher()?.displayName) }}</div>
+            <div class="st-info">
+              <span class="st-lbl">المعلم المختار</span>
+              <span class="st-name">{{ selectedTeacher()?.displayName }}</span>
+            </div>
+            <button class="change-btn" (click)="backToTeachers()">تغيير</button>
+          </div>
+
+          <!-- Teacher code input — only shown when groups are available -->
+          @if (groups().length > 0) {
+            <div class="code-card">
+              <label class="code-label">
+                <i class="fas fa-key"></i> رمز الطالب الداخلي
+                <span class="optional-tag">اختياري</span>
+              </label>
+              <input
+                class="code-input"
+                type="text"
+                [(ngModel)]="teacherStudentCodeInput"
+                placeholder="أدخل الرمز إن زودك به المعلم"
+                maxlength="32" />
+            </div>
+          }
+
+          <div class="section-lbl">
+            <i class="fas fa-users"></i>
+            <span>اختر المجموعة</span>
+            <span class="lbl-count">{{ groups().length }}</span>
+          </div>
+
+          @if (groups().length === 0) {
+            <div class="empty-state">
+              <i class="fas fa-calendar-times"></i>
+              <p>لا توجد مجموعات متاحة لهذا المعلم حالياً</p>
+            </div>
+          }
+
+          <div class="groups-list">
+            @for (g of groups(); track g.groupId) {
+              <div class="group-card">
+                <div class="group-top">
+                  <div>
+                    <div class="group-name">{{ g.name }}</div>
+                    <div class="group-code"><i class="fas fa-hashtag"></i> {{ g.groupCode }}</div>
+                  </div>
+                </div>
+
+                @if (g.schedules && g.schedules.length > 0) {
+                  <div class="schedules">
+                    @for (s of g.schedules; track s.dayOfWeek) {
+                      <div class="schedule-row">
+                        <i class="fas fa-calendar-day"></i>
+                        <span class="sch-day">{{ getDayName(s.dayOfWeek) }}</span>
+                        <i class="fas fa-clock"></i>
+                        <span>{{ formatTime(s.startTime) }} - {{ formatTime(s.endTime) }}</span>
+                        @if (s.location) {
+                          <span class="sch-loc"><i class="fas fa-map-marker-alt"></i> {{ s.location }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+                <button class="join-btn" (click)="selectGroup(g)" [disabled]="submitting()">
+                  @if (submitting()) {
+                    <i class="fas fa-spinner fa-spin"></i> جاري الإرسال...
+                  } @else {
+                    <i class="fas fa-user-plus"></i> انضم للمجموعة
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Success Screen -->
+      @if (enrollmentSuccess()) {
+        <div class="success-screen">
+          <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+          <h2>تم إرسال الطلب!</h2>
+          <p>سيتم مراجعة طلب التسجيل من قبل المعلم والموافقة عليه قريباً</p>
+          <p class="success-en">Your enrollment request has been sent successfully</p>
+          <div class="success-actions">
+            <button class="sa-btn sa-btn--outline" (click)="goBack()">
+              <i class="fas fa-home"></i> الرئيسية
+            </button>
+            <button class="sa-btn sa-btn--primary" (click)="goToRequests()">
+              <i class="fas fa-clipboard-list"></i> طلباتي
+            </button>
+          </div>
+        </div>
+      }
+
     </div>
   `,
   styles: [`
+    $pg: linear-gradient(135deg, #667eea, #764ba2);
+    $ps: #667eea;
+    $pe: #764ba2;
+
+    .enroll-page {
+      min-height: 100vh;
+      background: #f4f3ff;
+      direction: rtl;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* Header */
+    .enroll-header {
+      background: $pg;
+      padding: 1rem 1rem calc(1rem + env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .back-btn {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.2);
+      border: none; border-radius: 50%;
+      color: #fff; font-size: 1rem;
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header-text { display: flex; flex-direction: column; }
+    .header-title { color: #fff; font-size: 1.1rem; font-weight: 700; }
+    .header-sub { color: rgba(255,255,255,0.75); font-size: 0.78rem; }
+
+    /* Steps */
+    .steps-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 1rem 2rem;
+      background: #fff;
+      border-bottom: 1px solid #e9e6ff;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .step-dot {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: #e9e6ff;
+      color: #9ca3af;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease;
+    }
+    .step--active .step-dot { background: $pg; color: #fff; }
+    .step--done .step-dot { background: #22c55e; color: #fff; }
+    .step-label { font-size: 0.72rem; color: #6b7280; font-weight: 500; }
+    .step--active .step-label { color: $pe; font-weight: 700; }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: #e9e6ff;
+      margin: 0 0.5rem;
+      margin-bottom: 0.9rem;
+      min-width: 40px;
+      transition: background 0.3s ease;
+    }
+    .step-line--done { background: #22c55e; }
+
+    /* Error */
+    .error-banner {
+      margin: 0.75rem 1rem;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Loading */
+    .loading-area { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    @keyframes shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
+    .sk-card {
+      height: 80px; border-radius: 14px;
+      background: linear-gradient(90deg, #e9e6ff 25%, #f4f3ff 50%, #e9e6ff 75%);
+      background-size: 600px 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    /* Section label */
+    .section-lbl {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0 1rem;
+      margin: 1rem 0 0.5rem;
+      font-size: 0.85rem; font-weight: 600; color: #374151;
+      i { color: $ps; }
+    }
+    .lbl-count {
+      background: $pg; color: #fff;
+      border-radius: 20px; padding: 0.1rem 0.5rem;
+      font-size: 0.7rem; font-weight: 700;
+    }
+
+    /* Empty */
+    .empty-state {
+      text-align: center; padding: 2.5rem 1rem; color: #9ca3af;
+      i { font-size: 2.5rem; color: #c4b5fd; display: block; margin-bottom: 0.75rem; }
+      p { font-size: 0.9rem; color: #6b7280; margin: 0; }
+    }
+
+    /* Teachers */
+    .teachers-grid {
+      padding: 0 1rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
     .teacher-card {
-      transition: transform 0.2s, box-shadow 0.2s;
-      border: 2px solid transparent;
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.1rem 0.75rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1.5px solid #e9e6ff;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      text-align: center;
+      &:active { transform: scale(0.97); }
+    }
+    .teacher-avatar {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: $pg;
+      color: #fff;
+      font-size: 1.1rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .teacher-name {
+      font-size: 0.85rem; font-weight: 600; color: #1a202c;
+      line-height: 1.3;
+    }
+    .select-btn {
+      background: $pg; color: #fff;
+      border: none; border-radius: 8px;
+      padding: 0.35rem 0.9rem; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+      min-height: 36px;
     }
 
-    .teacher-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      border-color: var(--bs-primary);
+    /* Selected teacher bar */
+    .selected-teacher-bar {
+      margin: 0.75rem 1rem;
+      background: #fff;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+      border: 1.5px solid #e9e6ff;
+      box-shadow: 0 2px 6px rgba(102,126,234,0.1);
+    }
+    .st-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%; background: $pg; color: #fff;
+      font-size: 0.9rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .st-info { flex: 1; display: flex; flex-direction: column; gap: 0.1rem; }
+    .st-lbl { font-size: 0.68rem; color: #9ca3af; }
+    .st-name { font-size: 0.88rem; font-weight: 600; color: #1a202c; }
+    .change-btn {
+      background: none; border: 1.5px solid $ps; color: $ps;
+      border-radius: 8px; padding: 0.3rem 0.75rem;
+      font-size: 0.78rem; font-weight: 600; cursor: pointer;
+      min-height: 36px;
     }
 
+    /* Code input */
+    .code-card {
+      margin: 0 1rem 0.5rem;
+      background: #fff; border-radius: 12px;
+      padding: 0.85rem 1rem;
+      border: 1.5px solid #e9e6ff;
+    }
+    .code-label {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.82rem; font-weight: 600; color: #374151;
+      margin-bottom: 0.5rem;
+      i { color: $ps; }
+    }
+    .optional-tag {
+      background: #ede9fe; color: $pe;
+      border-radius: 6px; padding: 0.1rem 0.4rem;
+      font-size: 0.68rem; font-weight: 500; margin-right: auto;
+    }
+    .code-input {
+      width: 100%; border: 1px solid #e0e0e0; border-radius: 8px;
+      padding: 0.55rem 0.85rem; font-size: 0.88rem;
+      direction: rtl; box-sizing: border-box;
+      &:focus { outline: none; border-color: $ps; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+    }
+
+    /* Groups */
+    .groups-list { padding: 0 1rem; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
     .group-card {
-      border: 1px solid #ddd;
+      background: #fff; border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1.5px solid #e9e6ff;
+    }
+    .group-top { margin-bottom: 0.75rem; }
+    .group-name { font-size: 0.95rem; font-weight: 700; color: #1a202c; }
+    .group-code { font-size: 0.75rem; color: #9ca3af; margin-top: 0.15rem; i { font-size: 0.65rem; } }
+    .schedules { margin-bottom: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .schedule-row {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem;
+      background: #f4f3ff; border-radius: 8px; padding: 0.45rem 0.75rem;
+      font-size: 0.78rem; color: #374151;
+      i { color: $pe; font-size: 0.72rem; }
+    }
+    .sch-day { font-weight: 600; }
+    .sch-loc { color: #9ca3af; margin-right: auto; }
+    .join-btn {
+      width: 100%; background: $pg; color: #fff;
+      border: none; border-radius: 10px; padding: 0.75rem;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+      min-height: 48px;
+      &:disabled { opacity: 0.7; cursor: not-allowed; }
+      &:active:not(:disabled) { opacity: 0.88; }
     }
 
-    .schedule-item {
-      padding: 8px 12px;
-      background-color: #f8f9fa;
-      border-radius: 4px;
-      margin-bottom: 8px;
-      font-size: 0.9rem;
+    /* Success */
+    .success-screen {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 3rem 2rem; text-align: center;
     }
-
-    .schedule-item i {
-      color: #6c757d;
-      margin-right: 4px;
+    .success-icon {
+      font-size: 4.5rem; color: #22c55e;
+      margin-bottom: 1rem;
+      animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
     }
+    @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .success-screen h2 { font-size: 1.4rem; font-weight: 800; color: #1a202c; margin: 0 0 0.5rem; }
+    .success-screen p { font-size: 0.88rem; color: #6b7280; margin: 0; }
+    .success-en { font-size: 0.78rem; color: #9ca3af; margin-top: 0.25rem !important; }
+    .success-actions { display: flex; gap: 0.75rem; margin-top: 2rem; width: 100%; max-width: 320px; }
+    .sa-btn {
+      flex: 1; border-radius: 12px; padding: 0.75rem 1rem;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+      min-height: 48px; border: none;
+    }
+    .sa-btn--primary { background: $pg; color: #fff; }
+    .sa-btn--outline { background: #fff; color: $pe; border: 1.5px solid $pe; }
   `]
 })
 export class CourseEnrollmentComponent implements OnInit {
-  courseId = signal<string>('');
-  teachers = signal<TeacherAutocompleteDto[]>([]);
-  groups = signal<GroupWithSchedulesDto[]>([]);
-  selectedTeacher = signal<TeacherAutocompleteDto | null>(null);
-  selectedGroup = signal<GroupWithSchedulesDto | null>(null);
-  loading = signal(false);
-  submitting = signal(false);
+  private readonly route                  = inject(ActivatedRoute);
+  private readonly router                 = inject(Router);
+  private readonly groupService           = inject(GroupService);
+  private readonly enrollmentRequestSvc   = inject(EnrollmentRequestService);
+  private readonly currentUserInfoService = inject(CurrentUserInfoService);
+  private readonly teacherService         = inject(TeacherService);
+
+  courseId          = signal<string>('');
+  teachers          = signal<TeacherAutocompleteDto[]>([]);
+  groups            = signal<GroupWithSchedulesDto[]>([]);
+  selectedTeacher   = signal<TeacherAutocompleteDto | null>(null);
+  loading           = signal(false);
+  submitting        = signal(false);
   enrollmentSuccess = signal(false);
-  errorMessage = signal('');
+  errorMessage      = signal('');
   teacherStudentCodeInput = '';
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private courseService: CourseService,
-    private groupService: GroupService,
-    private enrollmentRequestService: EnrollmentRequestService,
-    private currentUserInfoService: CurrentUserInfoService,
-    private teacherService: TeacherService
-  ) {}
-
-  ngOnInit() {
+  ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.courseId.set(id);
@@ -196,60 +486,40 @@ export class CourseEnrollmentComponent implements OnInit {
     }
   }
 
-  loadTeachers() {
+  loadTeachers(): void {
     this.loading.set(true);
     this.errorMessage.set('');
-
     this.teacherService.getTeachersByCourse(this.courseId(), undefined, 100).subscribe({
-      next: (teachers) => {
-        this.teachers.set(teachers);
-        this.loading.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading teachers:', error);
-        this.errorMessage.set('حدث خطأ أثناء تحميل المعلمين');
-        this.loading.set(false);
-      }
+      next: teachers => { this.teachers.set(teachers); this.loading.set(false); },
+      error: () => { this.errorMessage.set('حدث خطأ أثناء تحميل المعلمين'); this.loading.set(false); }
     });
   }
 
-  selectTeacher(teacher: TeacherAutocompleteDto) {
+  selectTeacher(teacher: TeacherAutocompleteDto): void {
     this.selectedTeacher.set(teacher);
     this.teacherStudentCodeInput = '';
     this.loading.set(true);
     this.errorMessage.set('');
-
     this.groupService.getGroupsForTeacherAndCourse(teacher.id!, this.courseId()).subscribe({
-      next: (groups) => {
-        this.groups.set(groups);
-        this.loading.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading groups:', error);
-        this.errorMessage.set('حدث خطأ أثناء تحميل المجموعات');
-        this.loading.set(false);
-      }
+      next: groups => { this.groups.set(groups); this.loading.set(false); },
+      error: () => { this.errorMessage.set('حدث خطأ أثناء تحميل المجموعات'); this.loading.set(false); }
     });
   }
 
-  selectGroup(group: GroupWithSchedulesDto) {
-    this.selectedGroup.set(group);
+  selectGroup(group: GroupWithSchedulesDto): void {
     this.submitEnrollmentRequest(group);
   }
 
-  async submitEnrollmentRequest(group: GroupWithSchedulesDto) {
+  async submitEnrollmentRequest(group: GroupWithSchedulesDto): Promise<void> {
     this.submitting.set(true);
     this.errorMessage.set('');
-
     try {
       const userInfo = await lastValueFrom(this.currentUserInfoService.getCurrentUserActorInfo());
-
-      if (!userInfo || !userInfo.actorId) {
-        this.errorMessage.set('غير قادر على تحديد معلومات الطالب. يرجى تسجيل الدخول مرة أخرى.');
+      if (!userInfo?.actorId) {
+        this.errorMessage.set('تعذّر تحديد بيانات الطالب، يرجى تسجيل الدخول مجدداً.');
         this.submitting.set(false);
         return;
       }
-
       const request: any = {
         studentId: userInfo.actorId,
         courseId: this.courseId(),
@@ -257,51 +527,42 @@ export class CourseEnrollmentComponent implements OnInit {
         groupId: group.groupId!,
         initiator: EnrollmentRequestInitiator.Student,
       };
-
       if (this.teacherStudentCodeInput?.trim()) {
         request.teacherStudentCode = this.teacherStudentCodeInput.trim();
       }
-
-      await lastValueFrom(this.enrollmentRequestService.create(request));
-      this.submitting.set(false);
+      await lastValueFrom(this.enrollmentRequestSvc.create(request));
       this.enrollmentSuccess.set(true);
     } catch (error: any) {
-      console.error('Error submitting enrollment request:', error);
-      let errorMsg = 'حدث خطأ أثناء إرسال طلب التسجيل. يرجى المحاولة مرة أخرى.';
-
-      if (error?.error?.error?.message) {
-        errorMsg = error.error.error.message;
-      }
-
-      this.errorMessage.set(errorMsg);
+      this.errorMessage.set(error?.error?.error?.message || 'حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى.');
+    } finally {
       this.submitting.set(false);
     }
   }
 
-  backToTeachers() {
+  backToTeachers(): void {
     this.selectedTeacher.set(null);
     this.groups.set([]);
     this.teacherStudentCodeInput = '';
   }
 
-  goBack() {
-    this.router.navigate(['/student']);
+  goBack(): void { this.router.navigate(['/student']); }
+  goToRequests(): void { this.router.navigate(['/student/requests']); }
+
+  getInitials(name?: string | null): string {
+    if (!name) return '?';
+    return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
   }
 
   getDayName(dayOfWeek: number): string {
-    const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    return days[dayOfWeek] || '';
+    return ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][dayOfWeek] || '';
   }
 
   formatTime(time: string): string {
     if (!time) return '';
     const parts = time.split(':');
     if (parts.length >= 2) {
-      const hours = parseInt(parts[0]);
-      const minutes = parts[1];
-      const period = hours >= 12 ? 'م' : 'ص';
-      const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
-      return `${displayHours}:${minutes} ${period}`;
+      const h = parseInt(parts[0]);
+      return `${h > 12 ? h - 12 : h === 0 ? 12 : h}:${parts[1]} ${h >= 12 ? 'م' : 'ص'}`;
     }
     return time;
   }

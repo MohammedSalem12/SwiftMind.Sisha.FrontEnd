@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 import { AttendanceService } from '@proxy/attendances';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
@@ -39,10 +40,14 @@ export class AttendanceComponent implements OnInit {
   private readonly groupSvc = inject(GroupService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
   private readonly route = inject(ActivatedRoute);
+  private readonly location = inject(Location);
 
   // Role state
   isTeacher = signal(false);
   teacherId = signal<string | null>(null);
+
+  // Locked mode: when arriving with ?courseId= the dropdown becomes a read-only label
+  lockedCourseId = signal<string | null>(null);
 
   // Course
   courses = signal<any[]>([]);
@@ -65,6 +70,13 @@ export class AttendanceComponent implements OnInit {
   saving = signal(false);
   message = signal<string | null>(null);
   messageType = signal<'success' | 'error'>('success');
+  showStats = signal(false);
+
+  // Paging
+  page = signal(1);
+  readonly pageSize = 20;
+  totalStudentCount = signal(0);
+  totalPages = computed(() => Math.max(1, Math.ceil(this.totalStudentCount() / this.pageSize)));
 
   // Computed stats
   presentCount = computed(() => this.students().filter(s => !s.isAbsent).length);
@@ -102,19 +114,28 @@ export class AttendanceComponent implements OnInit {
       const actorType = userInfo?.actorType;
       const actorId = userInfo?.actorId;
 
+      const qpCourseId = this.route.snapshot.queryParamMap.get('courseId');
+      const qpTeacherId = this.route.snapshot.queryParamMap.get('teacherId');
+
       if (actorType === 'Teacher' && actorId) {
         this.isTeacher.set(true);
         this.teacherId.set(actorId);
         this.effectiveTeacherId.set(actorId);
         await this.loadTeacherCourses(actorId);
+      } else if (qpTeacherId) {
+        // Secretary arriving from a specific teacher's course list
+        this.isTeacher.set(false);
+        this.teacherId.set(qpTeacherId);
+        this.effectiveTeacherId.set(qpTeacherId);
+        await this.loadTeacherCourses(qpTeacherId);
       } else {
         this.isTeacher.set(false);
         await this.loadAllCourses();
       }
 
-      // Auto-select course from query params if provided
-      const qpCourseId = this.route.snapshot.queryParamMap.get('courseId');
+      // Auto-select and lock course from query params
       if (qpCourseId && this.courses().some(c => c.id === qpCourseId)) {
+        this.lockedCourseId.set(qpCourseId);
         await this.onCourseChange(qpCourseId);
       }
     } catch (e) {
@@ -156,6 +177,7 @@ export class AttendanceComponent implements OnInit {
     this.groups.set([]);
     this.students.set([]);
     this.message.set(null);
+    this.page.set(1);
 
     const course = this.courses().find(c => c.id === courseId);
     this.selectedCourseName.set(course ? (course.nameAr || course.nameEn || '') : '');
@@ -170,7 +192,8 @@ export class AttendanceComponent implements OnInit {
 
   private async loadGroups(courseId: string): Promise<void> {
     try {
-      if (this.isTeacher() && this.teacherId()) {
+      if (this.teacherId()) {
+        // Teacher (own courses) or Secretary (specific teacher's courses)
         const res: any[] = await lastValueFrom(
           this.groupSvc.getGroupsByCourseAndTeacher(courseId, this.teacherId()!)
         );
@@ -183,7 +206,7 @@ export class AttendanceComponent implements OnInit {
           }))
         );
       } else {
-        // Secretary/Admin: load all groups and filter by courseId
+        // Admin without specific teacher context: load all groups and filter
         const res: any = await lastValueFrom(this.groupSvc.getList());
         const allGroups: any[] = res?.items || [];
         this.groups.set(
@@ -207,6 +230,7 @@ export class AttendanceComponent implements OnInit {
     this.selectedGroupId.set(groupId || null);
     this.students.set([]);
     this.message.set(null);
+    this.page.set(1);
 
     if (groupId) {
       const group = this.groups().find(g => g.id === groupId);
@@ -221,9 +245,20 @@ export class AttendanceComponent implements OnInit {
   async onDateChange(date: string): Promise<void> {
     this.attendanceDate.set(date);
     this.message.set(null);
+    this.page.set(1);
     if (this.selectedCourseId()) {
       await this.loadStudents();
     }
+  }
+
+  toggleStats(): void {
+    this.showStats.update(v => !v);
+  }
+
+  async goToPage(p: number): Promise<void> {
+    if (p < 1 || p > this.totalPages()) return;
+    this.page.set(p);
+    await this.loadStudents();
   }
 
   private async loadStudents(): Promise<void> {
@@ -237,8 +272,8 @@ export class AttendanceComponent implements OnInit {
       const params: any = {
         courseId,
         date: this.attendanceDate(),
-        skipCount: 0,
-        maxResultCount: 1000,
+        skipCount: (this.page() - 1) * this.pageSize,
+        maxResultCount: this.pageSize,
       };
 
       if (this.effectiveTeacherId()) {
@@ -248,6 +283,8 @@ export class AttendanceComponent implements OnInit {
       const response: any = await lastValueFrom(
         this.attendanceSvc.getStudentAttendanceStatus(params)
       );
+
+      this.totalStudentCount.set(response?.totalCount ?? 0);
 
       const rawEntries: StudentEntry[] = (response?.items || []).map((item: any) => ({
         enrollmentId: item.enrollmentId,
@@ -398,6 +435,8 @@ export class AttendanceComponent implements OnInit {
     this.messageType.set(type);
     setTimeout(() => this.message.set(null), 5000);
   }
+
+  goBack(): void { this.location.back(); }
 
   trackByEnrollment = (_: number, item: StudentEntry) => item.enrollmentId;
 }

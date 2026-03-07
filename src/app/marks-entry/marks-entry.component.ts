@@ -56,6 +56,9 @@ export class MarksEntryComponent implements OnInit {
   isTeacher = signal(false);
   teacherId = signal<string | null>(null);
 
+  // Locked mode: when arriving with ?courseId= the dropdown becomes a read-only label
+  lockedCourseId = signal<string | null>(null);
+
   // Course
   courses         = signal<any[]>([]);
   selectedCourseId = signal<string | null>(null);
@@ -126,18 +129,27 @@ export class MarksEntryComponent implements OnInit {
       const actorType = userInfo?.actorType;
       const actorId   = userInfo?.actorId;
 
+      const qpCourseId = this.route.snapshot.queryParamMap.get('courseId');
+      const qpTeacherId = this.route.snapshot.queryParamMap.get('teacherId');
+
       if (actorType === 'Teacher' && actorId) {
         this.isTeacher.set(true);
         this.teacherId.set(actorId);
         this.effectiveTeacherId.set(actorId);
         await this.loadTeacherCourses(actorId);
+      } else if (qpTeacherId) {
+        // Secretary arriving from a specific teacher's course list
+        this.isTeacher.set(false);
+        this.teacherId.set(qpTeacherId);
+        this.effectiveTeacherId.set(qpTeacherId);
+        await this.loadTeacherCourses(qpTeacherId);
       } else {
         this.isTeacher.set(false);
         await this.loadAllCourses();
       }
 
-      const qpCourseId = this.route.snapshot.queryParamMap.get('courseId');
       if (qpCourseId && this.courses().some(c => c.id === qpCourseId)) {
+        this.lockedCourseId.set(qpCourseId);
         await this.onCourseChange(qpCourseId);
       }
     } catch (e) {
@@ -191,7 +203,8 @@ export class MarksEntryComponent implements OnInit {
 
   private async loadGroups(courseId: string): Promise<void> {
     try {
-      if (this.isTeacher() && this.teacherId()) {
+      if (this.teacherId()) {
+        // Teacher (own courses) or Secretary (specific teacher's courses)
         const res: any[] = await lastValueFrom(
           this.groupSvc.getGroupsByCourseAndTeacher(courseId, this.teacherId()!)
         );
@@ -204,6 +217,7 @@ export class MarksEntryComponent implements OnInit {
           }))
         );
       } else {
+        // Admin without specific teacher context: load all groups and filter
         const res: any = await lastValueFrom(this.groupSvc.getList());
         const allGroups: any[] = res?.items || [];
         this.groups.set(

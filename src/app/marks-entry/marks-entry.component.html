@@ -16,7 +16,14 @@
 
     <div class="setup-field">
       <label>المقرر</label>
-      <select [ngModel]="selectedCourseId()" (ngModelChange)="onCourseChange($event)" [disabled]="loading()">
+      <!-- Locked: show as read-only label -->
+      <div *ngIf="lockedCourseId()" class="course-locked-label">
+        <i class="fas fa-lock"></i>
+        {{ selectedCourse()?.nameAr || selectedCourse()?.nameEn || lockedCourseId() }}
+        <span *ngIf="selectedCourse()?.gradeName" class="grade-tag">{{ selectedCourse().gradeName }}</span>
+      </div>
+      <!-- Not locked: show dropdown -->
+      <select *ngIf="!lockedCourseId()" [ngModel]="selectedCourseId()" (ngModelChange)="onCourseChange($event)" [disabled]="loading()">
         <option value="">— اختر مقرراً —</option>
         <option *ngFor="let c of courses()" [value]="c.id">
           {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' · ' + c.gradeName : '' }}{{ c.academyName ? ' · ' + c.academyName : '' }}

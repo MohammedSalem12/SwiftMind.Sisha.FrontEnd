@@ -66,10 +66,15 @@ export const appRoutes: Routes = [
     data: { roles: ['STUDENT'] }
   },
   {
+    path: 'teacher/course/:courseId',
+    loadComponent: () => import('./home/teacher-course-action.component').then(m => m.TeacherCourseActionComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'teacher/enroll',
     loadComponent: () => import('./home/teacher-self-enroll.component').then(m => m.TeacherSelfEnrollComponent),
     canActivate: [roleGuard],
-    data: { roles: ['TEACHER'] }
+    data: { roles: ['TEACHER', 'SECRETARY'] }
   },
   {
     path: 'teacher/attendance-report',
@@ -86,10 +91,12 @@ export const appRoutes: Routes = [
   {
     path: 'login',
     loadChildren: () => import('./login/login.routes').then(m => m.loginRoutes),
+    data: { layout: 'empty' },
   },
   {
     path: 'register',
     loadChildren: () => import('./register/register.routes').then(m => m.registerRoutes),
+    data: { layout: 'empty' },
   },
   {
     path: 'identity',
@@ -164,7 +171,7 @@ export const appRoutes: Routes = [
     path: 'teacher/qr-codes',
     loadComponent: () => import('./home/teacher-qr-codes.component').then(m => m.TeacherQrCodesComponent),
     canActivate: [roleGuard],
-    data: { roles: ['TEACHER'] }
+    data: { roles: ['TEACHER', 'SECRETARY'] }
   },
   {
     path: 'student/qr',
@@ -183,6 +190,24 @@ export const appRoutes: Routes = [
     loadComponent: () => import('./enrollment-requests/enrollment-requests.component').then(m => m.EnrollmentRequestsComponent),
     canActivate: [roleGuard],
     data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
+  },
+  {
+    path: 'secretary',
+    loadComponent: () => import('./home/secretary-home.component').then(m => m.SecretaryHomeComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['SECRETARY'] }
+  },
+  {
+    path: 'secretary/link-teacher',
+    loadComponent: () => import('./secretary/secretary-link-teacher.component').then(m => m.SecretaryLinkTeacherComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['SECRETARY'] }
+  },
+  {
+    path: 'secretary/teacher/:teacherId',
+    loadComponent: () => import('./secretary/secretary-teacher-courses.component').then(m => m.SecretaryTeacherCoursesComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['SECRETARY'] }
   },
   {
     path: 'secretary-assignments',
@@ -249,6 +274,18 @@ export const appRoutes: Routes = [
   {
     path: 'teacher/academy',
     loadComponent: () => import('./home/teacher-academy-hub.component').then(m => m.TeacherAcademyHubComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'SECRETARY'] },
+  },
+  {
+    path: 'teacher/academies',
+    loadComponent: () => import('./home/teacher-academies.component').then(m => m.TeacherAcademiesComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER'] },
+  },
+  {
+    path: 'teacher/academies/:academyId/courses',
+    loadComponent: () => import('./home/teacher-academy-courses.component').then(m => m.TeacherAcademyCoursesComponent),
     canActivate: [roleGuard],
     data: { roles: ['TEACHER'] },
   },

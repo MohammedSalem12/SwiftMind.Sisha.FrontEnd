@@ -19,4 +19,5 @@ export interface StudentCourseDto extends CourseDto {
   hasPendingRequest: boolean;
   enrollmentId?: string;
   pendingRequestId?: string;
+  teacherName?: string;
 }

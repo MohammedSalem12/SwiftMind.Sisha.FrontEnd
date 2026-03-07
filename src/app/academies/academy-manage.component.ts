@@ -8,6 +8,7 @@ import { AcademyService } from '@proxy/academies';
 import type { AcademyDto, AcademyMemberDto } from '@proxy/academies/models';
 import { CourseService } from '@proxy/courses';
 import type { CourseDto, CreateUpdateCourseDto } from '@proxy/courses/dtos/models';
+import type { AcademyCourseDto } from '@proxy/academies/models';
 
 @Component({
   selector: 'app-academy-manage',
@@ -192,8 +193,8 @@ import type { CourseDto, CreateUpdateCourseDto } from '@proxy/courses/dtos/model
                   <i class="fas fa-book-open"></i>
                 </div>
                 <div class="course-info">
-                  <h4 class="course-name">{{ c.nameAr }}</h4>
-                  <p class="course-code">{{ c.code }}</p>
+                  <h4 class="course-name">{{ c.courseNameAr }}</h4>
+                  <p class="course-code">{{ c.courseCode }}</p>
                 </div>
                 <button class="btn-remove" (click)="removeCourse(c)" title="إزالة من الأكاديمية">
                   <i class="fas fa-unlink"></i>
@@ -1544,7 +1545,7 @@ export class AcademyManageComponent implements OnInit {
   academy = signal<AcademyDto | null>(null);
   pendingRequests = signal<AcademyMemberDto[]>([]);
   members = signal<AcademyMemberDto[]>([]);
-  academyCourses = signal<CourseDto[]>([]);
+  academyCourses = signal<AcademyCourseDto[]>([]);
   availableCourses = signal<CourseDto[]>([]);
 
   selectedCourseId = '';
@@ -1623,12 +1624,13 @@ export class AcademyManageComponent implements OnInit {
     }
   }
 
-  async removeCourse(course: CourseDto): Promise<void> {
+  async removeCourse(course: AcademyCourseDto): Promise<void> {
     this.actionLoading.set(true);
     try {
-      await lastValueFrom(this.academyService.removeCourseFromAcademy(course.id!));
-      this.academyCourses.update(list => list.filter(c => c.id !== course.id));
-      this.availableCourses.update(list => [...list, course]);
+      await lastValueFrom(this.academyService.removeCourseFromAcademy(course.courseId!));
+      this.academyCourses.update(list => list.filter(c => c.courseId !== course.courseId));
+      const reloaded = await lastValueFrom(this.academyService.getAcademyCourses(this.academyId)).catch(() => []);
+      this.academyCourses.set(reloaded);
     } catch (err) {
       console.error('Remove course error:', err);
     } finally {
@@ -1644,10 +1646,10 @@ export class AcademyManageComponent implements OnInit {
     this.creatingCourse.set(true);
     this.courseError.set(null);
     try {
-      const created = await lastValueFrom(
-        this.academyService.createCourseForAcademy(this.academyId, this.newCourse)
-      );
-      this.academyCourses.update(list => [...list, created as any]);
+      const createdCourse = await lastValueFrom(this.courseService.create(this.newCourse));
+      await lastValueFrom(this.academyService.addCourseToAcademy(this.academyId, createdCourse.id!));
+      const courses = await lastValueFrom(this.academyService.getAcademyCourses(this.academyId));
+      this.academyCourses.set(courses || []);
       this.newCourse = { nameAr: '', nameEn: '', gradeId: undefined as any };
     } catch (err: any) {
       const msg = err?.error?.error?.message || 'حدث خطأ أثناء إنشاء المقرر.';

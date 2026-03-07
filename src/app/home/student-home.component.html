@@ -1,286 +1,178 @@
 <div class="student-home" dir="rtl">
 
-  <!-- Header -->
-  <div class="page-header">
-    <div class="header-content">
-      <div class="student-avatar">
-        <i class="eva eva-person-outline"></i>
+  <!-- Hero -->
+  <div class="hero" [class.hero--expanded]="showQr()">
+    <div class="hero-blob hero-blob-1"></div>
+    <div class="hero-blob hero-blob-2"></div>
+
+    <div class="hero-main-row">
+      <div class="hero-content">
+        <div class="hero-greeting">
+          <div class="hero-name-block">
+            <span class="hero-name">{{ studentName() || 'الطالب' }}</span>
+            @if (confirmedParents().length > 0) {
+              <span class="hero-parent-line">
+                <i class="fas fa-user-shield"></i>
+                @for (p of confirmedParents(); track p.parentId; let last = $last) {
+                  {{ p.parent?.firstName }} {{ p.parent?.lastName }}@if (p.relationshipType) { ({{ p.relationshipType }}) }@if (!last) { · }
+                }
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Info pills -->
+        <div class="hero-pills">
+          @if (gradeName()) {
+            <span class="hero-pill">
+              <i class="fas fa-layer-group"></i> {{ gradeName() }}
+            </span>
+          }
+        </div>
+
+        <!-- Student code + QR toggle -->
+        @if (studentCode()) {
+          <button class="qr-toggle" (click)="toggleQr()">
+            <i class="fas fa-id-badge"></i>
+            <span>{{ studentCode() }}</span>
+            <i class="fas qr-arrow" [class.fa-qrcode]="!showQr()" [class.fa-chevron-up]="showQr()"></i>
+          </button>
+        }
       </div>
-      <div class="student-info">
-        <h1 class="student-name">{{ studentName() || 'الطالب' }}</h1>
-        <p class="student-grade" *ngIf="studentGrade()">الصف: {{ studentGrade() }}</p>
-        <p class="student-grade" *ngIf="!studentGrade()">مرحباً بك في SwiftMind</p>
+
+      <div class="hero-icon" (click)="toggleQr()">
+        @if (showQr()) {
+          <i class="fas fa-times"></i>
+        } @else {
+          <i class="fas fa-graduation-cap"></i>
+        }
       </div>
     </div>
+
+    <!-- QR Panel -->
+    @if (showQr()) {
+      <div class="qr-panel">
+        <div class="qr-card">
+          @if (qrDataUrl()) {
+            <img [src]="qrDataUrl()!" alt="QR Code" class="qr-img" />
+          } @else {
+            <div class="qr-placeholder"><i class="fas fa-spinner fa-spin"></i></div>
+          }
+          <div class="qr-label">امسح لربط ولي الأمر</div>
+          <div class="qr-label-en">Scan to link a parent</div>
+        </div>
+      </div>
+    }
   </div>
 
-  <!-- Loading -->
-  <div *ngIf="loading()" class="loading-container">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">جاري التحميل...</span>
-    </div>
-    <p class="mt-3 text-muted">جاري تحميل بياناتك...</p>
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <button class="quick-action-btn" (click)="goToRequests()">
+      <div class="qa-icon">
+        <i class="fas fa-clipboard-list"></i>
+        @if (pendingParentLinks().length > 0) {
+          <span class="qa-badge">{{ pendingParentLinks().length }}</span>
+        }
+      </div>
+      <span class="qa-label">طلباتي</span>
+      <span class="qa-sub">My Requests</span>
+    </button>
+    <button class="quick-action-btn" (click)="goRegister()">
+      <div class="qa-icon">
+        <i class="fas fa-plus-circle"></i>
+      </div>
+      <span class="qa-label">تسجيل مقرر</span>
+      <span class="qa-sub">Browse Courses</span>
+    </button>
   </div>
 
-  <div *ngIf="!loading()" class="content-container">
-
-    <!-- Stats Bar -->
-    <div class="stats-bar">
-      <div class="stat-card">
-        <div class="stat-icon courses-icon">
-          <i class="eva eva-book-open-outline"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ enrolledCourses().length }}</span>
-          <span class="stat-label">مقررات مسجلة</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon absence-icon">
-          <i class="eva eva-calendar-outline"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ totalAbsenceDays() }}</span>
-          <span class="stat-label">أيام غياب هذا الشهر</span>
-        </div>
-      </div>
-      <div class="stat-card" *ngIf="lastGradePercent() !== null">
-        <div class="stat-icon grade-icon">
-          <i class="eva eva-star-outline"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ lastGradePercent() }}%</span>
-          <span class="stat-label">آخر تقييم</span>
-        </div>
-      </div>
-      <div class="stat-card" *ngIf="pendingRequestsCount() > 0">
-        <div class="stat-icon pending-icon">
-          <i class="eva eva-clock-outline"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ pendingRequestsCount() }}</span>
-          <span class="stat-label">طلبات قيد الانتظار</span>
-        </div>
-      </div>
+  <!-- Loading Skeleton -->
+  @if (loading()) {
+    <div class="loading-area">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
     </div>
+  }
 
-    <!-- Pending Parent Links -->
-    <div *ngIf="pendingParentLinks().length > 0" class="section">
-      <h2 class="section-title">
-        <i class="eva eva-link-2-outline"></i>
-        طلبات ربط ولي الأمر
-        <span class="badge-count">{{ pendingParentLinks().length }}</span>
-      </h2>
-      <div class="links-list">
-        <div *ngFor="let link of pendingParentLinks()" class="link-card">
-          <div class="link-info">
-            <i class="eva eva-shield-outline link-icon"></i>
-            <div>
-              <p class="link-name">{{ link.parent?.fullName }}</p>
-              <p class="link-relation">{{ link.relationshipType }}</p>
+  <!-- Enrolled / Pending Courses -->
+  @if (!loading() && enrolledCourses().length > 0) {
+    <div class="section-label">
+      <i class="fas fa-book-open"></i>
+      <span>مقرراتي · My Courses</span>
+      <span class="count-pill">{{ enrolledCourses().length }}</span>
+    </div>
+    <div class="courses-grid">
+      @for (course of enrolledCourses(); track course.id) {
+        <div class="course-card" [class.course-card--pending]="course.hasPendingRequest && !course.isEnrolled">
+          <div class="course-card-icon" [class.course-card-icon--pending]="course.hasPendingRequest && !course.isEnrolled">
+            <i class="fas" [class.fa-book]="course.isEnrolled" [class.fa-clock]="!course.isEnrolled"></i>
+          </div>
+          <div class="course-card-body">
+            <div class="course-name">{{ course.nameAr }}</div>
+            <div class="course-meta">
+              <span class="meta-chip chip-code"><i class="fas fa-hashtag"></i>{{ course.code }}</span>
+              @if (course.gradeName) {
+                <span class="meta-chip chip-group"><i class="fas fa-layer-group"></i>{{ course.gradeName }}</span>
+              }
+              @if (course.teacherName) {
+                <span class="meta-chip chip-teacher"><i class="fas fa-chalkboard-teacher"></i>{{ course.teacherName }}</span>
+              }
             </div>
           </div>
-          <div class="link-actions">
-            <button class="btn-approve" (click)="confirmParentLink(link)">
-              <i class="eva eva-checkmark-outline"></i> موافقة
-            </button>
-            <button class="btn-reject" (click)="rejectParentLink(link)">
-              <i class="eva eva-close-outline"></i> رفض
-            </button>
-          </div>
+          @if (course.isEnrolled) {
+            <div class="status-badge status-enrolled"><i class="fas fa-check"></i></div>
+          } @else {
+            <div class="status-badge status-pending">قيد المراجعة</div>
+          }
         </div>
-      </div>
+      }
     </div>
+  }
 
-    <!-- Enrolled Courses -->
-    <div class="section">
-      <div class="section-header">
-        <h2 class="section-title">
-          <i class="eva eva-award-outline"></i>
-          مقرراتي
-        </h2>
-        <button class="btn-enroll" (click)="enrollInCourse()">
-          <i class="eva eva-plus-outline"></i> تسجيل في مقرر
-        </button>
-      </div>
-
-      <div *ngIf="enrolledCourses().length === 0" class="empty-state">
-        <i class="eva eva-book-open-outline empty-icon"></i>
-        <p>لم تسجل في أي مقررات بعد</p>
-        <button class="btn-primary-action" (click)="enrollInCourse()">ابدأ التسجيل</button>
-      </div>
-
-      <div class="courses-grid" *ngIf="enrolledCourses().length > 0">
-        <div class="course-card"
-             *ngFor="let course of enrolledCourses(); trackBy: trackByCourseId"
-             (click)="viewCourse(course)">
-          <div class="course-header">
-            <div class="course-icon-wrap">
-              <i class="eva eva-book-outline"></i>
-            </div>
-            <span class="badge-code">{{ course.courseCode }}</span>
-          </div>
-          <h3 class="course-name">{{ course.courseName }}</h3>
-          <p class="course-teacher" *ngIf="course.teacherName">
-            <i class="eva eva-edit-2-outline"></i> {{ course.teacherName }}
-          </p>
-          <p class="course-group" *ngIf="course.groupName">
-            <i class="eva eva-people-outline"></i> {{ course.groupName }}
-          </p>
-          <div class="course-stats">
-            <div class="course-stat" [class.has-absence]="getCourseAbsences(course.courseId) > 0">
-              <i class="eva eva-calendar-outline"></i>
-              <span>{{ getCourseAbsences(course.courseId) }} غياب</span>
-            </div>
-            <ng-container *ngIf="getCourseLastGrade(course.courseName) as g">
-              <div class="course-stat grade-stat">
-                <i class="eva eva-star-outline"></i>
-                <span>{{ getGradePercent(g) }}%</span>
-              </div>
-            </ng-container>
-          </div>
-          <div class="course-attendance-bar">
-            <div class="attendance-fill"
-                 [style.width.%]="getCourseAttendancePct(course.courseId)"></div>
-          </div>
-          <p class="attendance-pct-label">{{ getCourseAttendancePct(course.courseId) | number:'1.0-0' }}% حضور</p>
-        </div>
-      </div>
+  <!-- Available (not enrolled) Courses -->
+  @if (!loading() && availableCourses().length > 0) {
+    <div class="section-label" style="margin-top: 1.25rem;">
+      <i class="fas fa-plus-circle"></i>
+      <span>مقررات متاحة · Available</span>
+      <span class="count-pill" style="background: linear-gradient(135deg,#f59e0b,#d97706);">{{ availableCourses().length }}</span>
     </div>
-
-    <!-- Recent Activity — Last Exam Grades -->
-    <div class="section" *ngIf="lastGrades().length > 0">
-      <h2 class="section-title">
-        <i class="eva eva-trending-up-outline"></i>
-        آخر النتائج
-      </h2>
-      <div class="activity-list">
-        <div class="activity-item" *ngFor="let grade of lastGrades()">
-          <div class="activity-icon grade-activity-icon">
-            <i class="eva eva-file-text-outline"></i>
+    <div class="available-list">
+      @for (course of availableCourses(); track course.id) {
+        <div class="available-item">
+          <div class="available-info">
+            <span class="available-name">{{ course.nameAr }}</span>
+            <span class="available-sub">{{ course.nameEn }} · {{ course.code }}</span>
           </div>
-          <div class="activity-content">
-            <p class="activity-title">{{ grade.examName }}</p>
-            <p class="activity-subtitle">{{ grade.courseName }}</p>
-            <p class="activity-date" *ngIf="grade.date">{{ grade.date | date:'d/M/yyyy' }}</p>
-          </div>
-          <div class="activity-grade"
-               [class.grade-high]="getGradePercent(grade) >= 75"
-               [class.grade-mid]="getGradePercent(grade) >= 50 && getGradePercent(grade) < 75"
-               [class.grade-low]="getGradePercent(grade) < 50">
-            <span class="grade-num">{{ grade.grade }}</span>
-            <span class="grade-max">/{{ grade.maxGrade }}</span>
-            <span class="grade-pct">{{ getGradePercent(grade) }}%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pending Enrollment Requests -->
-    <div class="section" *ngIf="pendingRequests().length > 0">
-      <h2 class="section-title">
-        <i class="eva eva-clipboard-outline"></i>
-        طلبات التسجيل قيد الانتظار
-        <button class="btn-view-all" (click)="goToMyRequests()">عرض الكل</button>
-      </h2>
-      <div class="requests-list">
-        <div class="request-item" *ngFor="let req of pendingRequests(); trackBy: trackByReqId">
-          <div class="request-info">
-            <p class="request-course">{{ req.courseName }}</p>
-            <p class="request-details">{{ req.teacherName }}<span *ngIf="req.groupName"> • {{ req.groupName }}</span></p>
-            <div class="approval-chips">
-              <span class="chip"
-                    [class.chip-done]="req.isTeacherApproved"
-                    [class.chip-wait]="!req.isTeacherApproved">
-                <i class="eva eva-checkmark-outline" *ngIf="req.isTeacherApproved"></i>
-                <i class="eva eva-clock-outline" *ngIf="!req.isTeacherApproved"></i>
-                المعلم
-              </span>
-              <span class="chip"
-                    [class.chip-done]="req.isParentApproved"
-                    [class.chip-wait]="!req.isParentApproved">
-                <i class="eva eva-checkmark-outline" *ngIf="req.isParentApproved"></i>
-                <i class="eva eva-clock-outline" *ngIf="!req.isParentApproved"></i>
-                ولي الأمر
-              </span>
-            </div>
-          </div>
-          <button class="btn-cancel"
-                  [disabled]="cancellingId() === req.id"
-                  (click)="cancelRequest(req.id)">
-            <span *ngIf="cancellingId() !== req.id"><i class="eva eva-close-outline"></i> إلغاء</span>
-            <span *ngIf="cancellingId() === req.id"><i class="fas fa-spinner fa-spin"></i></span>
+          <button class="enroll-btn" (click)="goEnroll(course)">
+            <i class="fas fa-user-plus"></i>
+            تسجيل
           </button>
         </div>
-      </div>
+      }
     </div>
+  }
 
-    <!-- Academy Courses -->
-    <div class="section" *ngIf="academyCourseGroups().length > 0">
-      <div class="section-header">
-        <h2 class="section-title">
-          <i class="eva eva-layers-outline"></i>
-          مقررات الأكاديميات
-        </h2>
-        <button class="btn-enroll" (click)="browseAcademies()">
-          <i class="eva eva-search-outline"></i> تصفح الأكاديميات
-        </button>
-      </div>
-      <div *ngFor="let group of academyCourseGroups()" class="academy-group">
-        <div class="academy-group-title">
-          <i class="eva eva-layers-outline me-1"></i>{{ group.academyName }}
-        </div>
-        <div class="courses-grid">
-          <div class="course-card" *ngFor="let course of group.courses" (click)="enrollInAcademyCourse(course)">
-            <div class="course-header">
-              <div class="course-icon-wrap"><i class="eva eva-book-outline"></i></div>
-              <span class="badge-code">{{ course.code }}</span>
-            </div>
-            <h3 class="course-name">{{ course.nameAr }}</h3>
-            <p class="course-teacher" *ngIf="course.description">
-              <i class="eva eva-info-outline"></i> {{ course.description }}
-            </p>
-            <p class="course-enroll-hint">
-              <i class="eva eva-plus-circle-outline"></i> اضغط للتسجيل
-            </p>
-          </div>
-        </div>
-      </div>
+  <!-- Empty / Welcome State -->
+  @if (!loading() && courses().length === 0) {
+    <div class="empty-state">
+      <i class="fas fa-book-open"></i>
+      <p>ابدأ رحلتك التعليمية</p>
+      <small>سجّل في مقرر للبدء · Register a course to get started</small>
+      <button class="empty-enroll-btn" (click)="goRegister()">
+        <i class="fas fa-plus-circle"></i>
+        تسجيل مقرر
+      </button>
     </div>
+  }
 
-    <!-- Quick Actions -->
-    <div class="section">
-      <h2 class="section-title">
-        <i class="eva eva-flash-outline"></i>
-        روابط سريعة
-      </h2>
-      <div class="quick-actions">
-        <button class="action-btn" (click)="enrollInCourse()">
-          <i class="eva eva-plus-circle-outline"></i>
-          <span>تسجيل مقرر</span>
-        </button>
-        <button class="action-btn" (click)="goToMyRequests()">
-          <i class="eva eva-clipboard-outline"></i>
-          <span>طلباتي</span>
-        </button>
-        <button class="action-btn" (click)="goToMyGrades()">
-          <i class="eva eva-bar-chart-outline"></i>
-          <span>درجاتي</span>
-        </button>
-        <button class="action-btn" (click)="goToFeeds()">
-          <i class="eva eva-paper-plane-outline"></i>
-          <span>النشرات</span>
-        </button>
-        <button class="action-btn" (click)="goToMyQR()">
-          <i class="eva eva-grid-outline"></i>
-          <span>QR الطالب</span>
-        </button>
-        <button class="action-btn" (click)="browseAcademies()">
-          <i class="eva eva-layers-outline"></i>
-          <span>الأكاديميات</span>
-        </button>
-      </div>
-    </div>
-
+  <!-- Fixed Bottom Register Button -->
+  <div class="bottom-bar">
+    <button class="register-btn" (click)="goRegister()">
+      <i class="fas fa-plus-circle"></i>
+      <span>تسجيل مقرر جديد</span>
+      <span class="register-btn-en">Register Course</span>
+    </button>
   </div>
+
 </div>

@@ -63,6 +63,14 @@ export class StudentService {
     { apiName: this.apiName,...config });
   
 
+  getConfirmedParentsForCurrentStudent = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ParentStudentDto[]>({
+      method: 'GET',
+      url: '/api/app/student/confirmed-parents-for-current-student',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getCurrentStudent = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, StudentDto>({
       method: 'GET',

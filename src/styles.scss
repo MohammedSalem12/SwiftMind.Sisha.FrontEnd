@@ -634,12 +634,32 @@ lpx-navbar,
   color: var(--ngx-bottom-nav-active) !important;
 }
 
-// ── App content padding for bottom nav ────────────────────────
-.app-content {
-  padding-bottom: 70px;
+// ── Auth pages (login / register): hide ALL chrome ───────────────────
+body.auth-page {
+  .lpx-sidebar-container,
+  .lpx-sidebar,
+  lpx-side-menu,
+  .lpx-topbar,
+  lpx-navbar,
+  .lpx-toolbar,
+  app-bottom-nav {
+    display: none !important;
+  }
 
-  @supports (padding-bottom: env(safe-area-inset-bottom)) {
-    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  // No bottom padding needed — full-screen auth layout
+  .app-content {
+    padding-bottom: 0 !important;
+  }
+}
+
+// ── App content padding — only needed on mobile (bottom nav present) ──
+@media (max-width: 767px) {
+  .app-content {
+    padding-bottom: 70px;
+
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      padding-bottom: calc(70px + env(safe-area-inset-bottom));
+    }
   }
 }
 

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
@@ -15,6 +16,7 @@ import { CurrentUserInfoService } from '@proxy/common';
   template: `
     <div class="academies-page" dir="rtl">
       <div class="page-header">
+        <button class="back-btn" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
         <div class="header-content">
           <h1><i class="fas fa-university me-2"></i>الأكاديميات</h1>
           <p>اكتشف الأكاديميات وانضم إليها</p>
@@ -97,6 +99,16 @@ import { CurrentUserInfoService } from '@proxy/common';
     </div>
   `,
   styles: [`
+    .back-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,.2); border: none;
+      color: white; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; min-width: 40px; min-height: 40px;
+      transition: background .15s;
+      &:hover { background: rgba(255,255,255,.3); }
+    }
+
     .academies-page {
       padding: 16px;
       max-width: 900px;
@@ -211,6 +223,7 @@ import { CurrentUserInfoService } from '@proxy/common';
   `]
 })
 export class AcademiesListComponent implements OnInit {
+  private readonly location = inject(Location);
   readonly router = inject(Router);
   private readonly academyService = inject(AcademyService);
   private readonly currentUserService = inject(CurrentUserInfoService);
@@ -225,12 +238,12 @@ export class AcademiesListComponent implements OnInit {
     try {
       const [userInfo, result] = await Promise.all([
         lastValueFrom(this.currentUserService.getCurrentUserActorInfo()),
-        lastValueFrom(this.academyService.getList({ skipCount: 0, maxResultCount: 100, sorting: '' })),
+        lastValueFrom(this.academyService.getList()),
       ]);
       const roles = userInfo?.userRoles || [];
       this.isTeacherOrAdmin.set(roles.includes('TEACHER') || roles.includes('ADMIN'));
-      this.academies.set(result?.items || []);
-      this.filteredAcademies.set(result?.items || []);
+      this.academies.set(result || []);
+      this.filteredAcademies.set(result || []);
     } catch (err) {
       console.error('Error loading academies:', err);
     } finally {
@@ -260,6 +273,8 @@ export class AcademiesListComponent implements OnInit {
   goToProfile(academy: AcademyDto): void {
     this.router.navigate(['/academies', academy.id, 'profile']);
   }
+
+  goBack(): void { this.location.back(); }
 
   trackById = (_: number, item: AcademyDto) => item.id;
 }

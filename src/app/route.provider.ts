@@ -189,10 +189,10 @@ export function getMoreMenuItemsForRole(userRoles: string[]): MoreMenuItemConfig
 export function getBottomTabsForRole(userRoles: string[]): BottomTabConfig[] {
   if (userRoles.includes(ROLES.STUDENT)) {
     return [
-      { path: '/student',         label: 'الرئيسية', icon: 'fas fa-home' },
-      { path: '/student/courses', label: 'مقرراتي',  icon: 'fas fa-book-open' },
-      { path: '/feeds',           label: 'النشرات',  icon: 'fas fa-rss' },
-      { path: '/notifications',   label: 'إشعارات',  icon: 'fas fa-bell' },
+      { path: '/student',          label: 'الرئيسية', icon: 'fas fa-home' },
+      { path: '/student/courses',  label: 'مقرراتي',  icon: 'fas fa-book-open' },
+      { path: '/student/requests', label: 'طلباتي',   icon: 'fas fa-clipboard-list' },
+      { path: '/notifications',    label: 'إشعارات',  icon: 'fas fa-bell' },
     ];
   }
   if (userRoles.includes(ROLES.PARENT)) {
@@ -205,18 +205,18 @@ export function getBottomTabsForRole(userRoles: string[]): BottomTabConfig[] {
   }
   if (userRoles.includes(ROLES.TEACHER)) {
     return [
-      { path: '/teacher',       label: 'الرئيسية', icon: 'fas fa-home' },
-      { path: '/attendance',    label: 'الحضور',   icon: 'fas fa-user-check' },
-      { path: '/marks-entry',   label: 'الدرجات',  icon: 'fas fa-star-half-alt' },
-      { path: '/notifications', label: 'إشعارات',  icon: 'fas fa-bell' },
+      { path: '/teacher',              label: 'الرئيسية', icon: 'fas fa-home' },
+      { path: '/attendance',           label: 'الحضور',   icon: 'fas fa-user-check' },
+      { path: '/enrollment-requests',  label: 'الطلبات',  icon: 'fas fa-clipboard-list' },
+      { path: '/notifications',        label: 'إشعارات',  icon: 'fas fa-bell' },
     ];
   }
   if (userRoles.includes(ROLES.ADMIN) || userRoles.includes(ROLES.SECRETARY)) {
     return [
-      { path: '/secretary-assignments',              label: 'الرئيسية', icon: 'fas fa-home' },
-      { path: '/students',      label: 'الطلاب',   icon: 'fas fa-user-graduate' },
-      { path: '/attendance',    label: 'الحضور',   icon: 'fas fa-user-check' },
-      { path: '/notifications', label: 'إشعارات',  icon: 'fas fa-bell' },
+      { path: '/secretary-assignments', label: 'الرئيسية', icon: 'fas fa-home' },
+      { path: '/students',              label: 'الطلاب',   icon: 'fas fa-user-graduate' },
+      { path: '/enrollment-requests',   label: 'الطلبات',  icon: 'fas fa-clipboard-list' },
+      { path: '/notifications',         label: 'إشعارات',  icon: 'fas fa-bell' },
     ];
   }
   return [];

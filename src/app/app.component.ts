@@ -2,12 +2,15 @@ import { Component, OnInit, inject } from '@angular/core';
 import { InternetConnectionStatusComponent, LoaderBarComponent } from '@abp/ng.theme.shared';
 import { DynamicLayoutComponent } from '@abp/ng.core';
 import { OAuthService } from 'angular-oauth2-oidc';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { ToastContainerComponent } from './shared/toast-container.component';
 import { BottomNavComponent } from './shared/bottom-nav.component';
 import { RealtimeNotificationService } from './shared/services/realtime-notification.service';
 import { PushNotificationService } from './shared/services/push-notification.service';
 import { SidebarNotificationDirective } from './shared/sidebar-notification.directive';
+
+const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
 
 @Component({
   selector: 'app-root',
@@ -21,14 +24,18 @@ import { SidebarNotificationDirective } from './shared/sidebar-notification.dire
     <app-toasts />
   `,
   styles: [`
-    .app-content {
-      padding-bottom: 70px; /* Reserve space for bottom nav on all screens */
+    /* Reserve space for fixed bottom nav — mobile only */
+    @media (max-width: 767px) {
+      .app-content {
+        padding-bottom: 70px;
+      }
     }
 
-    /* Handle iOS safe area */
-    @supports (padding-bottom: env(safe-area-inset-bottom)) {
-      .app-content {
-        padding-bottom: calc(70px + env(safe-area-inset-bottom));
+    @media (max-width: 767px) {
+      @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        .app-content {
+          padding-bottom: calc(70px + env(safe-area-inset-bottom));
+        }
       }
     }
   `],
@@ -48,6 +55,12 @@ export class AppComponent implements OnInit {
   private readonly pushNotificationService = inject(PushNotificationService);
 
   ngOnInit(): void {
+    // Add/remove auth-page class on body for CSS sidebar hiding
+    this.updateAuthBodyClass(this.router.url);
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
+      this.updateAuthBodyClass(e.urlAfterRedirects);
+    });
+
     // Connect real-time services when user is already logged in (page refresh)
     if (this.oauthService.hasValidAccessToken()) {
       this.initRealtime();
@@ -68,6 +81,11 @@ export class AppComponent implements OnInit {
         this.router.navigate(['/login']);
       }
     });
+  }
+
+  private updateAuthBodyClass(url: string): void {
+    const isAuth = AUTH_PATHS.some(p => url.startsWith(p));
+    document.body.classList.toggle('auth-page', isAuth);
   }
 
   private initRealtime(): void {

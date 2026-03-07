@@ -1,4 +1,5 @@
-import type { CreationAuditedEntityDto, ExtensibleAuditedEntityDto } from '@abp/ng.core';
+import type { CreationAuditedEntityDto, EntityDto, ExtensibleAuditedEntityDto } from '@abp/ng.core';
+import type { UnenrollRequestStatus } from './unenroll-request-status.enum';
 
 export interface CreateSecretaryTeacherDto {
   secretaryUserId?: string;
@@ -14,10 +15,27 @@ export interface CreateUpdateTeacherDto {
   password?: string;
 }
 
+export interface SecretaryInfoDto {
+  secretaryUserId?: string;
+  linkId?: string;
+  userName?: string;
+  displayName?: string;
+  email?: string;
+}
+
 export interface SecretaryTeacherDto extends CreationAuditedEntityDto<string> {
   secretaryUserId?: string;
   teacherId?: string;
   teacherName?: string;
+  teacherCode?: string;
+}
+
+export interface SecretaryUserSearchResultDto {
+  userId?: string;
+  userName?: string;
+  displayName?: string;
+  email?: string;
+  alreadyLinked: boolean;
 }
 
 export interface TeacherAutocompleteDto {
@@ -63,10 +81,33 @@ export interface TeacherDto extends ExtensibleAuditedEntityDto<string> {
   teacherCode?: string;
 }
 
+export interface TeacherEnrolledCourseDto {
+  id?: string;
+  nameAr?: string;
+  nameEn?: string;
+  code?: string;
+  gradeName?: string;
+  isEnrolled: boolean;
+  pendingUnenrollStatus?: UnenrollRequestStatus;
+  unenrollRequestId?: string;
+}
+
 export interface TeacherEnrollmentResultDto {
   success: boolean;
   message?: string;
   enrolledCourses: string[];
   alreadyEnrolledCourses: string[];
   failedCourses: string[];
+}
+
+export interface TeacherUnenrollRequestDto extends EntityDto<string> {
+  teacherId?: string;
+  teacherName?: string;
+  courseId?: string;
+  courseName?: string;
+  courseCode?: string;
+  status?: UnenrollRequestStatus;
+  rejectionReason?: string;
+  processedAt?: string;
+  creationTime?: string;
 }

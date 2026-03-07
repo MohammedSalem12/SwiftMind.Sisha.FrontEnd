@@ -4,7 +4,14 @@ import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
+import { AcademyService } from '@proxy/academies';
 import type { CourseDto } from '@proxy/courses/dtos/models';
+import type { AcademyDto } from '@proxy/academies/models';
+
+interface AcademyCourseGroup {
+  academy: AcademyDto;
+  courses: any[];
+}
 
 @Component({
   selector: 'app-teacher-home',
@@ -17,13 +24,18 @@ export class TeacherHomeComponent implements OnInit {
   private readonly router             = inject(Router);
   private readonly currentUserService = inject(CurrentUserInfoService);
   private readonly teacherService     = inject(TeacherService);
+  private readonly academyService     = inject(AcademyService);
 
-  loading     = signal(false);
-  teacherName = signal<string>('');
-  courses     = signal<CourseDto[]>([]);
+  loading          = signal(false);
+  teacherName      = signal<string>('');
+  teacherId        = signal<string | null>(null);
+  courses          = signal<CourseDto[]>([]);
+  academyGroups    = signal<AcademyCourseGroup[]>([]);
+  myAcademy        = signal<AcademyDto | null>(null);
+  loadingAcademies = signal(false);
 
   async ngOnInit(): Promise<void> {
-    await this.loadCourses();
+    await Promise.all([this.loadCourses(), this.loadAcademies()]);
   }
 
   private async loadCourses(): Promise<void> {
@@ -31,9 +43,10 @@ export class TeacherHomeComponent implements OnInit {
     try {
       const userInfo = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
       this.teacherName.set(userInfo?.actorName ?? '');
-      const teacherId = userInfo?.actorId;
-      if (!teacherId) return;
-      const courses = await lastValueFrom(this.teacherService.getTeacherCourses(teacherId));
+      this.teacherId.set(userInfo?.actorId ?? null);
+      const id = userInfo?.actorId;
+      if (!id) return;
+      const courses = await lastValueFrom(this.teacherService.getTeacherCourses(id, { skipHandleError: true }));
       this.courses.set(courses || []);
     } catch (error) {
       console.error('Error loading teacher courses:', error);
@@ -42,9 +55,64 @@ export class TeacherHomeComponent implements OnInit {
     }
   }
 
-  selectCourse(course: CourseDto): void {
-    this.router.navigate(['/home/teacher/course', course.id]);
+  private async loadAcademies(): Promise<void> {
+    this.loadingAcademies.set(true);
+    try {
+      const membership = await lastValueFrom(this.academyService.getMyMembership({ skipHandleError: true })).catch(() => null);
+      if (!membership?.teacherId) {
+        // Check if this teacher owns an academy
+        const ownAcademy = await lastValueFrom(this.academyService.getMyAcademy({ skipHandleError: true })).catch(() => null);
+        if (ownAcademy) {
+          this.myAcademy.set(ownAcademy);
+          const academyCourses = await lastValueFrom(
+            this.academyService.getAcademyCourses(ownAcademy.id!)
+          ).catch(() => []);
+          this.academyGroups.set([{ academy: ownAcademy, courses: academyCourses || [] }]);
+        }
+        return;
+      }
+
+      // Teacher is a member — load the academy they belong to
+      const academies: AcademyDto[] = await lastValueFrom(this.academyService.getList()).catch(() => []);
+
+      if (academies.length === 0) return;
+
+      const groups: AcademyCourseGroup[] = [];
+      for (const academy of academies.slice(0, 5)) {
+        try {
+          const courses = await lastValueFrom(this.academyService.getAcademyCourses(academy.id!, { skipHandleError: true }));
+          if (courses?.length > 0) {
+            groups.push({ academy, courses });
+          }
+        } catch { /* silent */ }
+      }
+      this.academyGroups.set(groups);
+    } catch { /* silent — teacher may not be in any academy */ } finally {
+      this.loadingAcademies.set(false);
+    }
   }
 
-  trackById = (_: number, item: CourseDto) => item.id;
+  selectCourse(course: CourseDto): void {
+    this.router.navigate(['/teacher/course', course.id]);
+  }
+
+  openQrCodes(event: Event, course: CourseDto): void {
+    event.stopPropagation();
+    this.router.navigate(['/teacher/qr-codes'], { queryParams: { courseId: course.id } });
+  }
+
+  goToEnroll(): void {
+    this.router.navigate(['/teacher/enroll']);
+  }
+
+  goToAddAcademy(): void {
+    this.router.navigate(['/teacher/academies']);
+  }
+
+  selectAcademyCourse(course: any): void {
+    this.router.navigate(['/teacher/course', course.id]);
+  }
+
+  trackById = (_: number, item: any) => item.id;
+  trackByAcademy = (_: number, item: AcademyCourseGroup) => item.academy.id;
 }

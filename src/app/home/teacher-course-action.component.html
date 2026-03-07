@@ -1,6 +1,6 @@
 <div class="action-page" dir="rtl">
 
-  <!-- Header / Back -->
+  <!-- Header -->
   <div class="page-header">
     <button class="back-btn" (click)="goBack()">
       <i class="fas fa-arrow-right"></i>
@@ -22,35 +22,45 @@
     </div>
   </div>
 
-  <!-- Sub-title -->
-  <div class="sub-title">
-    <p>اختر الإجراء المطلوب</p>
-    <small>Choose an action</small>
-  </div>
-
-  <!-- Action Cards -->
-  <div class="actions-grid">
+  <!-- Actions -->
+  <div class="actions-wrap">
 
     <!-- Attendance -->
     <button class="action-card card-attendance" (click)="goToAttendance()">
-      <div class="action-icon-wrap">
-        <i class="fas fa-clipboard-check"></i>
+      <div class="card-glow"></div>
+      <div class="card-inner">
+        <div class="card-icon">
+          <i class="fas fa-clipboard-check"></i>
+        </div>
+        <div class="card-text">
+          <span class="card-label">تسجيل الغياب</span>
+          <span class="card-label-en">Attendance</span>
+          <span class="card-hint">تسجيل حضور وغياب الطلاب</span>
+        </div>
+        <div class="card-cta">
+          <span>ابدأ</span>
+          <i class="fas fa-arrow-left"></i>
+        </div>
       </div>
-      <div class="action-label">تسجيل الغياب</div>
-      <div class="action-label-en">Attendance</div>
-      <div class="action-hint">تسجيل حضور وغياب الطلاب</div>
-      <div class="action-arrow"><i class="fas fa-arrow-left"></i></div>
     </button>
 
     <!-- Marks -->
     <button class="action-card card-marks" (click)="goToMarks()">
-      <div class="action-icon-wrap">
-        <i class="fas fa-star"></i>
+      <div class="card-glow"></div>
+      <div class="card-inner">
+        <div class="card-icon">
+          <i class="fas fa-star"></i>
+        </div>
+        <div class="card-text">
+          <span class="card-label">إدخال الدرجات</span>
+          <span class="card-label-en">Marks Entry</span>
+          <span class="card-hint">رصد درجات الامتحانات والأعمال</span>
+        </div>
+        <div class="card-cta">
+          <span>ابدأ</span>
+          <i class="fas fa-arrow-left"></i>
+        </div>
       </div>
-      <div class="action-label">إدخال الدرجات</div>
-      <div class="action-label-en">Marks Entry</div>
-      <div class="action-hint">رصد درجات الامتحانات والأعمال</div>
-      <div class="action-arrow"><i class="fas fa-arrow-left"></i></div>
     </button>
 
   </div>

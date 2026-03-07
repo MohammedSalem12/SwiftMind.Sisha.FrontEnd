@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
+import { Router } from '@angular/router';
 import { DeviceTokenService } from '@proxy/notifications';
 import { RealtimeNotificationService } from './realtime-notification.service';
 import { lastValueFrom } from 'rxjs';
@@ -9,6 +10,9 @@ import { lastValueFrom } from 'rxjs';
 export class PushNotificationService {
   private readonly deviceTokenSvc = inject(DeviceTokenService);
   private readonly realtimeService = inject(RealtimeNotificationService);
+  private readonly router = inject(Router);
+
+  private currentToken: string | null = null;
 
   /** Call once after login on native platforms. */
   async initialize(): Promise<void> {
@@ -21,6 +25,7 @@ export class PushNotificationService {
 
     // Token received — register with backend
     PushNotifications.addListener('registration', async (token: Token) => {
+      this.currentToken = token.value;
       await this.registerToken(token.value);
     });
 
@@ -29,16 +34,22 @@ export class PushNotificationService {
       this.realtimeService.unreadCount.update(c => c + 1);
     });
 
-    // User tapped a push notification
+    // User tapped a push notification — navigate to notifications page
     PushNotifications.addListener('pushNotificationActionPerformed', (_: ActionPerformed) => {
-      // Navigate to /notifications — handled in app component
+      this.router.navigate(['/notifications']);
     });
   }
 
   /** Unregister token on logout. */
   async unregisterCurrentToken(): Promise<void> {
-    if (!Capacitor.isNativePlatform()) return;
-    // Could store the last token and DELETE it via API on logout
+    if (!Capacitor.isNativePlatform() || !this.currentToken) return;
+    try {
+      await lastValueFrom(this.deviceTokenSvc.unregister(this.currentToken));
+    } catch {
+      // silent — token may already be expired
+    } finally {
+      this.currentToken = null;
+    }
   }
 
   private async registerToken(token: string): Promise<void> {

@@ -1,6 +1,6 @@
-import type { AcademyCourseDto, AcademyDto, AcademyMemberDto, CreateAcademyDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
+import type { AcademyCourseDto, AcademyDto, AcademyMemberDto, CreateAcademyDto } from '../academies/models';
 
 @Injectable({
   providedIn: 'root',
@@ -12,8 +12,7 @@ export class AcademyService {
   addCourseToAcademy = (academyId: string, courseId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: '/api/app/academy/course-to-academy',
-      params: { academyId, courseId },
+      url: `/api/sesha/academies/${academyId}/courses/${courseId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -21,8 +20,7 @@ export class AcademyService {
   approveMember = (academyId: string, teacherId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: '/api/app/academy/approve-member',
-      params: { academyId, teacherId },
+      url: `/api/sesha/academies/${academyId}/approve/${teacherId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -30,7 +28,7 @@ export class AcademyService {
   create = (input: CreateAcademyDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyDto>({
       method: 'POST',
-      url: '/api/app/academy',
+      url: '/api/sesha/academies',
       body: input,
     },
     { apiName: this.apiName,...config });
@@ -39,7 +37,7 @@ export class AcademyService {
   get = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyDto>({
       method: 'GET',
-      url: `/api/app/academy/${id}`,
+      url: `/api/sesha/academies/${id}`,
     },
     { apiName: this.apiName,...config });
   
@@ -47,7 +45,7 @@ export class AcademyService {
   getAcademyCourses = (academyId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyCourseDto[]>({
       method: 'GET',
-      url: `/api/app/academy/academy-courses/${academyId}`,
+      url: `/api/sesha/academies/${academyId}/courses`,
     },
     { apiName: this.apiName,...config });
   
@@ -55,7 +53,7 @@ export class AcademyService {
   getList = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyDto[]>({
       method: 'GET',
-      url: '/api/app/academy',
+      url: '/api/sesha/academies',
     },
     { apiName: this.apiName,...config });
   
@@ -63,7 +61,7 @@ export class AcademyService {
   getMembers = (academyId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyMemberDto[]>({
       method: 'GET',
-      url: `/api/app/academy/members/${academyId}`,
+      url: `/api/sesha/academies/${academyId}/members`,
     },
     { apiName: this.apiName,...config });
   
@@ -71,7 +69,7 @@ export class AcademyService {
   getMyAcademy = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyDto>({
       method: 'GET',
-      url: '/api/app/academy/my-academy',
+      url: '/api/sesha/academies/my-academy',
     },
     { apiName: this.apiName,...config });
   
@@ -79,7 +77,7 @@ export class AcademyService {
   getMyMembership = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyMemberDto>({
       method: 'GET',
-      url: '/api/app/academy/my-membership',
+      url: '/api/sesha/academies/my-membership',
     },
     { apiName: this.apiName,...config });
   
@@ -87,7 +85,7 @@ export class AcademyService {
   getPendingRequests = (academyId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyMemberDto[]>({
       method: 'GET',
-      url: `/api/app/academy/pending-requests/${academyId}`,
+      url: `/api/sesha/academies/${academyId}/pending-requests`,
     },
     { apiName: this.apiName,...config });
   
@@ -95,8 +93,7 @@ export class AcademyService {
   rejectMember = (academyId: string, teacherId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: '/api/app/academy/reject-member',
-      params: { academyId, teacherId },
+      url: `/api/sesha/academies/${academyId}/reject/${teacherId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -104,7 +101,7 @@ export class AcademyService {
   removeCourseFromAcademy = (courseId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',
-      url: `/api/app/academy/course-from-academy/${courseId}`,
+      url: `/api/sesha/academies/courses/${courseId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -112,7 +109,7 @@ export class AcademyService {
   requestToJoin = (academyId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/academy/request-to-join/${academyId}`,
+      url: `/api/sesha/academies/${academyId}/join`,
     },
     { apiName: this.apiName,...config });
 

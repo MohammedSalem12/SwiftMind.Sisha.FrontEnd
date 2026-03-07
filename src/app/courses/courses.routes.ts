@@ -5,6 +5,4 @@ export const coursesRoutes: Route[] = [
   { path: ':id/edit', loadComponent: () => import('./edit-course.component').then(m => m.EditCourseComponent) },
   { path: ':id/groups', loadComponent: () => import('./course-groups.component').then(m => m.CourseGroupsComponent) },
   { path: ':id/groups/create', loadComponent: () => import('./create-group.component').then(m => m.CreateGroupComponent) },
-  { path: ':id/teachers', loadComponent: () => import('./course-teachers.component').then(m => m.CourseTeachersComponent) },
-  { path: ':id/enroll', loadComponent: () => import('./student-course-groups.component').then(m => m.StudentCourseGroupsComponent) },
 ];

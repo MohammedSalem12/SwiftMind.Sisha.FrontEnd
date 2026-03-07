@@ -1,4 +1,4 @@
-import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherDashboardDto, TeacherDto, TeacherEnrollmentResultDto } from './models';
+import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherDashboardDto, TeacherDto, TeacherEnrolledCourseDto, TeacherEnrollmentResultDto, TeacherUnenrollRequestDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -9,6 +9,14 @@ import type { CourseDto } from '../courses/dtos/models';
 })
 export class TeacherService {
   apiName = 'Default';
+  
+
+  approveUnenrollRequest = (requestId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/teacher/approve-unenroll-request/${requestId}`,
+    },
+    { apiName: this.apiName,...config });
   
 
   create = (input: CreateUpdateTeacherDto, config?: Partial<Rest.Config>) =>
@@ -45,6 +53,14 @@ export class TeacherService {
     { apiName: this.apiName,...config });
   
 
+  getCoursesWithEnrollmentStatus = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherEnrolledCourseDto[]>({
+      method: 'GET',
+      url: '/api/app/teacher/courses-with-enrollment-status',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getDashboard = (teacherId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TeacherDashboardDto>({
       method: 'GET',
@@ -58,6 +74,14 @@ export class TeacherService {
       method: 'GET',
       url: '/api/app/teacher',
       params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPendingUnenrollRequests = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherUnenrollRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/teacher/pending-unenroll-requests',
     },
     { apiName: this.apiName,...config });
   
@@ -84,6 +108,23 @@ export class TeacherService {
       method: 'GET',
       url: '/api/app/teacher/teachers-by-search',
       params: { searchPrefix, maxResults },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  rejectUnenrollRequest = (requestId: string, reason?: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/teacher/reject-unenroll-request/${requestId}`,
+      params: { reason },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  requestUnenrollFromCourse = (courseId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherUnenrollRequestDto>({
+      method: 'POST',
+      url: `/api/app/teacher/request-unenroll-from-course/${courseId}`,
     },
     { apiName: this.apiName,...config });
   

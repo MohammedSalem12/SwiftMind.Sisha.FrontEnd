@@ -2,25 +2,34 @@
 
   <!-- Page Header -->
   <div class="page-header">
+    <button *ngIf="lockedCourseId()" class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-right"></i>
+    </button>
     <div class="header-icon">
       <i class="fas fa-clipboard-check"></i>
     </div>
     <div>
       <h1>تسجيل الحضور والغياب</h1>
-      <p>اختر المقرر والتاريخ لتسجيل حضور الطلاب وإرسال الإشعارات تلقائياً</p>
+      <p>اختر التاريخ وسجّل حضور الطلاب</p>
     </div>
   </div>
 
   <!-- Filters Card -->
   <div class="filters-card">
-    <!-- Course -->
+    <!-- Course: label when pre-selected via ?courseId=, dropdown otherwise -->
     <div class="filter-group">
       <label>
         <i class="fas fa-book me-1"></i>
         المقرر الدراسي
-        <span class="required">*</span>
       </label>
+      <!-- Locked: show as read-only label -->
+      <div *ngIf="lockedCourseId()" class="course-label">
+        <i class="fas fa-lock course-lock-icon"></i>
+        <span>{{ selectedCourseName() || lockedCourseId() }}</span>
+      </div>
+      <!-- Not locked: show dropdown -->
       <select
+        *ngIf="!lockedCourseId()"
         [ngModel]="selectedCourseId()"
         (ngModelChange)="onCourseChange($event)"
         [disabled]="loading()">
@@ -85,63 +94,68 @@
   <!-- Students section -->
   <div *ngIf="students().length > 0 && !loading()">
 
-    <!-- Stats Panel (donut chart) -->
-    <div class="stats-panel">
-      <!-- Donut Chart -->
-      <div class="donut-wrap">
-        <svg viewBox="0 0 100 100" class="donut-svg">
-          <!-- Track -->
-          <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f0f5" stroke-width="13"/>
-          <!-- Present arc -->
-          <circle
-            cx="50" cy="50" r="40"
-            fill="none"
-            stroke="#22c55e"
-            stroke-width="13"
-            [attr.stroke-dasharray]="pieChart().presentDash"
-            stroke-dashoffset="0"
-            transform="rotate(-90 50 50)"/>
-          <!-- Absent arc -->
-          <circle
-            cx="50" cy="50" r="40"
-            fill="none"
-            stroke="#ef4444"
-            stroke-width="13"
-            [attr.stroke-dasharray]="pieChart().absentDash"
-            [attr.stroke-dashoffset]="pieChart().absentOffset"
-            transform="rotate(-90 50 50)"/>
-          <!-- Center label -->
-          <text x="50" y="45" text-anchor="middle" class="donut-num">{{ students().length }}</text>
-          <text x="50" y="60" text-anchor="middle" class="donut-label">طالب</text>
-        </svg>
+    <!-- Stats Panel (collapsible) -->
+    <div class="stats-bar">
+      <div class="stats-bar-header" (click)="toggleStats()">
+        <div class="stats-chips">
+          <span class="stat-chip chip-total">
+            <i class="fas fa-users"></i> {{ totalStudentCount() }} طالب
+          </span>
+          <span class="stat-chip chip-present">
+            <i class="fas fa-check-circle"></i> {{ presentCount() }} حاضر
+          </span>
+          <span class="stat-chip chip-absent">
+            <i class="fas fa-times-circle"></i> {{ absentCount() }} غائب
+          </span>
+        </div>
+        <i class="fas stats-toggle-arrow"
+           [class.fa-chevron-down]="!showStats()"
+           [class.fa-chevron-up]="showStats()"></i>
       </div>
 
-      <!-- Legend -->
-      <div class="stats-legend">
-        <div class="legend-item">
-          <span class="legend-dot dot-present"></span>
-          <div class="legend-body">
-            <span class="legend-count">{{ presentCount() }}</span>
-            <span class="legend-title">حاضر</span>
+      @if (showStats()) {
+        <div class="stats-detail">
+          <div class="donut-wrap">
+            <svg viewBox="0 0 100 100" class="donut-svg">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f0f5" stroke-width="13"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="13"
+                [attr.stroke-dasharray]="pieChart().presentDash"
+                stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#ef4444" stroke-width="13"
+                [attr.stroke-dasharray]="pieChart().absentDash"
+                [attr.stroke-dashoffset]="pieChart().absentOffset"
+                transform="rotate(-90 50 50)"/>
+              <text x="50" y="45" text-anchor="middle" class="donut-num">{{ totalStudentCount() }}</text>
+              <text x="50" y="60" text-anchor="middle" class="donut-label">طالب</text>
+            </svg>
           </div>
-          <span class="legend-pct">{{ pieChart().presentPct }}%</span>
-        </div>
-        <div class="legend-item">
-          <span class="legend-dot dot-absent"></span>
-          <div class="legend-body">
-            <span class="legend-count">{{ absentCount() }}</span>
-            <span class="legend-title">غائب</span>
+          <div class="stats-legend">
+            <div class="legend-item">
+              <span class="legend-dot dot-present"></span>
+              <div class="legend-body">
+                <span class="legend-count">{{ presentCount() }}</span>
+                <span class="legend-title">حاضر</span>
+              </div>
+              <span class="legend-pct">{{ pieChart().presentPct }}%</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot dot-absent"></span>
+              <div class="legend-body">
+                <span class="legend-count">{{ absentCount() }}</span>
+                <span class="legend-title">غائب</span>
+              </div>
+              <span class="legend-pct">{{ pieChart().absentPct }}%</span>
+            </div>
+            <div class="legend-item legend-total">
+              <span class="legend-dot dot-total"></span>
+              <div class="legend-body">
+                <span class="legend-count">{{ totalStudentCount() }}</span>
+                <span class="legend-title">المجموع</span>
+              </div>
+            </div>
           </div>
-          <span class="legend-pct">{{ pieChart().absentPct }}%</span>
         </div>
-        <div class="legend-item legend-total">
-          <span class="legend-dot dot-total"></span>
-          <div class="legend-body">
-            <span class="legend-count">{{ students().length }}</span>
-            <span class="legend-title">المجموع</span>
-          </div>
-        </div>
-      </div>
+      }
     </div>
 
     <!-- Bulk actions bar -->
@@ -299,6 +313,29 @@
         </div>
       </div>
     </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="pagination-bar">
+        <button class="page-btn" (click)="goToPage(page() - 1)" [disabled]="page() <= 1 || loading()">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="page-numbers">
+          @for (p of [].constructor(totalPages()); track $index) {
+            <button
+              class="page-num"
+              [class.page-num--active]="page() === $index + 1"
+              (click)="goToPage($index + 1)"
+              [disabled]="loading()">
+              {{ $index + 1 }}
+            </button>
+          }
+        </div>
+        <button class="page-btn" (click)="goToPage(page() + 1)" [disabled]="page() >= totalPages() || loading()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      </div>
+    }
 
   </div>
 

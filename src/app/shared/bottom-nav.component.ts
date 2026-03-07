@@ -444,6 +444,13 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
       .bn { padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
     }
+
+    /* ── Desktop: hide bottom nav, show ABP sidebar instead ── */
+    @media (min-width: 768px) {
+      .bn           { display: none !important; }
+      .sd           { display: none !important; }
+      .sd-backdrop  { display: none !important; }
+    }
   `]
 })
 export class BottomNavComponent implements OnInit, OnDestroy {

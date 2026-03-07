@@ -20,6 +20,16 @@
   margin-bottom: 1.5rem;
   box-shadow: 0 4px 20px rgba(51, 102, 255, 0.35);
 
+  .back-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,.2); border: none;
+    color: white; font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; min-width: 40px; min-height: 40px;
+    transition: background .15s;
+    &:hover { background: rgba(255,255,255,.3); }
+  }
+
   .header-icon {
     width: 56px;
     height: 56px;
@@ -112,22 +122,84 @@
   }
 }
 
-/* ── Stats Panel (Donut Chart) ── */
-.stats-panel {
+/* ── Stats Bar (collapsible) ── */
+/* ── Course label (locked mode) ── */
+.course-label {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .65rem 1rem;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-weight: 600;
+  font-size: .9rem;
+  .course-lock-icon { font-size: .75rem; opacity: .7; }
+}
+.stats-bar {
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.stats-bar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+
+  &:hover { background: #f9fafb; }
+  &:active { background: #f3f4f6; }
+}
+
+.stats-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 20px;
+  padding: 0.22rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  i { font-size: 0.7rem; }
+
+  &.chip-total   { background: #ede9fe; color: #7c3aed; }
+  &.chip-present { background: #dcfce7; color: #16a34a; }
+  &.chip-absent  { background: #fee2e2; color: #dc2626; }
+}
+
+.stats-toggle-arrow {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.stats-detail {
   display: flex;
   align-items: center;
   gap: 2rem;
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem 2rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 1rem 1.25rem 1.25rem;
+  border-top: 1px solid #f3f4f6;
 }
 
 .donut-wrap {
   flex-shrink: 0;
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
 }
 
 .donut-svg {
@@ -152,7 +224,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .legend-item {
@@ -166,8 +238,8 @@
 }
 
 .legend-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
 
@@ -184,26 +256,93 @@
 }
 
 .legend-count {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 800;
   color: #1a202c;
   line-height: 1;
 }
 
 .legend-title {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #6b7280;
   font-weight: 500;
 }
 
 .legend-pct {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #9ca3af;
   margin-right: auto;
   background: #f3f4f6;
-  padding: 0.15rem 0.5rem;
+  padding: 0.12rem 0.45rem;
   border-radius: 20px;
+}
+
+/* ── Pagination ── */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 0 0.5rem;
+}
+
+.page-btn {
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151;
+  font-size: 0.75rem;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) {
+    border-color: var(--ngx-primary);
+    color: var(--ngx-primary);
+    background: #f5f3ff;
+  }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.page-numbers {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.page-num {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 0.4rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled):not(.page-num--active) {
+    border-color: var(--ngx-primary);
+    color: var(--ngx-primary);
+  }
+
+  &--active {
+    background: var(--ngx-primary);
+    border-color: var(--ngx-primary);
+    color: white;
+    font-weight: 700;
+  }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
 /* ── Bulk Actions Bar ── */
@@ -644,18 +783,12 @@
   .filters-card { flex-direction: column; padding: 1rem; }
   .filter-group { min-width: unset; &.date-group { max-width: unset; } }
 
-  /* Donut chart becomes compact */
-  .stats-panel {
-    padding: 1rem 1.25rem;
-    gap: 1.25rem;
-  }
-
-  .donut-wrap {
-    width: 90px;
-    height: 90px;
-  }
-
-  .legend-count { font-size: 1.15rem; }
+  .stats-bar-header { padding: 0.6rem 0.875rem; }
+  .stats-detail { padding: 0.875rem; gap: 1rem; }
+  .donut-wrap { width: 80px; height: 80px; }
+  .legend-count { font-size: 1.1rem; }
+  .page-numbers { gap: 0.2rem; }
+  .page-num { min-width: 30px; height: 30px; font-size: 0.78rem; }
 
   .bulk-actions-bar { gap: 0.5rem; padding: 0.75rem 1rem; }
   .bulk-buttons { margin-right: 0; width: 100%; }

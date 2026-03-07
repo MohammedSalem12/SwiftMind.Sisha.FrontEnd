@@ -96,8 +96,12 @@ export class HomeComponent implements OnInit {
         ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'teacher')
         : false;
 
+      const isSecretary = Array.isArray(roles)
+        ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'secretary')
+        : false;
+
       // Set redirecting flag BEFORE navigating to prevent flash of dashboard
-      if (isStudent || isParent || isTeacher) {
+      if (isStudent || isParent || isTeacher || isSecretary) {
         this.redirecting.set(true);
       }
 
@@ -107,6 +111,8 @@ export class HomeComponent implements OnInit {
         this.router.navigate(['/parent']);
       } else if (isTeacher) {
         this.router.navigate(['/teacher']);
+      } else if (isSecretary) {
+        this.router.navigate(['/secretary']);
       }
     } catch (error) {
       console.error('Error checking user role:', error);

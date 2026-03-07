@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { Location } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -15,7 +16,7 @@ import { CurrentUserInfoService } from '@proxy/common';
   template: `
     <div class="create-page" dir="rtl">
       <div class="page-header">
-        <button class="btn-back" (click)="router.navigate(['/academies'])">
+        <button class="btn-back" (click)="goBack()">
           <i class="fas fa-arrow-right"></i>
         </button>
         <div>
@@ -145,6 +146,7 @@ import { CurrentUserInfoService } from '@proxy/common';
 })
 export class AcademyCreateComponent implements OnInit {
   readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly academyService = inject(AcademyService);
   private readonly currentUserService = inject(CurrentUserInfoService);
 
@@ -159,6 +161,8 @@ export class AcademyCreateComponent implements OnInit {
       this.isAdmin.set((userInfo?.userRoles || []).includes('ADMIN'));
     } catch { /* ignore */ }
   }
+
+  goBack(): void { this.location.back(); }
 
   async submit(): Promise<void> {
     if (!this.form.nameAr?.trim() || !this.form.nameEn?.trim()) {
