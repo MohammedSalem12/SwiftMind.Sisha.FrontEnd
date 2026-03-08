@@ -277,10 +277,7 @@ export class SecretaryLinkTeacherComponent implements OnInit {
     this.msg.set(null);
     try {
       await lastValueFrom(
-        (this.secretaryTeacherService as any).sendLinkRequest(
-          teacher.id,
-          { skipHandleError: true }
-        )
+        this.secretaryTeacherService.sendLinkRequest(teacher.id, { skipHandleError: true })
       );
       this.msgSuccess.set(true);
       this.msg.set(`✓ تم إرسال طلب الربط إلى المعلم "${teacher.displayName}" بنجاح`);

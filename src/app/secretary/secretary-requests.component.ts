@@ -208,9 +208,7 @@ export class SecretaryRequestsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const data = await lastValueFrom(
-        (this.secretaryTeacherService as any).getMyRequestsAsSecretary()
-      ) as any[];
+      const data = await lastValueFrom(this.secretaryTeacherService.getMyRequestsAsSecretary());
       this.requests.set(data ?? []);
     } catch {
       this.error.set('حدث خطأ أثناء تحميل الطلبات');

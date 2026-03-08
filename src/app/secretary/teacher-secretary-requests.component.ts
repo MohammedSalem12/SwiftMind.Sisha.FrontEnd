@@ -271,8 +271,8 @@ export class TeacherSecretaryRequestsComponent implements OnInit {
     this.error.set(null);
     try {
       const [pendingData, allData] = await Promise.all([
-        lastValueFrom((this.secretaryTeacherSvc as any).getPendingRequestsForCurrentTeacher()) as Promise<any[]>,
-        lastValueFrom((this.secretaryTeacherSvc as any).getAllRequestsForCurrentTeacher()) as Promise<any[]>,
+        lastValueFrom(this.secretaryTeacherSvc.getPendingRequestsForCurrentTeacher()),
+        lastValueFrom(this.secretaryTeacherSvc.getAllRequestsForCurrentTeacher()),
       ]);
       this.pending.set(pendingData ?? []);
       this.all.set(allData ?? []);
@@ -288,7 +288,7 @@ export class TeacherSecretaryRequestsComponent implements OnInit {
   async approve(req: any) {
     this.acting.set(req.id + 'a');
     try {
-      await lastValueFrom((this.secretaryTeacherSvc as any).approveRequest(req.id));
+      await lastValueFrom(this.secretaryTeacherSvc.approveRequest(req.id));
       // move from pending to all with status=1
       this.pending.update(list => list.filter(r => r.id !== req.id));
       this.all.update(list => list.map(r => r.id === req.id ? { ...r, status: 1, decidedAt: new Date().toISOString() } : r));
@@ -302,7 +302,7 @@ export class TeacherSecretaryRequestsComponent implements OnInit {
   async reject(req: any) {
     this.acting.set(req.id + 'r');
     try {
-      await lastValueFrom((this.secretaryTeacherSvc as any).rejectRequest(req.id));
+      await lastValueFrom(this.secretaryTeacherSvc.rejectRequest(req.id));
       this.pending.update(list => list.filter(r => r.id !== req.id));
       this.all.update(list => list.map(r => r.id === req.id ? { ...r, status: 2, decidedAt: new Date().toISOString() } : r));
     } catch {

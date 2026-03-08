@@ -7,7 +7,11 @@ export enum NotificationType {
   ParentStudentLinked = 3,
   ExamGradePosted = 4,
   AttendanceMarkedAbsent = 5,
-  General = 6,
+  AttendanceMarkedPresent = 6,
+  SecretaryLinkRequestSent = 7,
+  SecretaryLinkRequestApproved = 8,
+  SecretaryLinkRequestRejected = 9,
+  General = 10,
 }
 
 export const notificationTypeOptions = mapEnumToOptions(NotificationType);
