@@ -218,11 +218,10 @@ export function getBottomTabsForRole(userRoles: string[]): BottomTabConfig[] {
   }
   if (userRoles.includes(ROLES.TEACHER)) {
     return [
-      { path: '/teacher',                        label: 'الرئيسية',     icon: 'fas fa-home' },
-      { path: '/attendance',                     label: 'الحضور',       icon: 'fas fa-user-check' },
-      { path: '/teacher/enrollment-requests',    label: 'الطلبات',      icon: 'fas fa-clipboard-list' },
-      { path: '/teacher/secretary-requests',     label: 'طلبات الربط',  icon: 'fas fa-link' },
-      { path: '/notifications',                  label: 'إشعارات',      icon: 'fas fa-bell' },
+      { path: '/teacher',             label: 'الرئيسية', icon: 'fas fa-home' },
+      { path: '/attendance',          label: 'الحضور',   icon: 'fas fa-user-check' },
+      { path: '/teacher/my-requests', label: 'طلباتي',   icon: 'fas fa-clipboard-list' },
+      { path: '/notifications',       label: 'إشعارات',  icon: 'fas fa-bell' },
     ];
   }
   if (userRoles.includes(ROLES.SECRETARY)) {

@@ -61,7 +61,7 @@ export class LoginComponent implements OnInit {
       }
     } catch (err: any) {
       this.loading.set(false);
-      const msg = err?.error?.error?.message || err?.message || 'خطأ في تسجيل الدخول';
+      const msg = err?.message || err?.error?.error?.message || err?.error?.error_description || 'خطأ في تسجيل الدخول / Login error';
       this.error.set(msg);
       console.error(err);
     }
@@ -91,36 +91,59 @@ export class LoginComponent implements OnInit {
   }
 
   private async performLogin(username: string, password: string): Promise<void> {
+    const grantParams = {
+      username,
+      password,
+      scope: environment.oAuthConfig?.scope ?? undefined,
+      client_id: environment.oAuthConfig?.clientId ?? undefined,
+    } as any;
+
+    let grantFailed = false;
+    let grantErr: any = null;
+
     try {
-      const grantParams = {
-        username,
-        password,
-        scope: environment.oAuthConfig?.scope ?? undefined,
-        client_id: environment.oAuthConfig?.clientId ?? undefined,
-      } as any;
       await this.authService.loginUsingGrant('password', grantParams);
-      try {
-        await lastValueFrom(this.configService.refreshAppState());
-      } catch (e) {
+    } catch (err: any) {
+      grantFailed = true;
+      grantErr = err;
+      // Wrong credentials: OAuth returns 400 invalid_grant — don't fall back, just fail fast
+      const errorCode = err?.error?.error || err?.error || '';
+      if (errorCode === 'invalid_grant' || err?.status === 400 || err?.status === 401) {
+        throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة / Invalid username or password');
+      }
+    }
+
+    if (!grantFailed) {
+      // OAuth succeeded
+      try { await lastValueFrom(this.configService.refreshAppState()); } catch (e) {
         console.warn('refreshAppState failed after login', e);
       }
       this.loading.set(false);
       this.biometricLoading.set(false);
       await this.router.navigateByUrl('/');
       try { window.location.reload(); } catch { /* ignore */ }
-    } catch (grantErr) {
-      console.warn('Resource-owner grant failed, falling back to /api/account/login', grantErr);
-      const res = await lastValueFrom(this.loginSvc.login({ userNameOrEmailAddress: username, password }));
-      try {
-        await lastValueFrom(this.configService.refreshAppState());
-      } catch (e) {
-        console.warn('refreshAppState failed after legacy login', e);
-      }
-      this.loading.set(false);
-      this.biometricLoading.set(false);
-      await this.router.navigateByUrl('/');
-      try { window.location.reload(); } catch { /* ignore */ }
+      return;
     }
+
+    // Fallback to legacy /api/account/login (non-credential errors only)
+    console.warn('Resource-owner grant failed, falling back to /api/account/login', grantErr);
+    const res = await lastValueFrom(this.loginSvc.login({ userNameOrEmailAddress: username, password }));
+
+    // result: 1 = Success, 2 = InvalidUserNameOrPassword, 3+ = other failures
+    if (!res || res.result !== 1) {
+      if (res?.result === 2) {
+        throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة / Invalid username or password');
+      }
+      throw new Error(res?.description || 'فشل تسجيل الدخول / Login failed');
+    }
+
+    try { await lastValueFrom(this.configService.refreshAppState()); } catch (e) {
+      console.warn('refreshAppState failed after legacy login', e);
+    }
+    this.loading.set(false);
+    this.biometricLoading.set(false);
+    await this.router.navigateByUrl('/');
+    try { window.location.reload(); } catch { /* ignore */ }
   }
 
   togglePassword(): void {

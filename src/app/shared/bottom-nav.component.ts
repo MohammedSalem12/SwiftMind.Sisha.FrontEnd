@@ -6,6 +6,7 @@ import { filter, Subscription, lastValueFrom } from 'rxjs';
 import { getBottomTabsForRole, getMoreMenuItemsForRole, BottomTabConfig, MoreMenuItemConfig, ROLES } from '../route.provider';
 import { RealtimeNotificationService } from './services/realtime-notification.service';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
+import { SecretaryTeacherService } from '@proxy/teachers';
 
 @Component({
   selector: 'app-bottom-nav',
@@ -473,6 +474,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly realtimeSvc = inject(RealtimeNotificationService);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
+  private readonly secretaryTeacherService = inject(SecretaryTeacherService);
   private routerSubscription?: Subscription;
   private notifEffect = effect(() => {
     const notif = this.realtimeSvc.latestNotification();
@@ -513,16 +515,17 @@ export class BottomNavComponent implements OnInit, OnDestroy {
 
   private async loadPendingRequestsCount(): Promise<void> {
     try {
-      const requests = await lastValueFrom(
-        this.enrollmentRequestService.getPendingRequestsForCurrentTeacher()
-      );
-      this.pendingRequestsCount.set(requests?.length || 0);
+      const [enrollPending, linkPending] = await Promise.all([
+        lastValueFrom(this.enrollmentRequestService.getPendingRequestsForCurrentTeacher()),
+        lastValueFrom(this.secretaryTeacherService.getPendingRequestsForCurrentTeacher()),
+      ]);
+      this.pendingRequestsCount.set((enrollPending?.length || 0) + (linkPending?.length || 0));
     } catch { /* silent */ }
   }
 
   tabBadge(tab: BottomTabConfig): number {
     if (tab.path === '/notifications') return this.unreadCount();
-    if (tab.path === '/teacher/enrollment-requests') return this.pendingRequestsCount();
+    if (tab.path === '/teacher/my-requests') return this.pendingRequestsCount();
     return 0;
   }
 

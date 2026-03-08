@@ -7,6 +7,7 @@ export const appRoutes: Routes = [
     path: '',
     pathMatch: 'full',
     loadChildren: () => import('./home/home.routes').then(m => m.homeRoutes),
+    canActivate: [authGuard],
   },
   {
     path: 'student',
@@ -301,6 +302,12 @@ export const appRoutes: Routes = [
   {
     path: 'teacher/enrollment-requests',
     loadComponent: () => import('./home/teacher-enrollment-requests.component').then(m => m.TeacherEnrollmentRequestsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER'] },
+  },
+  {
+    path: 'teacher/my-requests',
+    loadComponent: () => import('./home/teacher-my-requests.component').then(m => m.TeacherMyRequestsComponent),
     canActivate: [roleGuard],
     data: { roles: ['TEACHER'] },
   },
