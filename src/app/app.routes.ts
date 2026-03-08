@@ -208,6 +208,12 @@ export const appRoutes: Routes = [
     data: { roles: ['SECRETARY'] }
   },
   {
+    path: 'secretary/profile',
+    loadComponent: () => import('./secretary/secretary-profile.component').then(m => m.SecretaryProfileComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['SECRETARY'] },
+  },
+  {
     path: 'secretary/link-teacher',
     loadComponent: () => import('./secretary/secretary-link-teacher.component').then(m => m.SecretaryLinkTeacherComponent),
     canActivate: [roleGuard],

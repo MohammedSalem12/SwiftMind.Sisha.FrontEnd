@@ -32,6 +32,11 @@ function getRoleHomePath(roles: string[]): string {
   return '/';
 }
 
+function getRoleProfilePath(roles: string[]): string {
+  if (roles.includes(ROLES.SECRETARY)) return '/secretary/profile';
+  return '/profile';
+}
+
 function getRoleRequestsPath(roles: string[]): string {
   if (roles.includes(ROLES.STUDENT))    return '/student/requests';
   if (roles.includes(ROLES.TEACHER))    return '/teacher/my-requests';
@@ -111,7 +116,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           <p class="sheet-name">{{ displayName() || 'مستخدم' }}</p>
           @if (userEmail()) { <p class="sheet-email">{{ userEmail() }}</p> }
         </div>
-        <a routerLink="/profile" class="sheet-profile-btn" (click)="closeSheet()">
+        <a [routerLink]="profilePath()" class="sheet-profile-btn" (click)="closeSheet()">
           <i class="fas fa-edit"></i>
         </a>
       </div>
@@ -174,7 +179,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
         }
 
         <!-- Profile link -->
-        <a class="dn-item" routerLink="/profile" [class.active]="isActive('/profile')">
+        <a class="dn-item" [routerLink]="profilePath()" [class.active]="isActive(profilePath()!)">
           <div class="dn-item-icon">
             <i class="fas fa-user-circle"></i>
           </div>
@@ -651,7 +656,8 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   displayName   = signal('');
   userEmail     = signal('');
 
-  coreNav     = signal<NavItem[]>([]);
+  profilePath  = signal('/profile');
+  coreNav      = signal<NavItem[]>([]);
   secondaryNav = signal<SecondaryItem[]>([]);
 
   private isTeacher = false;
@@ -715,6 +721,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
           { path: '/feeds',         label: 'النشرات',  labelEn: 'Feeds',         icon: 'fas fa-rss' },
         ]);
 
+        this.profilePath.set(getRoleProfilePath(roles));
         this.secondaryNav.set(getSecondaryItems(roles));
 
         if (this.isTeacher) this.loadPendingCount();
@@ -740,10 +747,9 @@ export class BottomNavComponent implements OnInit, OnDestroy {
 
   isActive(path: string): boolean {
     const cur = this.currentPath();
-    if (path === '/' || path === '/student' || path === '/teacher' ||
-        path === '/parent' || path === '/secretary' || path === '/secretary-assignments') {
-      return cur === path;
-    }
+    const exact = ['/', '/student', '/teacher', '/parent', '/secretary', '/secretary-assignments',
+                   '/profile', '/secretary/profile'];
+    if (exact.includes(path)) return cur === path;
     return cur.startsWith(path);
   }
 
