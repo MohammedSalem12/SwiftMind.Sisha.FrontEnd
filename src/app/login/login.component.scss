@@ -398,6 +398,57 @@ $quick-h:      62px; // height of bottom quick-links bar
   font-size: 1.375rem;
 }
 
+// ─── Social Login Section ────────────────────────────────────────
+.social-section {
+  margin-top: 1.25rem;
+}
+
+.social-btns {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-social {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem;
+  border-radius: $field-radius;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 50px;
+  background: $white;
+  color: $text-mid;
+  border: 1.5px solid #e0e0f0;
+  transition: all 0.2s;
+  font-family: inherit;
+
+  i { font-size: 1rem; }
+
+  &:active:not(:disabled) {
+    background: #f5f5fb;
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-google {
+  i { color: #ea4335; }
+  &:hover:not(:disabled) { border-color: #ea4335; box-shadow: 0 2px 8px rgba(234, 67, 53, 0.15); }
+}
+
+.btn-facebook {
+  i { color: #1877f2; }
+  &:hover:not(:disabled) { border-color: #1877f2; box-shadow: 0 2px 8px rgba(24, 119, 242, 0.15); }
+}
+
 // ─── Register Row ───────────────────────────────────────────────
 .register-row {
   text-align: center;

@@ -215,4 +215,24 @@ export class RegisterComponent implements OnInit {
       this.registering.set(false);
     }
   }
+
+  registerWithGoogle(): void {
+    this.error.set(null);
+    this.registering.set(true);
+    const params = new URLSearchParams({ provider: 'Google', returnUrl: '/' });
+    if (this.form.userType !== null) {
+      params.append('userType', String(this.form.userType));
+    }
+    window.location.href = `/connect/authorize?${params.toString()}`;
+  }
+
+  registerWithFacebook(): void {
+    this.error.set(null);
+    this.registering.set(true);
+    const params = new URLSearchParams({ provider: 'Facebook', returnUrl: '/' });
+    if (this.form.userType !== null) {
+      params.append('userType', String(this.form.userType));
+    }
+    window.location.href = `/connect/authorize?${params.toString()}`;
+  }
 }

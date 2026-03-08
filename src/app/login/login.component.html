@@ -132,6 +132,35 @@
       </div>
     }
 
+    <!-- Social Login Section -->
+    <div class="social-section">
+      <div class="divider-line">
+        <span class="divider-text">أو تسجيل الدخول بـ / or sign in with</span>
+      </div>
+      <div class="social-btns">
+        <button
+          type="button"
+          class="btn-social btn-google"
+          (click)="loginWithGoogle()"
+          [disabled]="loading() || biometricLoading()"
+          title="تسجيل الدخول بـ Google"
+        >
+          <i class="fab fa-google"></i>
+          <span>Google</span>
+        </button>
+        <button
+          type="button"
+          class="btn-social btn-facebook"
+          (click)="loginWithFacebook()"
+          [disabled]="loading() || biometricLoading()"
+          title="تسجيل الدخول بـ Facebook"
+        >
+          <i class="fab fa-facebook-f"></i>
+          <span>Facebook</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Register Link -->
     <div class="register-row">
       <span>ليس لديك حساب؟</span>
