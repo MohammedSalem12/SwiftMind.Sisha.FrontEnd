@@ -42,14 +42,14 @@ export class TeacherCourseActionComponent implements OnInit {
       this.course.set(c);
 
       // Load counts in parallel (non-blocking failures)
-      const [enrolled, groups] = await Promise.allSettled([
-        lastValueFrom(this.enrollmentSvc.getEnrolledStudentsByCourse(id)),
+      const [enrolledResult, groupsResult] = await Promise.all([
+        lastValueFrom(this.enrollmentSvc.getEnrolledStudentsByCourse(id)).catch(() => null),
         userInfo?.actorId
-          ? lastValueFrom(this.groupSvc.getGroupsForTeacherAndCourse(userInfo.actorId, id))
-          : Promise.resolve([]),
+          ? lastValueFrom(this.groupSvc.getGroupsForTeacherAndCourse(userInfo.actorId, id)).catch(() => null)
+          : Promise.resolve(null),
       ]);
-      if (enrolled.status === 'fulfilled') this.studentCount.set(enrolled.value?.length ?? 0);
-      if (groups.status === 'fulfilled') this.groupCount.set((groups.value as any[])?.length ?? 0);
+      if (enrolledResult !== null) this.studentCount.set((enrolledResult as any[])?.length ?? 0);
+      if (groupsResult !== null) this.groupCount.set((groupsResult as any[])?.length ?? 0);
     } catch (e) {
       console.error('Failed to load course', e);
     } finally {
