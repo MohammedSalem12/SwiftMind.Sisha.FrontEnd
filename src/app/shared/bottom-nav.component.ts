@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, OnDestroy, effect, computed } from '@angular/core';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { ConfigStateService, AuthService } from '@abp/ng.core';
-import { filter, Subscription, lastValueFrom } from 'rxjs';
+import { filter, take, Subscription, lastValueFrom } from 'rxjs';
 import { ROLES } from '../route.provider';
 import { RealtimeNotificationService } from './services/realtime-notification.service';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
@@ -701,38 +701,47 @@ export class BottomNavComponent implements OnInit, OnDestroy {
 
   // ── Setup ──────────────────────────────────────────────────────────────────
   private loadUserAndNav(): void {
-    const cu     = this.configStateService.getOne('currentUser') as any;
-    const roles: string[] = cu?.roles ?? [];
-    this.isTeacher = roles.includes(ROLES.TEACHER);
+    // getOne() is unreliable at init time — wait for the observable to emit
+    // an authenticated user (same pattern as route.provider.ts)
+    this.configStateService
+      .getOne$('currentUser')
+      .pipe(
+        filter((u: any) => !!u && u.isAuthenticated === true),
+        take(1)
+      )
+      .subscribe((cu: any) => {
+        const roles: string[] = cu?.roles ?? [];
+        this.isTeacher = roles.includes(ROLES.TEACHER);
 
-    // User info
-    const first  = cu?.name     || '';
-    const last   = cu?.surName  || '';
-    const uname  = cu?.userName || '';
-    const full   = [first, last].filter(Boolean).join(' ') || uname;
-    const parts  = full.trim().split(/\s+/).filter(Boolean);
-    const initials = parts.length >= 2
-      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-      : (parts[0]?.[0]?.toUpperCase() || '?');
+        // User info
+        const first = cu?.name    || '';
+        const last  = cu?.surName || '';
+        const uname = cu?.userName || '';
+        const full  = [first, last].filter(Boolean).join(' ') || uname;
+        const parts = full.trim().split(/\s+/).filter(Boolean);
+        const initials = parts.length >= 2
+          ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+          : (parts[0]?.[0]?.toUpperCase() || '?');
 
-    this.userInitials.set(initials);
-    this.displayName.set(full);
-    this.userEmail.set(cu?.email || '');
+        this.userInitials.set(initials);
+        this.displayName.set(full);
+        this.userEmail.set(cu?.email || '');
 
-    // Core 5 nav items
-    const homePath     = getRoleHomePath(roles);
-    const requestsPath = getRoleRequestsPath(roles);
+        // Core nav items — role-aware paths resolved AFTER user is loaded
+        const homePath     = getRoleHomePath(roles);
+        const requestsPath = getRoleRequestsPath(roles);
 
-    this.coreNav.set([
-      { path: homePath,      label: 'الرئيسية',  labelEn: 'Home',          icon: 'fas fa-home' },
-      { path: requestsPath,  label: 'طلباتي',    labelEn: 'Requests',      icon: 'fas fa-clipboard-list', badge: 'requests' },
-      { path: '/notifications', label: 'إشعارات',labelEn: 'Notifications', icon: 'fas fa-bell',           badge: 'notifications' },
-      { path: '/feeds',      label: 'النشرات',   labelEn: 'Feeds',         icon: 'fas fa-rss' },
-    ]);
+        this.coreNav.set([
+          { path: homePath,         label: 'الرئيسية', labelEn: 'Home',          icon: 'fas fa-home' },
+          { path: requestsPath,     label: 'طلباتي',   labelEn: 'Requests',      icon: 'fas fa-clipboard-list', badge: 'requests' },
+          { path: '/notifications', label: 'إشعارات',  labelEn: 'Notifications', icon: 'fas fa-bell',           badge: 'notifications' },
+          { path: '/feeds',         label: 'النشرات',  labelEn: 'Feeds',         icon: 'fas fa-rss' },
+        ]);
 
-    this.secondaryNav.set(getSecondaryItems(roles));
+        this.secondaryNav.set(getSecondaryItems(roles));
 
-    if (this.isTeacher) this.loadPendingCount();
+        if (this.isTeacher) this.loadPendingCount();
+      });
   }
 
   private async loadPendingCount(): Promise<void> {
