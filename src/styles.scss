@@ -652,12 +652,29 @@ body.auth-page {
   }
 }
 
-// ── App content padding — bottom nav is now always visible ──
+// ── App content padding ──────────────────────────────────────
+// Mobile: pad bottom for fixed bottom nav
+// Desktop: pad right for fixed sidebar (RTL)
 .app-content {
   padding-bottom: 70px;
 
   @supports (padding-bottom: env(safe-area-inset-bottom)) {
     padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+
+  @media (min-width: 768px) {
+    padding-bottom: 0;
+    padding-right: 248px;
+  }
+}
+
+// Also shift the ABP content container on desktop
+@media (min-width: 768px) {
+  .lpx-content-container,
+  lpx-content-container,
+  [class*="lpx-content"] {
+    padding-right: 248px !important;
+    padding-bottom: 0 !important;
   }
 }
 
@@ -696,25 +713,23 @@ lpx-mobile-header,
   display: none !important;
 }
 
-// Hide topbar on mobile — bottom nav handles navigation
-@media (max-width: 767px) {
-  .lpx-topbar-container,
-  lpx-topbar-container,
-  .lpx-toolbar-container,
-  lpx-toolbar-container,
-  .lpx-topbar,
-  lpx-topbar,
-  .lpx-toolbar,
-  lpx-toolbar,
-  .lpx-navbar,
-  lpx-navbar,
-  .lpx-header,
-  lpx-header,
-  [class*="lpx-topbar"],
-  [class*="lpx-toolbar"],
-  [class*="lpx-header"] {
-    display: none !important;
-  }
+// Hide topbar on ALL sizes — our custom nav replaces it everywhere
+.lpx-topbar-container,
+lpx-topbar-container,
+.lpx-toolbar-container,
+lpx-toolbar-container,
+.lpx-topbar,
+lpx-topbar,
+.lpx-toolbar,
+lpx-toolbar,
+.lpx-navbar,
+lpx-navbar,
+.lpx-header,
+lpx-header,
+[class*="lpx-topbar"],
+[class*="lpx-toolbar"],
+[class*="lpx-header"] {
+  display: none !important;
 }
 
 // Hide hamburger/menu buttons in the topbar
@@ -730,6 +745,7 @@ button.lpx-sidebar-toggle {
 .lpx-content-container {
   margin-left: 0 !important;
   margin-right: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 // ─────────────────────────────────────────────────────────────
