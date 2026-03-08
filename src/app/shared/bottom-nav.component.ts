@@ -33,6 +33,9 @@ function getRoleHomePath(roles: string[]): string {
 }
 
 function getRoleProfilePath(roles: string[]): string {
+  if (roles.includes(ROLES.STUDENT))   return '/student/profile';
+  if (roles.includes(ROLES.TEACHER))   return '/teacher/profile';
+  if (roles.includes(ROLES.PARENT))    return '/parent/profile';
   if (roles.includes(ROLES.SECRETARY)) return '/secretary/profile';
   return '/profile';
 }
@@ -748,7 +751,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   isActive(path: string): boolean {
     const cur = this.currentPath();
     const exact = ['/', '/student', '/teacher', '/parent', '/secretary', '/secretary-assignments',
-                   '/profile', '/secretary/profile'];
+                   '/profile', '/secretary/profile', '/student/profile', '/teacher/profile', '/parent/profile'];
     if (exact.includes(path)) return cur === path;
     return cur.startsWith(path);
   }

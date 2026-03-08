@@ -654,26 +654,21 @@ body.auth-page {
 
 // ── App content padding ──────────────────────────────────────
 // Mobile: pad bottom for fixed bottom nav
-// Desktop: pad right for fixed sidebar (RTL)
+// Desktop: pad right for body so content clears the fixed right sidebar (248px)
 .app-content {
   padding-bottom: 70px;
 
   @supports (padding-bottom: env(safe-area-inset-bottom)) {
     padding-bottom: calc(70px + env(safe-area-inset-bottom));
   }
-
-  @media (min-width: 768px) {
-    padding-bottom: 0;
-    padding-right: 248px;
-  }
 }
 
-// Also shift the ABP content container on desktop
 @media (min-width: 768px) {
-  .lpx-content-container,
-  lpx-content-container,
-  [class*="lpx-content"] {
+  body {
     padding-right: 248px !important;
+    padding-bottom: 0 !important;
+  }
+  .app-content {
     padding-bottom: 0 !important;
   }
 }
