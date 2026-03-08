@@ -213,6 +213,18 @@ export const appRoutes: Routes = [
     data: { roles: ['SECRETARY'] }
   },
   {
+    path: 'secretary/requests',
+    loadComponent: () => import('./secretary/secretary-requests.component').then(m => m.SecretaryRequestsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['SECRETARY'] }
+  },
+  {
+    path: 'teacher/secretary-requests',
+    loadComponent: () => import('./secretary/teacher-secretary-requests.component').then(m => m.TeacherSecretaryRequestsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER'] }
+  },
+  {
     path: 'secretary/teacher/:teacherId',
     loadComponent: () => import('./secretary/secretary-teacher-courses.component').then(m => m.SecretaryTeacherCoursesComponent),
     canActivate: [roleGuard],

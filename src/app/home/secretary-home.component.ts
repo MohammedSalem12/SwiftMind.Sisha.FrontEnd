@@ -81,13 +81,20 @@ import { CurrentUserInfoService } from '@proxy/common';
         </div>
       }
 
-      <!-- Link Teacher Quick Action -->
+      <!-- Quick Actions -->
       <div class="quick-actions">
         <button class="qa-btn" (click)="goToLinkTeacher()">
           <i class="fas fa-user-plus"></i>
           <div class="qa-text">
             <span>ربط معلم جديد</span>
             <span class="qa-en">Link Teacher</span>
+          </div>
+        </button>
+        <button class="qa-btn qa-btn-requests" (click)="goToRequests()">
+          <i class="fas fa-paper-plane"></i>
+          <div class="qa-text">
+            <span>طلباتي</span>
+            <span class="qa-en">My Requests</span>
           </div>
         </button>
       </div>
@@ -317,6 +324,10 @@ export class SecretaryHomeComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  goToRequests() {
+    this.router.navigate(['/secretary/requests']);
   }
 
   goToLinkTeacher() {

@@ -172,6 +172,7 @@ export function getMoreMenuItemsForRole(userRoles: string[]): MoreMenuItemConfig
   if (userRoles.includes(ROLES.SECRETARY)) {
     return [
       { path: '/secretary/link-teacher', label: 'ربط معلم',           icon: 'fas fa-link' },
+      { path: '/secretary/requests',     label: 'طلباتي',              icon: 'fas fa-paper-plane' },
       { path: '/teachers',               label: 'المعلمون',            icon: 'fas fa-chalkboard-teacher' },
       { path: '/parents',                label: 'أولياء الأمور',       icon: 'fas fa-users-cog' },
       { path: '/courses',                label: 'المقررات',             icon: 'fas fa-book' },
@@ -217,10 +218,11 @@ export function getBottomTabsForRole(userRoles: string[]): BottomTabConfig[] {
   }
   if (userRoles.includes(ROLES.TEACHER)) {
     return [
-      { path: '/teacher',                     label: 'الرئيسية', icon: 'fas fa-home' },
-      { path: '/attendance',                  label: 'الحضور',   icon: 'fas fa-user-check' },
-      { path: '/teacher/enrollment-requests', label: 'الطلبات',  icon: 'fas fa-clipboard-list' },
-      { path: '/notifications',               label: 'إشعارات',  icon: 'fas fa-bell' },
+      { path: '/teacher',                        label: 'الرئيسية',     icon: 'fas fa-home' },
+      { path: '/attendance',                     label: 'الحضور',       icon: 'fas fa-user-check' },
+      { path: '/teacher/enrollment-requests',    label: 'الطلبات',      icon: 'fas fa-clipboard-list' },
+      { path: '/teacher/secretary-requests',     label: 'طلبات الربط',  icon: 'fas fa-link' },
+      { path: '/notifications',                  label: 'إشعارات',      icon: 'fas fa-bell' },
     ];
   }
   if (userRoles.includes(ROLES.SECRETARY)) {
