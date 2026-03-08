@@ -135,7 +135,7 @@ export const appRoutes: Routes = [
     path: 'students',
     loadChildren: () => import('./students/students.routes').then(m => m.studentsRoutes),
     canActivate: [roleGuard],
-    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
+    data: { roles: ['TEACHER', 'SECRETARY'] }
   },
   {
     path: 'enroll',
@@ -206,6 +206,30 @@ export const appRoutes: Routes = [
     loadComponent: () => import('./home/secretary-home.component').then(m => m.SecretaryHomeComponent),
     canActivate: [roleGuard],
     data: { roles: ['SECRETARY'] }
+  },
+  {
+    path: 'secretary/profile',
+    loadComponent: () => import('./secretary/secretary-profile.component').then(m => m.SecretaryProfileComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['SECRETARY'] },
+  },
+  {
+    path: 'student/profile',
+    loadComponent: () => import('./students/student-profile.component').then(m => m.StudentProfileComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] },
+  },
+  {
+    path: 'teacher/profile',
+    loadComponent: () => import('./home/teacher-profile.component').then(m => m.TeacherProfileComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER'] },
+  },
+  {
+    path: 'parent/profile',
+    loadComponent: () => import('./home/parent-profile.component').then(m => m.ParentProfileComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] },
   },
   {
     path: 'secretary/link-teacher',

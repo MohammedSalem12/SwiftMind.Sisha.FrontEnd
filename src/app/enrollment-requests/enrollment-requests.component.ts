@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ConfigStateService } from '@abp/ng.core';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
@@ -184,14 +185,15 @@ import { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
   `]
 })
 export class EnrollmentRequestsComponent implements OnInit {
+  private readonly enrollmentRequestService = inject(EnrollmentRequestService);
+  private readonly configStateService = inject(ConfigStateService);
+
   requests = signal<EnrollmentRequestDto[]>([]);
   loading = signal(false);
   processingRequest = signal<string>('');
   successMessage = signal('');
   errorMessage = signal('');
   EnrollmentRequestStatus = EnrollmentRequestStatus;
-
-  constructor(private enrollmentRequestService: EnrollmentRequestService) {}
 
   ngOnInit() {
     this.loadRequests();
@@ -267,18 +269,10 @@ export class EnrollmentRequestsComponent implements OnInit {
   }
 
   isSecretary(): boolean {
-    // Check if user has SECRETARY or ADMIN role
-    const currentUserJson = localStorage.getItem('currentUser');
-    if (currentUserJson) {
-      try {
-        const currentUser = JSON.parse(currentUserJson);
-        const roles = currentUser.roles || [];
-        return roles.includes('SECRETARY') || roles.includes('ADMIN');
-      } catch (e) {
-        console.error('Error parsing current user', e);
-      }
-    }
-    return false;
+    const cu = this.configStateService.getOne('currentUser') as any;
+    const roles: string[] = (cu?.roles || cu?.roleNames || cu?.userRoles || [])
+      .map((r: any) => (typeof r === 'string' ? r.toUpperCase() : ''));
+    return roles.includes('SECRETARY') || roles.includes('ADMIN');
   }
 
   getStatusText(status: EnrollmentRequestStatus): string {
