@@ -1,7 +1,7 @@
 <div class="action-page" dir="rtl">
 
   <!-- Header -->
-  <div class="page-header">
+  <div class="page-header" [class.page-header--academy]="!!academy()">
     <button class="back-btn" (click)="goBack()">
       <i class="fas fa-arrow-right"></i>
     </button>
@@ -9,6 +9,12 @@
       @if (loading()) {
         <div class="header-skeleton"></div>
       } @else {
+        @if (academy()) {
+          <div class="academy-sub-line">
+            <i class="fas fa-university"></i>
+            {{ academy()!.nameAr || academy()!.nameEn }}
+          </div>
+        }
         <h1 class="header-title">{{ course()?.nameAr || course()?.nameEn || 'المقرر' }}</h1>
         <div class="header-meta">
           @if (course()?.code) {

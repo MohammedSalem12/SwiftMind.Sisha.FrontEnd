@@ -7,6 +7,7 @@ import { lastValueFrom } from 'rxjs';
 import { CourseService } from '@proxy/courses';
 import type { CourseDto } from '@proxy/courses/dtos/models';
 import { GroupService } from '@proxy/groups';
+import { AcademyService } from '@proxy/academies';
 import { CurrentUserInfoService } from '@proxy/common';
 
 @Component({
@@ -87,6 +88,7 @@ export class CreateGroupComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly courseService = inject(CourseService);
   private readonly groupService = inject(GroupService);
+  private readonly academyService = inject(AcademyService);
   private readonly currentUserService = inject(CurrentUserInfoService);
 
   courses = signal<CourseDto[]>([]);
@@ -108,9 +110,33 @@ export class CreateGroupComponent implements OnInit {
       const userInfo = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
       this.teacherId = userInfo?.actorId || '';
 
-      // Load teacher's enrolled courses
-      const courses = await lastValueFrom(this.courseService.getCoursesForTeacher());
-      this.courses.set(courses || []);
+      // Load teacher's own courses + any academy courses they supervise
+      const [teacherCourses, myAcademy] = await Promise.all([
+        lastValueFrom(this.courseService.getCoursesForTeacher()).catch(() => [] as CourseDto[]),
+        lastValueFrom(this.academyService.getMyAcademy()).catch(() => null),
+      ]);
+
+      const merged = [...(teacherCourses || [])];
+
+      if (myAcademy?.id) {
+        const academyCourses = await lastValueFrom(
+          this.academyService.getAcademyCourses(myAcademy.id)
+        ).catch(() => []);
+
+        for (const ac of (academyCourses || [])) {
+          if (ac.courseId && !merged.some(c => c.id === ac.courseId)) {
+            merged.push({
+              id: ac.courseId,
+              nameAr: ac.courseNameAr || '',
+              nameEn: ac.courseNameEn || '',
+              code: ac.courseCode || '',
+              gradeName: ac.gradeName,
+            } as CourseDto);
+          }
+        }
+      }
+
+      this.courses.set(merged);
     } catch (err) {
       console.error('Error loading data:', err);
     }

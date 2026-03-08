@@ -1,15 +1,38 @@
 <div class="marks-page" dir="rtl">
 
   <!-- Header -->
-  <div class="page-header">
+  <div class="page-header" [class.page-header--academy]="isAcademyCourse()">
     <button class="btn-back" (click)="goBack()">
       <i class="fas fa-arrow-right"></i>
     </button>
-    <div>
+    <div class="header-icon-wrap">
+      <i class="fas fa-clipboard-list"></i>
+    </div>
+    <div class="header-text">
       <h1>إدخال الدرجات</h1>
-      <p>اختر المقرر والامتحان ثم أدخل درجات الطلاب</p>
+      @if (isAcademyCourse()) {
+        <p class="header-academy-sub">
+          <i class="fas fa-university"></i>
+          {{ selectedCourse()?.academyName }}
+          <span class="header-course-name">· {{ selectedCourse()?.nameAr || selectedCourse()?.nameEn }}</span>
+        </p>
+      } @else {
+        <p>اختر المقرر والامتحان ثم أدخل درجات الطلاب</p>
+      }
     </div>
   </div>
+
+  <!-- Academy context banner (locked academy course) -->
+  @if (isAcademyCourse() && lockedCourseId()) {
+    <div class="academy-context-banner">
+      <div class="acb-icon"><i class="fas fa-university"></i></div>
+      <div class="acb-body">
+        <span class="acb-academy">{{ selectedCourse()?.academyName }}</span>
+        <span class="acb-course">{{ selectedCourse()?.nameAr || selectedCourse()?.nameEn }}</span>
+      </div>
+      <span class="acb-badge">مقرر أكاديمية</span>
+    </div>
+  }
 
   <!-- Setup strip -->
   <div class="setup-strip">
@@ -19,7 +42,7 @@
       <!-- Locked: show as read-only label -->
       <div *ngIf="lockedCourseId()" class="course-locked-label">
         <i class="fas fa-lock"></i>
-        {{ selectedCourse()?.nameAr || selectedCourse()?.nameEn || lockedCourseId() }}
+        <span class="locked-name">{{ selectedCourse()?.nameAr || selectedCourse()?.nameEn || lockedCourseId() }}</span>
         <span *ngIf="selectedCourse()?.gradeName" class="grade-tag">{{ selectedCourse().gradeName }}</span>
       </div>
       <!-- Not locked: show dropdown -->
@@ -29,10 +52,6 @@
           {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' · ' + c.gradeName : '' }}{{ c.academyName ? ' · ' + c.academyName : '' }}
         </option>
       </select>
-      <div class="academy-badge" *ngIf="selectedCourse()?.academyName">
-        <i class="fas fa-university"></i>
-        {{ selectedCourse().academyName }}
-      </div>
     </div>
 
     <div class="setup-field" *ngIf="selectedCourseId()">

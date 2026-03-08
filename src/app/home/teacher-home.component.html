@@ -84,30 +84,41 @@
       </div>
 
       <div class="courses-grid">
-        @for (course of group.courses; track course.id) {
-          <button class="course-card" (click)="selectAcademyCourse(course)">
-            <div class="course-card-icon course-card-icon--academy">
-              <i class="fas fa-book-reader"></i>
-            </div>
-            <div class="course-card-body">
-              <div class="course-name">{{ course.nameAr || course.nameEn || course.name }}</div>
-              <div class="course-name-en">{{ course.nameEn }}</div>
-              <div class="course-meta">
-                @if (course.code) {
-                  <span class="meta-chip chip-code">{{ course.code }}</span>
-                }
-                @if (course.gradeName) {
-                  <span class="meta-chip chip-grade">{{ course.gradeName }}</span>
-                }
+        @for (course of group.courses; track (course.courseId ?? course.id)) {
+          <div class="course-card course-card--academy-item">
+            <!-- Main clickable row -->
+            <button class="course-card-inner" (click)="selectAcademyCourse(course)">
+              <div class="course-card-icon course-card-icon--academy">
+                <i class="fas fa-book-reader"></i>
               </div>
-            </div>
-            <button class="qr-btn" (click)="openQrCodes($event, course)" title="QR Code">
-              <i class="fas fa-qrcode"></i>
+              <div class="course-card-body">
+                <div class="course-name">{{ course.courseNameAr || course.nameAr || course.courseNameEn || course.nameEn }}</div>
+                <div class="course-name-en">{{ course.courseNameEn || course.nameEn }}</div>
+                <div class="course-meta">
+                  @if (course.courseCode || course.code) {
+                    <span class="meta-chip chip-code">{{ course.courseCode || course.code }}</span>
+                  }
+                  @if (course.gradeName) {
+                    <span class="meta-chip chip-grade">{{ course.gradeName }}</span>
+                  }
+                </div>
+              </div>
+              <div class="course-card-arrow">
+                <i class="fas fa-chevron-left"></i>
+              </div>
             </button>
-            <div class="course-card-arrow">
-              <i class="fas fa-chevron-left"></i>
+            <!-- Quick action buttons -->
+            <div class="course-actions">
+              <button class="ca-btn ca-attendance" (click)="goAcademyAttendance($event, course)">
+                <i class="fas fa-user-check"></i>
+                <span>الحضور</span>
+              </button>
+              <button class="ca-btn ca-marks" (click)="goAcademyMarks($event, course)">
+                <i class="fas fa-star-half-alt"></i>
+                <span>الدرجات</span>
+              </button>
             </div>
-          </button>
+          </div>
         }
       </div>
     }
@@ -115,13 +126,6 @@
 
   <!-- Quick Actions -->
   <div class="quick-actions">
-    <button class="qa-btn qa-btn-academy" (click)="goToAddAcademy()">
-      <i class="fas fa-university"></i>
-      <div class="qa-text">
-        <span>الأكاديميات</span>
-        <span class="qa-en">Academies</span>
-      </div>
-    </button>
     <button class="qa-btn qa-btn-enroll" (click)="goToEnroll()">
       <i class="fas fa-user-plus"></i>
       <div class="qa-text">

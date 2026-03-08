@@ -418,9 +418,9 @@ export class TeacherMyRequestsComponent implements OnInit {
     this.error.set(null);
     try {
       const [enrollPending, linkPending, linkAll] = await Promise.all([
-        lastValueFrom(this.enrollmentSvc.getPendingRequestsForCurrentTeacher()),
-        lastValueFrom(this.secretaryTeacherSvc.getPendingRequestsForCurrentTeacher()),
-        lastValueFrom(this.secretaryTeacherSvc.getAllRequestsForCurrentTeacher()),
+        lastValueFrom(this.enrollmentSvc.getPendingRequestsForCurrentTeacher()).catch(() => []),
+        lastValueFrom(this.secretaryTeacherSvc.getPendingRequestsForCurrentTeacher()).catch(() => []),
+        lastValueFrom(this.secretaryTeacherSvc.getAllRequestsForCurrentTeacher()).catch(() => []),
       ]);
       this.pendingEnrollments.set(enrollPending ?? []);
       this.pendingLinks.set(linkPending ?? []);

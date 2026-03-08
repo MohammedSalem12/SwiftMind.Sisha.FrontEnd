@@ -105,12 +105,30 @@ export class TeacherHomeComponent implements OnInit {
     this.router.navigate(['/teacher/enroll']);
   }
 
-  goToAddAcademy(): void {
-    this.router.navigate(['/teacher/academies']);
+  selectAcademyCourse(course: any): void {
+    const id = course.courseId ?? course.id;
+    const academyId = course.academyId;
+    if (id) this.router.navigate(['/teacher/course', id], {
+      queryParams: academyId ? { academyId } : {}
+    });
   }
 
-  selectAcademyCourse(course: any): void {
-    this.router.navigate(['/teacher/course', course.id]);
+  goAcademyAttendance(event: Event, course: any): void {
+    event.stopPropagation();
+    const id = course.courseId ?? course.id;
+    const academyId = course.academyId;
+    if (id) this.router.navigate(['/attendance'], {
+      queryParams: { courseId: id, ...(academyId ? { academyId } : {}) }
+    });
+  }
+
+  goAcademyMarks(event: Event, course: any): void {
+    event.stopPropagation();
+    const id = course.courseId ?? course.id;
+    const academyId = course.academyId;
+    if (id) this.router.navigate(['/marks-entry'], {
+      queryParams: { courseId: id, ...(academyId ? { academyId } : {}) }
+    });
   }
 
   trackById = (_: number, item: any) => item.id;

@@ -10,6 +10,7 @@ import { ExamGradeService } from '@proxy/exam-grades';
 import { ExamService } from '@proxy/exams';
 import { GroupService } from '@proxy/groups';
 import { TeacherService } from '@proxy/teachers';
+import { AcademyService } from '@proxy/academies';
 import { lastValueFrom } from 'rxjs';
 
 interface StudentGradeEntry {
@@ -46,6 +47,7 @@ export class MarksEntryComponent implements OnInit {
   private readonly courseSvc          = inject(CourseService);
   private readonly teacherSvc         = inject(TeacherService);
   private readonly groupSvc           = inject(GroupService);
+  private readonly academySvc         = inject(AcademyService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
   private readonly route              = inject(ActivatedRoute);
   private readonly router             = inject(Router);
@@ -148,12 +150,73 @@ export class MarksEntryComponent implements OnInit {
         await this.loadAllCourses();
       }
 
+      const qpAcademyId = this.route.snapshot.queryParamMap.get('academyId');
+
+      if (qpAcademyId) {
+        // Academy ID provided directly — fetch academy and tag the locked course immediately
+        await this.enrichLockedCourseWithAcademy(qpCourseId, qpAcademyId);
+      } else {
+        // No academy ID — scan all academies to find if course belongs to one
+        await this.enrichCoursesWithAcademyInfo();
+      }
+
       if (qpCourseId && this.courses().some(c => c.id === qpCourseId)) {
         this.lockedCourseId.set(qpCourseId);
         await this.onCourseChange(qpCourseId);
       }
     } catch (e) {
       console.error('Failed to initialize marks-entry:', e);
+    }
+  }
+
+  private async enrichLockedCourseWithAcademy(courseId: string | null, academyId: string): Promise<void> {
+    try {
+      const academy = await lastValueFrom(this.academySvc.get(academyId)).catch(() => null);
+      if (!academy || !courseId) return;
+      const academyName = academy.nameAr || academy.nameEn || '';
+      this.courses.update(list =>
+        list.map(c => c.id === courseId ? { ...c, academyId, academyName } : c)
+      );
+    } catch (e) {
+      console.error('Failed to load academy info', e);
+    }
+  }
+
+  private async enrichCoursesWithAcademyInfo(): Promise<void> {
+    try {
+      const academies = await lastValueFrom(this.academySvc.getList()).catch(() => [] as any[]);
+      if (!academies?.length) return;
+
+      // Build courseId → academy lookup via parallel requests
+      const courseAcademyMap = new Map<string, { academyId: string; academyName: string }>();
+      await Promise.all(
+        academies.map(async (academy: any) => {
+          if (!academy.id) return;
+          try {
+            const courses = await lastValueFrom(this.academySvc.getAcademyCourses(academy.id));
+            (courses || []).forEach((c: any) => {
+              if (c.courseId) {
+                courseAcademyMap.set(c.courseId, {
+                  academyId: academy.id,
+                  academyName: academy.nameAr || academy.nameEn || '',
+                });
+              }
+            });
+          } catch { /* ignore per-academy errors */ }
+        })
+      );
+
+      if (!courseAcademyMap.size) return;
+
+      // Enrich courses array
+      this.courses.update(list =>
+        list.map(c => {
+          const info = courseAcademyMap.get(c.id);
+          return info ? { ...c, academyId: info.academyId, academyName: info.academyName } : c;
+        })
+      );
+    } catch (e) {
+      console.error('Failed to enrich courses with academy info', e);
     }
   }
 

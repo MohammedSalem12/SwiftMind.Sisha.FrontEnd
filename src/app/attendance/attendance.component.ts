@@ -8,6 +8,8 @@ import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
 import { GroupService } from '@proxy/groups';
 import { TeacherService } from '@proxy/teachers';
+import { AcademyService } from '@proxy/academies';
+import type { AcademyDto } from '@proxy/academies/models';
 import { lastValueFrom } from 'rxjs';
 
 interface StudentEntry {
@@ -38,6 +40,7 @@ export class AttendanceComponent implements OnInit {
   private readonly courseSvc = inject(CourseService);
   private readonly teacherSvc = inject(TeacherService);
   private readonly groupSvc = inject(GroupService);
+  private readonly academySvc = inject(AcademyService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
@@ -48,6 +51,9 @@ export class AttendanceComponent implements OnInit {
 
   // Locked mode: when arriving with ?courseId= the dropdown becomes a read-only label
   lockedCourseId = signal<string | null>(null);
+
+  // Academy context (when arriving with ?academyId=)
+  academy = signal<AcademyDto | null>(null);
 
   // Course
   courses = signal<any[]>([]);
@@ -114,8 +120,14 @@ export class AttendanceComponent implements OnInit {
       const actorType = userInfo?.actorType;
       const actorId = userInfo?.actorId;
 
-      const qpCourseId = this.route.snapshot.queryParamMap.get('courseId');
+      const qpCourseId  = this.route.snapshot.queryParamMap.get('courseId');
       const qpTeacherId = this.route.snapshot.queryParamMap.get('teacherId');
+      const qpAcademyId = this.route.snapshot.queryParamMap.get('academyId');
+
+      // Load academy info if provided (non-blocking)
+      if (qpAcademyId) {
+        lastValueFrom(this.academySvc.get(qpAcademyId)).then(a => this.academy.set(a)).catch(() => null);
+      }
 
       if (actorType === 'Teacher' && actorId) {
         this.isTeacher.set(true);

@@ -532,13 +532,16 @@ export class BottomNavComponent implements OnInit, OnDestroy {
         const requestsPath = getRoleRequestsPath(roles);
 
         const isStudent = roles.includes(ROLES.STUDENT);
+        const isTeacher = roles.includes(ROLES.TEACHER);
         this.coreNav.set([
           { path: homePath,         label: 'الرئيسية',    labelEn: 'Home',          icon: 'fas fa-home' },
           { path: requestsPath,     label: 'طلباتي',      labelEn: 'Requests',      icon: 'fas fa-clipboard-list', badge: 'requests' },
-          // Students get Academies in core nav; other roles get Feeds
+          // Students & Teachers get Academies in core nav; other roles get Feeds
           ...(isStudent
-            ? [{ path: '/academies', label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
-            : [{ path: '/feeds',     label: 'النشرات',     labelEn: 'Feeds',     icon: 'fas fa-rss' }]
+            ? [{ path: '/academies',         label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
+            : isTeacher
+            ? [{ path: '/teacher/academies', label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
+            : [{ path: '/feeds',             label: 'النشرات',     labelEn: 'Feeds',     icon: 'fas fa-rss' }]
           ),
           { path: '/notifications', label: 'إشعارات',  labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' },
         ]);
@@ -571,7 +574,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     const cur = this.currentPath();
     const exact = ['/', '/student', '/teacher', '/parent', '/secretary', '/secretary-assignments',
                    '/profile', '/secretary/profile', '/student/profile', '/teacher/profile', '/parent/profile',
-                   '/academies', '/feeds', '/notifications'];
+                   '/academies', '/teacher/academies', '/feeds', '/notifications'];
     if (exact.includes(path)) return cur === path;
     return cur.startsWith(path);
   }
