@@ -271,8 +271,8 @@ export class TeacherSecretaryRequestsComponent implements OnInit {
     this.error.set(null);
     try {
       const [pendingData, allData] = await Promise.all([
-        lastValueFrom((this.secretaryTeacherSvc as any).getPendingRequestsForCurrentTeacher()),
-        lastValueFrom((this.secretaryTeacherSvc as any).getAllRequestsForCurrentTeacher()),
+        lastValueFrom((this.secretaryTeacherSvc as any).getPendingRequestsForCurrentTeacher()) as Promise<any[]>,
+        lastValueFrom((this.secretaryTeacherSvc as any).getAllRequestsForCurrentTeacher()) as Promise<any[]>,
       ]);
       this.pending.set(pendingData ?? []);
       this.all.set(allData ?? []);
