@@ -710,7 +710,9 @@ export class BottomNavComponent implements OnInit, OnDestroy {
         take(1)
       )
       .subscribe((cu: any) => {
-        const roles: string[] = cu?.roles ?? [];
+        const roles: string[] = (cu?.roles || cu?.roleNames || cu?.userRoles || [])
+          .map((r: any) => (typeof r === 'string' ? r.toUpperCase() : ''))
+          .filter(Boolean);
         this.isTeacher = roles.includes(ROLES.TEACHER);
 
         // User info
