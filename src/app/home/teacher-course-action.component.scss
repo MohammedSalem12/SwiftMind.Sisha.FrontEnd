@@ -66,6 +66,12 @@ $text-light:   #9090aa;
   color: $white;
   padding: 0.18rem 0.55rem;
   border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+
+  &.chip-students { background: rgba(16,185,129,0.4); }
+  &.chip-groups   { background: rgba(102,126,234,0.4); }
 }
 
 .header-skeleton {
@@ -129,6 +135,14 @@ $text-light:   #9090aa;
 // ─── Marks: purple gradient ───────────────────────────────────
 .card-marks {
   background: linear-gradient(160deg, $marks-a 0%, $marks-b 100%);
+
+  .card-icon { background: rgba(255,255,255,0.18); }
+  .card-cta  { background: rgba(0,0,0,0.12); }
+}
+
+// ─── Groups: teal/green gradient ─────────────────────────────
+.card-groups {
+  background: linear-gradient(160deg, #10b981 0%, #059669 100%);
 
   .card-icon { background: rgba(255,255,255,0.18); }
   .card-cta  { background: rgba(0,0,0,0.12); }

@@ -89,6 +89,7 @@ export class AddScheduleComponent implements OnInit {
   errorMsg = signal<string | null>(null);
 
   groupId = '';
+  courseId = '';
   dayOfWeek = -1;
   startTime = '';
   endTime = '';
@@ -97,8 +98,9 @@ export class AddScheduleComponent implements OnInit {
 
   ngOnInit() {
     this.groupId = this.route.snapshot.paramMap.get('groupId') || '';
+    this.courseId = this.route.snapshot.queryParamMap.get('courseId') || '';
     if (!this.groupId) {
-      this.router.navigate(['/teacher-groups']);
+      this.goBack();
     }
   }
 
@@ -112,7 +114,7 @@ export class AddScheduleComponent implements OnInit {
         startTime: this.startTime,
         endTime: this.endTime,
       }));
-      this.router.navigate(['/teacher-groups']);
+      this.goBack();
     } catch (err: any) {
       console.error('Error adding schedule:', err);
       this.errorMsg.set('حدث خطأ أثناء إضافة الموعد. يرجى المحاولة مرة أخرى.');
@@ -122,6 +124,8 @@ export class AddScheduleComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/teacher-groups']);
+    const qp: any = {};
+    if (this.courseId) qp['courseId'] = this.courseId;
+    this.router.navigate(['/teacher-groups'], { queryParams: qp });
   }
 }

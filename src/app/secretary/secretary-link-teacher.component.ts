@@ -92,7 +92,7 @@ import { CurrentUserInfoService } from '@proxy/common';
             <span *ngIf="linking() === t.id"
                   class="spinner-border spinner-border-sm text-primary" role="status"></span>
             <span *ngIf="linking() !== t.id" class="link-chip">
-              <i class="fas fa-link me-1"></i>ربط
+              <i class="fas fa-paper-plane me-1"></i>إرسال طلب
             </span>
           </div>
         </div>
@@ -276,25 +276,15 @@ export class SecretaryLinkTeacherComponent implements OnInit {
     this.linking.set(teacher.id);
     this.msg.set(null);
     try {
-      const userInfo = await lastValueFrom(
-        this.currentUserInfoService.getCurrentUserActorInfo({ skipHandleError: true })
-      );
-      const secretaryUserId = userInfo?.userId;
-      if (!secretaryUserId) throw new Error('تعذّر تحديد هوية المستخدم الحالي');
-
       await lastValueFrom(
-        this.secretaryTeacherService.assignTeacherToSecretary(
-          { secretaryUserId, teacherId: teacher.id },
-          { skipHandleError: true }
-        )
+        this.secretaryTeacherService.sendLinkRequest(teacher.id, { skipHandleError: true })
       );
       this.msgSuccess.set(true);
-      this.msg.set(`✓ تم الربط بالمعلم "${teacher.displayName}" بنجاح`);
-      // Remove linked teacher from results so user can't double-link
+      this.msg.set(`✓ تم إرسال طلب الربط إلى المعلم "${teacher.displayName}" بنجاح`);
       this.results.update(list => list.filter(t => t.id !== teacher.id));
     } catch (err: any) {
       this.msgSuccess.set(false);
-      this.msg.set(err?.error?.error?.message || 'فشل الربط، حاول مرة أخرى');
+      this.msg.set(err?.error?.error?.message || 'فشل إرسال الطلب، حاول مرة أخرى');
     } finally {
       this.linking.set(null);
     }

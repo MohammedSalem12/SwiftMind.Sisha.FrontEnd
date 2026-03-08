@@ -1,4 +1,5 @@
 import type { CreationAuditedEntityDto, EntityDto, ExtensibleAuditedEntityDto } from '@abp/ng.core';
+import type { SecretaryTeacherRequestStatus } from './secretary-teacher-request-status.enum';
 import type { UnenrollRequestStatus } from './unenroll-request-status.enum';
 
 export interface CreateSecretaryTeacherDto {
@@ -28,6 +29,15 @@ export interface SecretaryTeacherDto extends CreationAuditedEntityDto<string> {
   teacherId?: string;
   teacherName?: string;
   teacherCode?: string;
+}
+
+export interface SecretaryTeacherRequestDto extends CreationAuditedEntityDto<string> {
+  secretaryUserId?: string;
+  teacherId?: string;
+  status?: SecretaryTeacherRequestStatus;
+  secretaryName?: string;
+  teacherName?: string;
+  decidedAt?: string;
 }
 
 export interface SecretaryUserSearchResultDto {

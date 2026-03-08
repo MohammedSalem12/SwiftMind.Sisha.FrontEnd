@@ -15,333 +15,484 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="child-detail">
-      <div class="container py-4">
-        <!-- Back Button -->
-        <button class="btn btn-link mb-3 p-0" (click)="goBack()">
-          <i class="fas fa-arrow-right me-1"></i> العودة للرئيسية
-        </button>
+    <div class="child-detail" dir="rtl">
 
-        <!-- Loading -->
-        <div *ngIf="loading()" class="text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">جاري التحميل...</span>
+      <!-- Hero Header -->
+      <div class="hero">
+        <div class="hero-blob hero-blob-1"></div>
+        <div class="hero-blob hero-blob-2"></div>
+        <div class="hero-top-row">
+          <button class="back-btn" (click)="goBack()">
+            <i class="fas fa-arrow-right"></i>
+          </button>
+          <div class="hero-avatar">
+            <span>{{ getStudentName() | slice:0:1 }}</span>
           </div>
         </div>
 
-        <div *ngIf="!loading() && student()">
-          <!-- Student Profile Header -->
-          <div class="student-profile mb-4">
-            <div class="profile-card">
-              <div class="d-flex align-items-center gap-3">
-                <div class="avatar"><i class="fas fa-user-graduate"></i></div>
-                <div>
-                  <h1 class="mb-1">{{ getStudentName() }}</h1>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <span class="badge bg-light text-dark"><i class="fas fa-id-card me-1"></i>{{ student()!.studentCode }}</span>
-                    <span *ngIf="student()!.currentGrade" class="badge bg-light text-dark"><i class="fas fa-graduation-cap me-1"></i>الصف {{ student()!.currentGrade }}</span>
-                    <span *ngIf="student()!.schoolName" class="badge bg-light text-dark"><i class="fas fa-school me-1"></i>{{ student()!.schoolName }}</span>
-                  </div>
-                  <div class="mt-2 small text-muted" *ngIf="student()!.address">{{ student()!.address }}</div>
-                </div>
-              </div>
-              <div class="profile-actions mt-3">
-                <button class="btn btn-success btn-sm" (click)="enrollInCourse()">
-                  <i class="fas fa-plus-circle me-1"></i> تسجيل في مقرر
-                </button>
-                <button class="btn btn-outline-secondary btn-sm ms-2" (click)="goBack()">
-                  <i class="fas fa-arrow-right me-1"></i> العودة
-                </button>
-              </div>
-            </div>
-
-            <div class="profile-stats">
-              <div class="stat-card">
-                <div class="stat-value">{{ getOverallAttendancePercent() }}%</div>
-                <div class="stat-label">معدل الحضور الإجمالي</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-value">{{ getAverageGradePercent() }}%</div>
-                <div class="stat-label">متوسط الدرجات</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-value">{{ getTotalAbsentDays() }}</div>
-                <div class="stat-label">إجمالي الغيابات</div>
-              </div>
+        @if (loading()) {
+          <div class="hero-skeleton"></div>
+        } @else if (student()) {
+          <div class="hero-info">
+            <h1 class="hero-name">{{ getStudentName() }}</h1>
+            <div class="hero-chips">
+              <span class="hero-chip"><i class="fas fa-id-card"></i>{{ student()!.studentCode }}</span>
+              @if (student()!.currentGrade) {
+                <span class="hero-chip"><i class="fas fa-graduation-cap"></i>الصف {{ student()!.currentGrade }}</span>
+              }
+              @if (student()!.schoolName) {
+                <span class="hero-chip"><i class="fas fa-school"></i>{{ student()!.schoolName }}</span>
+              }
             </div>
           </div>
+        }
 
-          <!-- Tabs -->
-          <div class="tabs mb-4">
-            <button class="tab-btn" [class.active]="activeTab() === 'attendance'" (click)="activeTab.set('attendance')">
-              <i class="fas fa-clipboard-check me-1"></i> الحضور
-            </button>
-            <button class="tab-btn" [class.active]="activeTab() === 'grades'" (click)="activeTab.set('grades')">
-              <i class="fas fa-chart-bar me-1"></i> الدرجات
-            </button>
+        <!-- Stats Row -->
+        <div class="stats-row">
+          <div class="stat-box">
+            <span class="stat-val stat-val--green">{{ getOverallAttendancePercent() }}%</span>
+            <span class="stat-lbl">الحضور</span>
           </div>
-
-          <!-- Attendance Tab -->
-          <div *ngIf="activeTab() === 'attendance'">
-            <div *ngIf="attendanceLoading()" class="text-center py-4">
-              <div class="spinner-border spinner-border-sm text-primary"></div>
-            </div>
-            <div *ngIf="!attendanceLoading()">
-              <div *ngIf="attendanceReports().length === 0" class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>لا توجد بيانات حضور متاحة
-              </div>
-              
-              <!-- Overall Attendance Summary -->
-              <div class="attendance-summary mb-4" *ngIf="attendanceReports().length > 0">
-                <div class="summary-card">
-                  <div class="summary-header">
-                    <h4 class="mb-0">
-                      <i class="fas fa-calendar-check me-2 text-success"></i>
-                      ملخص الحضور الإجمالي
-                    </h4>
-                  </div>
-                  <div class="summary-body">
-                    <div class="row text-center">
-                      <div class="col-4">
-                        <div class="summary-stat">
-                          <div class="stat-number text-success">{{ getTotalAttendedDays() }}</div>
-                          <div class="stat-label">جلسات حضرها</div>
-                        </div>
-                      </div>
-                      <div class="col-4">
-                        <div class="summary-stat">
-                          <div class="stat-number text-danger">{{ getTotalAbsentDays() }}</div>
-                          <div class="stat-label">جلسات غاب عنها</div>
-                        </div>
-                      </div>
-                      <div class="col-4">
-                        <div class="summary-stat">
-                          <div class="stat-number text-primary">{{ getTotalSessions() }}</div>
-                          <div class="stat-label">إجمالي الجلسات</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mt-3">
-                      <div class="alert alert-success mb-0" *ngIf="getTotalAbsentDays() === 0">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <strong>ممتاز!</strong> الطالب حضر جميع الجلسات الدراسية
-                      </div>
-                      <div class="alert alert-warning mb-0" *ngIf="getTotalAbsentDays() > 0 && getTotalAbsentDays() <= 3">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>تنبيه:</strong> الطالب غاب عن {{ getTotalAbsentDays() }} جلسات فقط
-                      </div>
-                      <div class="alert alert-danger mb-0" *ngIf="getTotalAbsentDays() > 3">
-                        <i class="fas fa-times-circle me-2"></i>
-                        <strong>ملاحظة:</strong> الطالب غاب عن {{ getTotalAbsentDays() }} جلسات
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Absent Sessions List (only if there are absences) -->
-              <div *ngIf="getTotalAbsentDays() > 0" class="absent-sessions mb-4">
-                <h5 class="mb-3">
-                  <i class="fas fa-list-ul me-2 text-danger"></i>
-                  الجلسات التي غاب عنها الطالب
-                </h5>
-                <div class="row g-3">
-                  <div class="col-md-6 col-lg-4" *ngFor="let report of getAbsentReports()">
-                    <div class="absent-card">
-                      <div class="absent-header">
-                        <h6 class="mb-0">{{ report.courseNameAr || report.courseNameEn }}</h6>
-                        <span class="badge bg-danger">{{ report.absentDays }} غياب</span>
-                      </div>
-                      <div class="absent-body">
-                        <div class="d-flex justify-content-between text-muted small">
-                          <span><i class="fas fa-times text-danger me-1"></i>غياب: {{ report.absentDays }}</span>
-                          <span><i class="fas fa-check text-success me-1"></i>حضور: {{ report.attendedDays }}</span>
-                          <span><i class="fas fa-calendar me-1"></i>الإجمالي: {{ report.totalDaysInMonth }}</span>
-                        </div>
-                        <div class="progress mt-2" style="height:6px">
-                          <div class="progress-bar bg-danger" [style.width.%]="(report.absentDays / report.totalDaysInMonth) * 100"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Course-wise Attendance Details -->
-              <div class="course-attendance">
-                <h5 class="mb-3">
-                  <i class="fas fa-chart-bar me-2 text-primary"></i>
-                  تفاصيل الحضور حسب المقرر
-                </h5>
-                <div class="row g-3">
-                  <div class="col-md-6 col-lg-4" *ngFor="let report of attendanceReports()">
-                    <div class="report-card">
-                      <div class="report-header">
-                        <h6 class="mb-0">{{ report.courseNameAr || report.courseNameEn }}</h6>
-                        <span class="badge" [class.bg-success]="report.attendancePercentage >= 90"
-                              [class.bg-warning]="report.attendancePercentage >= 75 && report.attendancePercentage < 90"
-                              [class.bg-danger]="report.attendancePercentage < 75">
-                          {{ report.attendancePercentage | number:'1.0-0' }}%
-                        </span>
-                      </div>
-                      <div class="report-body">
-                        <div class="progress mb-2" style="height:8px">
-                          <div class="progress-bar" [class.bg-success]="report.attendancePercentage >= 90"
-                               [class.bg-warning]="report.attendancePercentage >= 75 && report.attendancePercentage < 90"
-                               [class.bg-danger]="report.attendancePercentage < 75"
-                               [style.width.%]="report.attendancePercentage"></div>
-                        </div>
-                        <div class="d-flex justify-content-between text-muted small">
-                          <span><i class="fas fa-check text-success me-1"></i>حضور: {{ report.attendedDays }}</span>
-                          <span><i class="fas fa-times text-danger me-1"></i>غياب: {{ report.absentDays }}</span>
-                          <span><i class="fas fa-calendar me-1"></i>الإجمالي: {{ report.totalDaysInMonth }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="stat-divider"></div>
+          <div class="stat-box">
+            <span class="stat-val stat-val--blue">{{ getAverageGradePercent() }}%</span>
+            <span class="stat-lbl">متوسط الدرجات</span>
           </div>
-
-          <!-- Grades Tab -->
-          <div *ngIf="activeTab() === 'grades'">
-            <div *ngIf="gradesLoading()" class="text-center py-4">
-              <div class="spinner-border spinner-border-sm text-primary"></div>
-            </div>
-            <div *ngIf="!gradesLoading()">
-              <div *ngIf="grades().length === 0" class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>لا توجد درجات متاحة
-              </div>
-              <div class="table-responsive" *ngIf="grades().length > 0">
-                <table class="table table-hover">
-                  <thead>
-                    <tr>
-                      <th>الاختبار</th>
-                      <th>المقرر</th>
-                      <th>التاريخ</th>
-                      <th>الدرجة</th>
-                      <th>النسبة</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let grade of grades()">
-                      <td>{{ grade.examName || '-' }}</td>
-                      <td>{{ grade.courseName || '-' }}</td>
-                      <td>{{ grade.date | date:'shortDate' }}</td>
-                      <td>{{ grade.grade }} / {{ grade.maxGrade }}</td>
-                      <td>
-                        <span class="badge" [class.bg-success]="getPercentage(grade) >= 90"
-                              [class.bg-info]="getPercentage(grade) >= 75 && getPercentage(grade) < 90"
-                              [class.bg-warning]="getPercentage(grade) >= 60 && getPercentage(grade) < 75"
-                              [class.bg-danger]="getPercentage(grade) < 60">
-                          {{ getPercentage(grade) | number:'1.0-0' }}%
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div class="stat-divider"></div>
+          <div class="stat-box">
+            <span class="stat-val" [class.stat-val--red]="getTotalAbsentDays() > 0" [class.stat-val--green]="getTotalAbsentDays() === 0">{{ getTotalAbsentDays() }}</span>
+            <span class="stat-lbl">الغيابات</span>
           </div>
-        </div>
-
-        <!-- Not Found -->
-        <div *ngIf="!loading() && !student()" class="alert alert-warning">
-          <i class="fas fa-exclamation-triangle me-2"></i>لم يتم العثور على بيانات الطالب
         </div>
       </div>
+
+      <!-- Tabs -->
+      <div class="tabs-bar">
+        <button class="tab" [class.tab--active]="activeTab() === 'attendance'" (click)="activeTab.set('attendance')">
+          <i class="fas fa-clipboard-check"></i>
+          <span>الحضور · Attendance</span>
+        </button>
+        <button class="tab" [class.tab--active]="activeTab() === 'grades'" (click)="activeTab.set('grades')">
+          <i class="fas fa-chart-bar"></i>
+          <span>الدرجات · Grades</span>
+        </button>
+      </div>
+
+      <!-- ── Attendance Tab ── -->
+      @if (activeTab() === 'attendance') {
+        @if (attendanceLoading()) {
+          <div class="loading-area">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        } @else if (attendanceReports().length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fas fa-clipboard-check"></i></div>
+            <p>لا توجد بيانات حضور</p>
+            <small>No attendance records available</small>
+          </div>
+        } @else {
+
+          <!-- Summary Banner -->
+          <div class="section-pad">
+            <div class="summary-banner"
+              [class.summary-banner--green]="getTotalAbsentDays() === 0"
+              [class.summary-banner--amber]="getTotalAbsentDays() > 0 && getTotalAbsentDays() <= 3"
+              [class.summary-banner--red]="getTotalAbsentDays() > 3">
+              <div class="summary-icon">
+                <i class="fas" [class.fa-check-circle]="getTotalAbsentDays() === 0" [class.fa-exclamation-triangle]="getTotalAbsentDays() > 0 && getTotalAbsentDays() <= 3" [class.fa-times-circle]="getTotalAbsentDays() > 3"></i>
+              </div>
+              <div class="summary-text">
+                @if (getTotalAbsentDays() === 0) {
+                  <strong>ممتاز!</strong> الطالب حضر جميع الجلسات الدراسية
+                } @else if (getTotalAbsentDays() <= 3) {
+                  <strong>تنبيه:</strong> الطالب غاب عن {{ getTotalAbsentDays() }} جلسات فقط
+                } @else {
+                  <strong>ملاحظة:</strong> الطالب غاب عن {{ getTotalAbsentDays() }} جلسة
+                }
+              </div>
+              <div class="summary-totals">
+                <span class="total-chip total-chip--green">{{ getTotalAttendedDays() }} حضور</span>
+                <span class="total-chip total-chip--red">{{ getTotalAbsentDays() }} غياب</span>
+                <span class="total-chip total-chip--gray">{{ getTotalSessions() }} إجمالي</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Course Attendance Cards -->
+          <div class="section-label">
+            <i class="fas fa-book-open"></i>
+            <span>تفاصيل حسب المقرر · By Course</span>
+            <span class="count-pill">{{ attendanceReports().length }}</span>
+          </div>
+          <div class="cards-list">
+            @for (report of attendanceReports(); track report.courseId) {
+              <div class="attend-card" [class.attend-card--alert]="(report.absentDays || 0) > 0">
+                <div class="attend-card-icon"
+                  [class.attend-card-icon--green]="report.attendancePercentage >= 90"
+                  [class.attend-card-icon--amber]="report.attendancePercentage >= 75 && report.attendancePercentage < 90"
+                  [class.attend-card-icon--red]="report.attendancePercentage < 75">
+                  <i class="fas fa-book"></i>
+                </div>
+                <div class="attend-card-body">
+                  <div class="attend-course-name">{{ report.courseNameAr || report.courseNameEn }}</div>
+                  <div class="attend-bar-wrap">
+                    <div class="attend-bar">
+                      <div class="attend-bar-fill"
+                        [class.fill--green]="report.attendancePercentage >= 90"
+                        [class.fill--amber]="report.attendancePercentage >= 75 && report.attendancePercentage < 90"
+                        [class.fill--red]="report.attendancePercentage < 75"
+                        [style.width.%]="report.attendancePercentage"></div>
+                    </div>
+                  </div>
+                  <div class="attend-chips">
+                    <span class="mini-chip chip-green"><i class="fas fa-check"></i>{{ report.attendedDays }}</span>
+                    <span class="mini-chip chip-red"><i class="fas fa-times"></i>{{ report.absentDays }}</span>
+                    <span class="mini-chip chip-gray"><i class="fas fa-calendar"></i>{{ report.totalDaysInMonth }}</span>
+                  </div>
+                </div>
+                <div class="attend-pct"
+                  [class.pct--green]="report.attendancePercentage >= 90"
+                  [class.pct--amber]="report.attendancePercentage >= 75 && report.attendancePercentage < 90"
+                  [class.pct--red]="report.attendancePercentage < 75">
+                  {{ report.attendancePercentage | number:'1.0-0' }}%
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- ── Grades Tab ── -->
+      @if (activeTab() === 'grades') {
+        @if (gradesLoading()) {
+          <div class="loading-area">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        } @else if (grades().length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fas fa-chart-bar"></i></div>
+            <p>لا توجد درجات</p>
+            <small>No grades available yet</small>
+          </div>
+        } @else {
+          <div class="section-label">
+            <i class="fas fa-star"></i>
+            <span>نتائج الاختبارات · Exam Results</span>
+            <span class="count-pill">{{ grades().length }}</span>
+          </div>
+          <div class="cards-list">
+            @for (grade of grades(); track grade.id) {
+              <div class="grade-card">
+                <div class="grade-card-icon"
+                  [class.grade-icon--green]="getPercentage(grade) >= 90"
+                  [class.grade-icon--blue]="getPercentage(grade) >= 75 && getPercentage(grade) < 90"
+                  [class.grade-icon--amber]="getPercentage(grade) >= 60 && getPercentage(grade) < 75"
+                  [class.grade-icon--red]="getPercentage(grade) < 60">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="grade-card-body">
+                  <div class="grade-exam-name">{{ grade.examName || 'اختبار' }}</div>
+                  <div class="grade-course-name">{{ grade.courseName }}</div>
+                  <div class="grade-meta">
+                    <span class="mini-chip chip-gray"><i class="fas fa-calendar"></i>{{ grade.date | date:'shortDate' }}</span>
+                    <span class="mini-chip chip-purple"><i class="fas fa-pencil-alt"></i>{{ grade.grade }} / {{ grade.maxGrade }}</span>
+                  </div>
+                </div>
+                <div class="grade-pct"
+                  [class.pct--green]="getPercentage(grade) >= 90"
+                  [class.pct--blue]="getPercentage(grade) >= 75 && getPercentage(grade) < 90"
+                  [class.pct--amber]="getPercentage(grade) >= 60 && getPercentage(grade) < 75"
+                  [class.pct--red]="getPercentage(grade) < 60">
+                  {{ getPercentage(grade) | number:'1.0-0' }}%
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- Not Found -->
+      @if (!loading() && !student()) {
+        <div class="empty-state">
+          <div class="empty-icon"><i class="fas fa-user-slash"></i></div>
+          <p>لم يتم العثور على بيانات الطالب</p>
+        </div>
+      }
+
+      <!-- Fixed Bottom Bar -->
+      <div class="bottom-bar">
+        <button class="enroll-btn" (click)="enrollInCourse()">
+          <i class="fas fa-plus-circle"></i>
+          <span>تسجيل في مقرر</span>
+          <span class="enroll-btn-en">Enroll Course</span>
+        </button>
+      </div>
+
     </div>
   `,
   styles: [`
-    .child-detail { min-height: calc(100vh - 200px); background: #f8f9fa; }
-    .student-header { padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .student-header h1 { font-size: 1.5rem; font-weight: 600; color: #1a202c; }
-    .avatar { width: 64px; height: 64px; background: var(--ngx-hero-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .avatar i { font-size: 1.5rem; color: white; }
-    .student-profile { display: flex; gap: 1rem; align-items: flex-start; }
-    .profile-card { flex: 1; padding: 1.25rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .profile-actions { display:flex; gap:0.5rem; }
-    .profile-stats { width: 220px; display: flex; flex-direction: column; gap: 0.75rem; }
-    .stat-card { background: white; border-radius: 10px; padding: 0.8rem; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-    .stat-value { font-size: 1.3rem; font-weight: 700; color: #1a202c; }
-    .stat-label { font-size: 0.85rem; color: #6b7280; }
-    .tabs { display: flex; gap: 0.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0; }
-    .tab-btn { background: none; border: none; padding: 0.75rem 1.5rem; font-weight: 500; color: #6b7280; border-bottom: 3px solid transparent; margin-bottom: -2px; cursor: pointer; transition: all 0.2s; }
-    .tab-btn.active { color: var(--ngx-primary); border-bottom-color: var(--ngx-primary); }
-    .tab-btn:hover { color: var(--ngx-primary); }
-    .report-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .report-header { padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
-    .report-header h5, .report-header h6 { font-weight: 600; color: #1a202c; }
-    .report-body { padding: 1rem 1.25rem; }
-    
-    /* New Attendance Summary Styles */
-    .attendance-summary .summary-card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    $purple: #667eea;
+    $purple-end: #764ba2;
+    $purple-grad: linear-gradient(135deg, $purple, $purple-end);
+
+    .child-detail {
+      min-height: 100vh;
+      background: #f4f3ff;
+      direction: rtl;
+      padding-bottom: calc(88px + env(safe-area-inset-bottom));
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      background: $purple-grad;
+      padding: 1.25rem 1.25rem 1.5rem;
       overflow: hidden;
     }
-    .summary-header {
-      padding: 1.25rem;
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white;
+    .hero-blob {
+      position: absolute; border-radius: 50%;
+      opacity: 0.12; background: #fff; pointer-events: none;
     }
-    .summary-header h4 {
+    .hero-blob-1 { width: 200px; height: 200px; top: -60px; left: -60px; }
+    .hero-blob-2 { width: 130px; height: 130px; bottom: -40px; right: -30px; }
+
+    .hero-top-row {
+      position: relative; z-index: 1;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem;
+    }
+    .back-btn {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.35);
+      border-radius: 50%; color: #fff; font-size: 0.95rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      &:active { background: rgba(255,255,255,0.28); }
+    }
+    .hero-avatar {
+      width: 52px; height: 52px;
+      background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      span { font-size: 1.4rem; font-weight: 800; color: #fff; }
+    }
+    .hero-info { position: relative; z-index: 1; margin-bottom: 1.25rem; }
+    .hero-name { font-size: 1.45rem; font-weight: 800; color: #fff; margin: 0 0 0.5rem; }
+    .hero-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .hero-chip {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; border-radius: 20px; padding: 0.2rem 0.55rem;
+      font-size: 0.68rem; font-weight: 500;
+      i { font-size: 0.6rem; }
+    }
+    .hero-skeleton {
+      height: 28px; width: 180px;
+      background: rgba(255,255,255,0.2); border-radius: 8px;
+      margin-bottom: 1.25rem;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+    /* Stats Row */
+    .stats-row {
+      position: relative; z-index: 1;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 16px; padding: 0.85rem 0.5rem;
+      display: flex; align-items: center; justify-content: space-around;
+      backdrop-filter: blur(4px);
+    }
+    .stat-box { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; flex: 1; }
+    .stat-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.3); }
+    .stat-val { font-size: 1.35rem; font-weight: 800; color: #fff; }
+    .stat-val--green { color: #6ee7b7; }
+    .stat-val--blue  { color: #93c5fd; }
+    .stat-val--red   { color: #fca5a5; }
+    .stat-lbl { font-size: 0.65rem; color: rgba(255,255,255,0.75); font-weight: 500; text-align: center; }
+
+    /* ── Tabs ── */
+    .tabs-bar {
+      display: flex; gap: 0; background: #fff;
+      border-bottom: 1px solid #e9e6ff;
+      padding: 0.5rem 1rem; gap: 0.5rem;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .tab {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+      padding: 0.65rem 0.5rem; background: #f4f3ff; border: 1.5px solid #e9e6ff;
+      border-radius: 12px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+      color: #6b7280; transition: all 0.15s;
+      i { font-size: 0.85rem; }
+      &:active { transform: scale(0.97); }
+    }
+    .tab--active {
+      background: $purple-grad; border-color: transparent; color: #fff;
+    }
+
+    /* ── Loading ── */
+    .loading-area { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    @keyframes shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
+    .skeleton-card {
+      height: 80px; border-radius: 14px;
+      background: linear-gradient(90deg, #e9e6ff 25%, #f4f3ff 50%, #e9e6ff 75%);
+      background-size: 600px 100%; animation: shimmer 1.5s infinite;
+    }
+
+    /* ── Empty State ── */
+    .empty-state { text-align: center; padding: 3rem 1.5rem; }
+    .empty-icon {
+      width: 72px; height: 72px; background: linear-gradient(135deg, #f0f4ff, #e8e0ff);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      i { font-size: 1.75rem; color: $purple-end; }
+    }
+    .empty-state p { font-size: 0.95rem; font-weight: 600; color: #374151; margin: 0 0 0.25rem; }
+    .empty-state small { font-size: 0.78rem; color: #9ca3af; }
+
+    /* ── Section Label ── */
+    .section-label {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0 1rem; margin: 1rem 0 0.5rem;
+      font-size: 0.85rem; font-weight: 600; color: #374151;
+      i { color: $purple; }
+    }
+    .count-pill {
+      background: $purple-grad; color: #fff;
+      border-radius: 20px; padding: 0.1rem 0.5rem;
+      font-size: 0.7rem; font-weight: 700;
+    }
+    .section-pad { padding: 0.75rem 1rem 0; }
+
+    /* ── Summary Banner ── */
+    .summary-banner {
+      border-radius: 14px; padding: 0.85rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .summary-banner--green { background: #d1fae5; border: 1.5px solid #6ee7b7; }
+    .summary-banner--amber { background: #fef3c7; border: 1.5px solid #fcd34d; }
+    .summary-banner--red   { background: #fee2e2; border: 1.5px solid #fca5a5; }
+
+    .summary-icon {
       font-size: 1.1rem;
-      font-weight: 600;
+      .summary-banner--green & { color: #059669; }
+      .summary-banner--amber & { color: #d97706; }
+      .summary-banner--red   & { color: #dc2626; }
     }
-    .summary-body {
-      padding: 1.5rem;
+    .summary-text {
+      font-size: 0.85rem; color: #1a202c; line-height: 1.4;
+      strong { font-weight: 700; }
     }
-    .summary-stat {
-      padding: 1rem;
-      background: #f8f9fa;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
+    .summary-totals { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .total-chip {
+      display: inline-flex; align-items: center; gap: 0.2rem;
+      border-radius: 20px; padding: 0.18rem 0.5rem;
+      font-size: 0.68rem; font-weight: 600;
     }
-    .stat-number {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
+    .total-chip--green { background: #d1fae5; color: #059669; }
+    .total-chip--red   { background: #fee2e2; color: #dc2626; }
+    .total-chip--gray  { background: #f3f4f6; color: #6b7280; }
+
+    /* ── Cards List ── */
+    .cards-list { display: flex; flex-direction: column; gap: 0.65rem; padding: 0 1rem 1rem; }
+
+    /* Attendance Card */
+    .attend-card {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: #fff; border-radius: 14px; padding: 0.85rem;
+      border: 1.5px solid #e9e6ff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      &--alert { border-color: #fca5a5; }
     }
-    .stat-label {
-      font-size: 0.85rem;
-      color: #6b7280;
-      font-weight: 500;
+    .attend-card-icon {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      i { font-size: 1.1rem; color: #fff; }
+      &--green { background: linear-gradient(135deg, #10b981, #059669); }
+      &--amber { background: linear-gradient(135deg, #f59e0b, #d97706); }
+      &--red   { background: linear-gradient(135deg, #ef4444, #dc2626); }
     }
-    
-    /* Absent Sessions Styles */
-    .absent-sessions .absent-card {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      border-radius: 10px;
-      overflow: hidden;
+    .attend-card-body { flex: 1; min-width: 0; }
+    .attend-course-name {
+      font-size: 0.88rem; font-weight: 700; color: #1a202c;
+      margin-bottom: 0.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .absent-header {
+    .attend-bar-wrap { margin-bottom: 0.35rem; }
+    .attend-bar {
+      height: 6px; background: #e9e6ff; border-radius: 3px; overflow: hidden;
+    }
+    .attend-bar-fill {
+      height: 100%; border-radius: 3px; transition: width 0.4s ease;
+      &.fill--green { background: #10b981; }
+      &.fill--amber { background: #f59e0b; }
+      &.fill--red   { background: #ef4444; }
+    }
+    .attend-chips { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+    .attend-pct {
+      font-size: 1rem; font-weight: 800; flex-shrink: 0;
+      &.pct--green { color: #10b981; }
+      &.pct--amber { color: #f59e0b; }
+      &.pct--red   { color: #ef4444; }
+    }
+
+    /* Mini chips */
+    .mini-chip {
+      display: inline-flex; align-items: center; gap: 0.18rem;
+      font-size: 0.62rem; font-weight: 600; padding: 0.12rem 0.38rem;
+      border-radius: 20px;
+      i { font-size: 0.55rem; }
+    }
+    .chip-green  { background: #d1fae5; color: #059669; }
+    .chip-red    { background: #fee2e2; color: #dc2626; }
+    .chip-gray   { background: #f3f4f6; color: #6b7280; }
+    .chip-purple { background: #ede9fe; color: $purple-end; }
+
+    /* Grade Card */
+    .grade-card {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: #fff; border-radius: 14px; padding: 0.85rem;
+      border: 1.5px solid #e9e6ff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .grade-card-icon {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      i { font-size: 1.1rem; color: #fff; }
+      &.grade-icon--green { background: linear-gradient(135deg, #10b981, #059669); }
+      &.grade-icon--blue  { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+      &.grade-icon--amber { background: linear-gradient(135deg, #f59e0b, #d97706); }
+      &.grade-icon--red   { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    }
+    .grade-card-body { flex: 1; min-width: 0; }
+    .grade-exam-name { font-size: 0.9rem; font-weight: 700; color: #1a202c; margin-bottom: 0.15rem; }
+    .grade-course-name { font-size: 0.75rem; color: #6b7280; margin-bottom: 0.35rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .grade-meta { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+    .grade-pct {
+      font-size: 1rem; font-weight: 800; flex-shrink: 0;
+      &.pct--green { color: #10b981; }
+      &.pct--blue  { color: #3b82f6; }
+      &.pct--amber { color: #f59e0b; }
+      &.pct--red   { color: #ef4444; }
+    }
+
+    /* ── Bottom Bar ── */
+    .bottom-bar {
+      position: fixed; bottom: 0; right: 0; left: 0;
       padding: 0.75rem 1rem;
-      background: #fee2e2;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+      border-top: 1px solid #e9e6ff; z-index: 100;
     }
-    .absent-header h6 {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #991b1b;
-      margin: 0;
+    .enroll-btn {
+      width: 100%; background: $purple-grad; color: #fff;
+      border: none; border-radius: 14px; padding: 0.85rem 1.5rem;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      min-height: 52px; box-shadow: 0 4px 16px rgba(102,126,234,0.35);
+      transition: opacity 0.2s, transform 0.2s;
+      &:active { opacity: 0.9; transform: scale(0.98); }
     }
-    .absent-body {
-      padding: 0.75rem 1rem;
-    }
-    
-    .table th { font-weight: 600; color: #6b7280; font-size: 0.875rem; border-bottom: 2px solid #e5e7eb; }
-    .table td { vertical-align: middle; }
-    @media (max-width: 768px) { 
-      .student-header h1 { font-size: 1.25rem; } 
-      .tabs { overflow-x: auto; }
-      .summary-stat { margin-bottom: 1rem; }
-    }
+    .enroll-btn-en { font-size: 0.75rem; font-weight: 400; opacity: 0.75; }
   `],
 })
 export class ParentChildDetailComponent implements OnInit {

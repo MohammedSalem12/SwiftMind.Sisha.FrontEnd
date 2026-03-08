@@ -5,6 +5,7 @@ import { lastValueFrom } from 'rxjs';
 
 import { SecretaryTeacherService } from '@proxy/teachers';
 import type { SecretaryTeacherDto } from '@proxy/teachers';
+import { CurrentUserInfoService } from '@proxy/common';
 
 @Component({
   selector: 'app-secretary-home',
@@ -13,157 +14,302 @@ import type { SecretaryTeacherDto } from '@proxy/teachers';
   template: `
     <div class="secretary-home" dir="rtl">
 
-      <!-- Header -->
-      <div class="page-header">
-        <div class="header-icon"><i class="fas fa-user-tie"></i></div>
-        <div class="header-text">
-          <h1>لوحة السكرتارية</h1>
-          <p class="opacity-75 mb-0">إدارة المعلمين المرتبطين</p>
-        </div>
-      </div>
-
-      <div class="page-body">
-
-        <!-- Section header with link button -->
-        <div class="section-header mb-3">
-          <h2 class="section-title">
-            <i class="fas fa-chalkboard-teacher me-2"></i>
-            المعلمون المرتبطون
-            <span class="count-pill">{{ teachers().length }}</span>
-          </h2>
-          <button class="link-btn" (click)="goToLinkTeacher()">
-            <i class="fas fa-plus"></i>
-            ربط بمعلم
-          </button>
-        </div>
-
-        <!-- Loading -->
-        <div *ngIf="loading()" class="loading-state">
-          <div class="spinner-border text-primary" role="status"></div>
-          <p class="mt-2 text-muted">جاري التحميل...</p>
-        </div>
-
-        <!-- Empty state -->
-        <div *ngIf="!loading() && teachers().length === 0" class="empty-state">
-          <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
-          <h4>لا يوجد معلمون مرتبطون</h4>
-          <p class="text-muted mb-3">اضغط على "ربط بمعلم" لإضافة معلم</p>
-          <button class="link-btn-lg" (click)="goToLinkTeacher()">
-            <i class="fas fa-plus me-2"></i>ربط بمعلم جديد
-          </button>
-        </div>
-
-        <!-- Teacher cards -->
-        <div *ngIf="!loading()" class="teacher-list">
-          <div
-            class="teacher-card"
-            *ngFor="let t of teachers(); trackBy: trackById"
-            (click)="goToTeacherCourses(t)">
-            <div class="teacher-avatar">
-              <i class="fas fa-user-circle"></i>
-            </div>
-            <div class="teacher-info">
-              <h4>{{ t.teacherName }}</h4>
-              <span *ngIf="t.teacherCode" class="teacher-code">
-                <i class="fas fa-id-badge me-1"></i>{{ t.teacherCode }}
-              </span>
-            </div>
-            <div class="arrow-icon">
-              <i class="fas fa-chevron-left"></i>
-            </div>
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-blob hero-blob-1"></div>
+        <div class="hero-blob hero-blob-2"></div>
+        <div class="hero-content">
+          <div class="hero-greeting">
+            <span class="hero-hello">مرحباً،</span>
+            <span class="hero-name">{{ secretaryName() || 'السكرتير' }}</span>
           </div>
+          <p class="hero-sub">اختر معلماً لعرض مقرراته وإدارة الحضور والدرجات</p>
+          <p class="hero-sub-en">Select a teacher to manage their courses</p>
+        </div>
+        <div class="hero-icon">
+          <i class="fas fa-user-tie"></i>
+        </div>
+      </div>
+
+      <!-- Shimmer skeleton while loading -->
+      @if (loading()) {
+        <div class="loading-area">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+        </div>
+      }
+
+      <!-- Empty state -->
+      @if (!loading() && teachers().length === 0) {
+        <div class="empty-state">
+          <i class="fas fa-chalkboard-teacher"></i>
+          <p>لا يوجد معلمون مرتبطون</p>
+          <small>No linked teachers yet</small>
+        </div>
+      }
+
+      <!-- Section label + teacher list -->
+      @if (!loading() && teachers().length > 0) {
+        <div class="section-label">
+          <i class="fas fa-chalkboard-teacher"></i>
+          <span>المعلمون المرتبطون · Linked Teachers</span>
+          <span class="count-pill">{{ teachers().length }}</span>
+          <button class="see-all-btn" (click)="goToLinkTeacher()">
+            <i class="fas fa-plus"></i>
+            ربط معلم
+          </button>
         </div>
 
+        <div class="teachers-grid">
+          @for (t of teachers(); track t.id) {
+            <button class="teacher-card" (click)="goToTeacherCourses(t)">
+              <div class="teacher-card-icon">
+                <i class="fas fa-chalkboard-teacher"></i>
+              </div>
+              <div class="teacher-card-body">
+                <div class="teacher-name">{{ t.teacherName }}</div>
+                <div class="teacher-meta">
+                  @if (t.teacherCode) {
+                    <span class="meta-chip chip-code">{{ t.teacherCode }}</span>
+                  }
+                </div>
+              </div>
+              <div class="teacher-card-arrow">
+                <i class="fas fa-chevron-left"></i>
+              </div>
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button class="qa-btn" (click)="goToLinkTeacher()">
+          <i class="fas fa-user-plus"></i>
+          <div class="qa-text">
+            <span>ربط معلم جديد</span>
+            <span class="qa-en">Link Teacher</span>
+          </div>
+        </button>
+        <button class="qa-btn qa-btn-requests" (click)="goToRequests()">
+          <i class="fas fa-paper-plane"></i>
+          <div class="qa-text">
+            <span>طلباتي</span>
+            <span class="qa-en">My Requests</span>
+          </div>
+        </button>
       </div>
+
     </div>
   `,
   styles: [`
-    .secretary-home { min-height: 100vh; background: #f8f9fa; }
-
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white; padding: 1.5rem 1rem;
-      display: flex; align-items: center; gap: 1rem;
+    /* ── Design tokens ── */
+    :host {
+      --grad-start: #667eea;
+      --grad-end:   #764ba2;
+      --bg:         #f4f5fb;
+      --white:      #ffffff;
+      --text-dark:  #1a1a2e;
+      --text-mid:   #4a4a6a;
+      --text-light: #9090aa;
+      --radius:     18px;
     }
-    .header-icon {
-      width: 52px; height: 52px; border-radius: 14px;
-      background: rgba(255,255,255,.2);
+
+    .secretary-home {
+      min-height: 100vh;
+      background: var(--bg);
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(145deg, var(--grad-start) 0%, var(--grad-end) 100%);
+      padding: calc(env(safe-area-inset-top, 0px) + 1.5rem) 1.25rem 2rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: .75rem;
+    }
+    .hero-blob {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      pointer-events: none;
+    }
+    .hero-blob-1 { width: 220px; height: 220px; top: -80px; right: -60px; }
+    .hero-blob-2 { width: 140px; height: 140px; bottom: -50px; left: -30px; }
+
+    .hero-content { z-index: 1; }
+    .hero-greeting { display: flex; flex-direction: column; margin-bottom: .35rem; }
+    .hero-hello { font-size: .875rem; color: rgba(255,255,255,.75); }
+    .hero-name  { font-size: 1.5rem; font-weight: 800; color: var(--white); line-height: 1.2; }
+    .hero-sub   { font-size: .85rem; color: rgba(255,255,255,.8); margin: 0; }
+    .hero-sub-en { font-size: .72rem; color: rgba(255,255,255,.55); margin: .1rem 0 0; }
+
+    .hero-icon {
+      z-index: 1;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      border: 2px solid rgba(255,255,255,.25);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; flex-shrink: 0;
+      flex-shrink: 0;
     }
-    .page-header h1 { font-size: 1.4rem; font-weight: 700; margin: 0; }
+    .hero-icon i { font-size: 1.4rem; color: var(--white); }
 
-    .page-body { padding: 1rem; }
-
-    .section-header {
-      display: flex; align-items: center;
-      justify-content: space-between; gap: .75rem;
+    /* ── Skeleton shimmer ── */
+    .loading-area {
+      padding: 1rem 1rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
     }
-    .section-title { font-size: 1.1rem; font-weight: 700; margin: 0; color: #1a1a2e; }
+    .skeleton-card {
+      height: 80px;
+      border-radius: var(--radius);
+      background: linear-gradient(90deg, #e8e8f0 25%, #f0f0f8 50%, #e8e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 4rem 2rem; text-align: center;
+    }
+    .empty-state i { font-size: 3rem; color: var(--text-light); margin-bottom: 1rem; }
+    .empty-state p  { font-size: 1rem; font-weight: 600; color: var(--text-mid); margin: 0 0 .25rem; }
+    .empty-state small { font-size: .8rem; color: var(--text-light); }
+
+    /* ── Section label ── */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: 1rem 1.25rem .5rem;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .section-label i { color: var(--grad-start); font-size: .85rem; }
+
     .count-pill {
-      display: inline-flex; align-items: center; justify-content: center;
-      background: rgba(102,126,234,.12); color: #667eea;
-      font-size: .75rem; font-weight: 700; padding: .1rem .5rem;
-      border-radius: 20px; margin-right: .4rem;
+      background: rgba(102,126,234,.12);
+      color: var(--grad-start);
+      font-size: .75rem; font-weight: 700;
+      padding: .15rem .5rem; border-radius: 20px;
+      min-width: 22px; text-align: center;
     }
 
-    .link-btn {
-      display: inline-flex; align-items: center; gap: .4rem;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white; border: none; border-radius: 20px;
-      padding: .55rem 1.1rem; font-size: .85rem; font-weight: 600;
-      cursor: pointer; white-space: nowrap;
-      box-shadow: 0 3px 10px rgba(102,126,234,.35);
-      min-height: 44px; transition: opacity .15s;
+    .see-all-btn {
+      margin-right: auto;
+      background: none; border: none;
+      color: var(--grad-start);
+      font-size: .78rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; gap: .3rem;
     }
-    .link-btn:hover, .link-btn:active { opacity: .88; }
 
-    .link-btn-lg {
-      display: inline-flex; align-items: center;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white; border: none; border-radius: 24px;
-      padding: .875rem 1.75rem; font-size: 1rem; font-weight: 600;
-      cursor: pointer; box-shadow: 0 4px 14px rgba(102,126,234,.35);
-      min-height: 52px; transition: opacity .15s;
+    /* ── Teacher cards ── */
+    .teachers-grid {
+      padding: 0 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
     }
-    .link-btn-lg:hover, .link-btn-lg:active { opacity: .88; }
 
-    .loading-state { text-align: center; padding: 3rem; }
-    .empty-state { text-align: center; padding: 3rem 1rem; color: #6c757d; }
-    .empty-state h4 { color: #343a40; margin-top: .75rem; }
-
-    .teacher-list { display: flex; flex-direction: column; gap: .75rem; }
     .teacher-card {
-      background: white; border-radius: 14px;
-      border: 1.5px solid #e9ecef; padding: 1.1rem;
-      display: flex; align-items: center; gap: .875rem;
-      cursor: pointer; transition: all .2s ease;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: .875rem .875rem .875rem 1rem;
+      border: none;
+      cursor: pointer;
+      text-align: right;
+      width: 100%;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      transition: transform .15s, box-shadow .15s;
+      min-height: 72px;
     }
-    .teacher-card:hover, .teacher-card:active {
-      border-color: #667eea; box-shadow: 0 4px 16px rgba(102,126,234,.15);
-      transform: translateY(-1px);
+    .teacher-card:active {
+      transform: scale(.98);
+      box-shadow: 0 1px 6px rgba(0,0,0,.08);
     }
-    .teacher-avatar {
-      width: 48px; height: 48px; border-radius: 50%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+
+    .teacher-card-icon {
+      flex-shrink: 0;
+      width: 48px; height: 48px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(102,126,234,.12), rgba(118,75,162,.12));
       display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 1.5rem; flex-shrink: 0;
     }
-    .teacher-info { flex: 1; min-width: 0; }
-    .teacher-info h4 { margin: 0 0 .25rem; font-size: 1rem; font-weight: 600; }
-    .teacher-code { font-size: .8rem; color: #667eea; font-weight: 500; }
-    .arrow-icon { color: #adb5bd; font-size: .85rem; }
+    .teacher-card-icon i { font-size: 1.2rem; color: var(--grad-start); }
+
+    .teacher-card-body { flex: 1; min-width: 0; }
+
+    .teacher-name {
+      font-size: .95rem; font-weight: 700; color: var(--text-dark);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: .35rem;
+    }
+
+    .teacher-meta { display: flex; flex-wrap: wrap; gap: .35rem; }
+
+    .meta-chip {
+      font-size: .68rem; font-weight: 600;
+      padding: .15rem .5rem; border-radius: 20px;
+    }
+    .chip-code { background: rgba(102,126,234,.1); color: var(--grad-start); }
+
+    .teacher-card-arrow { flex-shrink: 0; color: var(--text-light); font-size: .9rem; }
+
+    /* ── Inline quick actions ── */
+    .quick-actions {
+      padding: 0 1rem .5rem;
+      display: flex;
+      gap: .75rem;
+    }
+    .qa-btn {
+      flex: 1;
+      display: flex; align-items: center; gap: .6rem;
+      padding: .75rem 1rem;
+      border: none; border-radius: 14px; cursor: pointer;
+      font-weight: 700; font-size: .85rem; color: var(--white);
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      box-shadow: 0 3px 12px rgba(0,0,0,.15);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .qa-btn:active { transform: scale(.97); box-shadow: 0 1px 6px rgba(0,0,0,.1); }
+    .qa-btn i { font-size: 1rem; flex-shrink: 0; }
+    .qa-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+    .qa-en { font-size: .65rem; font-weight: 500; opacity: .85; }
   `],
 })
 export class SecretaryHomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly secretaryTeacherService = inject(SecretaryTeacherService);
+  private readonly currentUserService = inject(CurrentUserInfoService);
 
   teachers = signal<SecretaryTeacherDto[]>([]);
   loading = signal(false);
+  secretaryName = signal<string>('');
 
   async ngOnInit() {
-    await this.loadTeachers();
+    await Promise.all([this.loadTeachers(), this.loadSecretaryName()]);
+  }
+
+  private async loadSecretaryName() {
+    try {
+      const info = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
+      this.secretaryName.set(info?.actorName ?? '');
+    } catch { /* silent */ }
   }
 
   private async loadTeachers() {
@@ -178,6 +324,10 @@ export class SecretaryHomeComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  goToRequests() {
+    this.router.navigate(['/secretary/requests']);
   }
 
   goToLinkTeacher() {

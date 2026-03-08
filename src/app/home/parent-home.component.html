@@ -33,7 +33,7 @@
           }
         </div>
 
-        <!-- Code Button -->
+        <!-- Link child button -->
         <button class="code-btn" (click)="goToLinkChild()">
           <i class="fas fa-user-plus"></i>
           <span>ربط طالب جديد</span>
@@ -59,12 +59,22 @@
       <span class="qa-label">طلباتي</span>
       <span class="qa-sub">My Requests</span>
     </button>
-    <button class="quick-action-btn" (click)="goToLinkChild()">
-      <div class="qa-icon qa-icon--secondary">
-        <i class="fas fa-user-plus"></i>
+    <button class="quick-action-btn" (click)="goToNotifications()">
+      <div class="qa-icon qa-icon--amber">
+        <i class="fas fa-bell"></i>
+        @if (recentNotifications().length > 0) {
+          <span class="qa-badge">{{ recentNotifications().length }}</span>
+        }
       </div>
-      <span class="qa-label">ربط طالب</span>
-      <span class="qa-sub">Link Student</span>
+      <span class="qa-label">الإشعارات</span>
+      <span class="qa-sub">Notifications</span>
+    </button>
+    <button class="quick-action-btn" (click)="goToFeeds()">
+      <div class="qa-icon qa-icon--blue">
+        <i class="fas fa-rss"></i>
+      </div>
+      <span class="qa-label">النشرات</span>
+      <span class="qa-sub">Feeds</span>
     </button>
   </div>
 
@@ -131,32 +141,6 @@
     </div>
   }
 
-  <!-- Quick Links Section -->
-  @if (!loading()) {
-    <div class="section-label" style="margin-top: 1.25rem;">
-      <i class="fas fa-bolt"></i>
-      <span>روابط سريعة · Quick Links</span>
-    </div>
-    <div class="quick-links-grid">
-      <button class="quick-link-item" (click)="goToFeeds()">
-        <div class="ql-icon"><i class="fas fa-rss"></i></div>
-        <span>النشرات</span>
-      </button>
-      <button class="quick-link-item" (click)="goToNotifications()">
-        <div class="ql-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-          <i class="fas fa-bell"></i>
-        </div>
-        <span>الإشعارات</span>
-      </button>
-      <button class="quick-link-item" (click)="goToProfile()">
-        <div class="ql-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-          <i class="fas fa-user-cog"></i>
-        </div>
-        <span>حسابي</span>
-      </button>
-    </div>
-  }
-
   <!-- Recent Notifications -->
   @if (!loading() && recentNotifications().length > 0) {
     <div class="section-label" style="margin-top: 1.25rem;">
@@ -178,5 +162,14 @@
       }
     </div>
   }
+
+  <!-- Fixed Bottom Bar -->
+  <div class="bottom-bar">
+    <button class="link-child-btn" (click)="goToLinkChild()">
+      <i class="fas fa-user-plus"></i>
+      <span>ربط طالب جديد</span>
+      <span class="link-child-btn-en">Link Student</span>
+    </button>
+  </div>
 
 </div>

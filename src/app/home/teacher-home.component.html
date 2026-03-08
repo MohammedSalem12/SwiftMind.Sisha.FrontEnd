@@ -113,19 +113,21 @@
     }
   }
 
-  <!-- Bottom Actions -->
-  <div class="bottom-actions">
-    <!-- Academies Button (always visible) -->
-    <button class="action-btn action-btn-academy" (click)="goToAddAcademy()">
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <button class="qa-btn qa-btn-academy" (click)="goToAddAcademy()">
       <i class="fas fa-university"></i>
-      <span>الأكاديميات</span>
-      <span class="action-btn-en">Academies</span>
+      <div class="qa-text">
+        <span>الأكاديميات</span>
+        <span class="qa-en">Academies</span>
+      </div>
     </button>
-    <!-- Enroll Button -->
-    <button class="action-btn action-btn-enroll" (click)="goToEnroll()">
+    <button class="qa-btn qa-btn-enroll" (click)="goToEnroll()">
       <i class="fas fa-user-plus"></i>
-      <span>تسجيل مقرر</span>
-      <span class="action-btn-en">Enroll Course</span>
+      <div class="qa-text">
+        <span>تسجيل مقرر</span>
+        <span class="qa-en">Enroll Course</span>
+      </div>
     </button>
   </div>
 

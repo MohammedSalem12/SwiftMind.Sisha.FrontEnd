@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, KeyValuePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { StudentEnrollmentService as EnrollmentService } from '@proxy/student-enrollments';
@@ -18,7 +19,7 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
 @Component({
   selector: 'app-student-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule, KeyValuePipe],
   templateUrl: './student-detail.component.html',
   styleUrls: ['./student-detail.component.scss']
 })
@@ -252,14 +253,12 @@ export class StudentDetailComponent implements OnInit {
   async promoteToNextGrade() {
     const id = this.studentId();
     if (!id) return;
-    if (!confirm(`هل تريد ترقية الطالب إلى الصف ${(this.student()?.currentGrade ?? 0) + 1}؟`)) return;
     this.promoting.set(true);
     try {
       await lastValueFrom(this.studentSvc.promoteToNextGrade(id));
       await this.loadDetails(id);
     } catch (err) {
       console.error('Promote failed', err);
-      alert('حدث خطأ أثناء الترقية');
     } finally {
       this.promoting.set(false);
     }

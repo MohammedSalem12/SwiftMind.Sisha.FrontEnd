@@ -1,4 +1,4 @@
-import type { CreateSecretaryTeacherDto, SecretaryInfoDto, SecretaryTeacherDto, SecretaryUserSearchResultDto } from './models';
+import type { CreateSecretaryTeacherDto, SecretaryInfoDto, SecretaryTeacherDto, SecretaryTeacherRequestDto, SecretaryUserSearchResultDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -9,11 +9,43 @@ export class SecretaryTeacherService {
   apiName = 'Default';
   
 
+  approveRequest = (requestId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SecretaryTeacherRequestDto>({
+      method: 'POST',
+      url: `/api/app/secretary-teacher/approve-request/${requestId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   assignTeacherToSecretary = (input: CreateSecretaryTeacherDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, SecretaryTeacherDto>({
       method: 'POST',
       url: '/api/app/secretary-teacher/assign-teacher-to-secretary',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getAllRequestsForCurrentTeacher = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SecretaryTeacherRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/secretary-teacher/requests-for-current-teacher',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getMyRequestsAsSecretary = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SecretaryTeacherRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/secretary-teacher/my-requests-as-secretary',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPendingRequestsForCurrentTeacher = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SecretaryTeacherRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/secretary-teacher/pending-requests-for-current-teacher',
     },
     { apiName: this.apiName,...config });
   
@@ -42,10 +74,26 @@ export class SecretaryTeacherService {
     { apiName: this.apiName,...config });
   
 
+  linkCurrentSecretaryToTeacher = (teacherId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SecretaryTeacherDto>({
+      method: 'POST',
+      url: `/api/app/secretary-teacher/link-current-secretary-to-teacher/${teacherId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   linkSecretaryToCurrentTeacher = (secretaryUserId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, SecretaryTeacherDto>({
       method: 'POST',
       url: `/api/app/secretary-teacher/link-secretary-to-current-teacher/${secretaryUserId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  rejectRequest = (requestId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SecretaryTeacherRequestDto>({
+      method: 'POST',
+      url: `/api/app/secretary-teacher/reject-request/${requestId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -64,6 +112,14 @@ export class SecretaryTeacherService {
       method: 'POST',
       url: '/api/app/secretary-teacher/search-secretary-users',
       params: { query, maxResults },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  sendLinkRequest = (teacherId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SecretaryTeacherRequestDto>({
+      method: 'POST',
+      url: `/api/app/secretary-teacher/send-link-request/${teacherId}`,
     },
     { apiName: this.apiName,...config });
   

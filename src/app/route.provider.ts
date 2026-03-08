@@ -39,7 +39,8 @@ const MENU_ITEMS: MenuItemConfig[] = [
   { path: '/student',  name: 'لوحتي',          iconClass: 'fas fa-home',               order: 1,  roles: [ROLES.STUDENT] },
   { path: '/parent',   name: 'لوحة ولي الأمر', iconClass: 'fas fa-home',               order: 1,  roles: [ROLES.PARENT] },
   { path: '/teacher',  name: 'لوحة المعلم',    iconClass: 'fas fa-home',               order: 1,  roles: [ROLES.TEACHER] },
-  { path: '/secretary-assignments',         name: 'الرئيسية',        iconClass: 'fas fa-home',               order: 2,  roles: [ROLES.ADMIN, ROLES.SECRETARY] },
+  { path: '/secretary',             name: 'لوحة السكرتيرة',  iconClass: 'fas fa-home',               order: 2,  roles: [ROLES.SECRETARY] },
+  { path: '/secretary-assignments', name: 'الرئيسية',        iconClass: 'fas fa-home',               order: 2,  roles: [ROLES.ADMIN] },
   // Shared dashboard for all authenticated users
   { path: '/',            name: 'لوحة القيادة',    iconClass: 'fas fa-tachometer-alt',    order: 1 },
 
@@ -125,99 +126,5 @@ function configureRoutes(routesService: RoutesService, configStateService: Confi
   };
 }
 
-// ─── Bottom navigation (mobile) ───────────────────────────────────────────────
-export interface BottomTabConfig {
-  path: string;
-  label: string;
-  icon: string;
-}
-
-export interface MoreMenuItemConfig {
-  path: string;
-  label: string;
-  icon: string;
-}
-
-export function getMoreMenuItemsForRole(userRoles: string[]): MoreMenuItemConfig[] {
-  if (userRoles.includes(ROLES.STUDENT)) {
-    return [
-      { path: '/student/attendance', label: 'حضوري',         icon: 'fas fa-calendar-check' },
-      { path: '/student/grades',     label: 'درجاتي',         icon: 'fas fa-star' },
-      { path: '/student/requests',   label: 'طلباتي',         icon: 'fas fa-clipboard-list' },
-      { path: '/student/qr',         label: 'رمز QR الطالب', icon: 'fas fa-qrcode' },
-      { path: '/feeds',              label: 'النشرات',         icon: 'fas fa-rss' },
-      { path: '/account/manage',     label: 'ملفي الشخصي',    icon: 'fas fa-user-circle' },
-    ];
-  }
-  if (userRoles.includes(ROLES.PARENT)) {
-    return [
-      { path: '/parent/link-child',   label: 'ربط طالب',       icon: 'fas fa-user-plus' },
-      { path: '/parent/requests',     label: 'طلباتي',         icon: 'fas fa-clipboard-list' },
-      { path: '/feeds',               label: 'النشرات',        icon: 'fas fa-rss' },
-      { path: '/account/manage',      label: 'ملفي الشخصي',    icon: 'fas fa-user-circle' },
-    ];
-  }
-  if (userRoles.includes(ROLES.TEACHER)) {
-    return [
-      { path: '/teacher/qr-codes',   label: 'QR المقررات',     icon: 'fas fa-qrcode' },
-      { path: '/teacher-groups',     label: 'مجموعاتي',         icon: 'fas fa-layer-group' },
-      { path: '/teacher/enroll',     label: 'التسجيل في مقررات', icon: 'fas fa-plus-circle' },
-      { path: '/enrollment-requests', label: 'طلبات التسجيل',  icon: 'fas fa-clipboard-list' },
-      { path: '/feeds',              label: 'النشرات',           icon: 'fas fa-rss' },
-      { path: '/account/manage',     label: 'ملفي الشخصي',      icon: 'fas fa-user-circle' },
-    ];
-  }
-  if (userRoles.includes(ROLES.ADMIN) || userRoles.includes(ROLES.SECRETARY)) {
-    return [
-      { path: '/teachers',          label: 'المعلمون',         icon: 'fas fa-chalkboard-teacher' },
-      { path: '/parents',           label: 'أولياء الأمور',    icon: 'fas fa-users-cog' },
-      { path: '/courses',           label: 'المقررات',          icon: 'fas fa-book' },
-      { path: '/enrollment-requests', label: 'طلبات التسجيل', icon: 'fas fa-clipboard-list' },
-      { path: '/feeds',             label: 'النشرات',           icon: 'fas fa-rss' },
-      { path: '/account/manage',    label: 'ملفي الشخصي',       icon: 'fas fa-user-circle' },
-    ];
-  }
-  // Default tabs for unauthenticated / unknown roles (public view)
-  return [
-    { path: '/', label: 'الرئيسية', icon: 'fas fa-home' },
-    { path: '/feeds', label: 'النشرات', icon: 'fas fa-rss' },
-    { path: '/notifications', label: 'إشعارات', icon: 'fas fa-bell' },
-    { path: '/account/manage', label: 'ملفي', icon: 'fas fa-user' },
-  ];
-}
-
-export function getBottomTabsForRole(userRoles: string[]): BottomTabConfig[] {
-  if (userRoles.includes(ROLES.STUDENT)) {
-    return [
-      { path: '/student',          label: 'الرئيسية', icon: 'fas fa-home' },
-      { path: '/student/courses',  label: 'مقرراتي',  icon: 'fas fa-book-open' },
-      { path: '/student/requests', label: 'طلباتي',   icon: 'fas fa-clipboard-list' },
-      { path: '/notifications',    label: 'إشعارات',  icon: 'fas fa-bell' },
-    ];
-  }
-  if (userRoles.includes(ROLES.PARENT)) {
-    return [
-      { path: '/parent',                       label: 'الرئيسية', icon: 'fas fa-home' },
-      { path: '/parent-enrollment-approval',   label: 'الطلبات',  icon: 'fas fa-clipboard-check' },
-      { path: '/feeds',                        label: 'النشرات',  icon: 'fas fa-rss' },
-      { path: '/notifications',                label: 'إشعارات',  icon: 'fas fa-bell' },
-    ];
-  }
-  if (userRoles.includes(ROLES.TEACHER)) {
-    return [
-      { path: '/teacher',              label: 'الرئيسية', icon: 'fas fa-home' },
-      { path: '/attendance',           label: 'الحضور',   icon: 'fas fa-user-check' },
-      { path: '/enrollment-requests',  label: 'الطلبات',  icon: 'fas fa-clipboard-list' },
-      { path: '/notifications',        label: 'إشعارات',  icon: 'fas fa-bell' },
-    ];
-  }
-  if (userRoles.includes(ROLES.ADMIN) || userRoles.includes(ROLES.SECRETARY)) {
-    return [
-      { path: '/secretary-assignments', label: 'الرئيسية', icon: 'fas fa-home' },
-      { path: '/students',              label: 'الطلاب',   icon: 'fas fa-user-graduate' },
-      { path: '/enrollment-requests',   label: 'الطلبات',  icon: 'fas fa-clipboard-list' },
-      { path: '/notifications',         label: 'إشعارات',  icon: 'fas fa-bell' },
-    ];
-  }
-  return [];
-}
+// Navigation is now fully managed by BottomNavComponent
+// (mobile bottom bar + desktop sidebar) using role-aware helpers defined there.

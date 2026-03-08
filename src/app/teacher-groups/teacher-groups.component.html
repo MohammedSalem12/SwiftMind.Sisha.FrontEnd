@@ -10,6 +10,11 @@
     </div>
 
     <div class="tg-hero-body">
+      <!-- Back button -->
+      <button class="btn-back-hero" (click)="goBack()" title="رجوع">
+        <i class="fas fa-arrow-right"></i>
+      </button>
+
       <!-- Left: title block -->
       <div class="tg-hero-title">
         <div class="tg-hero-icon">
@@ -149,20 +154,10 @@
 
       <!-- Actions -->
       <div class="card-actions">
-        <button class="act-btn attend" (click)="takeAttendance(g)"
-          [title]="'::TeacherGroups:RecordAttendance' | abpLocalization">
-          <i class="fas fa-clipboard-check"></i>
-          <span>{{ '::TeacherGroups:Attendance' | abpLocalization }}</span>
-        </button>
         <button class="act-btn schedule" (click)="manageSchedule(g)"
           [title]="'::TeacherGroups:ManageSchedule' | abpLocalization">
           <i class="fas fa-calendar-alt"></i>
           <span>{{ '::TeacherGroups:Schedule' | abpLocalization }}</span>
-        </button>
-        <button class="act-btn marks" (click)="goToMarks(g)"
-          [title]="'::TeacherGroups:RecordGrades' | abpLocalization">
-          <i class="fas fa-star-half-alt"></i>
-          <span>{{ '::TeacherGroups:Grades' | abpLocalization }}</span>
         </button>
         <button class="act-btn edit" [routerLink]="['edit', g.groupId]"
           [title]="'::TeacherGroups:Edit' | abpLocalization">

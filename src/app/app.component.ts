@@ -55,6 +55,7 @@ export class AppComponent implements OnInit {
     this.updateAuthBodyClass(this.router.url);
     this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
       this.updateAuthBodyClass(e.urlAfterRedirects);
+      this.scrollToTop();
     });
 
     // Connect real-time services when user is already logged in (page refresh)
@@ -77,6 +78,16 @@ export class AppComponent implements OnInit {
         this.router.navigate(['/login']);
       }
     });
+  }
+
+  private scrollToTop(): void {
+    // Scroll window and document root
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    // Scroll ABP LeptonX layout content wrapper
+    const contentEl = document.querySelector('.lx-page-content, .content-wrapper, .main-content, [class*="content"]') as HTMLElement | null;
+    if (contentEl) contentEl.scrollTop = 0;
   }
 
   private updateAuthBodyClass(url: string): void {

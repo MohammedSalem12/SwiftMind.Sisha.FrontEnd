@@ -1,130 +1,227 @@
-<div class="detail">
-  <div *ngIf="loading()" class="loading">Loading student details…</div>
+<div class="student-page" dir="rtl">
 
-  <div *ngIf="!loading()">
-    <div class="profile-top">
-      <div class="avatar card">
-        <ng-container *ngIf="profilePic(); else initials">
-          <img [src]="profilePic() || ''" alt="avatar" />
-        </ng-container>
-        <ng-template #initials>
-          <div class="initials">{{ (student()?.firstName || '').charAt(0) + (student()?.lastName || '').charAt(0) }}</div>
-        </ng-template>
+  <!-- ─── Loading skeletons ─── -->
+  @if (loading()) {
+    <div class="hero hero-skeleton">
+      <div class="sk sk-avatar"></div>
+      <div class="sk-lines">
+        <div class="sk sk-line sk-name"></div>
+        <div class="sk sk-line sk-sub"></div>
+      </div>
+    </div>
+    <div class="content-area">
+      <div class="sk sk-block" style="height:90px"></div>
+      <div class="sk sk-block" style="height:130px"></div>
+      <div class="sk sk-block" style="height:200px"></div>
+    </div>
+  }
+
+  @if (!loading()) {
+
+    <!-- ─── Hero header ─── -->
+    <div class="hero">
+      <div class="hero-blob hero-blob-1"></div>
+      <div class="hero-blob hero-blob-2"></div>
+
+      <div class="hero-top">
+        <!-- Back button -->
+        <a class="btn-back" routerLink="/students">
+          <i class="fas fa-arrow-right"></i>
+        </a>
+        <!-- Edit button -->
+        <a class="btn-edit" [routerLink]="['/students', studentId(), 'edit']">
+          <i class="fas fa-edit"></i>
+          <span>تعديل</span>
+        </a>
       </div>
 
-      <div class="profile-meta">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-          <div>
-            <h1>{{ getFullName() }}</h1>
-            <div class="sub">Grade: {{ student()?.currentGrade ?? '-' }} · Code: {{ student()?.studentCode || '-' }}</div>
-          </div>
-          <a class="btn-edit-profile" [routerLink]="['/students', studentId(), 'edit']">
-            <i class="fas fa-edit"></i> Edit Profile
-          </a>
+      <div class="hero-body">
+        <!-- Avatar -->
+        <div class="hero-avatar">
+          <img *ngIf="profilePic()" [src]="profilePic()!" alt="avatar" />
+          <span *ngIf="!profilePic()">{{ getInitials() }}</span>
         </div>
 
-        <div class="card stats" style="margin-top:0.75rem; display:flex; gap:1rem; align-items:center">
-          <div class="stat-overall">
-            <div class="big">{{ overallPercent() }}%</div>
-            <div class="meta">متوسط الحضور (آخر 6 أشهر)</div>
+        <div class="hero-info">
+          <h1 class="hero-name">{{ getFullName() }}</h1>
+          <div class="hero-chips">
+            <span class="chip chip-grade">الصف {{ student()?.currentGrade ?? '-' }}</span>
+            <span class="chip chip-code">{{ student()?.studentCode }}</span>
+            <span class="chip chip-school" *ngIf="student()?.schoolName">{{ student()?.schoolName }}</span>
           </div>
-          <div class="stat-counts">
-            <div>حاضر: <strong>{{ totalPresent() }}</strong></div>
-            <div>غائب: <strong>{{ totalAbsent() }}</strong></div>
-            <div>إجمالي: <strong>{{ totalRecords() }}</strong></div>
-          </div>
-          <div style="flex:1">
-            <div class="meta">حضور شهري</div>
-            <div class="attendance-row">
-              <div class="attendance-item" *ngFor="let m of monthlyAttendance()">
-                <svg width="64" height="64" viewBox="0 0 36 36" class="circular-chart">
-                  <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eef2ff" stroke-width="3.5"/>
-                  <path class="circle" [attr.stroke]="strokeColor(m.percent)" stroke-width="3.5" stroke-linecap="round" fill="none"
-                    [attr.stroke-dasharray]="strokeDash(m.percent)" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  <text x="18" y="20.35" class="percentage" text-anchor="middle" font-size="6">{{ m.percent }}%</text>
-                </svg>
-                <div class="attendance-label">{{ m.month }}</div>
+        </div>
+      </div>
+
+      <!-- Stats strip inside hero -->
+      <div class="hero-stats">
+        <div class="hstat">
+          <span class="hstat-val" [class.good]="overallPercent() >= 75"
+                                  [class.warn]="overallPercent() >= 50 && overallPercent() < 75"
+                                  [class.bad]="overallPercent() < 50">
+            {{ overallPercent() }}%
+          </span>
+          <span class="hstat-label">الحضور</span>
+        </div>
+        <div class="hstat-sep"></div>
+        <div class="hstat">
+          <span class="hstat-val good">{{ totalPresent() }}</span>
+          <span class="hstat-label">حاضر</span>
+        </div>
+        <div class="hstat-sep"></div>
+        <div class="hstat">
+          <span class="hstat-val bad">{{ totalAbsent() }}</span>
+          <span class="hstat-label">غائب</span>
+        </div>
+        <div class="hstat-sep"></div>
+        <div class="hstat">
+          <span class="hstat-val">{{ enrollments().length }}</span>
+          <span class="hstat-label">مقررات</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ─── Promote Card ─── -->
+      @if ((student()?.currentGrade ?? 0) < 12) {
+        <div class="promote-card">
+          <div class="promote-card-left">
+            <div class="promote-icon">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="promote-text">
+              <div class="promote-title">ترقية للعام الدراسي القادم</div>
+              <div class="promote-sub">
+                الصف الحالي: <strong>{{ student()?.currentGrade }}</strong>
+                ←
+                الصف القادم: <strong>{{ (student()?.currentGrade ?? 0) + 1 }}</strong>
               </div>
+              <div class="promote-sub-en">Promote to Grade {{ (student()?.currentGrade ?? 0) + 1 }}</div>
             </div>
           </div>
+          <button class="btn-promote" [disabled]="promoting()" (click)="promoteToNextGrade()">
+            @if (promoting()) {
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>جاري...</span>
+            } @else {
+              <i class="fas fa-arrow-up"></i>
+              <span>ترقية</span>
+            }
+          </button>
         </div>
-      </div>
-    </div>
+      }
 
-    <!-- Grade promotion action -->
-    <div class="promote-section" *ngIf="(student()?.currentGrade ?? 0) < 12">
-      <div class="promote-info">
-        <i class="fas fa-graduation-cap"></i>
-        <div>
-          <div class="promote-title">ترقية الصف الدراسي</div>
-          <div class="promote-sub">الصف الحالي: {{ student()?.currentGrade }} &larr; الصف التالي: {{ (student()?.currentGrade ?? 0) + 1 }}</div>
+      <!-- ─── Monthly Attendance Charts ─── -->
+      @if (monthlyAttendance().length > 0) {
+        <div class="section-label">
+          <i class="fas fa-calendar-check"></i>
+          <span>الحضور الشهري · Monthly Attendance</span>
         </div>
-      </div>
-      <button class="btn-promote" [disabled]="promoting()" (click)="promoteToNextGrade()">
-        <i class="fas fa-arrow-up"></i>
-        {{ promoting() ? 'جاري الترقية…' : 'ترقية للصف ' + ((student()?.currentGrade ?? 0) + 1) }}
-      </button>
-    </div>
+        <div class="attendance-strip">
+          <div class="att-item" *ngFor="let m of monthlyAttendance()">
+            <svg width="52" height="52" viewBox="0 0 36 36">
+              <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none" stroke="#e9e6ff" stroke-width="3.5"/>
+              <path class="circle" fill="none" stroke-width="3.5" stroke-linecap="round"
+                    [attr.stroke]="strokeColor(m.percent)"
+                    [attr.stroke-dasharray]="strokeDash(m.percent)"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <text x="18" y="20.5" class="pct-text" text-anchor="middle" font-size="7">{{ m.percent }}%</text>
+            </svg>
+            <div class="att-label">{{ m.month }}</div>
+          </div>
+        </div>
+      }
 
-    <div class="grid">
-      <div class="card">
-        <h3>Enrolled Courses</h3>
-        <div *ngIf="enrollments().length === 0" class="no-data">No enrollments found</div>
-        <div *ngIf="enrollments().length > 0">
-          <div *ngFor="let e of enrollments()" class="course-card">
-            <div class="course-thumb">
-              <ng-container *ngIf="getCourse(e.courseId)?.code; else courseInit">
-                <img [src]="''" alt="thumb" />
-              </ng-container>
-              <ng-template #courseInit>
-                <div style="font-weight:600;color:#374151">{{ getCourseInitial(e.courseId) }}</div>
-              </ng-template>
-            </div>
-            <div class="course-info">
-              <div class="course-name">{{ getCourseName(e.courseId) }}</div>
-              <div class="teacher-name">Teacher: {{ teacherDisplayName(e) }}</div>
-            </div>
-            </div>
-              <div class="course-meta">
+      <!-- ─── Enrolled Courses ─── -->
+      @if (enrollments().length > 0) {
+        <div class="section-label">
+          <i class="fas fa-layer-group"></i>
+          <span>المقررات المسجلة · Enrolled Courses</span>
+          <span class="count-pill">{{ enrollments().length }}</span>
+        </div>
+
+        <div class="courses-list">
+          @for (e of enrollments(); track e.id) {
+            <div class="course-card">
+              <div class="course-card-icon">
+                <span>{{ getCourseInitial(e.courseId) }}</span>
+              </div>
+              <div class="course-card-body">
+                <div class="course-name">{{ getCourseName(e.courseId) }}</div>
                 <div class="course-teacher">
-                  <!-- display or edit teacher -->
-                  <ng-container *ngIf="editingEnrollmentId() === e.id; else showTeacher">
-                    <select [ngModel]="editTeacherId()" (ngModelChange)="editTeacherId.set($event)">
-                      <option [ngValue]="null">-- اختر معلم --</option>
-                      <option *ngFor="let t of teachers() | keyvalue" [ngValue]="t.key">{{ t.value?.firstName || '' }} {{ t.value?.lastName || '' }}</option>
+                  @if (editingEnrollmentId() !== e.id) {
+                    <i class="fas fa-user-tie"></i>
+                    {{ teacherDisplayName(e.teacherId) }}
+                  } @else {
+                    <select class="teacher-select"
+                            [ngModel]="editTeacherId()"
+                            (ngModelChange)="editTeacherId.set($event)">
+                      <option [ngValue]="null">-- اختر معلماً --</option>
+                      @for (t of (teachers() | keyvalue); track t.key) {
+                        <option [ngValue]="t.key">
+                          {{ t.value?.firstName || '' }} {{ t.value?.lastName || '' }}
+                        </option>
+                      }
                     </select>
-                  </ng-container>
-                  <ng-template #showTeacher>
-                        {{ teacherDisplayName(e.teacherId) }}
-                      </ng-template>
+                  }
                 </div>
               </div>
-              <div class="course-actions">
-                <ng-container *ngIf="editingEnrollmentId() === e.id; else editBtn">
-                  <button class="btn btn-sm btn-success" (click)="saveEdit()" [disabled]="savingEdit()">Save</button>
-                  <button class="btn btn-sm btn-link" (click)="cancelEdit()">Cancel</button>
-                </ng-container>
-                <ng-template #editBtn>
-                  <button class="btn btn-sm btn-outline-primary" (click)="startEdit(e)">Edit</button>
-                </ng-template>
+              <div class="course-card-actions">
+                @if (editingEnrollmentId() === e.id) {
+                  <button class="act-save" (click)="saveEdit()" [disabled]="savingEdit()">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="act-cancel" (click)="cancelEdit()">
+                    <i class="fas fa-times"></i>
+                  </button>
+                } @else {
+                  <button class="act-edit" (click)="startEdit(e)">
+                    <i class="fas fa-pen"></i>
+                  </button>
+                }
               </div>
-        </div>
-      </div>
-
-      <div class="card evaluations">
-        <h3>Recent Evaluations</h3>
-        <div *ngIf="lastEvaluations().length === 0" class="no-data">No evaluations yet</div>
-        <div *ngFor="let ev of lastEvaluations()" class="eval-item">
-          <div class="eval-left">
-            <div style="width:44px;height:44px;border-radius:8px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:700">{{ examInitial(ev) }}</div>
-            <div class="eval-meta">
-              <div style="font-weight:600">{{ ev.examName || 'Exam' }}</div>
-              <div style="font-size:12px;color:#6b7280">{{ formatDate(ev.date) }}</div>
             </div>
-          </div>
-          <div class="grade">{{ ev.grade }} / {{ ev.maxGrade }}</div>
+          }
         </div>
-      </div>
+      }
+
+      @if (!loading() && enrollments().length === 0) {
+        <div class="empty-state">
+          <i class="fas fa-book-open"></i>
+          <p>لا توجد مقررات مسجلة</p>
+          <small>No enrollments found</small>
+        </div>
+      }
+
+      <!-- ─── Recent Evaluations ─── -->
+      @if (lastEvaluations().length > 0) {
+        <div class="section-label">
+          <i class="fas fa-star-half-alt"></i>
+          <span>آخر التقييمات · Recent Grades</span>
+          <span class="count-pill">{{ lastEvaluations().length }}</span>
+        </div>
+
+        <div class="evals-list">
+          @for (ev of lastEvaluations(); track ev.id) {
+            <div class="eval-card">
+              <div class="eval-icon">{{ examInitial(ev) }}</div>
+              <div class="eval-body">
+                <div class="eval-name">{{ ev.examName || 'اختبار' }}</div>
+                <div class="eval-date">{{ formatDate(ev.date) }}</div>
+              </div>
+              <div class="eval-grade"
+                   [class.grade-good]="(ev.grade / ev.maxGrade) >= 0.75"
+                   [class.grade-warn]="(ev.grade / ev.maxGrade) >= 0.5 && (ev.grade / ev.maxGrade) < 0.75"
+                   [class.grade-bad]="(ev.grade / ev.maxGrade) < 0.5">
+                {{ ev.grade }} / {{ ev.maxGrade }}
+              </div>
+            </div>
+          }
+        </div>
+      }
+
     </div>
-  </div>
+  }
+
 </div>

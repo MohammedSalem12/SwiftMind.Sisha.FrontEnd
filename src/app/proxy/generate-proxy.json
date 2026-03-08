@@ -9776,6 +9776,98 @@
                     "type": "System.Void",
                     "typeSimple": "System.Void"
                   }
+                },
+                {
+                  "name": "LinkCurrentSecretaryToTeacherAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "teacherId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherDto",
+                    "typeSimple": "SwiftMind.Sesha.Teachers.SecretaryTeacherDto"
+                  }
+                },
+                {
+                  "name": "SendLinkRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "teacherId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto",
+                    "typeSimple": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto"
+                  }
+                },
+                {
+                  "name": "GetMyRequestsAsSecretaryAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto]"
+                  }
+                },
+                {
+                  "name": "GetPendingRequestsForCurrentTeacherAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto]"
+                  }
+                },
+                {
+                  "name": "GetAllRequestsForCurrentTeacherAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto]"
+                  }
+                },
+                {
+                  "name": "ApproveRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "requestId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto",
+                    "typeSimple": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto"
+                  }
+                },
+                {
+                  "name": "RejectRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "requestId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto",
+                    "typeSimple": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto"
+                  }
                 }
               ]
             }
@@ -10069,6 +10161,199 @@
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
+            },
+            "LinkCurrentSecretaryToTeacherAsyncByTeacherId": {
+              "uniqueName": "LinkCurrentSecretaryToTeacherAsyncByTeacherId",
+              "name": "LinkCurrentSecretaryToTeacherAsync",
+              "httpMethod": "POST",
+              "url": "api/app/secretary-teacher/link-current-secretary-to-teacher/{teacherId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "teacherId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "teacherId",
+                  "name": "teacherId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherDto",
+                "typeSimple": "SwiftMind.Sesha.Teachers.SecretaryTeacherDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
+            },
+            "SendLinkRequestAsyncByTeacherId": {
+              "uniqueName": "SendLinkRequestAsyncByTeacherId",
+              "name": "SendLinkRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/app/secretary-teacher/send-link-request/{teacherId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "teacherId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "teacherId",
+                  "name": "teacherId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto",
+                "typeSimple": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
+            },
+            "GetMyRequestsAsSecretaryAsync": {
+              "uniqueName": "GetMyRequestsAsSecretaryAsync",
+              "name": "GetMyRequestsAsSecretaryAsync",
+              "httpMethod": "GET",
+              "url": "api/app/secretary-teacher/my-requests-as-secretary",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
+            },
+            "GetPendingRequestsForCurrentTeacherAsync": {
+              "uniqueName": "GetPendingRequestsForCurrentTeacherAsync",
+              "name": "GetPendingRequestsForCurrentTeacherAsync",
+              "httpMethod": "GET",
+              "url": "api/app/secretary-teacher/pending-requests-for-current-teacher",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
+            },
+            "GetAllRequestsForCurrentTeacherAsync": {
+              "uniqueName": "GetAllRequestsForCurrentTeacherAsync",
+              "name": "GetAllRequestsForCurrentTeacherAsync",
+              "httpMethod": "GET",
+              "url": "api/app/secretary-teacher/requests-for-current-teacher",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
+            },
+            "ApproveRequestAsyncByRequestId": {
+              "uniqueName": "ApproveRequestAsyncByRequestId",
+              "name": "ApproveRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/app/secretary-teacher/approve-request/{requestId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "requestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "requestId",
+                  "name": "requestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto",
+                "typeSimple": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
+            },
+            "RejectRequestAsyncByRequestId": {
+              "uniqueName": "RejectRequestAsyncByRequestId",
+              "name": "RejectRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/app/secretary-teacher/reject-request/{requestId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "requestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "requestId",
+                  "name": "requestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto",
+                "typeSimple": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto"
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Teachers.ISecretaryTeacherAppService"
@@ -19936,6 +20221,10 @@
         "ParentStudentLinked",
         "ExamGradePosted",
         "AttendanceMarkedAbsent",
+        "AttendanceMarkedPresent",
+        "SecretaryLinkRequestSent",
+        "SecretaryLinkRequestApproved",
+        "SecretaryLinkRequestRejected",
         "General"
       ],
       "enumValues": [
@@ -19945,7 +20234,11 @@
         3,
         4,
         5,
-        6
+        6,
+        7,
+        8,
+        9,
+        10
       ],
       "genericArguments": null,
       "properties": null
@@ -21920,6 +22213,103 @@
           "regex": null
         }
       ]
+    },
+    "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestDto": {
+      "baseType": "Volo.Abp.Application.Dtos.CreationAuditedEntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SecretaryUserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TeacherId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SecretaryName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TeacherName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DecidedAt",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Teachers.SecretaryTeacherRequestStatus": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Pending",
+        "Approved",
+        "Rejected"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2
+      ],
+      "genericArguments": null,
+      "properties": null
     },
     "SwiftMind.Sesha.Teachers.SecretaryUserSearchResultDto": {
       "baseType": null,
