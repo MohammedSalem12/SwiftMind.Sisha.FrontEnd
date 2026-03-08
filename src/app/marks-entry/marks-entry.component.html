@@ -43,7 +43,11 @@
       <div *ngIf="lockedCourseId()" class="course-locked-label">
         <i class="fas fa-lock"></i>
         <span class="locked-name">{{ selectedCourse()?.nameAr || selectedCourse()?.nameEn || lockedCourseId() }}</span>
-        <span *ngIf="selectedCourse()?.gradeName" class="grade-tag">{{ selectedCourse().gradeName }}</span>
+        <span *ngIf="selectedCourse()?.gradeName" class="grade-tag">{{ selectedCourse()!.gradeName }}</span>
+        <span *ngIf="selectedCourse()?.academyName" class="academy-inline-tag">
+          <i class="fas fa-university"></i>
+          {{ selectedCourse()!.academyName }}
+        </span>
       </div>
       <!-- Not locked: show dropdown -->
       <select *ngIf="!lockedCourseId()" [ngModel]="selectedCourseId()" (ngModelChange)="onCourseChange($event)" [disabled]="loading()">

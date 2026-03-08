@@ -164,11 +164,18 @@ $green-ring: rgba(16, 185, 129, 0.18);
   i { font-size: .72rem; opacity: .7; }
   .locked-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .grade-tag {
-    margin-right: auto;
     background: rgba(55,48,163,.12);
     border-radius: 6px;
     padding: .1rem .45rem;
     font-size: .75rem;
+    flex-shrink: 0;
+  }
+  .academy-inline-tag {
+    display: inline-flex; align-items: center; gap: .25rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff; font-size: .68rem; font-weight: 700;
+    padding: .15rem .55rem; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+    i { font-size: .6rem; opacity: 1; }
   }
 }
 

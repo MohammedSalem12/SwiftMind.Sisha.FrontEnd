@@ -170,15 +170,27 @@ export class MarksEntryComponent implements OnInit {
   }
 
   private async enrichLockedCourseWithAcademy(courseId: string | null, academyId: string): Promise<void> {
+    if (!courseId) return;
     try {
-      const academy = await lastValueFrom(this.academySvc.get(academyId)).catch(() => null);
-      if (!academy || !courseId) return;
+      const [academy, course] = await Promise.all([
+        lastValueFrom(this.academySvc.get(academyId)).catch(() => null),
+        this.courses().some(c => c.id === courseId)
+          ? Promise.resolve(null)
+          : lastValueFrom(this.courseSvc.get(courseId)).catch(() => null),
+      ]);
+      if (!academy) return;
       const academyName = academy.nameAr || academy.nameEn || '';
-      this.courses.update(list =>
-        list.map(c => c.id === courseId ? { ...c, academyId, academyName } : c)
-      );
+      if (course) {
+        // Course was not in list — add it with academy tags
+        this.courses.update(list => [...list, { ...course, academyId, academyName }]);
+      } else {
+        // Course already in list — just tag it
+        this.courses.update(list =>
+          list.map(c => c.id === courseId ? { ...c, academyId, academyName } : c)
+        );
+      }
     } catch (e) {
-      console.error('Failed to load academy info', e);
+      console.error('Failed to load academy/course info', e);
     }
   }
 

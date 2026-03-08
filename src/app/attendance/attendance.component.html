@@ -44,7 +44,13 @@
       </div>
       <div *ngIf="lockedCourseId()" class="course-label">
         <i class="fas fa-lock course-lock-icon"></i>
-        <span>{{ selectedCourseName() || lockedCourseId() }}</span>
+        <span class="course-label-name">{{ selectedCourseName() || lockedCourseId() }}</span>
+        @if (academy()) {
+          <span class="course-label-academy">
+            <i class="fas fa-university"></i>
+            {{ academy()!.nameAr || academy()!.nameEn }}
+          </span>
+        }
       </div>
       <select
         *ngIf="!lockedCourseId()"

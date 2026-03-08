@@ -124,18 +124,12 @@ export class AttendanceComponent implements OnInit {
       const qpTeacherId = this.route.snapshot.queryParamMap.get('teacherId');
       const qpAcademyId = this.route.snapshot.queryParamMap.get('academyId');
 
-      // Load academy info if provided (non-blocking)
-      if (qpAcademyId) {
-        lastValueFrom(this.academySvc.get(qpAcademyId)).then(a => this.academy.set(a)).catch(() => null);
-      }
-
       if (actorType === 'Teacher' && actorId) {
         this.isTeacher.set(true);
         this.teacherId.set(actorId);
         this.effectiveTeacherId.set(actorId);
         await this.loadTeacherCourses(actorId);
       } else if (qpTeacherId) {
-        // Secretary arriving from a specific teacher's course list
         this.isTeacher.set(false);
         this.teacherId.set(qpTeacherId);
         this.effectiveTeacherId.set(qpTeacherId);
@@ -145,13 +139,42 @@ export class AttendanceComponent implements OnInit {
         await this.loadAllCourses();
       }
 
-      // Auto-select and lock course from query params
+      // If academy course: fetch academy + inject course into list if missing
+      if (qpAcademyId && qpCourseId) {
+        await this.enrichLockedAcademyCourse(qpCourseId, qpAcademyId);
+      }
+
+      // Auto-select and lock course
       if (qpCourseId && this.courses().some(c => c.id === qpCourseId)) {
         this.lockedCourseId.set(qpCourseId);
         await this.onCourseChange(qpCourseId);
       }
     } catch (e) {
       console.error('Failed to initialize attendance component:', e);
+    }
+  }
+
+  private async enrichLockedAcademyCourse(courseId: string, academyId: string): Promise<void> {
+    try {
+      const [academy, courseFromApi] = await Promise.all([
+        lastValueFrom(this.academySvc.get(academyId)).catch(() => null),
+        this.courses().some(c => c.id === courseId)
+          ? Promise.resolve(null)
+          : lastValueFrom(this.courseSvc.get(courseId)).catch(() => null),
+      ]);
+      if (academy) this.academy.set(academy);
+      const academyName = academy?.nameAr || academy?.nameEn || '';
+      if (courseFromApi) {
+        // Not in list — add it tagged with academy info
+        this.courses.update(list => [...list, { ...courseFromApi, academyId, academyName }]);
+      } else {
+        // Already in list — just tag it
+        this.courses.update(list =>
+          list.map(c => c.id === courseId ? { ...c, academyId, academyName } : c)
+        );
+      }
+    } catch (e) {
+      console.error('Failed to enrich academy course', e);
     }
   }
 
