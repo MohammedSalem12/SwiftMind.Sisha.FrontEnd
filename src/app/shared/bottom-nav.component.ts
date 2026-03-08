@@ -87,65 +87,18 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           </a>
         }
 
-        <!-- Profile tab → opens sheet -->
-        <button class="mn-tab" [class.active]="showSheet()" (click)="openSheet()">
+        <!-- Profile tab → navigates to profile page (logout is on profile page) -->
+        <a class="mn-tab" [routerLink]="profilePath()" [class.active]="isActive(profilePath()!)">
           <div class="mn-avatar-sm">
             @if (userInitials() !== '?') { <span>{{ userInitials() }}</span> }
             @else { <i class="fas fa-user"></i> }
           </div>
-          <span class="mn-label">{{ displayName() ? displayName().split(' ')[0] : 'ملفي' }}</span>
-          @if (showSheet()) { <span class="mn-bar"></span> }
-        </button>
+          <span class="mn-label">ملفي</span>
+          @if (isActive(profilePath()!)) { <span class="mn-bar"></span> }
+        </a>
 
       </div>
     </nav>
-
-    <!-- ── Mobile Profile Sheet backdrop ── -->
-    <div class="sheet-backdrop" [class.visible]="showSheet()" (click)="closeSheet()"></div>
-
-    <!-- ── Mobile Profile Sheet (slide up) ── -->
-    <div class="profile-sheet" [class.open]="showSheet()" dir="rtl">
-
-      <!-- Handle -->
-      <div class="sheet-handle"></div>
-
-      <!-- User info -->
-      <div class="sheet-user">
-        <div class="sheet-avatar">
-          @if (userInitials() !== '?') { <span>{{ userInitials() }}</span> }
-          @else { <i class="fas fa-user"></i> }
-        </div>
-        <div class="sheet-user-info">
-          <p class="sheet-name">{{ displayName() || 'مستخدم' }}</p>
-          @if (userEmail()) { <p class="sheet-email">{{ userEmail() }}</p> }
-        </div>
-        <a [routerLink]="profilePath()" class="sheet-profile-btn" (click)="closeSheet()">
-          <i class="fas fa-edit"></i>
-        </a>
-      </div>
-
-      <!-- Secondary items -->
-      <div class="sheet-items">
-        @for (item of secondaryNav(); track item.path) {
-          <a class="sheet-item" [routerLink]="item.path" [class.active]="isActive(item.path)" (click)="closeSheet()">
-            <div class="sheet-item-icon">
-              <i [class]="item.icon"></i>
-            </div>
-            <span class="sheet-item-label">{{ item.label }}</span>
-            <span class="sheet-item-label-en">{{ item.labelEn }}</span>
-          </a>
-        }
-      </div>
-
-      <!-- Logout -->
-      <div class="sheet-footer">
-        <button class="sheet-logout" (click)="logout()">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>تسجيل الخروج</span>
-          <span class="sheet-logout-en">Sign out</span>
-        </button>
-      </div>
-    </div>
 
     <!-- ══════════════════════════════════════════════════
          DESKTOP — Right sidebar (≥ 768px)
@@ -333,142 +286,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       box-shadow: 0 2px 12px rgba(124,58,237,0.5);
     }
 
-    /* ── Profile Sheet backdrop ── */
-    .sheet-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0);
-      z-index: 1099;
-      pointer-events: none;
-      transition: background 0.3s;
-    }
-    .sheet-backdrop.visible {
-      background: rgba(0,0,0,0.45);
-      -webkit-backdrop-filter: blur(4px);
-      backdrop-filter: blur(4px);
-      pointer-events: auto;
-    }
-
-    /* ── Profile Sheet ── */
-    .profile-sheet {
-      display: none;
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 1100;
-      background: #fff;
-      border-radius: 24px 24px 0 0;
-      box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
-      max-height: 82vh;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      transform: translateY(100%);
-      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
-      padding-bottom: max(16px, env(safe-area-inset-bottom));
-      -webkit-overflow-scrolling: touch;
-    }
-    .profile-sheet.open { transform: translateY(0); }
-
-    .sheet-handle {
-      width: 40px; height: 4px;
-      background: #e5e7eb;
-      border-radius: 2px;
-      margin: 12px auto 0;
-    }
-
-    .sheet-user {
-      display: flex;
-      align-items: center;
-      gap: 0.875rem;
-      padding: 1.25rem 1.25rem 1rem;
-      border-bottom: 1px solid #f3f4f6;
-    }
-
-    .sheet-avatar {
-      width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
-      background: linear-gradient(135deg, #7c3aed, #5b21b6);
-      color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; font-weight: 700;
-    }
-    .sheet-user-info { flex: 1; min-width: 0; }
-    .sheet-name {
-      margin: 0; font-size: 1rem; font-weight: 700; color: #1a1a2e;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .sheet-email {
-      margin: 2px 0 0; font-size: 0.78rem; color: #9090aa;
-      direction: ltr; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .sheet-profile-btn {
-      width: 38px; height: 38px; border-radius: 50%;
-      background: #f3f4f6;
-      color: #6c757d;
-      display: flex; align-items: center; justify-content: center;
-      text-decoration: none; font-size: 0.9rem; flex-shrink: 0;
-    }
-
-    .sheet-items {
-      padding: 0.75rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-    }
-
-    .sheet-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
-      padding: 0.875rem 0.5rem;
-      border-radius: 14px;
-      text-decoration: none;
-      background: #f9fafb;
-      border: 1.5px solid #f0f0f0;
-      color: #374151;
-      transition: background 0.15s, border-color 0.15s;
-      min-height: 72px;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .sheet-item.active {
-      background: rgba(124,58,237,0.07);
-      border-color: rgba(124,58,237,0.2);
-      color: #7c3aed;
-    }
-    .sheet-item:active { opacity: 0.75; }
-
-    .sheet-item-icon {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: rgba(124,58,237,0.09);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .sheet-item-icon i { font-size: 0.95rem; color: #7c3aed; }
-    .sheet-item.active .sheet-item-icon { background: #7c3aed; }
-    .sheet-item.active .sheet-item-icon i { color: #fff; }
-
-    .sheet-item-label {
-      font-size: 0.75rem; font-weight: 600; text-align: center; line-height: 1.2;
-    }
-    .sheet-item-label-en {
-      font-size: 0.65rem; color: #9090aa; text-align: center;
-    }
-
-    .sheet-footer {
-      padding: 0.75rem 1rem;
-      border-top: 1px solid #f3f4f6;
-    }
-    .sheet-logout {
-      width: 100%;
-      display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-      padding: 0.875rem;
-      border-radius: 14px;
-      border: 1.5px solid #fee2e2;
-      background: #fff5f5;
-      color: #dc2626;
-      font-size: 0.9rem; font-weight: 600; cursor: pointer;
-    }
-    .sheet-logout-en {
-      font-size: 0.78rem; opacity: 0.7;
-    }
+    /* Profile tab avatar */
 
     /* ═══════════════════════════════════════════════════════
        DESKTOP SIDEBAR  (≥ 768px)
@@ -621,8 +439,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
        RESPONSIVE SHOW/HIDE
     ═══════════════════════════════════════════════════════ */
     @media (max-width: 767px) {
-      .mobile-nav    { display: flex; }
-      .profile-sheet { display: block; }
+      .mobile-nav { display: flex; }
     }
 
     @media (min-width: 768px) {
@@ -653,8 +470,6 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   readonly unreadCount     = this.realtimeSvc.unreadCount;
   pendingRequestsCount     = signal(0);
   currentPath              = signal('');
-  showSheet                = signal(false);
-
   userInitials  = signal('?');
   displayName   = signal('');
   userEmail     = signal('');
@@ -674,7 +489,6 @@ export class BottomNavComponent implements OnInit, OnDestroy {
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: NavigationEnd) => {
         this.currentPath.set(e.urlAfterRedirects);
-        this.closeSheet();
       });
   }
 
@@ -756,12 +570,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     return cur.startsWith(path);
   }
 
-  // ── Sheet ──────────────────────────────────────────────────────────────────
-  openSheet(): void  { this.showSheet.set(true);  }
-  closeSheet(): void { this.showSheet.set(false); }
-
   async logout(): Promise<void> {
-    this.closeSheet();
     await this.authService.logout();
   }
 }
