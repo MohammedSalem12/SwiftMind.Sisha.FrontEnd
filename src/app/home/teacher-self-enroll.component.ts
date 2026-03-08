@@ -117,7 +117,7 @@ import { UnenrollRequestStatus } from '@proxy/teachers';
 
         <!-- Course list -->
         <div class="courses-list">
-          @for (course of filteredCourses(); track course.id; trackBy: trackById) {
+          @for (course of filteredCourses(); track course.id) {
 
             <!-- ENROLLED card -->
             @if (course.isEnrolled) {
