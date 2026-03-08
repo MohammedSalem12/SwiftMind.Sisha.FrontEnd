@@ -120,27 +120,24 @@ import { AcademyDto } from '@proxy/academies/models';
               }
             </div>
 
-            <!-- Grade -->
+            <!-- Grade (optional) -->
             <div class="field">
               <label class="field-label">
                 <i class="fas fa-graduation-cap"></i>
-                الصف الدراسي · Grade <span class="req">*</span>
+                الصف الدراسي · Grade
+                <span class="opt-label">(اختياري · optional)</span>
               </label>
               @if (loadingGrades()) {
                 <div class="select-shimmer"></div>
               } @else {
                 <select class="field-input field-select" name="gradeId"
                         [ngModel]="model().gradeId"
-                        (ngModelChange)="setField('gradeId', $event)"
-                        #gradeField="ngModel" required>
-                  <option value="" disabled>اختر الصف…</option>
+                        (ngModelChange)="setField('gradeId', $event || null)">
+                  <option value="">— بدون صف محدد —</option>
                   @for (g of grades(); track g.id) {
                     <option [value]="g.id">{{ g.name }}</option>
                   }
                 </select>
-                @if (gradeField.invalid && (gradeField.dirty || gradeField.touched)) {
-                  <span class="field-error">الصف الدراسي مطلوب</span>
-                }
               }
             </div>
 
@@ -268,6 +265,7 @@ import { AcademyDto } from '@proxy/academies/models';
     }
     .field-label i { color:#667eea; font-size:.82rem; }
     .req { color:#ef4444; }
+    .opt-label { font-size:.72rem; color:#9090aa; font-weight:400; text-transform:none; letter-spacing:0; margin-right:.25rem; }
 
     .field-input {
       width:100%; padding:.8rem 1rem;
@@ -340,7 +338,7 @@ export class AddCourseComponent implements OnInit {
   private readonly router     = inject(Router);
   private readonly route      = inject(ActivatedRoute);
 
-  model = signal<Partial<CreateUpdateCourseDto>>({ nameAr: '', nameEn: '', gradeId: '' });
+  model = signal<Partial<CreateUpdateCourseDto>>({ nameAr: '', nameEn: '', gradeId: undefined });
   grades       = signal<GradeDto[]>([]);
   loadingGrades = signal(true);
   saving        = signal(false);
@@ -394,8 +392,8 @@ export class AddCourseComponent implements OnInit {
   }
 
   async submit(form?: NgForm): Promise<void> {
-    if (form?.invalid) {
-      this.errorMsg.set('يرجى تعبئة جميع الحقول المطلوبة');
+    if (!this.model().nameAr?.trim() || !this.model().nameEn?.trim()) {
+      this.errorMsg.set('يرجى إدخال اسم المقرر بالعربية والإنجليزية');
       return;
     }
 
