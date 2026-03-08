@@ -36,7 +36,7 @@ function getRoleRequestsPath(roles: string[]): string {
   if (roles.includes(ROLES.STUDENT))    return '/student/requests';
   if (roles.includes(ROLES.TEACHER))    return '/teacher/my-requests';
   if (roles.includes(ROLES.PARENT))     return '/parent-enrollment-approval';
-  if (roles.includes(ROLES.SECRETARY))  return '/enrollment-requests';
+  if (roles.includes(ROLES.SECRETARY))  return '/secretary/requests';
   if (roles.includes(ROLES.ADMIN))      return '/enrollment-requests';
   return '/notifications';
 }
