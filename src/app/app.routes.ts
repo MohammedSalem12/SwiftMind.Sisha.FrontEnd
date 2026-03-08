@@ -135,7 +135,7 @@ export const appRoutes: Routes = [
     path: 'students',
     loadChildren: () => import('./students/students.routes').then(m => m.studentsRoutes),
     canActivate: [roleGuard],
-    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
+    data: { roles: ['TEACHER', 'SECRETARY'] }
   },
   {
     path: 'enroll',
