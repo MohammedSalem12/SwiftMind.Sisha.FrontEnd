@@ -42,31 +42,6 @@ function getRoleRequestsPath(roles: string[]): string {
 }
 
 function getSecondaryItems(roles: string[]): SecondaryItem[] {
-  if (roles.includes(ROLES.TEACHER)) return [
-    { path: '/attendance',          label: 'الحضور',              labelEn: 'Attendance',        icon: 'fas fa-user-check' },
-    { path: '/teacher-groups',      label: 'مجموعاتي',            labelEn: 'My Groups',          icon: 'fas fa-layer-group' },
-    { path: '/teacher/qr-codes',    label: 'رموز QR',             labelEn: 'QR Codes',           icon: 'fas fa-qrcode' },
-    { path: '/teacher/enroll',      label: 'التسجيل في مقررات',   labelEn: 'Enroll in Courses',  icon: 'fas fa-plus-circle' },
-    { path: '/teacher/academies',   label: 'الأكاديميات',         labelEn: 'Academies',          icon: 'fas fa-university' },
-    { path: '/marks-entry',         label: 'تسجيل الدرجات',       labelEn: 'Marks Entry',        icon: 'fas fa-star-half-alt' },
-  ];
-  if (roles.includes(ROLES.STUDENT)) return [
-    { path: '/student/courses',     label: 'مقرراتي',             labelEn: 'My Courses',         icon: 'fas fa-book-open' },
-    { path: '/student/grades',      label: 'درجاتي',              labelEn: 'My Grades',          icon: 'fas fa-star' },
-    { path: '/student/attendance',  label: 'حضوري',               labelEn: 'My Attendance',      icon: 'fas fa-calendar-check' },
-    { path: '/student/qr',          label: 'رمز QR',              labelEn: 'My QR Code',         icon: 'fas fa-qrcode' },
-  ];
-  if (roles.includes(ROLES.PARENT)) return [
-    { path: '/parent/link-child',   label: 'ربط طالب',            labelEn: 'Link Child',         icon: 'fas fa-user-plus' },
-    { path: '/parent/requests',     label: 'طلبات الربط',         labelEn: 'Link Requests',      icon: 'fas fa-link' },
-  ];
-  if (roles.includes(ROLES.SECRETARY)) return [
-    { path: '/students',                 label: 'الطلاب',          labelEn: 'Students',           icon: 'fas fa-user-graduate' },
-    { path: '/teachers',                 label: 'المعلمون',         labelEn: 'Teachers',           icon: 'fas fa-chalkboard-teacher' },
-    { path: '/secretary/link-teacher',   label: 'ربط معلم',        labelEn: 'Link Teacher',       icon: 'fas fa-link' },
-    { path: '/courses',                  label: 'المقررات',         labelEn: 'Courses',            icon: 'fas fa-book' },
-    { path: '/attendance',               label: 'الحضور',           labelEn: 'Attendance',         icon: 'fas fa-user-check' },
-  ];
   if (roles.includes(ROLES.ADMIN)) return [
     { path: '/students',             label: 'الطلاب',              labelEn: 'Students',           icon: 'fas fa-user-graduate' },
     { path: '/teachers',             label: 'المعلمون',             labelEn: 'Teachers',           icon: 'fas fa-chalkboard-teacher' },
