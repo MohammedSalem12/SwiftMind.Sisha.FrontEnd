@@ -14,315 +14,410 @@ import { UnenrollRequestStatus } from '@proxy/teachers';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="self-enroll-page">
-      <div class="container py-4">
-        <!-- Header -->
-        <div class="page-header mb-4">
-          <div class="d-flex align-items-center gap-3">
-            <button class="btn btn-outline-light btn-sm back-btn" (click)="goBack()">
-              <i class="fas fa-arrow-right"></i>
-            </button>
-            <div>
-              <h1 class="mb-1">التسجيل في المقررات</h1>
-              <p class="mb-0 opacity-75">اختر المقررات التي تريد التسجيل فيها</p>
-            </div>
+    <div class="page" dir="rtl">
+
+      <!-- Header -->
+      <div class="page-header">
+        <div class="blob b1"></div><div class="blob b2"></div>
+        <div class="header-content">
+          <div>
+            <h1>التسجيل في المقررات</h1>
+            <p>اختر المقررات التي تريد التسجيل فيها · Enroll in Courses</p>
           </div>
-        </div>
-
-        <!-- Loading -->
-        <div *ngIf="loading()" class="text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">جاري التحميل...</span>
-          </div>
-          <p class="mt-2 text-muted">جاري تحميل المقررات...</p>
-        </div>
-
-        <!-- Enroll Result Message -->
-        <div *ngIf="enrollResult()" class="result-card mb-4"
-             [class.success]="enrollResult()!.success"
-             [class.error]="!enrollResult()!.success">
-          <div class="result-icon">
-            <i [class]="enrollResult()!.success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
-          </div>
-          <div class="result-body">
-            <h4>{{ enrollResult()!.success ? 'تم التسجيل بنجاح' : 'تنبيه' }}</h4>
-            <p>{{ enrollResult()!.message }}</p>
-          </div>
-          <button class="btn-close-result" (click)="enrollResult.set(null)">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-
-        <!-- Unenroll Request Result -->
-        <div *ngIf="unenrollMsg()" class="result-card mb-4"
-             [class.success]="unenrollMsgSuccess()"
-             [class.error]="!unenrollMsgSuccess()">
-          <div class="result-icon">
-            <i [class]="unenrollMsgSuccess() ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
-          </div>
-          <div class="result-body">
-            <p class="mb-0">{{ unenrollMsg() }}</p>
-          </div>
-          <button class="btn-close-result" (click)="unenrollMsg.set(null)">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-
-        <!-- Course List -->
-        <div *ngIf="!loading() && courses().length > 0">
-
-          <!-- Search & Grade Filter -->
-          <div class="filter-bar mb-3">
-            <div class="search-wrap">
-              <i class="fas fa-search search-icon"></i>
-              <input
-                class="search-input"
-                type="text"
-                placeholder="ابحث باسم المقرر..."
-                [(ngModel)]="searchTextValue"
-                (ngModelChange)="searchText.set($event)" />
-              <button *ngIf="searchText()" class="search-clear" (click)="searchText.set(''); searchTextValue = ''">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-            <select class="grade-select" [(ngModel)]="gradeFilterValue" (ngModelChange)="selectedGrade.set($event)">
-              <option value="">كل الصفوف</option>
-              <option *ngFor="let g of availableGrades()" [value]="g">{{ g }}</option>
-            </select>
-            <!-- Enrolled filter -->
-            <button class="filter-toggle" [class.active]="showEnrolledOnly()"
-                    (click)="toggleEnrolledOnly()">
-              <i class="fas fa-chalkboard-teacher me-1"></i>
-              مقرراتي فقط
-            </button>
-          </div>
-
-          <!-- Enroll button row -->
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="h5 mb-0">
-              المقررات
-              <span class="count-badge">{{ filteredCourses().length }}</span>
-              <span *ngIf="filteredCourses().length !== courses().length" class="text-muted small ms-1">
-                من {{ courses().length }}
-              </span>
-            </h3>
-            <button
-              class="btn btn-primary"
-              [disabled]="selectedCourseIds().length === 0 || submitting()"
-              (click)="submitEnrollment()">
-              <span *ngIf="submitting()" class="spinner-border spinner-border-sm me-1" role="status"></span>
-              <i *ngIf="!submitting()" class="fas fa-check me-1"></i>
-              تسجيل ({{ selectedCourseIds().length }})
-            </button>
-          </div>
-
-          <!-- No results -->
-          <div *ngIf="filteredCourses().length === 0" class="text-center py-4">
-            <i class="fas fa-search fa-2x text-muted mb-2"></i>
-            <p class="text-muted">لا توجد نتائج</p>
-          </div>
-
-          <div class="row g-3">
-            <div class="col-12 col-md-6 col-lg-4"
-                 *ngFor="let course of filteredCourses(); trackBy: trackById">
-
-              <!-- ENROLLED COURSE CARD -->
-              <div *ngIf="course.isEnrolled" class="course-card enrolled-card">
-                <div class="enrolled-badge">
-                  <i class="fas fa-check-circle"></i>
-                  مسجّل
-                </div>
-                <div class="course-info">
-                  <h5>{{ course.nameAr }}</h5>
-                  <p class="text-muted mb-2">{{ course.nameEn }}</p>
-                  <div class="d-flex flex-wrap gap-2 mb-3">
-                    <span class="badge bg-light text-dark">
-                      <i class="fas fa-code me-1"></i>{{ course.code }}
-                    </span>
-                    <span *ngIf="course.gradeName" class="badge grade-badge">
-                      <i class="fas fa-graduation-cap me-1"></i>{{ course.gradeName }}
-                    </span>
-                  </div>
-
-                  <!-- No pending request → show button -->
-                  <button
-                    *ngIf="course.pendingUnenrollStatus == null"
-                    class="btn btn-unenroll w-100"
-                    [disabled]="requestingUnenroll() === course.id"
-                    (click)="requestUnenroll(course)">
-                    <span *ngIf="requestingUnenroll() === course.id"
-                          class="spinner-border spinner-border-sm me-1" role="status"></span>
-                    <i *ngIf="requestingUnenroll() !== course.id" class="fas fa-sign-out-alt me-1"></i>
-                    طلب إلغاء التسجيل
-                  </button>
-
-                  <!-- Pending request exists -->
-                  <div *ngIf="course.pendingUnenrollStatus === 0" class="unenroll-pending">
-                    <i class="fas fa-hourglass-half me-1"></i>
-                    بانتظار موافقة المشرف
-                  </div>
-                </div>
-              </div>
-
-              <!-- NON-ENROLLED COURSE CARD -->
-              <div *ngIf="!course.isEnrolled"
-                   class="course-card selectable-card"
-                   [class.selected]="isSelected(course.id!)"
-                   (click)="toggleCourse(course.id!)">
-                <div class="select-indicator">
-                  <i [class]="isSelected(course.id!) ? 'fas fa-check-square' : 'far fa-square'"></i>
-                </div>
-                <div class="course-info">
-                  <h5>{{ course.nameAr }}</h5>
-                  <p class="text-muted mb-1">{{ course.nameEn }}</p>
-                  <div class="d-flex flex-wrap gap-2">
-                    <span class="badge bg-light text-dark">
-                      <i class="fas fa-code me-1"></i>{{ course.code }}
-                    </span>
-                    <span *ngIf="course.gradeName" class="badge grade-badge">
-                      <i class="fas fa-graduation-cap me-1"></i>{{ course.gradeName }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty state -->
-        <div *ngIf="!loading() && courses().length === 0" class="text-center py-5">
-          <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-          <h4>لا توجد مقررات متاحة</h4>
-          <p class="text-muted">لا توجد مقررات متاحة حالياً</p>
         </div>
       </div>
+
+      <!-- Result banners -->
+      @if (enrollResult()) {
+        <div class="banner" [class.banner-success]="enrollResult()!.success"
+             [class.banner-warn]="!enrollResult()!.success">
+          <i [class]="enrollResult()!.success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+          <div class="banner-body">
+            <strong>{{ enrollResult()!.success ? 'تم التسجيل بنجاح' : 'تنبيه' }}</strong>
+            <span>{{ enrollResult()!.message }}</span>
+          </div>
+          <button class="banner-close" (click)="enrollResult.set(null)">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      }
+      @if (unenrollMsg()) {
+        <div class="banner" [class.banner-success]="unenrollMsgSuccess()"
+             [class.banner-warn]="!unenrollMsgSuccess()">
+          <i [class]="unenrollMsgSuccess() ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+          <div class="banner-body"><span>{{ unenrollMsg() }}</span></div>
+          <button class="banner-close" (click)="unenrollMsg.set(null)">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      }
+
+      <!-- Loading -->
+      @if (loading()) {
+        <div class="shimmer-area">
+          <div class="shimmer-filters"></div>
+          @for (i of [1,2,3,4]; track i) { <div class="shimmer-card"></div> }
+        </div>
+      }
+
+      @if (!loading() && courses().length > 0) {
+
+        <!-- Filter bar -->
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <i class="fas fa-search si"></i>
+            <input class="search-input" type="text" placeholder="ابحث باسم المقرر…"
+                   [(ngModel)]="searchTextValue"
+                   (ngModelChange)="searchText.set($event)" />
+            @if (searchText()) {
+              <button class="search-clear" (click)="searchText.set(''); searchTextValue = ''">
+                <i class="fas fa-times"></i>
+              </button>
+            }
+          </div>
+          <select class="grade-select" [(ngModel)]="gradeFilterValue"
+                  (ngModelChange)="selectedGrade.set($event)">
+            <option value="">كل الصفوف</option>
+            @for (g of availableGrades(); track g) {
+              <option [value]="g">{{ g }}</option>
+            }
+          </select>
+          <button class="filter-toggle" [class.active]="showEnrolledOnly()"
+                  (click)="toggleEnrolledOnly()">
+            <i class="fas fa-chalkboard-teacher"></i>
+            مقرراتي
+          </button>
+        </div>
+
+        <!-- Count row -->
+        <div class="count-row">
+          <span class="count-label">
+            <i class="fas fa-book"></i>
+            المقررات
+            <span class="count-pill">{{ filteredCourses().length }}</span>
+            @if (filteredCourses().length !== courses().length) {
+              <span class="count-total">من {{ courses().length }}</span>
+            }
+          </span>
+          @if (selectedCourseIds().length > 0) {
+            <span class="selected-hint">
+              <i class="fas fa-check-square"></i>
+              {{ selectedCourseIds().length }} مختار
+            </span>
+          }
+        </div>
+
+        <!-- No results -->
+        @if (filteredCourses().length === 0) {
+          <div class="empty-filter">
+            <i class="fas fa-search"></i>
+            <p>لا توجد نتائج مطابقة</p>
+          </div>
+        }
+
+        <!-- Course list -->
+        <div class="courses-list">
+          @for (course of filteredCourses(); track course.id; trackBy: trackById) {
+
+            <!-- ENROLLED card -->
+            @if (course.isEnrolled) {
+              <div class="course-card enrolled-card">
+                <div class="enrolled-mark">
+                  <i class="fas fa-check-circle"></i>
+                  مسجّل · Enrolled
+                </div>
+                <div class="course-body">
+                  <div class="course-main">
+                    <span class="course-name-ar">{{ course.nameAr }}</span>
+                    @if (course.nameEn) { <span class="course-name-en">{{ course.nameEn }}</span> }
+                    <div class="course-chips">
+                      @if (course.code) { <span class="chip chip-code"><i class="fas fa-code"></i>{{ course.code }}</span> }
+                      @if (course.gradeName) { <span class="chip chip-grade"><i class="fas fa-graduation-cap"></i>{{ course.gradeName }}</span> }
+                    </div>
+                  </div>
+                  <div class="course-action">
+                    @if (course.pendingUnenrollStatus == null) {
+                      <button class="unenroll-btn"
+                              [disabled]="requestingUnenroll() === course.id"
+                              (click)="requestUnenroll(course)">
+                        @if (requestingUnenroll() === course.id) { <span class="spinner"></span> }
+                        @else { <i class="fas fa-sign-out-alt"></i> }
+                        إلغاء
+                      </button>
+                    }
+                    @if (course.pendingUnenrollStatus === 0) {
+                      <div class="pending-badge">
+                        <i class="fas fa-hourglass-half"></i>
+                        بانتظار الموافقة
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- SELECTABLE card -->
+            @if (!course.isEnrolled) {
+              <div class="course-card selectable-card"
+                   [class.selected]="isSelected(course.id!)"
+                   (click)="toggleCourse(course.id!)">
+                <div class="select-box" [class.checked]="isSelected(course.id!)">
+                  @if (isSelected(course.id!)) { <i class="fas fa-check"></i> }
+                </div>
+                <div class="course-body">
+                  <div class="course-main">
+                    <span class="course-name-ar">{{ course.nameAr }}</span>
+                    @if (course.nameEn) { <span class="course-name-en">{{ course.nameEn }}</span> }
+                    <div class="course-chips">
+                      @if (course.code) { <span class="chip chip-code"><i class="fas fa-code"></i>{{ course.code }}</span> }
+                      @if (course.gradeName) { <span class="chip chip-grade"><i class="fas fa-graduation-cap"></i>{{ course.gradeName }}</span> }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+          }
+        </div>
+      }
+
+      <!-- Empty state -->
+      @if (!loading() && courses().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon"><i class="fas fa-book-open"></i></div>
+          <h3>لا توجد مقررات متاحة</h3>
+          <p>No courses available at the moment</p>
+        </div>
+      }
+
+      <!-- Sticky enroll button -->
+      @if (selectedCourseIds().length > 0) {
+        <div class="sticky-enroll">
+          <button class="enroll-btn" [disabled]="submitting()" (click)="submitEnrollment()">
+            @if (submitting()) { <span class="spinner"></span> }
+            @else { <i class="fas fa-check"></i> }
+            تسجيل في {{ selectedCourseIds().length }} مقرر
+          </button>
+        </div>
+      }
+
+      <div [style.height]="selectedCourseIds().length > 0 ? 'calc(140px + env(safe-area-inset-bottom,0px))' : 'calc(80px + env(safe-area-inset-bottom,0px))'"></div>
     </div>
   `,
   styles: [`
-    .self-enroll-page {
-      min-height: calc(100vh - 200px);
-      background: #f8f9fa;
-    }
+    .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
 
+    /* ── Header ── */
     .page-header {
-      padding: 1.25rem 1.5rem;
-      background: var(--ngx-hero-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
-      color: white;
-      border-radius: 12px;
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      padding:calc(env(safe-area-inset-top,0px) + 1.1rem) 1.25rem 1.5rem;
+      position:relative; overflow:hidden;
+    }
+    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
+    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
+    .b2 { width:130px; height:130px; bottom:-50px; left:-25px; }
+    .header-content { position:relative; z-index:1; }
+    .header-content h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
+    .header-content p  { margin:.2rem 0 0; font-size:.76rem; color:rgba(255,255,255,.7); }
+
+    /* ── Banners ── */
+    .banner {
+      display:flex; align-items:flex-start; gap:.75rem;
+      margin:.75rem 1rem 0; padding:.875rem 1rem; border-radius:14px;
+    }
+    .banner-success { background:rgba(34,197,94,.12); border:1.5px solid rgba(34,197,94,.25); color:#15803d; }
+    .banner-warn    { background:rgba(245,158,11,.1);  border:1.5px solid rgba(245,158,11,.25); color:#b45309; }
+    .banner i { font-size:1.1rem; flex-shrink:0; margin-top:.1rem; }
+    .banner-body { flex:1; display:flex; flex-direction:column; gap:.2rem; font-size:.85rem; }
+    .banner-body strong { font-weight:700; }
+    .banner-close {
+      background:none; border:none; cursor:pointer; color:currentColor;
+      font-size:.8rem; padding:.2rem; opacity:.7; flex-shrink:0;
     }
 
-    .page-header h1 { font-size: 1.5rem; font-weight: 600; }
-    .back-btn { min-width: 44px; min-height: 44px; }
-
-    /* ─── Result cards ─── */
-    .result-card {
-      display: flex;
-      gap: 1rem;
-      padding: 1rem 1.25rem;
-      border-radius: 12px;
-      align-items: flex-start;
-      position: relative;
+    /* ── Filter bar ── */
+    .filter-bar {
+      display:flex; gap:.5rem; flex-wrap:wrap;
+      padding:.875rem 1rem .25rem;
     }
-    .result-card.success { background: #d4edda; border: 1px solid #c3e6cb; }
-    .result-card.error   { background: #fff3cd; border: 1px solid #ffc107; }
-    .result-icon { font-size: 1.5rem; }
-    .result-card.success .result-icon { color: #28a745; }
-    .result-card.error .result-icon   { color: #ffc107; }
-    .result-body { flex: 1; }
-    .result-body h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
-    .result-body p  { margin: 0; font-size: 0.9rem; }
-    .btn-close-result {
-      background: none; border: none; cursor: pointer;
-      color: #6c757d; font-size: 0.85rem; padding: 0.25rem;
-      min-width: 30px; min-height: 30px;
-    }
-
-    /* ─── Filter bar ─── */
-    .filter-bar { display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: center; }
-    .search-wrap { flex: 1; min-width: 180px; position: relative; display: flex; align-items: center; }
-    .search-icon { position: absolute; right: 0.875rem; color: #9090aa; font-size: 0.85rem; pointer-events: none; }
+    .search-wrap { flex:1; min-width:160px; position:relative; display:flex; align-items:center; }
+    .si { position:absolute; right:.875rem; color:#9090aa; font-size:.82rem; pointer-events:none; }
     .search-input {
-      width: 100%; padding: 0.625rem 2.25rem 0.625rem 2rem;
-      border: 1.5px solid #e2e4f0; border-radius: 12px; font-size: 0.9rem;
-      background: white; outline: none; direction: rtl; transition: border-color 0.15s;
+      width:100%; padding:.7rem 2.25rem .7rem .75rem;
+      border:1.5px solid #e9ecef; border-radius:12px;
+      font-size:.88rem; background:#fff; outline:none; direction:rtl;
+      min-height:44px; transition:border-color .15s;
     }
-    .search-input:focus { border-color: #667eea; }
-    .search-clear { position: absolute; left: 0.625rem; background: none; border: none; color: #9090aa; cursor: pointer; padding: 0.25rem; font-size: 0.8rem; }
+    .search-input:focus { border-color:#667eea; }
+    .search-clear {
+      position:absolute; left:.625rem; background:none; border:none;
+      color:#9090aa; cursor:pointer; font-size:.8rem; padding:.25rem;
+    }
     .grade-select {
-      padding: 0.625rem 0.875rem; border: 1.5px solid #e2e4f0; border-radius: 12px;
-      font-size: 0.875rem; background: white; outline: none; cursor: pointer;
-      direction: rtl; min-width: 130px; transition: border-color 0.15s;
+      padding:.7rem .875rem; border:1.5px solid #e9ecef; border-radius:12px;
+      font-size:.85rem; background:#fff; outline:none; cursor:pointer;
+      min-height:44px; min-width:120px; direction:rtl;
     }
-    .grade-select:focus { border-color: #667eea; }
+    .grade-select:focus { border-color:#667eea; }
     .filter-toggle {
-      padding: 0.625rem 0.875rem; border: 1.5px solid #e2e4f0; border-radius: 12px;
-      font-size: 0.875rem; background: white; cursor: pointer; white-space: nowrap;
-      transition: all 0.15s;
+      display:flex; align-items:center; gap:.35rem;
+      padding:.7rem .875rem; border:1.5px solid #e9ecef; border-radius:12px;
+      font-size:.82rem; font-weight:600; background:#fff; cursor:pointer;
+      white-space:nowrap; min-height:44px; transition:all .15s;
     }
-    .filter-toggle.active { background: #667eea; color: white; border-color: #667eea; }
+    .filter-toggle.active { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border-color:transparent; }
 
-    .count-badge {
-      display: inline-flex; align-items: center; justify-content: center;
-      background: rgba(102,126,234,.12); color: #667eea;
-      font-size: 0.78rem; font-weight: 700; padding: 0.1rem 0.5rem;
-      border-radius: 20px; margin-right: 0.4rem;
+    /* ── Count row ── */
+    .count-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:.5rem 1rem .25rem;
+      font-size:.8rem; font-weight:600; color:#555;
+    }
+    .count-label { display:flex; align-items:center; gap:.4rem; }
+    .count-label i { color:#667eea; }
+    .count-pill {
+      background:rgba(102,126,234,.12); color:#667eea;
+      font-size:.7rem; font-weight:700; padding:.1rem .45rem; border-radius:20px;
+    }
+    .count-total { color:#9090aa; font-weight:400; }
+    .selected-hint {
+      display:flex; align-items:center; gap:.35rem;
+      color:#667eea; font-size:.78rem;
     }
 
-    /* ─── Course Cards ─── */
+    /* ── Courses list ── */
+    .courses-list {
+      padding:.5rem 1rem 0;
+      display:flex; flex-direction:column; gap:.5rem;
+    }
+
     .course-card {
-      background: white; border-radius: 12px; padding: 1.25rem;
-      height: 100%; border: 2px solid #e5e7eb; transition: all 0.2s ease;
+      background:#fff; border-radius:14px;
+      border:1.5px solid #f0f0f0;
+      box-shadow:0 2px 6px rgba(0,0,0,.04);
+      overflow:hidden; transition:all .15s;
     }
 
-    /* Enrolled card */
-    .enrolled-card { border-color: #28a745; position: relative; overflow: hidden; }
-    .enrolled-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, #28a745, #20c997);
+    /* Enrolled */
+    .enrolled-card { border-top:3px solid #22c55e; }
+    .enrolled-mark {
+      display:flex; align-items:center; gap:.4rem;
+      background:rgba(34,197,94,.08); color:#16a34a;
+      font-size:.72rem; font-weight:700;
+      padding:.45rem .875rem;
+      border-bottom:1px solid rgba(34,197,94,.12);
     }
-    .enrolled-badge {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      background: linear-gradient(135deg, #28a745, #20c997);
-      color: white; font-size: 0.78rem; font-weight: 600;
-      padding: 0.25rem 0.625rem; border-radius: 20px; margin-bottom: 0.75rem;
+    .enrolled-mark i { font-size:.82rem; }
+
+    .course-body {
+      display:flex; align-items:center; gap:.75rem;
+      padding:.875rem;
+    }
+    .course-main { flex:1; min-width:0; }
+    .course-name-ar {
+      display:block; font-size:.95rem; font-weight:700; color:#1a1a2e;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .course-name-en {
+      display:block; font-size:.72rem; color:#9090aa; margin-top:.1rem;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .course-chips { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.4rem; }
+    .chip {
+      display:inline-flex; align-items:center; gap:.25rem;
+      font-size:.66rem; font-weight:600; padding:.12rem .45rem; border-radius:8px;
+    }
+    .chip-code  { background:rgba(102,126,234,.1); color:#667eea; }
+    .chip-grade { background:rgba(245,158,11,.12); color:#d97706; }
+
+    .course-action { flex-shrink:0; }
+
+    .unenroll-btn {
+      display:flex; align-items:center; gap:.3rem;
+      padding:.5rem .75rem; border-radius:10px;
+      background:rgba(239,68,68,.1); color:#dc2626;
+      border:1px solid rgba(239,68,68,.2);
+      font-size:.75rem; font-weight:700; cursor:pointer;
+      min-height:40px; transition:background .15s; white-space:nowrap;
+    }
+    .unenroll-btn:disabled { opacity:.55; cursor:not-allowed; }
+    .unenroll-btn:not(:disabled):hover { background:rgba(239,68,68,.2); }
+
+    .pending-badge {
+      display:flex; align-items:center; gap:.3rem;
+      font-size:.7rem; font-weight:700; color:#d97706;
+      background:rgba(245,158,11,.1); padding:.35rem .6rem;
+      border-radius:10px; border:1px solid rgba(245,158,11,.2);
+      white-space:nowrap;
     }
 
-    /* Selectable card */
-    .selectable-card { cursor: pointer; display: flex; gap: 1rem; }
-    .selectable-card:hover { border-color: #667eea; box-shadow: 0 4px 12px rgba(102,126,234,.15); }
-    .selectable-card.selected { border-color: #667eea; background: #f0f0ff; }
-    .select-indicator { font-size: 1.5rem; color: #667eea; padding-top: 0.25rem; flex-shrink: 0; }
+    /* Selectable */
+    .selectable-card { cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    .selectable-card:active { transform:scale(.99); }
+    .selectable-card.selected { border-color:rgba(102,126,234,.35); background:rgba(102,126,234,.03); }
 
-    .course-info h5 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
-
-    /* Unenroll button */
-    .btn-unenroll {
-      background: linear-gradient(135deg, #dc3545, #c0392b); color: white; border: none;
-      padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
-      cursor: pointer; transition: opacity 0.2s; min-height: 44px;
+    .select-box {
+      width:24px; height:24px; border-radius:7px; flex-shrink:0;
+      border:2px solid #d1d5db;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.75rem; color:#fff; transition:all .15s;
     }
-    .btn-unenroll:disabled { opacity: 0.65; cursor: not-allowed; }
+    .select-box.checked { background:#667eea; border-color:#667eea; }
 
-    .unenroll-pending {
-      text-align: center; padding: 0.5rem;
-      background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px;
-      color: #856404; font-size: 0.85rem; font-weight: 600;
+    /* ── Sticky enroll button ── */
+    .sticky-enroll {
+      position:fixed; bottom:calc(68px + env(safe-area-inset-bottom,0px));
+      left:1rem; right:1rem;
+      z-index:800;
     }
+    .enroll-btn {
+      width:100%; padding:.9rem 1.5rem;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      color:#fff; border:none; border-radius:16px;
+      font-size:.95rem; font-weight:800; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:.5rem;
+      box-shadow:0 8px 24px rgba(102,126,234,.4);
+      min-height:52px; transition:opacity .15s;
+    }
+    .enroll-btn:disabled { opacity:.7; cursor:not-allowed; }
 
-    /* Enroll button */
-    .btn-primary {
-      background: var(--ngx-hero-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
-      border: none; padding: 0.5rem 1.5rem; border-radius: 8px; min-height: 44px;
+    /* ── Empty & shimmer ── */
+    .shimmer-area { padding:.875rem 1rem 0; display:flex; flex-direction:column; gap:.5rem; }
+    .shimmer-filters {
+      height:44px; border-radius:12px;
+      background:linear-gradient(90deg,#e8e8f0 25%,#f0f0f8 50%,#e8e8f0 75%);
+      background-size:200% 100%; animation:shimmer 1.4s infinite;
     }
+    .shimmer-card {
+      height:80px; border-radius:14px;
+      background:linear-gradient(90deg,#e8e8f0 25%,#f0f0f8 50%,#e8e8f0 75%);
+      background-size:200% 100%; animation:shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-    .grade-badge {
-      font-size: 0.85rem !important; font-weight: 600 !important;
-      padding: 0.3rem 0.6rem !important;
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-      color: white !important; border-radius: 6px;
+    .empty-filter { text-align:center; padding:2rem 1rem; color:#9090aa; }
+    .empty-filter i { font-size:2rem; display:block; margin-bottom:.75rem; color:#c4c4d4; }
+    .empty-filter p { font-size:.9rem; font-weight:600; margin:0; }
+
+    .empty-state {
+      display:flex; flex-direction:column; align-items:center;
+      padding:4rem 1.5rem; text-align:center;
     }
+    .empty-icon {
+      width:80px; height:80px; border-radius:50%;
+      background:rgba(102,126,234,.1);
+      display:flex; align-items:center; justify-content:center;
+      font-size:2rem; color:#667eea; margin-bottom:1.25rem;
+    }
+    .empty-state h3 { font-size:1.1rem; font-weight:700; color:#1a1a2e; margin:0 0 .4rem; }
+    .empty-state p   { font-size:.85rem; color:#9090aa; margin:0; }
+
+    .spinner {
+      width:16px; height:16px; border:2px solid rgba(255,255,255,.4);
+      border-top-color:#fff; border-radius:50%;
+      animation:spin .7s linear infinite; display:inline-block;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
   `],
 })
 export class TeacherSelfEnrollComponent implements OnInit {
