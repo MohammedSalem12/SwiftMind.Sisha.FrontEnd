@@ -511,10 +511,12 @@ export class AcademyProfileComponent implements OnInit {
       this.academy.set(academyData);
       this.courses.set(coursesData ?? []);
 
-      // Check membership for any role (student or teacher non-supervisor)
+      // Check membership for this specific academy (student or non-supervisor teacher)
       if (!this.isSupervisor()) {
         try {
-          const membership = await lastValueFrom(this.academySvc.getMyMembership());
+          const membership = await lastValueFrom(
+            this.academySvc.getMyMembership({ params: { academyId: this.academyId } })
+          );
           this.memberStatus.set(membership?.status ?? null);
         } catch { /* not a member — null stays */ }
       }
