@@ -8,6 +8,9 @@ import { AuthService, ConfigStateService } from '@abp/ng.core';
 import { environment } from '../../environments/environment';
 import { BiometricService } from '../shared/services/biometric.service';
 
+declare const google: any;
+declare const FB: any;
+
 interface LoginModel {
   userNameOrEmailAddress?: string;
   password?: string;
@@ -34,6 +37,8 @@ export class LoginComponent implements OnInit {
   showPassword = signal(false);
   biometricAvailable = signal(false);
   biometricLoading = signal(false);
+  googleLoading = signal(false);
+  facebookLoading = signal(false);
 
   async ngOnInit(): Promise<void> {
     if (this.authService.isAuthenticated) {
@@ -45,6 +50,115 @@ export class LoginComponent implements OnInit {
       this.biometricSvc.hasStoredCredentials(),
     ]);
     this.biometricAvailable.set(available && hasStored);
+    this.initGoogleSignIn();
+    this.initFacebook();
+  }
+
+  private initGoogleSignIn(): void {
+    // Google Identity Services (GSI)
+    const scriptId = 'google-gsi-script';
+    if (document.getElementById(scriptId)) return;
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
+  private initFacebook(): void {
+    const scriptId = 'facebook-sdk-script';
+    if (document.getElementById(scriptId)) return;
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = 'https://connect.facebook.net/en_US/sdk.js';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      FB.init({
+        appId: '811779008607282',
+        cookie: true,
+        xfbml: false,
+        version: 'v19.0',
+      });
+    };
+    document.head.appendChild(script);
+  }
+
+  loginWithGoogle(): void {
+    if (typeof google === 'undefined') {
+      this.error.set('Google Sign-In is not available. Please try again.');
+      return;
+    }
+    this.error.set(null);
+    this.googleLoading.set(true);
+
+    const client = google.accounts.oauth2.initCodeClient({
+      client_id: environment.oAuthConfig?.clientId ? undefined : undefined,
+      // Use implicit token flow for ID token
+    });
+
+    // Use the newer credential-based flow
+    google.accounts.id.initialize({
+      client_id: (environment as any).googleClientId ?? 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+      callback: async (response: any) => {
+        if (response?.credential) {
+          try {
+            await this.loginWithSocialToken('google', response.credential);
+          } finally {
+            this.googleLoading.set(false);
+          }
+        } else {
+          this.googleLoading.set(false);
+          this.error.set('Google sign-in was cancelled.');
+        }
+      },
+      auto_select: false,
+    });
+    google.accounts.id.prompt((notification: any) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        this.googleLoading.set(false);
+        this.error.set('Google sign-in popup was blocked or cancelled. Please allow popups.');
+      }
+    });
+  }
+
+  loginWithFacebook(): void {
+    if (typeof FB === 'undefined') {
+      this.error.set('Facebook Login is not available. Please try again.');
+      return;
+    }
+    this.error.set(null);
+    this.facebookLoading.set(true);
+
+    FB.login((response: any) => {
+      if (response?.authResponse?.accessToken) {
+        this.loginWithSocialToken('facebook', response.authResponse.accessToken)
+          .finally(() => this.facebookLoading.set(false));
+      } else {
+        this.facebookLoading.set(false);
+        this.error.set('Facebook sign-in was cancelled.');
+      }
+    }, { scope: 'email,public_profile' });
+  }
+
+  private async loginWithSocialToken(provider: string, token: string): Promise<void> {
+    try {
+      await this.authService.loginUsingGrant('social_login', {
+        provider,
+        token,
+        client_id: environment.oAuthConfig?.clientId ?? 'Sesha_App',
+        scope: environment.oAuthConfig?.scope ?? 'offline_access Sesha',
+      });
+      try { await lastValueFrom(this.configService.refreshAppState()); } catch { /* ignore */ }
+      await this.router.navigateByUrl('/');
+      try { window.location.reload(); } catch { /* ignore */ }
+    } catch (err: any) {
+      const msg = err?.error?.error_description
+        || err?.error?.error?.message
+        || `${provider} login failed. Please try again.`;
+      this.error.set(msg);
+    }
   }
 
   async submit(): Promise<void> {
