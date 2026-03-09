@@ -37,7 +37,7 @@ interface CourseTab {
             <p>{{ isTeacher() ? 'الطلاب المسجّلون في مقرراتي' : 'إدارة جميع الطلاب' }}</p>
             <p class="subtitle-en">{{ isTeacher() ? 'Students in my courses' : 'Manage all students' }}</p>
           </div>
-          @if (!isTeacher()) {
+          @if (isAdmin()) {
             <button class="add-btn" (click)="goToAdd()">
               <i class="fas fa-plus"></i>
               إضافة طالب
@@ -231,9 +231,11 @@ interface CourseTab {
                     <button class="action-icon-btn view-btn" (click)="showDetails(s)" title="تفاصيل">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="action-icon-btn enroll-btn" (click)="goToEnroll(s.id!)" title="تسجيل">
-                      <i class="fas fa-plus-circle"></i>
-                    </button>
+                    @if (isAdmin() || isTeacher()) {
+                      <button class="action-icon-btn enroll-btn" (click)="goToEnroll(s.id!)" title="تسجيل">
+                        <i class="fas fa-plus-circle"></i>
+                      </button>
+                    }
                   </div>
                 </div>
               }
@@ -471,6 +473,7 @@ export class StudentsComponent implements OnInit {
 
   // ── Role detection ──────────────────────────────────────────────────────────
   isTeacher = signal(false);
+  isAdmin   = signal(false);
 
   // ── Secretary state ─────────────────────────────────────────────────────────
   filter       = signal('');
@@ -502,6 +505,7 @@ export class StudentsComponent implements OnInit {
       .map((r: any) => typeof r === 'string' ? r.toUpperCase() : '');
     const teacher = roles.includes('TEACHER');
     this.isTeacher.set(teacher);
+    this.isAdmin.set(roles.includes('ADMIN'));
 
     if (teacher) {
       await this.loadTeacherCourses();

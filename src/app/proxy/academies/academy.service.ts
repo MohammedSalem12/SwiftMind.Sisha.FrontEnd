@@ -76,10 +76,11 @@ export class AcademyService {
     { apiName: this.apiName,...config });
   
 
-  getMyMembership = (config?: Partial<Rest.Config>) =>
+  getMyMembership = (academyId?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyMemberDto>({
       method: 'GET',
       url: '/api/app/academy/my-membership',
+      params: { academyId },
     },
     { apiName: this.apiName,...config });
   

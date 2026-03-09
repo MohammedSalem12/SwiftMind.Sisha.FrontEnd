@@ -1,6 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { RestService } from '@abp/ng.core';
+import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
 
 import { CourseService } from '@proxy/courses';
 import type { CourseDto } from '@proxy/courses/dtos/models';
@@ -19,7 +22,7 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
 @Component({
   selector: 'app-parent-enroll-child',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="enroll-page" dir="rtl">
 
@@ -111,15 +114,51 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
 
       <!-- STEP 2: Teacher -->
       <div *ngIf="!loading() && step() === 'teacher'" class="step-content">
-        <div class="step-title">اختر المعلم</div>
 
-        <div *ngIf="teachers().length === 0" class="empty-state">
+        <!-- Location filter panel -->
+        <div class="filter-panel">
+          <div class="filter-row">
+            <div class="filter-field">
+              <label class="filter-lbl"><i class="fas fa-map-marker-alt"></i> المحافظة</label>
+              <select class="filter-select"
+                      [ngModel]="filterGovernment()"
+                      (ngModelChange)="filterGovernment.set($event); filterTown.set(''); onLocationFilterChange()">
+                <option value="">كل المحافظات</option>
+                <option *ngFor="let g of governorates" [value]="g">{{ g }}</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-lbl"><i class="fas fa-city"></i> المركز / الحي</label>
+              <select class="filter-select"
+                      [ngModel]="filterTown()"
+                      (ngModelChange)="filterTown.set($event); onLocationFilterChange()"
+                      [disabled]="!filterGovernment()">
+                <option value="">{{ filterGovernment() ? 'كل المراكز' : '-- اختر المحافظة أولاً --' }}</option>
+                <option *ngFor="let d of districts()" [value]="d">{{ d }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="filter-field">
+            <label class="filter-lbl"><i class="fas fa-search"></i> بحث بالاسم أو الكود</label>
+            <input class="filter-input" type="text"
+                   [ngModel]="filterNameCode()"
+                   (ngModelChange)="filterNameCode.set($event)"
+                   placeholder="اسم المعلم أو كوده" />
+          </div>
+          <div *ngIf="locationFilterLoading()" class="filter-loading">
+            <span class="spinner-xs"></span> جاري البحث...
+          </div>
+        </div>
+
+        <div class="step-title">اختر المعلم <span class="teacher-count">({{ filteredTeachers().length }})</span></div>
+
+        <div *ngIf="filteredTeachers().length === 0 && !locationFilterLoading()" class="empty-state">
           <i class="fas fa-chalkboard-teacher"></i>
-          <p>لا يوجد معلمون لهذا المقرر حالياً</p>
+          <p>{{ teachers().length === 0 ? 'لا يوجد معلمون لهذا المقرر حالياً' : 'لا يوجد معلمون بهذه المعايير' }}</p>
         </div>
 
         <div class="cards-list">
-          <div *ngFor="let teacher of teachers()" class="select-card" (click)="selectTeacher(teacher)">
+          <div *ngFor="let teacher of filteredTeachers()" class="select-card" (click)="selectTeacher(teacher)">
             <div class="card-icon teacher-icon"><i class="fas fa-chalkboard-teacher"></i></div>
             <div class="card-info">
               <div class="card-name">{{ teacher.nameArabic || teacher.displayName }}</div>
@@ -341,6 +380,36 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
       p { font-size: 0.9rem; margin: 0; }
     }
 
+    /* ── Filter panel ──────────────────────────────────────── */
+    .filter-panel {
+      background: white; border-radius: 12px; padding: 0.85rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 0.75rem;
+      display: flex; flex-direction: column; gap: 0.6rem;
+    }
+    .filter-row { display: flex; gap: 0.5rem; }
+    .filter-field { flex: 1; display: flex; flex-direction: column; gap: 0.3rem; }
+    .filter-lbl {
+      font-size: 0.72rem; font-weight: 600; color: #6b7280;
+      display: flex; align-items: center; gap: 0.3rem;
+      i { color: var(--ngx-primary); }
+    }
+    .filter-select, .filter-input {
+      border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0.5rem 0.6rem; font-size: 0.82rem;
+      width: 100%; box-sizing: border-box; background: #fff;
+      &:focus { outline: none; border-color: var(--ngx-primary); box-shadow: 0 0 0 2px rgba(51,102,255,0.1); }
+    }
+    .filter-loading {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.78rem; color: var(--ngx-primary);
+    }
+    .spinner-xs {
+      width: 12px; height: 12px;
+      border: 2px solid var(--ngx-primary); border-top-color: transparent;
+      border-radius: 50%; animation: spin .7s linear infinite; display: inline-block;
+    }
+    .teacher-count { font-size: 0.8rem; font-weight: 400; color: #a0aec0; }
+
     /* ── Step Content ─────────────────────────────────────── */
     .step-content { padding: 1rem; }
 
@@ -500,6 +569,10 @@ export class ParentEnrollChildComponent implements OnInit {
   private readonly teacherService = inject(TeacherService);
   private readonly studentService = inject(StudentService);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
+  private readonly restSvc = inject(RestService);
+
+  readonly governorates = EGYPT_GOVERNORATES_LIST;
+  readonly districts    = computed(() => getDistricts(this.filterGovernment()));
 
   studentId      = signal<string>('');
   student        = signal<StudentDto | null>(null);
@@ -513,6 +586,25 @@ export class ParentEnrollChildComponent implements OnInit {
   loading        = signal(false);
   submitting     = signal(false);
   errorMessage   = signal('');
+
+  // Location filter
+  filterGovernment      = signal('');
+  filterTown            = signal('');
+  filterNameCode        = signal('');
+  govTownTeacherIds     = signal<string[] | null>(null);
+  locationFilterLoading = signal(false);
+
+  filteredTeachers = computed(() => {
+    const all = this.teachers();
+    const ids = this.govTownTeacherIds();
+    const nc  = this.filterNameCode().toLowerCase().trim();
+    let result = ids !== null ? all.filter(t => ids.includes(t.id!)) : all;
+    if (nc) result = result.filter(t =>
+      (t.displayName?.toLowerCase() ?? '').includes(nc) ||
+      ((t as any).teacherCode?.toLowerCase() ?? '').includes(nc)
+    );
+    return result;
+  });
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('studentId');
@@ -557,10 +649,34 @@ export class ParentEnrollChildComponent implements OnInit {
   private loadTeachers(courseId: string): void {
     this.loading.set(true);
     this.errorMessage.set('');
+    this.filterGovernment.set('');
+    this.filterTown.set('');
+    this.filterNameCode.set('');
+    this.govTownTeacherIds.set(null);
     this.teacherService.getTeachersByCourse(courseId, undefined, 100).subscribe({
       next: teachers => { this.teachers.set(teachers); this.loading.set(false); },
       error: () => { this.errorMessage.set('حدث خطأ أثناء تحميل المعلمين'); this.loading.set(false); }
     });
+  }
+
+  async onLocationFilterChange(): Promise<void> {
+    const gov  = this.filterGovernment().trim();
+    const town = this.filterTown().trim();
+    if (!gov && !town) { this.govTownTeacherIds.set(null); return; }
+    this.locationFilterLoading.set(true);
+    try {
+      const params: any = { maxResultCount: 1000 };
+      if (gov)  params.government = gov;
+      if (town) params.town = town;
+      const result = await lastValueFrom(
+        this.restSvc.request<any, { items: any[] }>(
+          { method: 'GET', url: '/api/sesha/teachers', params },
+          { apiName: 'Default' }
+        )
+      );
+      this.govTownTeacherIds.set((result?.items ?? []).map((t: any) => t.id as string));
+    } catch { this.govTownTeacherIds.set([]); }
+    finally { this.locationFilterLoading.set(false); }
   }
 
   selectTeacher(teacher: TeacherAutocompleteDto): void {

@@ -1,17 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AuthService } from '@abp/ng.core';
+import { AuthService, RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CurrentUserActorDto } from '@proxy/common/models';
 import { TeacherService } from '@proxy/teachers';
-import { TeacherEnrolledCourseDto } from '@proxy/teachers/models';
+import { TeacherDto, TeacherEnrolledCourseDto } from '@proxy/teachers/models';
+import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
 
 @Component({
   selector: 'app-teacher-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   template: `
     <div class="page" dir="rtl">
 
@@ -94,6 +96,56 @@ import { TeacherEnrolledCourseDto } from '@proxy/teachers/models';
               <span class="al">الأكاديميات</span><span class="ae">Academies</span>
             </a>
           </div>
+        </div>
+
+        <!-- Location section -->
+        <div class="section">
+          <div class="section-title">
+            <i class="fas fa-map-marker-alt"></i> الموقع الجغرافي · Location
+            <button class="edit-loc-btn" (click)="editingLocation.set(!editingLocation())">
+              <i [class]="editingLocation() ? 'fas fa-times' : 'fas fa-pen'"></i>
+              {{ editingLocation() ? 'إلغاء' : 'تعديل' }}
+            </button>
+          </div>
+          @if (editingLocation()) {
+            <div class="loc-edit-card">
+              <label>المحافظة · Governorate</label>
+              <select [ngModel]="locGov()" (ngModelChange)="onGovernorateChange($event)" class="loc-input">
+                <option value="">-- اختر المحافظة --</option>
+                @for (g of governorates; track g) {
+                  <option [value]="g">{{ g }}</option>
+                }
+              </select>
+              <label>المركز / الحي · District</label>
+              @if (locGov()) {
+                <select [ngModel]="locTown()" (ngModelChange)="locTown.set($event)" class="loc-input">
+                  <option value="">-- اختر المركز / الحي --</option>
+                  @for (d of districts(); track d) {
+                    <option [value]="d">{{ d }}</option>
+                  }
+                </select>
+              } @else {
+                <select class="loc-input" disabled>
+                  <option>-- اختر المحافظة أولاً --</option>
+                </select>
+              }
+              @if (locSaveError()) { <p class="loc-error">{{ locSaveError() }}</p> }
+              <button class="loc-save-btn" [disabled]="locSaving()" (click)="saveLocation()">
+                @if (locSaving()) { <span class="spinner-xs"></span> } @else { <i class="fas fa-check"></i> }
+                حفظ الموقع
+              </button>
+            </div>
+          } @else {
+            <div class="loc-display">
+              @if (locGov() || locTown()) {
+                <span class="loc-item"><i class="fas fa-map-marker-alt"></i>
+                  {{ [locGov(), locTown()].filter(Boolean).join(' — ') }}
+                </span>
+              } @else {
+                <span class="loc-empty">لم يتم تحديد الموقع بعد · Location not set</span>
+              }
+            </div>
+          }
         </div>
 
         <!-- Enrolled courses -->
@@ -245,18 +297,72 @@ import { TeacherEnrolledCourseDto } from '@proxy/teachers/models';
     .empty-box i { font-size:2rem; color:#c4c4d4; display:block; margin-bottom:.5rem; }
     .empty-box p { font-size:.9rem; font-weight:600; color:#555; margin:0 0 .25rem; }
     .empty-box span { font-size:.75rem; color:#9090aa; }
+
+    /* Location */
+    .edit-loc-btn {
+      margin-right:auto; display:inline-flex; align-items:center; gap:.3rem;
+      padding:.3rem .75rem; border-radius:20px; border:1.5px solid #e0e0f0;
+      background:white; color:#667eea; font-size:.72rem; font-weight:700; cursor:pointer;
+    }
+    .loc-display {
+      background:white; border-radius:12px; border:1.5px solid #f0f0f0;
+      padding:.875rem 1rem; display:flex; align-items:center; gap:.5rem;
+    }
+    .loc-item { font-size:.9rem; color:#1a1a2e; font-weight:500; }
+    .loc-item i { color:#667eea; margin-left:.4rem; }
+    .loc-empty { font-size:.85rem; color:#9090aa; font-style:italic; }
+    .loc-edit-card {
+      background:white; border-radius:12px; border:1.5px solid #e0e0f0;
+      padding:1rem; display:flex; flex-direction:column; gap:.4rem;
+    }
+    .loc-edit-card label { font-size:.72rem; font-weight:600; color:#667eea; }
+    .loc-input {
+      padding:.55rem .75rem; border:1.5px solid #e0e0f0; border-radius:10px;
+      font-size:.88rem; font-family:inherit; background:white; width:100%; box-sizing:border-box;
+    }
+    .loc-input:focus { outline:none; border-color:#667eea; }
+    .loc-error { color:#dc2626; font-size:.75rem; margin:0; }
+    .loc-save-btn {
+      display:flex; align-items:center; justify-content:center; gap:.4rem;
+      padding:.7rem; border:none; border-radius:10px; margin-top:.25rem;
+      background:linear-gradient(135deg,#667eea,#764ba2); color:white;
+      font-size:.88rem; font-weight:700; cursor:pointer; min-height:44px;
+    }
+    .loc-save-btn:disabled { opacity:.6; cursor:not-allowed; }
+    .spinner-xs {
+      width:12px; height:12px; border:2px solid rgba(255,255,255,.4);
+      border-top-color:#fff; border-radius:50%;
+      animation:spin .7s linear infinite; display:inline-block;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
   `],
 })
 export class TeacherProfileComponent implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly teacherSvc     = inject(TeacherService);
+  private readonly restSvc        = inject(RestService);
 
   loading         = signal(true);
   userInfo        = signal<CurrentUserActorDto | null>(null);
+  teacherInfo     = signal<TeacherDto | null>(null);
   enrolledCourses = signal<TeacherEnrolledCourseDto[]>([]);
+  editingLocation = signal(false);
+  locSaving       = signal(false);
+  locSaveError    = signal<string | null>(null);
 
-  groupCount = () => 0; // groups loaded from separate page
+  locGov  = signal('');
+  locTown = signal('');
+
+  groupCount = () => 0;
+
+  readonly governorates = EGYPT_GOVERNORATES_LIST;
+  readonly districts    = computed(() => getDistricts(this.locGov()));
+
+  onGovernorateChange(gov: string): void {
+    this.locGov.set(gov);
+    this.locTown.set('');
+  }
 
   initials(): string {
     const name = this.userInfo()?.actorName || '?';
@@ -271,8 +377,61 @@ export class TeacherProfileComponent implements OnInit {
       ]);
       this.userInfo.set(info);
       this.enrolledCourses.set((courses ?? []).filter(c => c.isEnrolled));
+
+      // Load full teacher dto for government/town
+      if (info?.actorId) {
+        // Use the sesha custom endpoint — more permissive than the admin CRUD endpoint
+        const t = await lastValueFrom(
+          this.restSvc.request<any, any>(
+            { method: 'GET', url: `/api/sesha/teachers/${info.actorId}` },
+            { apiName: 'Default', skipHandleError: true }
+          )
+        ).catch(() => null)
+          // Fallback to standard proxy endpoint
+          ?? await lastValueFrom(this.teacherSvc.get(info.actorId)).catch(() => null);
+
+        this.teacherInfo.set(t);
+        if (t) {
+          this.locGov.set(t.government ?? '');
+          this.locTown.set(t.town ?? '');
+        }
+      }
     } catch (e) { console.error(e); }
     finally { this.loading.set(false); }
+  }
+
+  async saveLocation(): Promise<void> {
+    const id = this.userInfo()?.actorId;
+    if (!id) return;
+    this.locSaving.set(true);
+    this.locSaveError.set(null);
+    try {
+      const t = this.teacherInfo();
+      await lastValueFrom(
+        this.restSvc.request<any, any>(
+          {
+            method: 'PUT',
+            url: `/api/app/teacher/${id}`,
+            body: {
+              firstName: t?.firstName ?? '',
+              lastName:  t?.lastName  ?? '',
+              address:   t?.address,
+              email:     t?.email,
+              phoneNumber: t?.phoneNumber,
+              password: '',
+              government: this.locGov(),
+              town: this.locTown(),
+            },
+          },
+          { apiName: 'Default', skipHandleError: true }
+        )
+      );
+      this.editingLocation.set(false);
+    } catch (err: any) {
+      this.locSaveError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ');
+    } finally {
+      this.locSaving.set(false);
+    }
   }
 
   logout(): void { this.authService.logout(); }

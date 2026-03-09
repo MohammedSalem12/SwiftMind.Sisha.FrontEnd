@@ -39,7 +39,6 @@
 
     <div class="setup-field">
       <label>المقرر</label>
-      <!-- Locked: show as read-only label -->
       <div *ngIf="lockedCourseId()" class="course-locked-label">
         <i class="fas fa-lock"></i>
         <span class="locked-name">{{ selectedCourse()?.nameAr || selectedCourse()?.nameEn || lockedCourseId() }}</span>
@@ -49,7 +48,6 @@
           {{ selectedCourse()!.academyName }}
         </span>
       </div>
-      <!-- Not locked: show dropdown -->
       <select *ngIf="!lockedCourseId()" [ngModel]="selectedCourseId()" (ngModelChange)="onCourseChange($event)" [disabled]="loading()">
         <option value="">— اختر مقرراً —</option>
         <option *ngFor="let c of courses()" [value]="c.id">

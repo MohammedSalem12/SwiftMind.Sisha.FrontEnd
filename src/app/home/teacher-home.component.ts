@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
+import { RestService } from '@abp/ng.core';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
 import { AcademyService } from '@proxy/academies';
@@ -25,6 +26,7 @@ export class TeacherHomeComponent implements OnInit {
   private readonly currentUserService = inject(CurrentUserInfoService);
   private readonly teacherService     = inject(TeacherService);
   private readonly academyService     = inject(AcademyService);
+  private readonly restSvc            = inject(RestService);
 
   loading          = signal(false);
   teacherName      = signal<string>('');
@@ -58,10 +60,15 @@ export class TeacherHomeComponent implements OnInit {
   private async loadAcademies(): Promise<void> {
     this.loadingAcademies.set(true);
     try {
-      const membership = await lastValueFrom(this.academyService.getMyMembership({ skipHandleError: true })).catch(() => null);
+      const membership = await lastValueFrom(this.academyService.getMyMembership(undefined, { skipHandleError: true })).catch(() => null);
       if (!membership?.teacherId) {
         // Check if this teacher owns an academy
-        const ownAcademy = await lastValueFrom(this.academyService.getMyAcademy({ skipHandleError: true })).catch(() => null);
+        const ownAcademy = await lastValueFrom(
+          this.restSvc.request<any, AcademyDto>(
+            { method: 'GET', url: '/api/sesha/academies/my-academy' },
+            { apiName: 'Default', skipHandleError: true }
+          )
+        ).catch(() => null);
         if (ownAcademy) {
           this.myAcademy.set(ownAcademy);
           const academyCourses = await lastValueFrom(

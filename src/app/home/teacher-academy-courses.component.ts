@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
 import { AcademyService } from '@proxy/academies';
@@ -68,7 +69,7 @@ import { TeacherService } from '@proxy/teachers';
       @if (!loading() && courses().length > 0) {
         <div class="courses-list">
           @for (c of courses(); track c.courseId) {
-            <div class="course-card">
+            <div class="course-card" [class.inactive-course]="!c.isActive">
 
               <!-- Course info -->
               <div class="course-row" (click)="goToCourse(c)">
@@ -86,6 +87,9 @@ import { TeacherService } from '@proxy/teachers';
                     }
                     @if (c.gradeName) {
                       <span class="chip chip-grade">{{ c.gradeName }}</span>
+                    }
+                    @if (!c.isActive) {
+                      <span class="inactive-pill">مخفي</span>
                     }
                   </div>
                 </div>
@@ -106,6 +110,20 @@ import { TeacherService } from '@proxy/teachers';
                   <i class="fas fa-users"></i>
                   الطلاب
                 </button>
+                @if (isSupervisor()) {
+                  <button class="action-btn"
+                          [class.hide-btn]="c.isActive"
+                          [class.show-btn]="!c.isActive"
+                          [disabled]="togglingCourseId() === c.courseId"
+                          (click)="toggleCourseActive(c)">
+                    @if (togglingCourseId() === c.courseId) {
+                      <span class="spinner-sm"></span>
+                    } @else {
+                      <i [class]="c.isActive ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                    }
+                    {{ c.isActive ? 'إخفاء' : 'إظهار' }}
+                  </button>
+                }
               </div>
 
             </div>
@@ -247,6 +265,22 @@ import { TeacherService } from '@proxy/teachers';
     .marks-btn:hover { background:rgba(102,126,234,.05); }
     .students-btn { color:#d97706; }
     .students-btn:hover { background:rgba(245,158,11,.05); }
+    .hide-btn { color:#dc2626; }
+    .hide-btn:hover { background:rgba(239,68,68,.05); }
+    .show-btn { color:#059669; }
+    .show-btn:hover { background:rgba(16,185,129,.05); }
+
+    .course-card.inactive-course { opacity:.65; }
+    .inactive-pill {
+      font-size:.6rem; font-weight:700; padding:.1rem .4rem; border-radius:20px;
+      background:rgba(239,68,68,.1); color:#dc2626; margin-top:.2rem; display:inline-block;
+    }
+
+    .spinner-sm {
+      width:12px; height:12px; border:2px solid currentColor;
+      border-top-color:transparent; border-radius:50%;
+      animation:spin .7s linear infinite; display:inline-block;
+    }
   `],
 })
 export class TeacherAcademyCoursesComponent implements OnInit {
@@ -255,12 +289,14 @@ export class TeacherAcademyCoursesComponent implements OnInit {
   private readonly academySvc = inject(AcademyService);
   private readonly userSvc    = inject(CurrentUserInfoService);
   private readonly teacherSvc = inject(TeacherService);
+  private readonly restSvc    = inject(RestService);
 
-  loading     = signal(true);
-  error       = signal<string | null>(null);
-  academyName = signal<string>('');
-  courses     = signal<AcademyCourseDto[]>([]);
+  loading      = signal(true);
+  error        = signal<string | null>(null);
+  academyName  = signal<string>('');
+  courses      = signal<AcademyCourseDto[]>([]);
   isSupervisor = signal(false);
+  togglingCourseId = signal<string | null>(null);
 
   private academyId: string | null = null;
 
@@ -305,19 +341,40 @@ export class TeacherAcademyCoursesComponent implements OnInit {
   }
 
   goToCourse(c: AcademyCourseDto): void {
-    if (c.courseId) this.router.navigate(['/teacher/course', c.courseId]);
+    if (c.courseId) this.router.navigate(['/teacher/course', c.courseId],
+      { queryParams: this.academyId ? { academyId: this.academyId } : {} });
   }
 
   goToAttendance(c: AcademyCourseDto): void {
     this.router.navigate(['/attendance'], {
-      queryParams: { courseId: c.courseId }
+      queryParams: { courseId: c.courseId, ...(this.academyId ? { academyId: this.academyId } : {}) }
     });
   }
 
   goToMarks(c: AcademyCourseDto): void {
     this.router.navigate(['/marks-entry'], {
-      queryParams: { courseId: c.courseId }
+      queryParams: { courseId: c.courseId, ...(this.academyId ? { academyId: this.academyId } : {}) }
     });
+  }
+
+  async toggleCourseActive(c: AcademyCourseDto): Promise<void> {
+    if (!this.academyId || !c.courseId) return;
+    this.togglingCourseId.set(c.courseId);
+    const currentIsActive = (c as any).isActive as boolean;
+    try {
+      await lastValueFrom(
+        this.restSvc.request<any, void>(
+          { method: 'POST',
+            url: `/api/sesha/academies/${this.academyId}/courses/${c.courseId}/set-active`,
+            params: { isActive: !currentIsActive } },
+          { apiName: 'Default' }
+        )
+      );
+      this.courses.update(list => list.map(x =>
+        x.courseId === c.courseId ? { ...x, isActive: !currentIsActive } : x
+      ));
+    } catch { /* silent */ }
+    finally { this.togglingCourseId.set(null); }
   }
 
   goToAddCourse(): void {

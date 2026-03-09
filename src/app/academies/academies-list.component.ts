@@ -40,8 +40,8 @@ import { CurrentUserInfoService } from '@proxy/common';
             <i class="fas fa-search si"></i>
             <input class="search-input" type="text"
                    placeholder="ابحث بالاسم أو الكود…"
-                   [(ngModel)]="searchQuery"
-                   (input)="onSearch()" />
+                   [ngModel]="searchQuery()"
+                   (ngModelChange)="searchQuery.set($event)" />
           </div>
         </div>
 
@@ -86,8 +86,8 @@ import { CurrentUserInfoService } from '@proxy/common';
         <div class="empty-state">
           <div class="empty-icon"><i class="fas fa-university"></i></div>
           <h3>لا توجد أكاديميات</h3>
-          <p>{{ searchQuery ? 'لا توجد نتائج مطابقة' : 'لم يتم إنشاء أي أكاديمية بعد' }}</p>
-          @if (canCreate() && !searchQuery) {
+          <p>{{ searchQuery() ? 'لا توجد نتائج مطابقة' : 'لم يتم إنشاء أي أكاديمية بعد' }}</p>
+          @if (canCreate() && !searchQuery()) {
             <button class="empty-create-btn" (click)="router.navigate(['/academies/create'])">
               <i class="fas fa-plus"></i>
               إنشاء أكاديمية
@@ -345,9 +345,9 @@ export class AcademiesListComponent implements OnInit {
   private readonly academySvc  = inject(AcademyService);
   private readonly userSvc     = inject(CurrentUserInfoService);
 
-  loading   = signal(true);
-  academies = signal<AcademyDto[]>([]);
-  searchQuery = '';
+  loading     = signal(true);
+  academies   = signal<AcademyDto[]>([]);
+  searchQuery = signal('');
 
   isStudent        = signal(false);
   isTeacherOrAdmin = signal(false);
@@ -359,7 +359,7 @@ export class AcademiesListComponent implements OnInit {
   codeSuccess   = signal<string | null>(null);
 
   filteredAcademies = computed(() => {
-    const q = this.searchQuery.toLowerCase();
+    const q = this.searchQuery().toLowerCase().trim();
     if (!q) return this.academies();
     return this.academies().filter(a =>
       (a.nameAr || '').toLowerCase().includes(q) ||
@@ -386,10 +386,6 @@ export class AcademiesListComponent implements OnInit {
   }
 
   canCreate(): boolean { return this.isTeacherOrAdmin(); }
-
-  onSearch(): void {
-    // filteredAcademies is computed — just trigger it by keeping searchQuery updated
-  }
 
   goToProfile(academy: AcademyDto): void {
     this.router.navigate(['/academies', academy.id, 'profile']);

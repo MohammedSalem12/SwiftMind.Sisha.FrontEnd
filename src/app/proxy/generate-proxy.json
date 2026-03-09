@@ -1278,7 +1278,16 @@
                 },
                 {
                   "name": "GetMyMembershipAsync",
-                  "parametersOnMethod": [],
+                  "parametersOnMethod": [
+                    {
+                      "name": "academyId",
+                      "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Guid?",
+                      "typeSimple": "string?",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
                   "returnValue": {
                     "type": "SwiftMind.Sesha.Academies.AcademyMemberDto",
                     "typeSimple": "SwiftMind.Sesha.Academies.AcademyMemberDto"
@@ -1537,14 +1546,36 @@
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Academies.IAcademyAppService"
             },
-            "GetMyMembershipAsync": {
-              "uniqueName": "GetMyMembershipAsync",
+            "GetMyMembershipAsyncByAcademyId": {
+              "uniqueName": "GetMyMembershipAsyncByAcademyId",
               "name": "GetMyMembershipAsync",
               "httpMethod": "GET",
               "url": "api/app/academy/my-membership",
               "supportedVersions": [],
-              "parametersOnMethod": [],
-              "parameters": [],
+              "parametersOnMethod": [
+                {
+                  "name": "academyId",
+                  "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "academyId",
+                  "name": "academyId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
               "returnValue": {
                 "type": "SwiftMind.Sesha.Academies.AcademyMemberDto",
                 "typeSimple": "SwiftMind.Sesha.Academies.AcademyMemberDto"
@@ -3943,6 +3974,43 @@
           "type": "SwiftMind.Sesha.Courses.CourseAppService",
           "interfaces": [],
           "actions": {
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/course",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto",
+                  "typeSimple": "SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto",
+                  "typeSimple": "SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Courses.Dtos.CourseDto",
+                "typeSimple": "SwiftMind.Sesha.Courses.Dtos.CourseDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<SwiftMind.Sesha.Courses.Dtos.CourseDto,SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto>"
+            },
             "GetListAsyncByInput": {
               "uniqueName": "GetListAsyncByInput",
               "name": "GetListAsync",
@@ -4164,43 +4232,6 @@
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Courses.CourseAppService"
-            },
-            "CreateAsyncByInput": {
-              "uniqueName": "CreateAsyncByInput",
-              "name": "CreateAsync",
-              "httpMethod": "POST",
-              "url": "api/app/course",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto, SwiftMind.Sesha.Application.Contracts",
-                  "type": "SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto",
-                  "typeSimple": "SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto",
-                  "typeSimple": "SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "SwiftMind.Sesha.Courses.Dtos.CourseDto",
-                "typeSimple": "SwiftMind.Sesha.Courses.Dtos.CourseDto"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<SwiftMind.Sesha.Courses.Dtos.CourseDto,SwiftMind.Sesha.Courses.Dtos.CreateUpdateCourseDto>"
             },
             "UpdateAsyncByIdAndInput": {
               "uniqueName": "UpdateAsyncByIdAndInput",
@@ -17887,8 +17918,8 @@
         {
           "name": "GradeId",
           "jsonName": null,
-          "type": "System.Guid",
-          "typeSimple": "string",
+          "type": "System.Guid?",
+          "typeSimple": "string?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -17901,7 +17932,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,
@@ -17944,9 +17975,9 @@
         {
           "name": "GradeId",
           "jsonName": null,
-          "type": "System.Guid",
-          "typeSimple": "string",
-          "isRequired": true,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,

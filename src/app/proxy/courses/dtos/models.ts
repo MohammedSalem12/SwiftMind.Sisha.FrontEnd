@@ -5,13 +5,13 @@ export interface CourseDto extends ExtensibleAuditedEntityDto<string> {
   nameEn: string;
   code: string;
   gradeId?: string;
-  gradeName: string;
+  gradeName?: string;
 }
 
 export interface CreateUpdateCourseDto {
   nameAr: string;
   nameEn: string;
-  gradeId: string;
+  gradeId?: string;
 }
 
 export interface StudentCourseDto extends CourseDto {

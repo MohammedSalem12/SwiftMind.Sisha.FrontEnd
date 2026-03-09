@@ -10,6 +10,7 @@ import { GradeService } from '@proxy/grades';
 import { GradeDto } from '@proxy/grades/dtos/models';
 import { AcademyService } from '@proxy/academies';
 import { AcademyDto } from '@proxy/academies/models';
+import { CurrentUserInfoService } from '@proxy/common';
 
 @Component({
   selector: 'app-add-course',
@@ -332,11 +333,12 @@ import { AcademyDto } from '@proxy/academies/models';
   `],
 })
 export class AddCourseComponent implements OnInit {
-  private readonly courseSvc  = inject(CourseService);
-  private readonly gradeSvc   = inject(GradeService);
-  private readonly academySvc = inject(AcademyService);
-  private readonly router     = inject(Router);
-  private readonly route      = inject(ActivatedRoute);
+  private readonly courseSvc      = inject(CourseService);
+  private readonly gradeSvc       = inject(GradeService);
+  private readonly academySvc     = inject(AcademyService);
+  private readonly currentUserSvc = inject(CurrentUserInfoService);
+  private readonly router         = inject(Router);
+  private readonly route          = inject(ActivatedRoute);
 
   model = signal<Partial<CreateUpdateCourseDto>>({ nameAr: '', nameEn: '', gradeId: undefined });
   grades       = signal<GradeDto[]>([]);
@@ -364,15 +366,16 @@ export class AddCourseComponent implements OnInit {
     if (qAcademyId) {
       this.checkingAccess.set(true);
       try {
-        // Load academy info + verify this teacher is the supervisor
-        const [academyInfo, myAcademy] = await Promise.all([
+        // Load academy info and current user actor in parallel
+        const [academyInfo, userInfo] = await Promise.all([
           lastValueFrom(this.academySvc.get(qAcademyId)),
-          lastValueFrom(this.academySvc.getMyAcademy()).catch(() => null),
+          lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo()).catch(() => null),
         ]);
         this.academy.set(academyInfo);
 
-        // Access check: only the supervisor of THIS academy can add courses
-        const isSupervisor = myAcademy?.id === qAcademyId;
+        // Access check: compare academy's supervisorTeacherId with current actor ID
+        const isSupervisor = !!(userInfo?.actorId &&
+          academyInfo?.supervisorTeacherId === userInfo.actorId);
         if (!isSupervisor) {
           this.accessDenied.set(true);
         }

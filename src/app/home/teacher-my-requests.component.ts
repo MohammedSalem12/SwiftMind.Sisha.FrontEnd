@@ -1,11 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { lastValueFrom } from 'rxjs';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { lastValueFrom, Subscription } from 'rxjs';
+import { RestService } from '@abp/ng.core';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { SecretaryTeacherService } from '@proxy/teachers';
+import { AcademyService } from '@proxy/academies';
+import type { AcademyMemberDto } from '@proxy/academies/models';
 import { EnrollmentRequestInitiator } from '@proxy/enums/enrollment-request-initiator.enum';
 
-type MainTab = 'enrollment' | 'link';
+type MainTab = 'enrollment' | 'link' | 'academy';
 type SubTab  = 'pending' | 'done';
 
 @Component({
@@ -42,6 +45,14 @@ type SubTab  = 'pending' | 'done';
           طلبات الربط
           @if (pendingLinks().length > 0) {
             <span class="tab-badge">{{ pendingLinks().length }}</span>
+          }
+        </button>
+        <button class="main-tab" [class.active]="mainTab() === 'academy'"
+                (click)="switchMain('academy')">
+          <i class="fas fa-university"></i>
+          الأكاديمية
+          @if (pendingAcademyJoins().length > 0) {
+            <span class="tab-badge">{{ pendingAcademyJoins().length }}</span>
           }
         </button>
       </div>
@@ -201,6 +212,40 @@ type SubTab  = 'pending' | 'done';
         </div>
       }
 
+      <!-- ── Academy join request cards ── -->
+      @if (!loading() && !error() && mainTab() === 'academy' && currentList().length > 0) {
+        <div class="cards-list">
+          @for (req of currentList(); track req.teacherId) {
+            <div class="req-card">
+              <div class="req-avatar avatar-academy">
+                <i class="fas fa-user-graduate"></i>
+              </div>
+              <div class="req-info">
+                <h4>{{ req.teacherName || req.teacherCode || 'مستخدم' }}</h4>
+                @if (req.teacherCode) { <span class="req-sub">{{ req.teacherCode }}</span> }
+                <span class="req-sub dim">طلب الانضمام للأكاديمية · Academy join request</span>
+              </div>
+              <div class="action-col">
+                <button class="btn-approve"
+                        [disabled]="acting() === req.teacherId"
+                        (click)="approveAcademyJoin(req)">
+                  @if (acting() === req.teacherId + 'a') { <span class="spinner"></span> }
+                  @else { <i class="fas fa-check"></i> }
+                  قبول
+                </button>
+                <button class="btn-reject"
+                        [disabled]="acting() === req.teacherId"
+                        (click)="rejectAcademyJoin(req)">
+                  @if (acting() === req.teacherId + 'r') { <span class="spinner"></span> }
+                  @else { <i class="fas fa-times"></i> }
+                  رفض
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
       <!-- Safe area bottom padding -->
       <div style="height: calc(80px + env(safe-area-inset-bottom))"></div>
 
@@ -333,6 +378,7 @@ type SubTab  = 'pending' | 'done';
     }
     .req-avatar.avatar-parent    { background: linear-gradient(135deg, #f59e0b, #d97706); }
     .req-avatar.avatar-secretary { background: linear-gradient(135deg, #10b981, #059669); }
+    .req-avatar.avatar-academy   { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
 
     /* Info */
     .req-info { flex: 1; min-width: 0; }
@@ -379,9 +425,11 @@ type SubTab  = 'pending' | 'done';
     @keyframes spin { to { transform: rotate(360deg); } }
   `],
 })
-export class TeacherMyRequestsComponent implements OnInit {
-  private readonly enrollmentSvc    = inject(EnrollmentRequestService);
+export class TeacherMyRequestsComponent implements OnInit, OnDestroy {
+  private readonly enrollmentSvc       = inject(EnrollmentRequestService);
   private readonly secretaryTeacherSvc = inject(SecretaryTeacherService);
+  private readonly academySvc          = inject(AcademyService);
+  private readonly restSvc             = inject(RestService);
 
   loading  = signal(true);
   error    = signal<string | null>(null);
@@ -396,14 +444,23 @@ export class TeacherMyRequestsComponent implements OnInit {
   pendingLinks = signal<any[]>([]);
   allLinks     = signal<any[]>([]);
 
-  totalPending = computed(() => this.pendingEnrollments().length + this.pendingLinks().length);
+  // Academy join requests
+  pendingAcademyJoins = signal<AcademyMemberDto[]>([]);
+  private myAcademyId: string | null = null;
 
-  currentPendingList = computed(() =>
-    this.mainTab() === 'enrollment' ? this.pendingEnrollments() : this.pendingLinks()
+  totalPending = computed(() =>
+    this.pendingEnrollments().length + this.pendingLinks().length + this.pendingAcademyJoins().length
   );
 
+  currentPendingList = computed(() => {
+    if (this.mainTab() === 'enrollment') return this.pendingEnrollments();
+    if (this.mainTab() === 'academy')    return this.pendingAcademyJoins();
+    return this.pendingLinks();
+  });
+
   currentDoneList = computed(() => {
-    if (this.mainTab() === 'enrollment') return [];   // no history API for enrollment
+    if (this.mainTab() === 'enrollment') return [];
+    if (this.mainTab() === 'academy')    return [];
     return this.allLinks().filter(r => r.status !== 0);
   });
 
@@ -412,19 +469,32 @@ export class TeacherMyRequestsComponent implements OnInit {
   );
 
   ngOnInit() { this.loadAll(); }
+  ngOnDestroy() {}
 
   async loadAll(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const [enrollPending, linkPending, linkAll] = await Promise.all([
+      const [enrollPending, linkPending, linkAll, myAcademy] = await Promise.all([
         lastValueFrom(this.enrollmentSvc.getPendingRequestsForCurrentTeacher()).catch(() => []),
         lastValueFrom(this.secretaryTeacherSvc.getPendingRequestsForCurrentTeacher()).catch(() => []),
         lastValueFrom(this.secretaryTeacherSvc.getAllRequestsForCurrentTeacher()).catch(() => []),
+        lastValueFrom(this.academySvc.getMyAcademy({ skipHandleError: true })).catch(() => null),
       ]);
       this.pendingEnrollments.set(enrollPending ?? []);
       this.pendingLinks.set(linkPending ?? []);
       this.allLinks.set(linkAll ?? []);
+
+      if (myAcademy?.id) {
+        this.myAcademyId = myAcademy.id;
+        const joinRequests = await lastValueFrom(
+          this.restSvc.request<any, AcademyMemberDto[]>(
+            { method: 'GET', url: '/api/sesha/academies/my-academy/pending-join-requests' },
+            { apiName: 'Default', skipHandleError: true }
+          )
+        ).catch(() => [] as AcademyMemberDto[]);
+        this.pendingAcademyJoins.set(joinRequests ?? []);
+      }
     } catch {
       this.error.set('حدث خطأ أثناء تحميل الطلبات / Error loading requests');
     } finally {
@@ -480,6 +550,27 @@ export class TeacherMyRequestsComponent implements OnInit {
       this.allLinks.update(list => list.map(r =>
         r.id === req.id ? { ...r, status: 2, decidedAt: new Date().toISOString() } : r
       ));
+    } catch { /* silent */ }
+    finally { this.acting.set(null); }
+  }
+
+  // ── Academy join actions ────────────────────────────────────────────────────
+  async approveAcademyJoin(req: AcademyMemberDto): Promise<void> {
+    if (!this.myAcademyId) return;
+    this.acting.set(req.teacherId + 'a');
+    try {
+      await lastValueFrom(this.academySvc.approveMember(this.myAcademyId, req.teacherId));
+      this.pendingAcademyJoins.update(list => list.filter(r => r.teacherId !== req.teacherId));
+    } catch { /* silent */ }
+    finally { this.acting.set(null); }
+  }
+
+  async rejectAcademyJoin(req: AcademyMemberDto): Promise<void> {
+    if (!this.myAcademyId) return;
+    this.acting.set(req.teacherId + 'r');
+    try {
+      await lastValueFrom(this.academySvc.rejectMember(this.myAcademyId, req.teacherId));
+      this.pendingAcademyJoins.update(list => list.filter(r => r.teacherId !== req.teacherId));
     } catch { /* silent */ }
     finally { this.acting.set(null); }
   }

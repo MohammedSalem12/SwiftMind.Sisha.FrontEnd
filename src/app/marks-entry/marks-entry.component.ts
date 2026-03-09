@@ -498,10 +498,30 @@ export class MarksEntryComponent implements OnInit {
           this.examGradeSvc.update(student.gradeId, dto, { skipHandleError: true })
         );
       } else {
-        const created: any = await lastValueFrom(
-          this.examGradeSvc.create(dto, { skipHandleError: true })
-        );
-        this.updateStudent(index, { gradeId: created?.id || null });
+        try {
+          const created: any = await lastValueFrom(
+            this.examGradeSvc.create(dto, { skipHandleError: true })
+          );
+          this.updateStudent(index, { gradeId: created?.id || null });
+        } catch (createErr: any) {
+          // 409 = grade already exists (duplicate) — fetch it and update instead
+          if (createErr?.status === 409) {
+            const existingGrades: any = await lastValueFrom(
+              this.examGradeSvc.getGradesByExam(this.selectedExamId()!, { skipHandleError: true })
+            ).catch(() => []);
+            const existing = (existingGrades || []).find((g: any) => g.enrollmentId === student.enrollmentId);
+            if (existing?.id) {
+              await lastValueFrom(
+                this.examGradeSvc.update(existing.id, dto, { skipHandleError: true })
+              );
+              this.updateStudent(index, { gradeId: existing.id });
+            } else {
+              throw createErr;
+            }
+          } else {
+            throw createErr;
+          }
+        }
       }
 
       this.updateStudent(index, { savedGrade: grade, savedMaxGrade: maxGrade, rowSuccess: true, rowError: null });

@@ -9,6 +9,9 @@ import { AttendanceService } from '@proxy/attendances';
 import type { StudentAttendanceReportDto } from '@proxy/attendances/dtos/models';
 import { ExamGradeService } from '@proxy/exam-grades';
 import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
+import { EnrollmentRequestService } from '@proxy/student-enrollments';
+import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
+import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 
 @Component({
   selector: 'app-parent-child-detail',
@@ -70,11 +73,18 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
       <div class="tabs-bar">
         <button class="tab" [class.tab--active]="activeTab() === 'attendance'" (click)="activeTab.set('attendance')">
           <i class="fas fa-clipboard-check"></i>
-          <span>الحضور · Attendance</span>
+          <span>الحضور</span>
         </button>
         <button class="tab" [class.tab--active]="activeTab() === 'grades'" (click)="activeTab.set('grades')">
           <i class="fas fa-chart-bar"></i>
-          <span>الدرجات · Grades</span>
+          <span>الدرجات</span>
+        </button>
+        <button class="tab" [class.tab--active]="activeTab() === 'courses'" (click)="activeTab.set('courses')">
+          <i class="fas fa-book-open"></i>
+          <span>المقررات</span>
+          @if (enrolledCourses().length > 0) {
+            <span class="tab-count">{{ enrolledCourses().length }}</span>
+          }
         </button>
       </div>
 
@@ -207,6 +217,51 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
                   [class.pct--red]="getPercentage(grade) < 60">
                   {{ getPercentage(grade) | number:'1.0-0' }}%
                 </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- ── Courses Tab ── -->
+      @if (activeTab() === 'courses') {
+        @if (coursesLoading()) {
+          <div class="loading-area">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        } @else if (enrolledCourses().length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fas fa-book-open"></i></div>
+            <p>لا توجد مقررات مسجلة</p>
+            <small>No enrolled courses yet</small>
+          </div>
+        } @else {
+          <div class="section-label">
+            <i class="fas fa-book-open"></i>
+            <span>المقررات المسجلة · Enrolled Courses</span>
+            <span class="count-pill">{{ enrolledCourses().length }}</span>
+          </div>
+          <div class="cards-list">
+            @for (req of enrolledCourses(); track req.id) {
+              <div class="course-enroll-card">
+                <div class="course-enroll-icon">
+                  <i class="fas fa-book"></i>
+                </div>
+                <div class="course-enroll-body">
+                  <div class="course-enroll-name">{{ req.courseName }}</div>
+                  @if (req.teacherName) {
+                    <div class="course-enroll-meta"><i class="fas fa-chalkboard-teacher"></i> {{ req.teacherName }}</div>
+                  }
+                  @if (req.groupName) {
+                    <div class="course-enroll-meta"><i class="fas fa-users"></i> {{ req.groupName }}</div>
+                  }
+                </div>
+                <span class="enroll-status-chip"
+                  [class.chip--approved]="req.status === EnrollmentRequestStatus.Approved"
+                  [class.chip--pending]="req.status === EnrollmentRequestStatus.Pending">
+                  {{ req.status === EnrollmentRequestStatus.Approved ? 'مسجل' : 'قيد الانتظار' }}
+                </span>
               </div>
             }
           </div>
@@ -475,6 +530,39 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
       &.pct--red   { color: #ef4444; }
     }
 
+    /* ── Tab count badge ── */
+    .tab-count {
+      background: $purple-grad; color: #fff;
+      border-radius: 20px; padding: 0.05rem 0.4rem;
+      font-size: 0.62rem; font-weight: 700;
+    }
+
+    /* ── Course Enrollment Cards ── */
+    .course-enroll-card {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: #fff; border-radius: 14px; padding: 0.85rem;
+      border: 1.5px solid #e9e6ff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .course-enroll-icon {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      background: $purple-grad;
+      display: flex; align-items: center; justify-content: center;
+      i { font-size: 1.1rem; color: #fff; }
+    }
+    .course-enroll-body { flex: 1; min-width: 0; }
+    .course-enroll-name { font-size: 0.9rem; font-weight: 700; color: #1a202c; margin-bottom: 0.2rem; }
+    .course-enroll-meta {
+      font-size: 0.72rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem;
+      i { font-size: 0.65rem; color: $purple; }
+    }
+    .enroll-status-chip {
+      flex-shrink: 0; border-radius: 20px;
+      padding: 0.2rem 0.6rem; font-size: 0.7rem; font-weight: 700;
+      &.chip--approved { background: #dcfce7; color: #16a34a; }
+      &.chip--pending  { background: #fef3c7; color: #d97706; }
+    }
+
     /* ── Bottom Bar ── */
     .bottom-bar {
       position: fixed; bottom: 0; right: 0; left: 0;
@@ -501,14 +589,19 @@ export class ParentChildDetailComponent implements OnInit {
   private readonly studentService = inject(StudentService);
   private readonly attendanceService = inject(AttendanceService);
   private readonly examGradeService = inject(ExamGradeService);
+  private readonly enrollmentRequestSvc = inject(EnrollmentRequestService);
+
+  readonly EnrollmentRequestStatus = EnrollmentRequestStatus;
 
   student = signal<StudentDto | null>(null);
   attendanceReports = signal<StudentAttendanceReportDto[]>([]);
   grades = signal<ExamGradeDto[]>([]);
+  enrolledCourses = signal<EnrollmentRequestDto[]>([]);
   loading = signal(false);
   attendanceLoading = signal(false);
   gradesLoading = signal(false);
-  activeTab = signal<'attendance' | 'grades'>('attendance');
+  coursesLoading = signal(false);
+  activeTab = signal<'attendance' | 'grades' | 'courses'>('attendance');
 
   private studentId = '';
 
@@ -528,7 +621,7 @@ export class ParentChildDetailComponent implements OnInit {
       this.loading.set(false);
     }
     // Load data in parallel
-    await Promise.all([this.loadAttendance(), this.loadGrades()]);
+    await Promise.all([this.loadAttendance(), this.loadGrades(), this.loadEnrolledCourses()]);
   }
 
   private async loadAttendance(): Promise<void> {
@@ -563,6 +656,19 @@ export class ParentChildDetailComponent implements OnInit {
       console.error('Error loading grades:', error);
     } finally {
       this.gradesLoading.set(false);
+    }
+  }
+
+  private async loadEnrolledCourses(): Promise<void> {
+    this.coursesLoading.set(true);
+    try {
+      const all = await lastValueFrom(this.enrollmentRequestSvc.getList({ skipHandleError: true } as any));
+      const forThisStudent = (all || []).filter(r => r.studentId === this.studentId);
+      this.enrolledCourses.set(forThisStudent);
+    } catch {
+      // silent — courses tab will show empty state
+    } finally {
+      this.coursesLoading.set(false);
     }
   }
 
