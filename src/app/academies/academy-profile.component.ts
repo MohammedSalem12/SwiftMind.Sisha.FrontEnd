@@ -3,8 +3,9 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
+import { RestService } from '@abp/ng.core';
 import { AcademyService } from '@proxy/academies';
-import { AcademyDto, AcademyCourseDto } from '@proxy/academies/models';
+import { AcademyDto, AcademyCourseDto, AcademyMemberDto } from '@proxy/academies/models';
 import { AcademyTeacherStatus } from '@proxy/academies/academy-teacher-status.enum';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CurrentUserActorDto } from '@proxy/common/models';
@@ -468,6 +469,7 @@ export class AcademyProfileComponent implements OnInit {
   readonly router  = inject(Router);
   private readonly route      = inject(ActivatedRoute);
   private readonly academySvc = inject(AcademyService);
+  private readonly restSvc    = inject(RestService);
   private readonly userSvc    = inject(CurrentUserInfoService);
 
   loading          = signal(true);
@@ -515,7 +517,10 @@ export class AcademyProfileComponent implements OnInit {
       if (!this.isSupervisor()) {
         try {
           const membership = await lastValueFrom(
-            this.academySvc.getMyMembership({ params: { academyId: this.academyId } })
+            this.restSvc.request<any, AcademyMemberDto>(
+              { method: 'GET', url: '/api/app/academy/my-membership', params: { academyId: this.academyId } },
+              { apiName: 'Default', skipHandleError: true }
+            )
           );
           this.memberStatus.set(membership?.status ?? null);
         } catch { /* not a member — null stays */ }
