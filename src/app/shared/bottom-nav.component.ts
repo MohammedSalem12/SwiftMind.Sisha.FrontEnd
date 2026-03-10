@@ -67,6 +67,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
+@if (!navHidden()) {
     <!-- ══════════════════════════════════════════════════
          MOBILE — Fixed bottom bar (< 768px)
     ══════════════════════════════════════════════════ -->
@@ -183,6 +184,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       </div>
 
     </aside>
+}
   `,
   styles: [`
     /* ═══════════════════════════════════════════════════════
@@ -477,6 +479,9 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   profilePath  = signal('/profile');
   coreNav      = signal<NavItem[]>([]);
   secondaryNav = signal<SecondaryItem[]>([]);
+
+  private readonly NAV_HIDDEN_PATHS = ['/complete-profile', '/login', '/register'];
+  navHidden = computed(() => this.NAV_HIDDEN_PATHS.some(p => this.currentPath().startsWith(p)));
 
   private isTeacher = false;
 

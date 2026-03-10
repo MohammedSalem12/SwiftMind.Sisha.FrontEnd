@@ -1,24 +1,34 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '@abp/ng.core';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CurrentUserActorDto } from '@proxy/common/models';
 import { lastValueFrom } from 'rxjs';
+import { BiometricService } from '../shared/services/biometric.service';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
 })
 export class ProfileComponent implements OnInit {
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly authService = inject(AuthService);
+  private readonly biometricSvc = inject(BiometricService);
 
   loading = signal(true);
   userInfo = signal<CurrentUserActorDto | null>(null);
+
+  biometricSupported = signal(false);
+  biometricEnabled = signal(false);
+  biometricToggling = signal(false);
+  showPasswordPrompt = signal(false);
+  passwordInput = '';
+  biometricError = signal<string | null>(null);
 
   readonly roleConfig: Record<string, { label: string; color: string; bg: string; icon: string }> = {
     STUDENT:   { label: 'طالب',     color: '#22c55e', bg: '#f0fdf4', icon: 'fa-graduation-cap' },
@@ -44,6 +54,66 @@ export class ProfileComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+
+    const [supported, hasStored] = await Promise.all([
+      this.biometricSvc.isAvailable(),
+      this.biometricSvc.hasStoredCredentials(),
+    ]);
+    this.biometricSupported.set(supported);
+    this.biometricEnabled.set(supported && hasStored);
+  }
+
+  onBiometricToggle(): void {
+    this.biometricError.set(null);
+    if (this.biometricEnabled()) {
+      this.disableBiometric();
+    } else {
+      this.showPasswordPrompt.set(true);
+    }
+  }
+
+  private async disableBiometric(): Promise<void> {
+    this.biometricToggling.set(true);
+    try {
+      await this.biometricSvc.clearCredentials();
+      this.biometricEnabled.set(false);
+      this.showPasswordPrompt.set(false);
+    } finally {
+      this.biometricToggling.set(false);
+    }
+  }
+
+  async confirmEnableBiometric(): Promise<void> {
+    if (!this.passwordInput.trim()) {
+      this.biometricError.set('يرجى إدخال كلمة المرور');
+      return;
+    }
+    this.biometricError.set(null);
+    this.biometricToggling.set(true);
+    try {
+      // Verify biometric first
+      const authed = await this.biometricSvc.authenticate();
+      if (!authed) {
+        this.biometricError.set('فشل التحقق البيومتري. حاول مجدداً.');
+        return;
+      }
+      // Save credentials
+      const username = this.userInfo()?.userName ?? '';
+      await this.biometricSvc.saveCredentials(username, this.passwordInput);
+      this.biometricEnabled.set(true);
+      this.showPasswordPrompt.set(false);
+      this.passwordInput = '';
+    } catch {
+      this.biometricError.set('حدث خطأ. تأكد من كلمة المرور وحاول مجدداً.');
+    } finally {
+      this.biometricToggling.set(false);
+    }
+  }
+
+  cancelPasswordPrompt(): void {
+    this.showPasswordPrompt.set(false);
+    this.passwordInput = '';
+    this.biometricError.set(null);
   }
 
   getInitials(): string {

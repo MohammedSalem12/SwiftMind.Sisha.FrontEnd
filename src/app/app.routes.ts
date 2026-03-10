@@ -92,6 +92,13 @@ export const appRoutes: Routes = [
     canActivate: [roleGuard],
     data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
+  // Social login profile completion (no role guard — user has token but no role yet)
+  {
+    path: 'complete-profile',
+    loadChildren: () => import('./complete-profile/complete-profile.routes').then(m => m.completeProfileRoutes),
+    canActivate: [authGuard],
+    data: { layout: 'empty' },
+  },
   // Redirect ABP's default account/login to our custom login page
   { path: 'account/login', redirectTo: '/login', pathMatch: 'full' },
   {

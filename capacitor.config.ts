@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.swiftmind.sesha',
-  appName: 'SwiftMind',
+  appName: 'KAI',
   webDir: 'dist/Sesha',
   server: {
     androidScheme: 'https'

@@ -65,6 +65,86 @@
         <div class="card-value">{{ info.linkedStudentIds!.length }} طالب</div>
       </div>
 
+      <!-- ─── Biometric Toggle (native only) ─── -->
+      @if (biometricSupported()) {
+        <div class="section-title">
+          <i class="fas fa-shield-alt"></i>
+          الأمان والخصوصية
+        </div>
+
+        <div class="info-card biometric-card">
+          <div class="card-label">
+            <i class="fas fa-fingerprint biometric-icon-label"></i>
+            <div>
+              <div>تسجيل الدخول بالبصمة</div>
+              <div class="biometric-sub">{{ biometricEnabled() ? 'مفعّل' : 'معطّل' }}</div>
+            </div>
+          </div>
+          <button
+            class="toggle-switch"
+            [class.active]="biometricEnabled()"
+            [disabled]="biometricToggling()"
+            (click)="onBiometricToggle()"
+            type="button"
+            aria-label="تبديل تسجيل الدخول بالبصمة"
+          >
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <!-- Password prompt to enable biometric -->
+        @if (showPasswordPrompt()) {
+          <div class="biometric-prompt">
+            <p class="prompt-hint">
+              <i class="fas fa-info-circle"></i>
+              أدخل كلمة مرورك الحالية ثم تحقق بالبصمة لتفعيل الميزة
+            </p>
+
+            @if (biometricError()) {
+              <div class="prompt-error">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ biometricError() }}
+              </div>
+            }
+
+            <div class="prompt-input-wrap">
+              <i class="fas fa-lock prompt-input-icon"></i>
+              <input
+                type="password"
+                class="prompt-input"
+                placeholder="كلمة المرور"
+                [(ngModel)]="passwordInput"
+                dir="ltr"
+                autocomplete="current-password"
+              />
+            </div>
+
+            <div class="prompt-actions">
+              <button
+                class="prompt-btn confirm-btn"
+                (click)="confirmEnableBiometric()"
+                [disabled]="biometricToggling()"
+                type="button"
+              >
+                @if (biometricToggling()) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                } @else {
+                  <i class="fas fa-fingerprint"></i>
+                }
+                تفعيل البصمة
+              </button>
+              <button
+                class="prompt-btn cancel-btn"
+                (click)="cancelPasswordPrompt()"
+                type="button"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        }
+      }
+
       <!-- Actions -->
       <div class="actions-section">
         <a routerLink="/account/manage" class="action-btn primary-btn">

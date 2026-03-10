@@ -12,12 +12,18 @@ $quick-h:      62px; // height of bottom quick-links bar
 
 // ─── Page Shell ─────────────────────────────────────────────────
 .login-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
   height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
   background: linear-gradient(145deg, $grad-start 0%, $grad-end 100%);
+  z-index: 1000;
 }
 
 // ─── Hero (top gradient area) ────────────────────────────────────

@@ -17,27 +17,31 @@ export class PushNotificationService {
   /** Call once after login on native platforms. */
   async initialize(): Promise<void> {
     if (!Capacitor.isNativePlatform()) return;
+    try {
+      const permissionStatus = await PushNotifications.requestPermissions();
+      if (permissionStatus.receive !== 'granted') return;
 
-    const permissionStatus = await PushNotifications.requestPermissions();
-    if (permissionStatus.receive !== 'granted') return;
+      await PushNotifications.register();
 
-    await PushNotifications.register();
+      // Token received — register with backend
+      PushNotifications.addListener('registration', async (token: Token) => {
+        this.currentToken = token.value;
+        await this.registerToken(token.value);
+      });
 
-    // Token received — register with backend
-    PushNotifications.addListener('registration', async (token: Token) => {
-      this.currentToken = token.value;
-      await this.registerToken(token.value);
-    });
+      // Push received while app is in foreground
+      PushNotifications.addListener('pushNotificationReceived', (_: PushNotificationSchema) => {
+        this.realtimeService.unreadCount.update(c => c + 1);
+      });
 
-    // Push received while app is in foreground
-    PushNotifications.addListener('pushNotificationReceived', (_: PushNotificationSchema) => {
-      this.realtimeService.unreadCount.update(c => c + 1);
-    });
-
-    // User tapped a push notification — navigate to notifications page
-    PushNotifications.addListener('pushNotificationActionPerformed', (_: ActionPerformed) => {
-      this.router.navigate(['/notifications']);
-    });
+      // User tapped a push notification — navigate to notifications page
+      PushNotifications.addListener('pushNotificationActionPerformed', (_: ActionPerformed) => {
+        this.router.navigate(['/notifications']);
+      });
+    } catch (err) {
+      // Push notifications unavailable (e.g. missing google-services.json / APNs config)
+      console.warn('[PushNotifications] initialize failed — push notifications disabled:', err);
+    }
   }
 
   /** Unregister token on logout. */

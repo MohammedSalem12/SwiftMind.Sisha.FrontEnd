@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 
 const KEY_USERNAME = 'biometric_username';
@@ -22,6 +23,7 @@ export class BiometricService {
   }
 
   async isAvailable(): Promise<boolean> {
+    if (!Capacitor.isNativePlatform()) return false;
     try {
       const plugin = await this.getPlugin();
       if (!plugin) return false;
@@ -33,6 +35,7 @@ export class BiometricService {
   }
 
   async authenticate(): Promise<boolean> {
+    if (!Capacitor.isNativePlatform()) return false;
     try {
       const plugin = await this.getPlugin();
       if (!plugin) return false;

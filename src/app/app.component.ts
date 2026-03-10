@@ -10,7 +10,7 @@ import { RealtimeNotificationService } from './shared/services/realtime-notifica
 import { PushNotificationService } from './shared/services/push-notification.service';
 import { SidebarNotificationDirective } from './shared/sidebar-notification.directive';
 
-const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
+const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profile'];
 
 @Component({
   selector: 'app-root',
@@ -97,6 +97,8 @@ export class AppComponent implements OnInit {
 
   private initRealtime(): void {
     this.realtimeNotificationService.connect();
-    this.pushNotificationService.initialize();
+    this.pushNotificationService.initialize().catch(err =>
+      console.warn('[PushNotifications] unhandled init error:', err)
+    );
   }
 }

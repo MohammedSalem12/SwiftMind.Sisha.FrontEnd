@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">SwiftMind</string>
-    <string name="title_activity_main">SwiftMind</string>
+    <string name="app_name">KAI</string>
+    <string name="title_activity_main">KAI</string>
     <string name="package_name">com.swiftmind.sesha</string>
     <string name="custom_url_scheme">com.swiftmind.sesha</string>
 </resources>

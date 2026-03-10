@@ -82,38 +82,35 @@ export class HomeComponent implements OnInit {
   private checkUserRoleAndRedirect(): void {
     try {
       const currentUser = this.configStateService.getOne('currentUser') as any;
-      const roles = currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [];
-      
-      const isStudent = Array.isArray(roles)
-        ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'student')
-        : false;
+      const roles: string[] = currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [];
 
-      const isParent = Array.isArray(roles)
-        ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'parent')
-        : false;
+      const has = (r: string) => Array.isArray(roles) && roles.some(
+        (role: any) => typeof role === 'string' && role.toLowerCase() === r);
 
-      const isTeacher = Array.isArray(roles)
-        ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'teacher')
-        : false;
+      const isStudent   = has('student');
+      const isParent    = has('parent');
+      const isTeacher   = has('teacher');
+      const isSecretary = has('secretary');
+      const isAdmin     = has('admin');
+      const knownRoles  = ['student','teacher','parent','admin','secretary'];
+      const hasKnown    = Array.isArray(roles) && roles.some(
+        (r: any) => typeof r === 'string' && knownRoles.includes(r.toLowerCase()));
 
-      const isSecretary = Array.isArray(roles)
-        ? roles.some((role: any) => typeof role === 'string' && role.toLowerCase() === 'secretary')
-        : false;
+      // Social-login user with no role yet → complete their profile
+      if (!hasKnown) {
+        this.redirecting.set(true);
+        this.router.navigate(['/complete-profile']);
+        return;
+      }
 
-      // Set redirecting flag BEFORE navigating to prevent flash of dashboard
       if (isStudent || isParent || isTeacher || isSecretary) {
         this.redirecting.set(true);
       }
 
-      if (isStudent) {
-        this.router.navigate(['/student']);
-      } else if (isParent) {
-        this.router.navigate(['/parent']);
-      } else if (isTeacher) {
-        this.router.navigate(['/teacher']);
-      } else if (isSecretary) {
-        this.router.navigate(['/secretary']);
-      }
+      if (isStudent)        this.router.navigate(['/student']);
+      else if (isParent)    this.router.navigate(['/parent']);
+      else if (isTeacher)   this.router.navigate(['/teacher']);
+      else if (isSecretary) this.router.navigate(['/secretary']);
     } catch (error) {
       console.error('Error checking user role:', error);
     }

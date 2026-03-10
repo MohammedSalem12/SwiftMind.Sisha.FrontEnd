@@ -31,4 +31,5 @@ export const environment = {
       rootNamespace: 'SwiftMind.Sesha',
     },
   },
+  googleClientId: '1092548471447-c3m8tge7gh1tuiipvtcdnd1aohvs8a67.apps.googleusercontent.com',
 } as Environment;

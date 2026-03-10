@@ -7,9 +7,7 @@ import { lastValueFrom } from 'rxjs';
 import { AuthService, ConfigStateService } from '@abp/ng.core';
 import { environment } from '../../environments/environment';
 import { BiometricService } from '../shared/services/biometric.service';
-
-declare const google: any;
-declare const FB: any;
+import { Capacitor } from '@capacitor/core';
 
 interface LoginModel {
   userNameOrEmailAddress?: string;
@@ -39,6 +37,7 @@ export class LoginComponent implements OnInit {
   biometricLoading = signal(false);
   googleLoading = signal(false);
   facebookLoading = signal(false);
+  private fbReady = false;
 
   async ngOnInit(): Promise<void> {
     if (this.authService.isAuthenticated) {
@@ -49,6 +48,7 @@ export class LoginComponent implements OnInit {
       this.biometricSvc.isAvailable(),
       this.biometricSvc.hasStoredCredentials(),
     ]);
+    // Show biometric button only when hardware is available AND credentials are saved
     this.biometricAvailable.set(available && hasStored);
     this.initGoogleSignIn();
     this.initFacebook();
@@ -68,37 +68,39 @@ export class LoginComponent implements OnInit {
 
   private initFacebook(): void {
     const scriptId = 'facebook-sdk-script';
-    if (document.getElementById(scriptId)) return;
+    if (document.getElementById(scriptId)) {
+      // Script already added — SDK may already be ready
+      if (typeof (window as any).FB !== 'undefined') {
+        this.fbReady = true;
+      }
+      return;
+    }
     const script = document.createElement('script');
     script.id = scriptId;
     script.src = 'https://connect.facebook.net/en_US/sdk.js';
     script.async = true;
     script.defer = true;
     script.onload = () => {
-      FB.init({
+      (window as any).FB.init({
         appId: '811779008607282',
         cookie: true,
         xfbml: false,
         version: 'v19.0',
       });
+      this.fbReady = true;
     };
     document.head.appendChild(script);
   }
 
   loginWithGoogle(): void {
-    if (typeof google === 'undefined') {
+    const google = (window as any).google;
+    if (!google) {
       this.error.set('Google Sign-In is not available. Please try again.');
       return;
     }
     this.error.set(null);
     this.googleLoading.set(true);
 
-    const client = google.accounts.oauth2.initCodeClient({
-      client_id: environment.oAuthConfig?.clientId ? undefined : undefined,
-      // Use implicit token flow for ID token
-    });
-
-    // Use the newer credential-based flow
     google.accounts.id.initialize({
       client_id: (environment as any).googleClientId ?? 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
       callback: async (response: any) => {
@@ -124,22 +126,41 @@ export class LoginComponent implements OnInit {
   }
 
   loginWithFacebook(): void {
-    if (typeof FB === 'undefined') {
-      this.error.set('Facebook Login is not available. Please try again.');
-      return;
-    }
     this.error.set(null);
     this.facebookLoading.set(true);
 
-    FB.login((response: any) => {
-      if (response?.authResponse?.accessToken) {
-        this.loginWithSocialToken('facebook', response.authResponse.accessToken)
-          .finally(() => this.facebookLoading.set(false));
-      } else {
+    const doLogin = () => {
+      const FB = (window as any).FB;
+      FB.login((response: any) => {
+        if (response?.authResponse?.accessToken) {
+          this.loginWithSocialToken('facebook', response.authResponse.accessToken)
+            .finally(() => this.facebookLoading.set(false));
+        } else {
+          this.facebookLoading.set(false);
+          this.error.set('Facebook sign-in was cancelled.');
+        }
+      }, { scope: 'email,public_profile' });
+    };
+
+    if (this.fbReady) {
+      doLogin();
+      return;
+    }
+
+    // SDK not ready yet — wait up to 10 s
+    let waited = 0;
+    const interval = setInterval(() => {
+      waited += 200;
+      if (typeof (window as any).FB !== 'undefined') {
+        clearInterval(interval);
+        this.fbReady = true;
+        doLogin();
+      } else if (waited >= 10_000) {
+        clearInterval(interval);
         this.facebookLoading.set(false);
-        this.error.set('Facebook sign-in was cancelled.');
+        this.error.set('Facebook Login is not available. Please try again.');
       }
-    }, { scope: 'email,public_profile' });
+    }, 200);
   }
 
   private async loginWithSocialToken(provider: string, token: string): Promise<void> {
@@ -151,8 +172,22 @@ export class LoginComponent implements OnInit {
         scope: environment.oAuthConfig?.scope ?? 'offline_access Sesha',
       });
       try { await lastValueFrom(this.configService.refreshAppState()); } catch { /* ignore */ }
-      await this.router.navigateByUrl('/');
-      try { window.location.reload(); } catch { /* ignore */ }
+
+      // Check if this user already has a role (returning user) or needs to complete profile (new user)
+      const currentUser = this.configService.getOne('currentUser') as any;
+      const roles: string[] = currentUser?.roles ?? currentUser?.roleNames ?? [];
+      const knownRoles = ['STUDENT', 'TEACHER', 'PARENT', 'ADMIN', 'SECRETARY'];
+      const hasRole = Array.isArray(roles) && roles.some(r => knownRoles.includes(r.toUpperCase()));
+
+      if (hasRole) {
+        await this.router.navigateByUrl('/');
+        if (!Capacitor.isNativePlatform()) {
+          try { window.location.reload(); } catch { /* ignore */ }
+        }
+      } else {
+        // New social login user — redirect to profile completion
+        await this.router.navigateByUrl('/complete-profile');
+      }
     } catch (err: any) {
       const msg = err?.error?.error_description
         || err?.error?.error?.message
@@ -235,7 +270,10 @@ export class LoginComponent implements OnInit {
       this.loading.set(false);
       this.biometricLoading.set(false);
       await this.router.navigateByUrl('/');
-      try { window.location.reload(); } catch { /* ignore */ }
+      // window.location.reload() crashes Capacitor WebView on Android/iOS — skip on native
+      if (!Capacitor.isNativePlatform()) {
+        try { window.location.reload(); } catch { /* ignore */ }
+      }
       return;
     }
 
@@ -257,7 +295,10 @@ export class LoginComponent implements OnInit {
     this.loading.set(false);
     this.biometricLoading.set(false);
     await this.router.navigateByUrl('/');
-    try { window.location.reload(); } catch { /* ignore */ }
+    // window.location.reload() crashes Capacitor WebView on Android/iOS — skip on native
+    if (!Capacitor.isNativePlatform()) {
+      try { window.location.reload(); } catch { /* ignore */ }
+    }
   }
 
   togglePassword(): void {

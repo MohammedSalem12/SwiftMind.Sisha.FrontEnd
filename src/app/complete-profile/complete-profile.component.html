@@ -1,0 +1,157 @@
+<div class="reg-page" dir="rtl">
+
+  <!-- Background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+
+  <div class="reg-card">
+
+    <!-- Header -->
+    <div class="reg-header">
+      <div class="logo-wrap">
+        <img src="/assets/images/logo/logo.png" alt="SwiftMind" class="reg-logo" />
+      </div>
+      <h1>SwiftMind</h1>
+      <p>أكمل إنشاء حسابك</p>
+    </div>
+
+    <!-- ═══════════ STEP 1: Role Selection ═══════════ -->
+    @if (step() === 1) {
+      <div class="reg-body">
+        <div class="step-title">
+          <i class="fas fa-user-circle"></i>
+          اختر نوع حسابك
+        </div>
+
+        <div class="role-grid">
+          @for (role of roles; track role.type) {
+            <button
+              class="role-card"
+              [style.--card-color]="role.color"
+              [style.--card-bg]="role.bg"
+              [style.--card-border]="role.border"
+              (click)="selectType(role.type)"
+              type="button">
+              <div class="role-icon">
+                <i class="fas" [class]="'fas ' + role.icon"></i>
+              </div>
+              <div class="role-text">
+                <span class="role-label">{{ role.label }}</span>
+                <span class="role-desc">{{ role.description }}</span>
+              </div>
+              <i class="fas fa-chevron-left role-arrow"></i>
+            </button>
+          }
+        </div>
+
+        <button class="btn-logout" (click)="logout()" type="button">
+          <i class="fas fa-sign-out-alt"></i>
+          تسجيل الخروج
+        </button>
+      </div>
+    }
+
+    <!-- ═══════════ STEP 2: Form ═══════════ -->
+    @if (step() === 2) {
+      <div class="reg-body">
+
+        <!-- Selected role badge -->
+        @if (getSelectedRole(); as role) {
+          <div class="selected-role-bar"
+               [style.background]="role.bg"
+               [style.border-color]="role.border">
+            <button class="back-btn" (click)="back()" type="button">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+            <i class="fas role-badge-icon" [class]="'fas ' + role.icon" [style.color]="role.color"></i>
+            <span [style.color]="role.color">{{ role.label }}</span>
+          </div>
+        }
+
+        <form (ngSubmit)="submit()" autocomplete="off">
+
+          <!-- Email (read-only, pre-filled) -->
+          @if (socialEmail()) {
+            <div class="field-group">
+              <label>
+                <i class="fas fa-envelope"></i>
+                البريد الإلكتروني
+              </label>
+              <input
+                type="email"
+                class="field-input field-readonly"
+                [value]="socialEmail()"
+                readonly />
+            </div>
+          }
+
+          <!-- Full Name (pre-filled from social login) -->
+          <div class="field-group">
+            <label for="fullName">
+              <i class="fas fa-user"></i>
+              الاسم الكامل
+            </label>
+            <input
+              id="fullName"
+              name="fullName"
+              type="text"
+              class="field-input"
+              placeholder="أدخل اسمك الكامل"
+              [(ngModel)]="form.fullName"
+              required
+              autocomplete="name" />
+          </div>
+
+          <!-- Grade (Student only) -->
+          @if (userType() === 'STUDENT') {
+            <div class="field-group">
+              <label for="grade">
+                <i class="fas fa-graduation-cap"></i>
+                الصف الدراسي
+              </label>
+              <div class="select-wrap">
+                <select
+                  id="grade"
+                  name="grade"
+                  class="field-input field-select"
+                  [(ngModel)]="form.grade"
+                  required>
+                  <option value="">-- اختر الصف --</option>
+                  @for (g of gradeOptions(); track g.value) {
+                    <option [value]="g.value">{{ g.label }}</option>
+                  }
+                </select>
+                <i class="fas fa-chevron-down select-chevron"></i>
+              </div>
+            </div>
+          }
+
+          <!-- Error -->
+          @if (error()) {
+            <div class="error-bar">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ error() }}
+            </div>
+          }
+
+          <!-- Submit -->
+          <button class="submit-btn" type="submit" [disabled]="loading()">
+            @if (loading()) {
+              <span class="btn-loading">
+                <span class="spinner-sm"></span>
+                جاري إنشاء الحساب...
+              </span>
+            } @else {
+              <span>
+                <i class="fas fa-user-plus"></i>
+                إنشاء الحساب
+              </span>
+            }
+          </button>
+
+        </form>
+      </div>
+    }
+
+  </div>
+</div>
