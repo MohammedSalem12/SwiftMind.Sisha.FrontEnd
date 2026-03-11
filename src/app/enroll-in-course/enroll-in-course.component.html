@@ -7,44 +7,77 @@
       <div class="student-id">
         <div *ngIf="student()">
           <div class="student-name">{{ studentNameAr() || studentNameEn() }}</div>
-          <div class="student-meta">Code: {{ studentCode() || '-' }} | Grade: {{ studentGrade() ?? '-' }}</div>
+          <div class="student-meta">
+            Code: {{ studentCode() || '-' }} | Grade: {{ studentGrade() ?? '-' }}
+          </div>
         </div>
         <div *ngIf="!student()">{{ studentId() || '-' }}</div>
       </div>
 
-      <label class="label">Course</label>
-      <select [ngModel]="model().courseId" (ngModelChange)="setField('courseId',$event)" name="courseId" required>
-        <option value="">-- Select Course --</option>
-  <option *ngFor="let c of courses()" [value]="c.id">{{ c.name || c.code }}</option>
-      </select>
-
-      <div class="label" style="margin-top:12px">Teacher (optional)</div>
-      <div class="teacher-search">
-        <input name="teacherSearch" [ngModel]="teacherQuery()" (ngModelChange)="onTeacherQueryChange($event)" placeholder="Search teacher by name..." />
-        <div class="results" *ngIf="teacherResults().length > 0">
-          <ul>
-            <li *ngFor="let t of teacherResults()" (click)="selectTeacher(t)">
-              <div class="t-left"><div class="t-avatar">{{ (t.displayName||'').charAt(0) }}</div></div>
-              <div class="t-info">{{ t.displayName }}</div>
-            </li>
-          </ul>
-        </div>
-
-        <div class="selected" *ngIf="selectedTeacher()">
-          <div class="t-avatar small">{{ (selectedTeacher()?.displayName||'').charAt(0) }}</div>
-          <div class="t-info">{{ selectedTeacher()?.displayName }}</div>
-          <button type="button" class="clear" (click)="setField('teacherId',''); selectedTeacher.set(null)">Clear</button>
-        </div>
+      <!-- Grade error: student has no grade assigned -->
+      <div *ngIf="gradeError()" class="grade-error-banner">
+        <i class="fas fa-exclamation-triangle"></i>
+        {{ gradeError() }}
       </div>
+
+      <ng-container *ngIf="!gradeError()">
+        <label class="label">
+          Course
+          <span class="grade-badge" *ngIf="studentGrade() != null">
+            الصف {{ studentGrade() }} فقط
+          </span>
+        </label>
+
+        <div *ngIf="courses().length === 0" class="no-courses-msg">
+          <i class="fas fa-info-circle"></i>
+          لا توجد مقررات متاحة لهذا الصف الدراسي.
+        </div>
+
+        <select *ngIf="courses().length > 0"
+          [ngModel]="model().courseId"
+          (ngModelChange)="setField('courseId',$event)"
+          name="courseId" required>
+          <option value="">-- Select Course --</option>
+          <option *ngFor="let c of courses()" [value]="c.id">
+            {{ c.nameAr || c.nameEn || c.code }}
+            <ng-container *ngIf="c.gradeName"> ({{ c.gradeName }})</ng-container>
+          </option>
+        </select>
+
+        <div class="label" style="margin-top:12px">Teacher (optional)</div>
+        <div class="teacher-search">
+          <input name="teacherSearch"
+            [ngModel]="teacherQuery()"
+            (ngModelChange)="onTeacherQueryChange($event)"
+            placeholder="Search teacher by name..." />
+          <div class="results" *ngIf="teacherResults().length > 0">
+            <ul>
+              <li *ngFor="let t of teacherResults()" (click)="selectTeacher(t)">
+                <div class="t-left"><div class="t-avatar">{{ (t.displayName||'').charAt(0) }}</div></div>
+                <div class="t-info">{{ t.displayName }}</div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="selected" *ngIf="selectedTeacher()">
+            <div class="t-avatar small">{{ (selectedTeacher()?.displayName||'').charAt(0) }}</div>
+            <div class="t-info">{{ selectedTeacher()?.displayName }}</div>
+            <button type="button" class="clear" (click)="setField('teacherId',''); selectedTeacher.set(null)">Clear</button>
+          </div>
+        </div>
+      </ng-container>
     </div>
 
     <div class="right">
       <div class="actions">
-  <button class="btn-primary" type="submit" (click)="onSubmitClick($event)" [disabled]="saving()">Enroll</button>
+        <button class="btn-primary" type="submit" (click)="onSubmitClick($event)"
+          [disabled]="saving() || !!gradeError() || courses().length === 0">
+          Enroll
+        </button>
         <button type="button" (click)="cancel()">Cancel</button>
       </div>
       <div class="error" *ngIf="error()">{{ error() }}</div>
     </div>
 
-    </form>
+  </form>
 </div>

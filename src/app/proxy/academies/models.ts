@@ -8,6 +8,7 @@ export interface AcademyCourseDto {
   courseNameEn?: string;
   courseCode?: string;
   gradeName?: string;
+  isActive: boolean;
 }
 
 export interface AcademyDto extends FullAuditedEntityDto<string> {
@@ -34,4 +35,10 @@ export interface CreateAcademyDto {
   nameEn?: string;
   description?: string;
   supervisorTeacherCode?: string;
+}
+
+export interface UpdateAcademyDto {
+  nameAr: string;
+  nameEn: string;
+  description?: string;
 }

@@ -82,7 +82,7 @@ import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status
               <div class="action-icon" style="background:rgba(102,126,234,.12);color:#667eea"><i class="fas fa-user-plus"></i></div>
               <span class="al">ربط طالب</span><span class="ae">Link Child</span>
             </a>
-            <a class="action-btn" routerLink="/parent-enrollment-approval">
+            <a class="action-btn" routerLink="/parent/requests">
               <div class="action-icon" style="background:rgba(16,185,129,.12);color:#059669"><i class="fas fa-clipboard-check"></i></div>
               <span class="al">طلبات التسجيل</span><span class="ae">Enrollment</span>
             </a>

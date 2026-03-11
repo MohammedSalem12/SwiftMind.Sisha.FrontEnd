@@ -19,4 +19,44 @@ select, input { width:100%; padding:8px 10px; border:1px solid #e6eef8; border-r
 .btn-primary { background:#2563eb; color:#fff; border:0; padding:8px 12px; border-radius:8px }
 .error { color:#ef4444; font-size:13px }
 
+.grade-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.grade-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #856404;
+  font-size: 13px;
+  margin: 10px 0;
+  i { font-size: 15px; }
+}
+
+.no-courses-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0f4ff;
+  border: 1px solid #c7d7fd;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #3730a3;
+  font-size: 13px;
+  margin: 8px 0;
+  i { font-size: 15px; }
+}
+
 @media (max-width:720px){ .enroll-card{ flex-direction:column } .enroll-card .right{ width:100% } }

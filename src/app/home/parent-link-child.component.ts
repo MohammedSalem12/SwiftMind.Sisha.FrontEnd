@@ -192,7 +192,7 @@ import type { StudentDto } from '@proxy/students/models';
     /* ─── Header ─── */
     .page-header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 1rem;
+      padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1rem 1rem;
       display: flex;
       align-items: center;
       gap: 1rem;
@@ -779,11 +779,6 @@ import type { StudentDto } from '@proxy/students/models';
 
     /* ─── Desktop ─── */
     @media (min-width: 768px) {
-      .link-child-page {
-        max-width: 500px;
-        margin: 0 auto;
-      }
-
       .relationship-grid {
         grid-template-columns: repeat(4, 1fr);
       }

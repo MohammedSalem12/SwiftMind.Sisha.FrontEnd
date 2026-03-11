@@ -11,73 +11,161 @@ import { GroupService } from '@proxy/groups';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="page">
-      <div class="form-card">
-        <div class="card-header-section">
-          <button class="btn-back" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
-          <div>
-            <h2>إضافة موعد جديد</h2>
-            <p class="subtitle">أضف موعد حصة للمجموعة</p>
-          </div>
-        </div>
+    <div class="add-sched-page" dir="rtl">
 
-        <form class="card-body-section" (ngSubmit)="submit()">
-          <div class="field">
-            <label>اليوم <span class="required">*</span></label>
-            <select name="dayOfWeek" [(ngModel)]="dayOfWeek" required>
+      <!-- Hero header -->
+      <div class="hero">
+        <div class="hero-blob b1"></div>
+        <div class="hero-blob b2"></div>
+        <button class="back-btn" (click)="goBack()">
+          <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="hero-text">
+          <h1>إضافة موعد</h1>
+          <p>Add Schedule · أضف موعد حصة للمجموعة</p>
+        </div>
+        <div class="hero-icon">
+          <i class="fas fa-calendar-plus"></i>
+        </div>
+      </div>
+
+      <!-- Form card -->
+      <div class="form-wrap">
+        <form (ngSubmit)="submit()">
+
+          <!-- Day -->
+          <div class="field-group">
+            <label class="field-label">
+              <i class="fas fa-calendar-day"></i> اليوم <span class="req">*</span>
+            </label>
+            <select class="field-input" name="dayOfWeek" [(ngModel)]="dayOfWeek" required>
               <option [value]="-1">-- اختر اليوم --</option>
               <option *ngFor="let day of days; let i = index" [value]="i">{{ day }}</option>
             </select>
           </div>
 
-          <div class="field-row">
-            <div class="field">
-              <label>وقت البداية <span class="required">*</span></label>
-              <input type="time" name="startTime" [(ngModel)]="startTime" required />
+          <!-- Start hour -->
+          <div class="time-row">
+            <div class="field-group">
+              <label class="field-label">
+                <i class="fas fa-clock"></i> ساعة البداية <span class="req">*</span>
+              </label>
+              <select class="field-input" name="startHour" [(ngModel)]="startHour" required>
+                <option [value]="-1">-- الساعة --</option>
+                <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
+              </select>
             </div>
-            <div class="field">
-              <label>وقت النهاية <span class="required">*</span></label>
-              <input type="time" name="endTime" [(ngModel)]="endTime" required />
+            <div class="field-group">
+              <label class="field-label">
+                <i class="fas fa-sun"></i> الفترة <span class="req">*</span>
+              </label>
+              <select class="field-input" name="ampm" [(ngModel)]="ampm" required>
+                <option value="AM">صباحاً (ص)</option>
+                <option value="PM">مساءً (م)</option>
+              </select>
             </div>
           </div>
 
-          <div *ngIf="errorMsg()" class="error-msg">
-            <i class="fas fa-exclamation-circle me-1"></i>
-            {{ errorMsg() }}
+          <!-- Duration -->
+          <div class="field-group">
+            <label class="field-label">
+              <i class="fas fa-hourglass-half"></i> مدة الحصة <span class="req">*</span>
+            </label>
+            <div class="duration-row">
+              <button type="button" class="dur-btn" [class.active]="duration === 1" (click)="duration = 1">
+                <i class="fas fa-clock"></i> ساعة واحدة
+              </button>
+              <button type="button" class="dur-btn" [class.active]="duration === 2" (click)="duration = 2">
+                <i class="fas fa-clock"></i> ساعتان
+              </button>
+            </div>
           </div>
 
-          <div class="actions">
-            <button class="btn-primary" type="submit" [disabled]="saving() || dayOfWeek < 0 || !startTime || !endTime">
-              <i class="fas fa-plus me-1"></i>
-              {{ saving() ? 'جاري الحفظ...' : 'إضافة الموعد' }}
+          <!-- Computed end time preview -->
+          @if (startHour >= 0 && duration > 0) {
+            <div class="time-preview">
+              <i class="fas fa-arrow-left"></i>
+              <span>من {{ formatDisplay(startHour, ampm) }}</span>
+              <span class="arrow">←</span>
+              <span>إلى {{ endTimeDisplay() }}</span>
+            </div>
+          }
+
+          <!-- Error -->
+          @if (errorMsg()) {
+            <div class="error-banner">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ errorMsg() }}
+            </div>
+          }
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button class="btn-submit" type="submit"
+              [disabled]="saving() || dayOfWeek < 0 || startHour < 0 || duration < 1">
+              @if (saving()) {
+                <div class="spinner"></div>
+                <span>جاري الحفظ...</span>
+              } @else {
+                <i class="fas fa-plus"></i>
+                <span>إضافة الموعد</span>
+              }
             </button>
-            <button type="button" class="btn-outline" (click)="goBack()">إلغاء</button>
+            <button class="btn-cancel" type="button" (click)="goBack()">إلغاء</button>
           </div>
+
         </form>
       </div>
     </div>
   `,
   styles: [`
-    .page { display: flex; justify-content: center; padding: 2rem; background: #f8f9fa; min-height: 100vh; }
-    .form-card { width: 100%; max-width: 600px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
-    .card-header-section { padding: 1.5rem; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; display: flex; align-items: center; gap: 1rem; }
-    .card-header-section h2 { margin: 0; font-size: 1.5rem; }
-    .card-header-section .subtitle { margin: 0.25rem 0 0; opacity: 0.85; font-size: 0.9rem; }
-    .btn-back { background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; }
-    .card-body-section { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
-    .field { display: flex; flex-direction: column; flex: 1; }
-    .field-row { display: flex; gap: 1rem; }
-    .field label { font-weight: 600; margin-bottom: 0.5rem; color: #333; }
-    .field .required { color: #dc3545; }
-    .field input, .field select { padding: 0.75rem; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 1rem; }
-    .field input:focus, .field select:focus { outline: none; border-color: #28a745; box-shadow: 0 0 0 3px rgba(40,167,69,0.15); }
-    .error-msg { color: #dc3545; background: #fff5f5; padding: 0.75rem; border-radius: 8px; border: 1px solid #ffe0e0; }
-    .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
-    .btn-primary { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-outline { background: transparent; border: 1px solid #ccc; padding: 0.75rem 1.5rem; border-radius: 10px; cursor: pointer; }
+    .add-sched-page { direction: rtl; min-height: 100vh; background: #f4f5fb; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+
+    /* Hero */
+    .hero { background: linear-gradient(145deg, #667eea 0%, #764ba2 100%); padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 1.5rem; position: relative; overflow: hidden; display: flex; align-items: center; gap: 0.875rem; }
+    .hero-blob { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.07); pointer-events: none; }
+    .b1 { width: 200px; height: 200px; top: -70px; right: -50px; }
+    .b2 { width: 130px; height: 130px; bottom: -50px; left: -25px; }
+    .back-btn { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.25); color: #fff; font-size: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1; transition: background 0.15s; }
+    .back-btn:active { background: rgba(255,255,255,0.28); }
+    .hero-text { flex: 1; z-index: 1; min-width: 0; }
+    .hero-text h1 { font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0 0 0.15rem; }
+    .hero-text p { font-size: 0.72rem; color: rgba(255,255,255,0.65); margin: 0; }
+    .hero-icon { z-index: 1; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .hero-icon i { font-size: 1.3rem; color: #fff; }
+
+    /* Form */
+    .form-wrap { padding: 1.25rem 1rem; }
+    .field-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+    .field-label { font-size: 0.8rem; font-weight: 700; color: #4a4a6a; display: flex; align-items: center; gap: 0.35rem; }
+    .field-label i { color: #667eea; font-size: 0.72rem; }
+    .req { color: #ef4444; }
+    .field-input { padding: 0.75rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 0.95rem; background: #fff; width: 100%; box-sizing: border-box; transition: border-color 0.15s, box-shadow 0.15s; direction: rtl; }
+    .field-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+    select.field-input { appearance: none; -webkit-appearance: none; cursor: pointer; }
+
+    .time-row { display: flex; gap: 0.75rem; }
+    .time-row .field-group { flex: 1; }
+
+    .error-banner { display: flex; align-items: center; gap: 0.6rem; padding: 0.875rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; color: #dc2626; font-size: 0.85rem; margin-bottom: 1rem; }
+    .error-banner i { font-size: 1rem; flex-shrink: 0; }
+
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+    .btn-submit { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: linear-gradient(145deg, #667eea, #764ba2); color: #fff; border: none; padding: 0.875rem; border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; min-height: 50px; box-shadow: 0 4px 14px rgba(102,126,234,0.35); transition: opacity 0.15s; }
+    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+    .btn-cancel { padding: 0.875rem 1.25rem; border-radius: 12px; border: 1.5px solid #e5e7eb; background: #fff; color: #6b7280; font-size: 0.9rem; font-weight: 600; cursor: pointer; min-height: 50px; }
+
+    .duration-row { display: flex; gap: 0.75rem; }
+    .dur-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.75rem; border-radius: 12px; border: 1.5px solid #e5e7eb; background: #fff; color: #6b7280; font-size: 0.875rem; font-weight: 600; cursor: pointer; min-height: 50px; transition: border-color 0.15s, background 0.15s, color 0.15s; }
+    .dur-btn.active { border-color: #667eea; background: rgba(102,126,234,0.08); color: #667eea; }
+    .dur-btn i { font-size: 0.8rem; }
+
+    .time-preview { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: #f0f4ff; border: 1px solid #c7d7fd; border-radius: 12px; font-size: 0.875rem; font-weight: 600; color: #3730a3; margin-bottom: 1rem; direction: rtl; }
+    .time-preview .arrow { color: #667eea; }
+    .time-preview i { font-size: 0.8rem; }
+
+    .spinner { width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   `],
 })
 export class AddScheduleComponent implements OnInit {
@@ -85,34 +173,69 @@ export class AddScheduleComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly groupService = inject(GroupService);
 
-  saving = signal(false);
-  errorMsg = signal<string | null>(null);
+  saving    = signal(false);
+  errorMsg  = signal<string | null>(null);
 
-  groupId = '';
+  groupId  = '';
   courseId = '';
   dayOfWeek = -1;
-  startTime = '';
-  endTime = '';
+  startHour = -1;     // 1–12
+  ampm      = 'AM';   // 'AM' | 'PM'
+  duration  = 0;      // 1 or 2
 
-  days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+  days  = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+  hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
   ngOnInit() {
-    this.groupId = this.route.snapshot.paramMap.get('groupId') || '';
+    this.groupId  = this.route.snapshot.paramMap.get('groupId') || '';
     this.courseId = this.route.snapshot.queryParamMap.get('courseId') || '';
-    if (!this.groupId) {
-      this.goBack();
+    if (!this.groupId) this.goBack();
+  }
+
+  /** Convert 12h display to 24h "HH:mm" string */
+  private to24h(hour: number, ampm: string): string {
+    let h = Number(hour);
+    if (ampm === 'AM') {
+      h = h === 12 ? 0 : h;
+    } else {
+      h = h === 12 ? 12 : h + 12;
     }
+    return `${String(h).padStart(2, '0')}:00`;
+  }
+
+  /** Display string e.g. "9 ص" */
+  formatDisplay(hour: number, ampm: string): string {
+    return `${hour} ${ampm === 'AM' ? 'ص' : 'م'}`;
+  }
+
+  /** Computed end time display */
+  endTimeDisplay(): string {
+    if (this.startHour < 0 || this.duration < 1) return '';
+    let h = Number(this.startHour);
+    let ap = this.ampm;
+    // advance by duration hours
+    for (let i = 0; i < this.duration; i++) {
+      if (h === 12 && ap === 'AM') { h = 1; }
+      else if (h === 11 && ap === 'AM') { h = 12; ap = 'PM'; }
+      else if (h === 12 && ap === 'PM') { h = 1; ap = 'AM'; }  // midnight wrap
+      else { h++; }
+    }
+    return this.formatDisplay(h, ap);
   }
 
   async submit() {
-    if (this.dayOfWeek < 0 || !this.startTime || !this.endTime || !this.groupId) return;
+    if (this.dayOfWeek < 0 || this.startHour < 0 || this.duration < 1 || !this.groupId) return;
+    const startTime = this.to24h(this.startHour, this.ampm);
+    const endHour24 = (parseInt(startTime) + this.duration) % 24;
+    const endTime   = `${String(endHour24).padStart(2, '0')}:00`;
+
     this.saving.set(true);
     this.errorMsg.set(null);
     try {
       await lastValueFrom(this.groupService.addScheduleToGroup(this.groupId, {
         dayOfWeek: Number(this.dayOfWeek),
-        startTime: this.startTime,
-        endTime: this.endTime,
+        startTime,
+        endTime,
       }));
       this.goBack();
     } catch (err: any) {

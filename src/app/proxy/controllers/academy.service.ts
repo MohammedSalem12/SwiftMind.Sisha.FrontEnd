@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { AcademyCourseDto, AcademyDto, AcademyMemberDto, CreateAcademyDto } from '../academies/models';
+import type { AcademyCourseDto, AcademyDto, AcademyMemberDto, CreateAcademyDto, UpdateAcademyDto } from '../academies/models';
 
 @Injectable({
   providedIn: 'root',
@@ -82,6 +82,14 @@ export class AcademyService {
     { apiName: this.apiName,...config });
   
 
+  getPendingJoinRequestsForMyAcademy = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, AcademyMemberDto[]>({
+      method: 'GET',
+      url: '/api/sesha/academies/my-academy/pending-join-requests',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getPendingRequests = (academyId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyMemberDto[]>({
       method: 'GET',
@@ -110,6 +118,33 @@ export class AcademyService {
     this.restService.request<any, void>({
       method: 'POST',
       url: `/api/sesha/academies/${academyId}/join`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  setActive = (id: string, isActive: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/sesha/academies/${id}/set-active`,
+      params: { isActive },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  setCourseActive = (academyId: string, courseId: string, isActive: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/sesha/academies/${academyId}/courses/${courseId}/set-active`,
+      params: { isActive },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  update = (id: string, input: UpdateAcademyDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, AcademyDto>({
+      method: 'PUT',
+      url: `/api/sesha/academies/${id}`,
+      body: input,
     },
     { apiName: this.apiName,...config });
 

@@ -1,4 +1,4 @@
-import type { CreationAuditedEntityDto, EntityDto, ExtensibleAuditedEntityDto } from '@abp/ng.core';
+import type { CreationAuditedEntityDto, EntityDto, ExtensibleAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { SecretaryTeacherRequestStatus } from './secretary-teacher-request-status.enum';
 import type { UnenrollRequestStatus } from './unenroll-request-status.enum';
 
@@ -14,6 +14,8 @@ export interface CreateUpdateTeacherDto {
   email?: string;
   phoneNumber?: string;
   password?: string;
+  government?: string;
+  town?: string;
 }
 
 export interface SecretaryInfoDto {
@@ -89,6 +91,8 @@ export interface TeacherDto extends ExtensibleAuditedEntityDto<string> {
   email?: string;
   phoneNumber?: string;
   teacherCode?: string;
+  government?: string;
+  town?: string;
 }
 
 export interface TeacherEnrolledCourseDto {
@@ -108,6 +112,12 @@ export interface TeacherEnrollmentResultDto {
   enrolledCourses: string[];
   alreadyEnrolledCourses: string[];
   failedCourses: string[];
+}
+
+export interface TeacherFilterDto extends PagedAndSortedResultRequestDto {
+  government?: string;
+  town?: string;
+  nameOrCode?: string;
 }
 
 export interface TeacherUnenrollRequestDto extends EntityDto<string> {

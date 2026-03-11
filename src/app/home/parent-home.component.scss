@@ -18,7 +18,7 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 .hero {
   position: relative;
   background: $purple-grad;
-  padding: 2rem 1.5rem 1.5rem;
+  padding: calc(env(safe-area-inset-top, 0px) + 1.5rem) 1.5rem 1.5rem;
   overflow: hidden;
 }
 
@@ -533,9 +533,3 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 // ──────────────────────────────────────────
 // Desktop
 // ──────────────────────────────────────────
-@media (min-width: 768px) {
-  .parent-home {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-}

@@ -97,6 +97,13 @@ import { CurrentUserInfoService } from '@proxy/common';
             <span class="qa-en">My Requests</span>
           </div>
         </button>
+        <button class="qa-btn qa-btn-reports" (click)="goToReports()">
+          <i class="fas fa-chart-bar"></i>
+          <div class="qa-text">
+            <span>تقارير الغياب</span>
+            <span class="qa-en">Reports</span>
+          </div>
+        </button>
       </div>
 
     </div>
@@ -288,6 +295,7 @@ import { CurrentUserInfoService } from '@proxy/common';
     }
     .qa-btn:active { transform: scale(.97); box-shadow: 0 1px 6px rgba(0,0,0,.1); }
     .qa-btn i { font-size: 1rem; flex-shrink: 0; }
+    .qa-btn-reports { background: linear-gradient(135deg, #f093fb, #f5576c); }
     .qa-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
     .qa-en { font-size: .65rem; font-weight: 500; opacity: .85; }
   `],
@@ -332,6 +340,10 @@ export class SecretaryHomeComponent implements OnInit {
 
   goToLinkTeacher() {
     this.router.navigate(['/secretary/link-teacher']);
+  }
+
+  goToReports() {
+    this.router.navigate(['/reports/absence']);
   }
 
   goToTeacherCourses(teacher: SecretaryTeacherDto) {

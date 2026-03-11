@@ -6,7 +6,7 @@ import { lastValueFrom } from 'rxjs';
 
 import type { CreateUpdateEnrollmentDto } from '@proxy/student-enrollments/dtos';
 import { StudentEnrollmentService as EnrollmentService } from '@proxy/student-enrollments';
-import type { CourseSimpleDto } from '@proxy/courses/models';
+import type { CourseDto } from '@proxy/courses/dtos/models';
 import { CourseService } from '@proxy/courses';
 import type { TeacherDto, TeacherAutocompleteDto } from '@proxy/teachers/models';
 import { TeacherService } from '@proxy/teachers';
@@ -36,7 +36,8 @@ export class EnrollInCourseComponent implements OnInit {
   studentNameEn = signal<string | null>(null);
   studentCode = signal<string | null>(null);
   studentGrade = signal<number | null>(null);
-  courses = signal<CourseSimpleDto[]>([]);
+  courses = signal<CourseDto[]>([]);
+  gradeError = signal<string | null>(null);
   // teacher search
   teacherQuery = signal('');
   teacherResults = signal<TeacherAutocompleteDto[]>([]);
@@ -60,7 +61,6 @@ export class EnrollInCourseComponent implements OnInit {
       this.model.update(m => ({ ...m, studentId: id } as CreateUpdateEnrollmentDto));
       void this.loadStudent(id);
     }
-    this.loadCourses();
   }
 
   private async loadStudent(id: string) {
@@ -70,24 +70,29 @@ export class EnrollInCourseComponent implements OnInit {
       if (s) {
         const parts = [s.firstName, s.middleName, s.lastName].filter(Boolean as any);
         const full = parts.length ? parts.join(' ') : null;
-        // no separate Arabic fields in DTO; set both to the same value
         this.studentNameAr.set(full);
         this.studentNameEn.set(full);
         this.studentCode.set((s.studentCode ?? s.teacherStudentCode) ?? null);
         this.studentGrade.set(s.currentGrade ?? null);
+
+        if (s.currentGrade != null) {
+          await this.loadCoursesByGrade(s.currentGrade, id);
+        } else {
+          this.gradeError.set('لا يمكن تحديد الصف الدراسي للطالب. لا يمكن التسجيل.');
+        }
       }
     } catch (err) {
       console.error('Failed to load student', err);
     }
   }
 
-  async loadCourses(search?: string) {
+  private async loadCoursesByGrade(grade: number, studentId: string) {
     try {
-      const res: any = await lastValueFrom(this.courseSvc.getSimpleCourses(search ?? ''));
-      // getSimpleCourses returns a ListResultDto<CourseSimpleDto>
-      this.courses.set(res.items ?? []);
+      const items = await lastValueFrom(this.courseSvc.getCoursesByGrade(grade, studentId));
+      this.courses.set(items ?? []);
     } catch (e) {
       console.error(e);
+      this.courses.set([]);
     }
   }
 

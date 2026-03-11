@@ -1,4 +1,4 @@
-import type { AcademyCourseDto, AcademyDto, AcademyMemberDto, CreateAcademyDto } from './models';
+import type { AcademyCourseDto, AcademyDto, AcademyMemberDto, CreateAcademyDto, UpdateAcademyDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -85,6 +85,14 @@ export class AcademyService {
     { apiName: this.apiName,...config });
   
 
+  getPendingJoinRequestsForMyAcademy = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, AcademyMemberDto[]>({
+      method: 'GET',
+      url: '/api/app/academy/pending-join-requests-for-my-academy',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getPendingRequests = (academyId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AcademyMemberDto[]>({
       method: 'GET',
@@ -114,6 +122,33 @@ export class AcademyService {
     this.restService.request<any, void>({
       method: 'POST',
       url: `/api/app/academy/request-to-join/${academyId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  setActive = (id: string, isActive: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/academy/${id}/set-active`,
+      params: { isActive },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  setCourseActive = (academyId: string, courseId: string, isActive: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/academy/set-course-active',
+      params: { academyId, courseId, isActive },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  update = (id: string, input: UpdateAcademyDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, AcademyDto>({
+      method: 'PUT',
+      url: `/api/app/academy/${id}`,
+      body: input,
     },
     { apiName: this.apiName,...config });
 

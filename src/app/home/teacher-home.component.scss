@@ -380,8 +380,9 @@ $radius-card:   18px;
 
   i { font-size: 1rem; flex-shrink: 0; }
 
-  &-academy { background: linear-gradient(135deg, $academy-start, $academy-end); }
-  &-enroll  { background: linear-gradient(135deg, $grad-start, $grad-end); }
+  &-academy  { background: linear-gradient(135deg, $academy-start, $academy-end); }
+  &-enroll   { background: linear-gradient(135deg, $grad-start, $grad-end); }
+  &-reports  { background: linear-gradient(135deg, #f093fb, #f5576c); }
 }
 
 .qa-text {

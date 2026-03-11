@@ -1,4 +1,4 @@
-import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherDashboardDto, TeacherDto, TeacherEnrolledCourseDto, TeacherEnrollmentResultDto, TeacherUnenrollRequestDto } from './models';
+import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherDashboardDto, TeacherDto, TeacherEnrolledCourseDto, TeacherEnrollmentResultDto, TeacherFilterDto, TeacherUnenrollRequestDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -74,6 +74,15 @@ export class TeacherService {
       method: 'GET',
       url: '/api/app/teacher',
       params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getListFiltered = (input: TeacherFilterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<TeacherDto>>({
+      method: 'GET',
+      url: '/api/app/teacher/filtered',
+      params: { government: input.government, town: input.town, nameOrCode: input.nameOrCode, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   

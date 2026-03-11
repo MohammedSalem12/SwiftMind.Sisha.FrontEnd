@@ -14,133 +14,117 @@ import { CurrentUserInfoService } from '@proxy/common';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <div class="create-page" dir="rtl">
-      <div class="page-header">
-        <button class="btn-back" (click)="goBack()">
+    <div class="ac-page" dir="rtl">
+
+      <!-- Hero header -->
+      <div class="hero">
+        <div class="hero-blob b1"></div>
+        <div class="hero-blob b2"></div>
+        <button class="back-btn" (click)="goBack()">
           <i class="fas fa-arrow-right"></i>
         </button>
-        <div>
-          <h1>إنشاء أكاديمية جديدة</h1>
+        <div class="hero-text">
+          <h1>إنشاء أكاديمية</h1>
           <p>Create a New Academy</p>
+        </div>
+        <div class="hero-icon">
+          <i class="fas fa-university"></i>
         </div>
       </div>
 
-      <div class="form-card">
-        <div class="form-group">
-          <label>اسم الأكاديمية بالعربية *</label>
-          <input type="text" [(ngModel)]="form.nameAr" placeholder="اسم الأكاديمية" class="form-input" />
+      <!-- Form -->
+      <div class="form-wrap">
+
+        <div class="field-group">
+          <label class="field-label">
+            <i class="fas fa-font"></i> الاسم بالعربية <span class="req">*</span>
+          </label>
+          <input class="field-input" type="text" [(ngModel)]="form.nameAr"
+            placeholder="اسم الأكاديمية" />
         </div>
 
-        <div class="form-group">
-          <label>Academy Name in English *</label>
-          <input type="text" [(ngModel)]="form.nameEn" placeholder="Academy name" class="form-input" dir="ltr" />
+        <div class="field-group">
+          <label class="field-label">
+            <i class="fas fa-font"></i> English Name <span class="req">*</span>
+          </label>
+          <input class="field-input" type="text" [(ngModel)]="form.nameEn"
+            placeholder="Academy name" dir="ltr" />
         </div>
 
-        <div class="form-group">
-          <label>الوصف (اختياري)</label>
-          <textarea
-            [(ngModel)]="form.description"
-            placeholder="وصف مختصر للأكاديمية..."
-            class="form-textarea"
-            rows="3">
-          </textarea>
+        <div class="field-group">
+          <label class="field-label">
+            <i class="fas fa-align-right"></i> الوصف <span class="opt">(اختياري)</span>
+          </label>
+          <textarea class="field-input field-textarea" [(ngModel)]="form.description"
+            placeholder="وصف مختصر للأكاديمية..." rows="3"></textarea>
         </div>
 
-        <div class="form-group" *ngIf="isAdmin()">
-          <label>كود المشرف (مطلوب للمشرف)</label>
-          <input
-            type="text"
-            [(ngModel)]="form.supervisorTeacherCode"
-            placeholder="T-XXXXXXX"
-            class="form-input"
-            dir="ltr" />
-          <small class="hint">أدخل كود المعلم الذي سيكون مشرفاً على الأكاديمية</small>
-        </div>
+        @if (isAdmin()) {
+          <div class="field-group">
+            <label class="field-label">
+              <i class="fas fa-user-tie"></i> كود المشرف <span class="req">*</span>
+            </label>
+            <input class="field-input" type="text" [(ngModel)]="form.supervisorTeacherCode"
+              placeholder="T-XXXXXXX" dir="ltr" />
+            <span class="field-hint">كود المعلم الذي سيكون مشرفاً على الأكاديمية</span>
+          </div>
+        }
 
-        <div *ngIf="error()" class="error-msg">
-          <i class="fas fa-exclamation-circle me-1"></i>{{ error() }}
-        </div>
+        @if (error()) {
+          <div class="error-banner">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error() }}
+          </div>
+        }
 
-        <button
-          class="btn-submit"
-          (click)="submit()"
-          [disabled]="submitting()">
-          <span *ngIf="!submitting()">
-            <i class="fas fa-check me-1"></i> إنشاء الأكاديمية
-          </span>
-          <span *ngIf="submitting()">
-            <div class="spinner-sm"></div> جاري الإنشاء...
-          </span>
+        <button class="btn-submit" (click)="submit()" [disabled]="submitting()">
+          @if (submitting()) {
+            <div class="spinner"></div>
+            <span>جاري الإنشاء...</span>
+          } @else {
+            <i class="fas fa-check"></i>
+            <span>إنشاء الأكاديمية · Create Academy</span>
+          }
         </button>
+
       </div>
     </div>
   `,
   styles: [`
-    .create-page { padding: 16px; max-width: 560px; margin: 0 auto; font-family: 'Segoe UI', sans-serif; }
-    .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-    .btn-back {
-      background: #f5f5f5;
-      border: none;
-      border-radius: 50%;
-      width: 40px; height: 40px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: #555;
-    }
-    .page-header h1 { font-size: 20px; font-weight: 700; margin: 0; color: #333; }
-    .page-header p { font-size: 13px; color: #888; margin: 0; }
-    .form-card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-      padding: 24px;
-    }
-    .form-group { margin-bottom: 18px; }
-    label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 6px; }
-    .form-input, .form-textarea {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 14px;
-      direction: rtl;
-      box-sizing: border-box;
-      transition: border-color 0.2s;
-    }
-    .form-input:focus, .form-textarea:focus { outline: none; border-color: #764ba2; }
-    .form-textarea { resize: vertical; }
-    .hint { font-size: 11px; color: #999; margin-top: 4px; display: block; }
-    .error-msg {
-      background: #fff3f3;
-      color: #c0392b;
-      border: 1px solid #f5c6cb;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 13px;
-      margin-bottom: 16px;
-    }
-    .btn-submit {
-      width: 100%;
-      padding: 13px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-    .spinner-sm {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
+    .ac-page { direction: rtl; min-height: 100vh; background: #f4f5fb; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+
+    /* Hero */
+    .hero { background: linear-gradient(145deg, #667eea 0%, #764ba2 100%); padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 1.5rem; position: relative; overflow: hidden; display: flex; align-items: center; gap: 0.875rem; }
+    .hero-blob { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.07); pointer-events: none; }
+    .b1 { width: 200px; height: 200px; top: -70px; right: -50px; }
+    .b2 { width: 130px; height: 130px; bottom: -50px; left: -25px; }
+    .back-btn { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.25); color: #fff; font-size: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1; transition: background 0.15s; }
+    .back-btn:active { background: rgba(255,255,255,0.28); }
+    .hero-text { flex: 1; z-index: 1; min-width: 0; }
+    .hero-text h1 { font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0 0 0.15rem; }
+    .hero-text p { font-size: 0.72rem; color: rgba(255,255,255,0.65); margin: 0; }
+    .hero-icon { z-index: 1; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .hero-icon i { font-size: 1.3rem; color: #fff; }
+
+    /* Form */
+    .form-wrap { padding: 1.25rem 1rem; display: flex; flex-direction: column; gap: 0; }
+    .field-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.1rem; }
+    .field-label { font-size: 0.8rem; font-weight: 700; color: #4a4a6a; display: flex; align-items: center; gap: 0.35rem; }
+    .field-label i { color: #667eea; font-size: 0.7rem; }
+    .req { color: #ef4444; }
+    .opt { color: #9ca3af; font-weight: 400; }
+    .field-input { padding: 0.75rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 0.95rem; background: #fff; width: 100%; box-sizing: border-box; transition: border-color 0.15s, box-shadow 0.15s; direction: rtl; }
+    .field-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+    .field-textarea { resize: vertical; min-height: 80px; }
+    .field-hint { font-size: 0.72rem; color: #9ca3af; }
+
+    .error-banner { display: flex; align-items: center; gap: 0.6rem; padding: 0.875rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; color: #dc2626; font-size: 0.85rem; margin-bottom: 1rem; }
+    .error-banner i { font-size: 1rem; flex-shrink: 0; }
+
+    .btn-submit { width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: linear-gradient(145deg, #667eea, #764ba2); color: #fff; border: none; padding: 0.9rem; border-radius: 14px; font-size: 0.95rem; font-weight: 700; cursor: pointer; min-height: 52px; box-shadow: 0 4px 14px rgba(102,126,234,0.35); transition: opacity 0.15s; margin-top: 0.25rem; }
+    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+
+    .spinner { width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
   `]
 })

@@ -12,6 +12,9 @@ export enum NotificationType {
   SecretaryLinkRequestApproved = 8,
   SecretaryLinkRequestRejected = 9,
   General = 10,
+  AcademyJoinRequestPending = 11,
+  AcademyJoinRequestApproved = 12,
+  AcademyJoinRequestRejected = 13,
 }
 
 export const notificationTypeOptions = mapEnumToOptions(NotificationType);

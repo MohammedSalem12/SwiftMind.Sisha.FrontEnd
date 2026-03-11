@@ -112,6 +112,10 @@ export class TeacherHomeComponent implements OnInit {
     this.router.navigate(['/teacher/enroll']);
   }
 
+  goToReports(): void {
+    this.router.navigate(['/reports/absence']);
+  }
+
   selectAcademyCourse(course: any): void {
     const id = course.courseId ?? course.id;
     const academyId = course.academyId;

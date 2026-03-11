@@ -92,6 +92,12 @@ export const appRoutes: Routes = [
     canActivate: [roleGuard],
     data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
+  {
+    path: 'reports/absence',
+    loadComponent: () => import('./home/absence-report.component').then(m => m.AbsenceReportComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'SECRETARY'] }
+  },
   // Social login profile completion (no role guard — user has token but no role yet)
   {
     path: 'complete-profile',

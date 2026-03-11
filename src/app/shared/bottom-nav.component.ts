@@ -43,7 +43,7 @@ function getRoleProfilePath(roles: string[]): string {
 function getRoleRequestsPath(roles: string[]): string {
   if (roles.includes(ROLES.STUDENT))    return '/student/requests';
   if (roles.includes(ROLES.TEACHER))    return '/teacher/my-requests';
-  if (roles.includes(ROLES.PARENT))     return '/parent-enrollment-approval';
+  if (roles.includes(ROLES.PARENT))     return '/parent/requests';
   if (roles.includes(ROLES.SECRETARY))  return '/secretary/requests';
   if (roles.includes(ROLES.ADMIN))      return '/enrollment-requests';
   return '/notifications';
@@ -205,11 +205,9 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
 
     .mn-inner {
       display: flex;
-      justify-content: space-around;
       align-items: stretch;
-      height: 60px;
-      max-width: 520px;
-      margin: 0 auto;
+      justify-content: space-around;
+      height: 72px;
     }
 
     .mn-tab {
@@ -225,7 +223,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       background: transparent;
       border: none;
       cursor: pointer;
-      padding: 0 4px;
+      padding: 0 22px 0 2px;
       transition: color 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
@@ -233,18 +231,18 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
 
     .mn-icon-wrap {
       position: relative;
-      width: 34px; height: 26px;
+      width: 44px; height: 32px;
       display: flex; align-items: center; justify-content: center;
-      border-radius: 10px;
+      border-radius: 12px;
       transition: background 0.2s;
     }
     .mn-tab.active .mn-icon-wrap {
       background: rgba(91,33,182,0.1);
     }
-    .mn-icon-wrap i { font-size: 1.1rem; }
+    .mn-icon-wrap i { font-size: 1.35rem; }
 
     .mn-label {
-      font-size: 0.565rem;
+      font-size: 0.68rem;
       font-weight: 600;
       white-space: nowrap;
       letter-spacing: 0.01em;
@@ -274,7 +272,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     }
 
     .mn-avatar-sm {
-      width: 32px; height: 32px;
+      width: 38px; height: 38px;
       border-radius: 50%;
       background: linear-gradient(135deg, #7c3aed, #5b21b6);
       color: #fff;
