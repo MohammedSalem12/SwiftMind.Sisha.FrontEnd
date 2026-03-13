@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">KAI</string>
     <string name="title_activity_main">KAI</string>
-    <string name="package_name">com.swiftmind.sesha</string>
-    <string name="custom_url_scheme">com.swiftmind.sesha</string>
+    <string name="package_name">com.swiftmind.kai</string>
+    <string name="custom_url_scheme">com.swiftmind.kai</string>
 </resources>

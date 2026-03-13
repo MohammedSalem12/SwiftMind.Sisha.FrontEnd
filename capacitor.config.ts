@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.swiftmind.sesha',
+  appId: 'com.swiftmind.kai',
   appName: 'KAI',
   webDir: 'dist/Sesha',
   server: {

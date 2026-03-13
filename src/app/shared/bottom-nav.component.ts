@@ -113,7 +113,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
         </div>
         <div class="dn-brand-text">
           <span class="dn-brand-name">SwiftMind</span>
-          <span class="dn-brand-sub">Sesha</span>
+          <span class="dn-brand-sub">KAI</span>
         </div>
       </div>
 

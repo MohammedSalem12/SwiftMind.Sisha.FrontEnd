@@ -78,7 +78,8 @@ export const appRoutes: Routes = [
   {
     path: 'teacher/course/:courseId',
     loadComponent: () => import('./home/teacher-course-action.component').then(m => m.TeacherCourseActionComponent),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'SECRETARY'] }
   },
   {
     path: 'teacher/enroll',
@@ -171,7 +172,8 @@ export const appRoutes: Routes = [
   {
     path: 'teachers',
     loadChildren: () => import('./teachers/teachers.routes').then(m => m.teachersRoutes),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
   {
     path: 'teacher-groups',
@@ -182,7 +184,8 @@ export const appRoutes: Routes = [
   {
     path: 'add-course',
     loadChildren: () => import('./add-course/add-course.routes').then(m => m.addCourseRoutes),
-    canActivate: [authGuard]
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
   {
     path: 'courses',

@@ -17,7 +17,7 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
           <i class="fas fa-arrow-right"></i>
         </button>
 
-        <span class="tb-title">سيشا · Sesha</span>
+        <span class="tb-title">KAI</span>
 
         <div class="tb-actions">
           <button class="tb-btn" (click)="toggleLang()">
