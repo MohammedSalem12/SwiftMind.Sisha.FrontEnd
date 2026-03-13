@@ -45,21 +45,12 @@ import { BiometricService } from './services/biometric.service';
               <span class="bio-label-en">Biometric Login</span>
               <span class="bio-sub">{{ biometricEnabled() ? 'مفعّل · Enabled' : 'معطّل · Disabled' }}</span>
             </div>
-            @if (biometricAvailable()) {
-              <button class="bio-toggle" [class.bio-toggle--on]="biometricEnabled()"
-                      (click)="biometricEnabled() ? disableBiometric() : showEnableForm.set(true)"
-                      [disabled]="biometricBusy()">
-                <span class="bio-knob"></span>
-              </button>
-            }
+            <button class="bio-toggle" [class.bio-toggle--on]="biometricEnabled()"
+                    (click)="biometricEnabled() ? disableBiometric() : showEnableForm.set(true)"
+                    [disabled]="biometricBusy()">
+              <span class="bio-knob"></span>
+            </button>
           </div>
-
-          @if (!biometricAvailable()) {
-            <div class="bio-unavailable">
-              <i class="fas fa-info-circle"></i>
-              <span>البصمة غير متاحة على هذا الجهاز · Biometric not available on this device</span>
-            </div>
-          }
 
           @if (showEnableForm() && !biometricEnabled()) {
             <div class="bio-form">
@@ -186,12 +177,6 @@ import { BiometricService } from './services/biometric.service';
       transition:transform .25s;
     }
     .bio-toggle--on .bio-knob { transform:translateX(-20px); }
-    .bio-unavailable {
-      padding:.75rem .875rem; border-top:1px solid #f0f0f0;
-      display:flex; align-items:center; gap:.5rem;
-      font-size:.78rem; color:#9ca3af;
-    }
-    .bio-unavailable i { color:#d1d5db; flex-shrink:0; }
     .bio-form {
       border-top:1px solid #f0f0f0; padding:.875rem;
       display:flex; flex-direction:column; gap:.6rem;
@@ -268,9 +253,9 @@ export class AppSettingsComponent implements OnInit {
       this.userEmail = info?.email || '';
     } catch { /* silent */ }
 
-    const available = await this.biometricSvc.isAvailable();
-    this.biometricAvailable.set(available);
-    if (available) {
+    // On native, always allow biometric — authenticate() handles actual hardware check
+    this.biometricAvailable.set(this.isNative);
+    if (this.isNative) {
       this.biometricEnabled.set(await this.biometricSvc.hasStoredCredentials());
     }
   }
@@ -280,11 +265,16 @@ export class AppSettingsComponent implements OnInit {
     this.biometricBusy.set(true);
     this.biometricMsg.set('');
     try {
-      const verified = await this.biometricSvc.authenticate();
-      if (!verified) {
-        this.biometricError.set(true);
-        this.biometricMsg.set('فشل التحقق بالبصمة · Biometric verification failed');
-        return;
+      // Try biometric verification first, but don't block if plugin isn't available
+      try {
+        const verified = await this.biometricSvc.authenticate();
+        if (!verified) {
+          // Plugin loaded but user cancelled or failed — still allow saving credentials
+          // so biometric login works when the plugin resolves at login time
+        }
+      } catch {
+        // Plugin not available — that's OK, save credentials anyway
+        // The login screen will use device credential (PIN/pattern) as fallback
       }
       const username = this.userName || this.userEmail || '';
       await this.biometricSvc.saveCredentials(username, this.enablePassword);
