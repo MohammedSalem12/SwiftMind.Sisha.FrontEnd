@@ -265,17 +265,8 @@ export class AppSettingsComponent implements OnInit {
     this.biometricBusy.set(true);
     this.biometricMsg.set('');
     try {
-      // Try biometric verification first, but don't block if plugin isn't available
-      try {
-        const verified = await this.biometricSvc.authenticate();
-        if (!verified) {
-          // Plugin loaded but user cancelled or failed — still allow saving credentials
-          // so biometric login works when the plugin resolves at login time
-        }
-      } catch {
-        // Plugin not available — that's OK, save credentials anyway
-        // The login screen will use device credential (PIN/pattern) as fallback
-      }
+      // Skip biometric verification here — just save credentials.
+      // The actual biometric check happens at login time.
       const username = this.userName || this.userEmail || '';
       await this.biometricSvc.saveCredentials(username, this.enablePassword);
       this.biometricEnabled.set(true);
