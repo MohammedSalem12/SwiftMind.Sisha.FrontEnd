@@ -2,6 +2,7 @@ import { CommonModule, Location } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
+import { Capacitor } from '@capacitor/core';
 import { CurrentUserInfoService } from '@proxy/common';
 import { BiometricService } from './services/biometric.service';
 
@@ -30,7 +31,8 @@ import { BiometricService } from './services/biometric.service';
         </div>
       </div>
 
-      <!-- Biometric Security -->
+      <!-- Biometric Security — only on native mobile apps -->
+      @if (isNative) {
       <div class="section">
         <div class="section-title"><i class="fas fa-fingerprint"></i> الأمان · Security</div>
         <div class="bio-card">
@@ -89,6 +91,7 @@ import { BiometricService } from './services/biometric.service';
           }
         </div>
       </div>
+      }
 
       <!-- App Info -->
       <div class="section">
@@ -244,6 +247,8 @@ export class AppSettingsComponent implements OnInit {
   private readonly location = inject(Location);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly biometricSvc = inject(BiometricService);
+
+  readonly isNative = Capacitor.isNativePlatform();
 
   biometricAvailable = signal(false);
   biometricEnabled   = signal(false);
