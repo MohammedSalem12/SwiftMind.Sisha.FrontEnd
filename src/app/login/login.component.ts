@@ -44,12 +44,11 @@ export class LoginComponent implements OnInit {
       this.router.navigate(['/']);
       return;
     }
-    const [available, hasStored] = await Promise.all([
-      this.biometricSvc.isAvailable(),
-      this.biometricSvc.hasStoredCredentials(),
-    ]);
-    // Show biometric button only when hardware is available AND credentials are saved
-    this.biometricAvailable.set(available && hasStored);
+    // Show biometric button on native when credentials are saved
+    if (Capacitor.isNativePlatform()) {
+      const hasStored = await this.biometricSvc.hasStoredCredentials();
+      this.biometricAvailable.set(hasStored);
+    }
     this.initGoogleSignIn();
     this.initFacebook();
   }
@@ -202,11 +201,8 @@ export class LoginComponent implements OnInit {
     try {
       const payload = { ...this.model() } as any;
       await this.performLogin(payload.userNameOrEmailAddress, payload.password);
-      if (payload.rememberMe && payload.userNameOrEmailAddress && payload.password) {
-        const isAvailable = await this.biometricSvc.isAvailable();
-        if (isAvailable) {
-          await this.biometricSvc.saveCredentials(payload.userNameOrEmailAddress, payload.password);
-        }
+      if (payload.rememberMe && payload.userNameOrEmailAddress && payload.password && Capacitor.isNativePlatform()) {
+        await this.biometricSvc.saveCredentials(payload.userNameOrEmailAddress, payload.password);
       }
     } catch (err: any) {
       this.loading.set(false);
@@ -220,7 +216,11 @@ export class LoginComponent implements OnInit {
     this.error.set(null);
     this.biometricLoading.set(true);
     try {
-      const success = await this.biometricSvc.authenticate();
+      // Timeout after 15s in case plugin hangs
+      const success = await Promise.race([
+        this.biometricSvc.authenticate(),
+        new Promise<boolean>(r => setTimeout(() => r(false), 15000)),
+      ]);
       if (!success) {
         this.biometricLoading.set(false);
         return;
