@@ -1,5 +1,6 @@
 // ─── Design Tokens ──────────────────────────────────────────────
 $grad-start:   #667eea;
+$grad-mid:     #7c5cbf;
 $grad-end:     #764ba2;
 $white:        #ffffff;
 $text-dark:    #1a1a2e;
@@ -8,7 +9,7 @@ $text-light:   #9090aa;
 $danger:       #e74c6a;
 $sheet-radius: 28px;
 $field-radius: 14px;
-$quick-h:      62px; // height of bottom quick-links bar
+$quick-h:      62px;
 
 // ─── Page Shell ─────────────────────────────────────────────────
 .login-page {
@@ -22,14 +23,14 @@ $quick-h:      62px; // height of bottom quick-links bar
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: linear-gradient(145deg, $grad-start 0%, $grad-end 100%);
+  background: linear-gradient(155deg, #5b6abf 0%, $grad-start 25%, $grad-end 70%, #5a3d8a 100%);
   z-index: 1000;
 }
 
 // ─── Hero (top gradient area) ────────────────────────────────────
 .hero-section {
   flex: 0 0 auto;
-  min-height: 230px;
+  min-height: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,33 +39,45 @@ $quick-h:      62px; // height of bottom quick-links bar
   padding-top: env(safe-area-inset-top, 1rem);
 }
 
-// decorative blobs
-.blob {
+// subtle pattern overlay
+.pattern-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(255,255,255,.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+// ambient glows
+.glow {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
   pointer-events: none;
+  filter: blur(60px);
 
-  &.blob-1 {
-    width: 300px;
-    height: 300px;
-    top: -130px;
-    right: -80px;
+  &.glow-1 {
+    width: 250px;
+    height: 250px;
+    top: -80px;
+    right: -60px;
+    background: rgba(118, 75, 162, .4);
   }
 
-  &.blob-2 {
-    width: 180px;
-    height: 180px;
-    bottom: -60px;
-    left: -40px;
+  &.glow-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -40px;
+    left: -50px;
+    background: rgba(102, 126, 234, .3);
   }
 
-  &.blob-3 {
-    width: 100px;
-    height: 100px;
-    top: 20px;
-    left: 30px;
-    background: rgba(255, 255, 255, 0.05);
+  &.glow-3 {
+    width: 120px;
+    height: 120px;
+    top: 30%;
+    left: 15%;
+    background: rgba(255, 255, 255, .06);
   }
 }
 
@@ -75,46 +88,74 @@ $quick-h:      62px; // height of bottom quick-links bar
   padding: 1rem;
 }
 
+.logo-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: .75rem;
+}
+
 .logo-ring {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  margin-bottom: 0.875rem;
+  width: 92px;
+  height: 92px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, .15);
+  border: 2px solid rgba(255, 255, 255, .25);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, .2),
+    inset 0 1px 1px rgba(255, 255, 255, .15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 1;
+}
+
+.logo-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, .08);
+  animation: pulse-ring 3s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(1); opacity: .5; }
+  50% { transform: scale(1.08); opacity: 0; }
 }
 
 .logo-img {
-  width: 52px;
-  height: 52px;
+  width: 58px;
+  height: 58px;
   object-fit: contain;
-  filter: brightness(0) invert(1);
+  // no filter — the white logo works naturally on the gradient
 }
 
 .app-name {
-  font-size: 1.75rem;
-  font-weight: 800;
+  font-size: 2rem;
+  font-weight: 900;
   color: $white;
-  margin: 0 0 0.2rem;
-  letter-spacing: -0.5px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin: 0 0 .15rem;
+  letter-spacing: 6px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .2);
 }
 
 .app-tagline {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: .88rem;
+  color: rgba(255, 255, 255, .88);
   margin: 0;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .app-tagline-en {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.55);
-  margin: 0.15rem 0 0;
+  font-size: .72rem;
+  color: rgba(255, 255, 255, .5);
+  margin: .1rem 0 0;
+  font-weight: 400;
+  letter-spacing: .5px;
 }
 
 // ─── Form Sheet ──────────────────────────────────────────────────
@@ -124,11 +165,9 @@ $quick-h:      62px; // height of bottom quick-links bar
   border-radius: $sheet-radius $sheet-radius 0 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0.75rem 1.5rem 1.5rem;
+  padding: .75rem 1.5rem 1.5rem;
   padding-bottom: calc(#{$quick-h} + 1rem + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.15);
-
-  // smooth scroll on iOS
+  box-shadow: 0 -6px 40px rgba(0, 0, 0, .18);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -149,24 +188,24 @@ $quick-h:      62px; // height of bottom quick-links bar
 }
 
 .sheet-title-en {
-  font-size: 0.8rem;
+  font-size: .8rem;
   font-weight: 400;
   color: $text-light;
-  margin-right: 0.4rem;
+  margin-right: .4rem;
 }
 
 // ─── Error Banner ───────────────────────────────────────────────
 .error-banner {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: .5rem;
   background: #fff0f3;
   border: 1px solid #ffc0cb;
-  border-radius: 10px;
-  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  padding: .75rem 1rem;
   margin-bottom: 1.25rem;
   color: $danger;
-  font-size: 0.875rem;
+  font-size: .85rem;
   text-align: right;
 
   i { flex-shrink: 0; font-size: 1rem; }
@@ -185,10 +224,10 @@ $quick-h:      62px; // height of bottom quick-links bar
 
 .field-label {
   display: block;
-  font-size: 0.78rem;
+  font-size: .78rem;
   font-weight: 600;
   color: $text-mid;
-  margin-bottom: 0.4rem;
+  margin-bottom: .4rem;
   text-align: right;
 }
 
@@ -201,52 +240,58 @@ $quick-h:      62px; // height of bottom quick-links bar
 .field-icon {
   position: absolute;
   right: 1rem;
-  color: $text-light;
-  font-size: 0.9rem;
+  color: $grad-start;
+  font-size: .9rem;
   pointer-events: none;
   z-index: 1;
+  opacity: .7;
 }
 
 .field-input {
   width: 100%;
-  padding: 0.9rem 2.75rem 0.9rem 3rem;
+  padding: .9rem 2.75rem .9rem 3rem;
   border: 1.5px solid #e8e8f0;
   border-radius: $field-radius;
-  font-size: 0.9375rem;
+  font-size: .9375rem;
   color: $text-dark;
-  background: #f7f7fb;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  background: #fafaff;
+  transition: border-color .2s, box-shadow .2s, background .2s;
   box-sizing: border-box;
   text-align: right;
 
   &::placeholder {
     color: $text-light;
-    font-size: 0.875rem;
+    font-size: .85rem;
   }
 
   &:focus {
     outline: none;
     border-color: $grad-start;
     background: $white;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, .12);
+
+    & ~ .field-icon,
+    & + .field-icon { // doesn't apply due to DOM order, but keeping for intent
+      opacity: 1;
+    }
   }
 }
 
 .toggle-pw {
   position: absolute;
-  left: 0.5rem;
+  left: .5rem;
   background: none;
   border: none;
   cursor: pointer;
   color: $text-light;
-  font-size: 0.9rem;
+  font-size: .9rem;
   padding: 0;
   min-width: 44px;
   min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s;
+  transition: color .15s;
 
   &:hover { color: $grad-start; }
 }
@@ -257,13 +302,13 @@ $quick-h:      62px; // height of bottom quick-links bar
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
-  font-size: 0.875rem;
+  font-size: .85rem;
 }
 
 .remember-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: .5rem;
   cursor: pointer;
   color: $text-mid;
   user-select: none;
@@ -287,10 +332,10 @@ $quick-h:      62px; // height of bottom quick-links bar
   border: 2px solid #d0d0e0;
   border-radius: 6px;
   position: relative;
-  transition: all 0.15s;
+  transition: all .15s;
 
   &::after {
-    content: '✓';
+    content: '\2713';
     position: absolute;
     inset: 0;
     display: flex;
@@ -299,15 +344,15 @@ $quick-h:      62px; // height of bottom quick-links bar
     color: $white;
     font-size: 11px;
     opacity: 0;
-    transition: opacity 0.15s;
+    transition: opacity .15s;
   }
 }
 
 .forgot-link {
   color: $grad-start;
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.15s;
+  font-weight: 600;
+  transition: color .15s;
 
   &:hover { color: $grad-end; }
 }
@@ -315,8 +360,8 @@ $quick-h:      62px; // height of bottom quick-links bar
 // ─── Login Button ───────────────────────────────────────────────
 .btn-login {
   width: 100%;
-  padding: 0.9375rem;
-  background: linear-gradient(135deg, $grad-start, $grad-end);
+  padding: .9375rem;
+  background: linear-gradient(135deg, $grad-start 0%, $grad-end 100%);
   color: $white;
   border: none;
   border-radius: $field-radius;
@@ -326,24 +371,34 @@ $quick-h:      62px; // height of bottom quick-links bar
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: .5rem;
   min-height: 54px;
-  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.45);
-  letter-spacing: 0.2px;
+  transition: opacity .2s, transform .15s, box-shadow .2s;
+  box-shadow: 0 6px 24px rgba(102, 126, 234, .4);
+  letter-spacing: .3px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 50%);
+    pointer-events: none;
+  }
 
   &:active:not(:disabled) {
-    transform: scale(0.98);
-    box-shadow: 0 3px 12px rgba(102, 126, 234, 0.3);
+    transform: scale(.98);
+    box-shadow: 0 3px 12px rgba(102, 126, 234, .3);
   }
 
   &:disabled {
-    opacity: 0.55;
+    opacity: .55;
     cursor: not-allowed;
     box-shadow: none;
   }
 
-  i { font-size: 0.9rem; }
+  i { font-size: .9rem; }
 }
 
 // ─── Biometric Section ──────────────────────────────────────────
@@ -354,7 +409,7 @@ $quick-h:      62px; // height of bottom quick-links bar
 .divider-line {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: .75rem;
   margin-bottom: 1rem;
 
   &::before,
@@ -362,46 +417,46 @@ $quick-h:      62px; // height of bottom quick-links bar
     content: '';
     flex: 1;
     height: 1px;
-    background: #e8e8f0;
+    background: linear-gradient(90deg, transparent, #e8e8f0, transparent);
   }
 }
 
 .divider-text {
-  font-size: 0.8rem;
+  font-size: .78rem;
   color: $text-light;
   white-space: nowrap;
 }
 
 .btn-biometric {
   width: 100%;
-  padding: 0.875rem;
-  background: $white;
+  padding: .875rem;
+  background: rgba(102, 126, 234, .06);
   color: $grad-start;
-  border: 1.5px solid rgba(102, 126, 234, 0.35);
+  border: 1.5px solid rgba(102, 126, 234, .25);
   border-radius: $field-radius;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: .9rem;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.625rem;
+  gap: .625rem;
   min-height: 52px;
-  transition: all 0.2s;
+  transition: all .2s;
 
   &:active:not(:disabled) {
-    background: rgba(102, 126, 234, 0.08);
-    transform: scale(0.98);
+    background: rgba(102, 126, 234, .12);
+    transform: scale(.98);
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: .5;
     cursor: not-allowed;
   }
 }
 
 .biometric-icon {
-  font-size: 1.375rem;
+  font-size: 1.4rem;
 }
 
 // ─── Social Login ───────────────────────────────────────────────
@@ -411,8 +466,7 @@ $quick-h:      62px; // height of bottom quick-links bar
 
 .social-buttons {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+  gap: .75rem;
 }
 
 .btn-social {
@@ -420,19 +474,19 @@ $quick-h:      62px; // height of bottom quick-links bar
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  height: 46px;
+  gap: .5rem;
+  height: 48px;
   border-radius: 12px;
-  border: 1.5px solid #e0e0f0;
+  border: 1.5px solid #e8e8f0;
   background: #fff;
-  font-size: 0.875rem;
+  font-size: .85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, box-shadow 0.15s;
+  transition: background .15s, box-shadow .15s, transform .15s;
   color: $text-dark;
 
-  &:hover:not(:disabled) { background: #f8f8ff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &:active:not(:disabled) { transform: scale(.97); }
+  &:disabled { opacity: .6; cursor: not-allowed; }
 
   .social-icon {
     width: 20px;
@@ -447,7 +501,7 @@ $quick-h:      62px; // height of bottom quick-links bar
   color: #fff;
 
   i { font-size: 1rem; }
-  &:hover:not(:disabled) { background: #1565c0; }
+  &:active:not(:disabled) { background: #1565c0; }
 }
 
 // ─── Register Row ───────────────────────────────────────────────
@@ -456,19 +510,19 @@ $quick-h:      62px; // height of bottom quick-links bar
   margin-top: 1.5rem;
   padding-top: 1.25rem;
   border-top: 1px solid #f0f0f8;
-  font-size: 0.875rem;
+  font-size: .85rem;
   color: $text-mid;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
+  gap: .375rem;
 }
 
 .register-link {
   color: $grad-start;
   text-decoration: none;
-  font-weight: 600;
-  transition: color 0.15s;
+  font-weight: 700;
+  transition: color .15s;
 
   &:hover { color: $grad-end; }
 }
@@ -481,15 +535,15 @@ $quick-h:      62px; // height of bottom quick-links bar
   right: 0;
   height: $quick-h;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, .97);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(102, 126, 234, 0.12);
+  border-top: 1px solid rgba(102, 126, 234, .1);
   display: flex;
   align-items: center;
   justify-content: space-around;
   z-index: 100;
-  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, .06);
 }
 
 .quick-link {
@@ -497,27 +551,27 @@ $quick-h:      62px; // height of bottom quick-links bar
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
+  gap: .25rem;
   color: $text-mid;
   text-decoration: none;
-  font-size: 0.65rem;
+  font-size: .65rem;
   font-weight: 500;
   min-width: 44px;
   min-height: 44px;
-  padding: 0.35rem 0.75rem;
+  padding: .35rem .75rem;
   border-radius: 10px;
-  transition: color 0.15s, background 0.15s;
+  transition: color .15s, background .15s;
 
   i {
     font-size: 1.1rem;
     color: $text-light;
-    transition: color 0.15s;
+    transition: color .15s;
   }
 
   &:active,
   &:hover {
     color: $grad-start;
-    background: rgba(102, 126, 234, 0.08);
+    background: rgba(102, 126, 234, .08);
 
     i { color: $grad-start; }
   }
@@ -529,16 +583,16 @@ $quick-h:      62px; // height of bottom quick-links bar
 }
 
 .fa-spin {
-  animation: spin 0.8s linear infinite;
+  animation: spin .8s linear infinite;
 }
 
 // ─── Small phones ───────────────────────────────────────────────
 @media (max-width: 380px) {
-  .hero-section { min-height: 190px; }
+  .hero-section { min-height: 200px; }
 
-  .logo-ring { width: 74px; height: 74px; }
-  .logo-img   { width: 44px; height: 44px; }
-  .app-name   { font-size: 1.5rem; }
+  .logo-ring { width: 78px; height: 78px; border-radius: 22px; }
+  .logo-img  { width: 48px; height: 48px; }
+  .app-name  { font-size: 1.6rem; letter-spacing: 4px; }
 
   .form-sheet { padding-left: 1.25rem; padding-right: 1.25rem; }
 }
@@ -552,11 +606,13 @@ $quick-h:      62px; // height of bottom quick-links bar
   .logo-ring {
     width: 56px;
     height: 56px;
-    margin-bottom: 0.5rem;
+    border-radius: 16px;
+    margin-bottom: .5rem;
   }
 
-  .logo-img    { width: 34px; height: 34px; }
-  .app-name    { font-size: 1.1rem; margin-bottom: 0; }
+  .logo-pulse { display: none; }
+  .logo-img    { width: 36px; height: 36px; }
+  .app-name    { font-size: 1.2rem; margin-bottom: 0; }
   .app-tagline { display: none; }
   .app-tagline-en { display: none; }
 

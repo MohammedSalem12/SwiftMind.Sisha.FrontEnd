@@ -2,17 +2,21 @@
 
   <!-- Hero Section -->
   <div class="hero-section">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="glow glow-3"></div>
+    <div class="pattern-overlay"></div>
 
     <div class="brand">
-      <div class="logo-ring">
-        <img src="/assets/images/logo/logo.png" alt="SwiftMind" class="logo-img" />
+      <div class="logo-container">
+        <div class="logo-ring">
+          <img src="/assets/images/logo/logo-light-thumbnail2.png" alt="KAI" class="logo-img" />
+        </div>
+        <div class="logo-pulse"></div>
       </div>
-      <h1 class="app-name">SwiftMind</h1>
-      <p class="app-tagline">نظام إدارة التعليم</p>
-      <p class="app-tagline-en">Education Management System</p>
+      <h1 class="app-name">KAI</h1>
+      <p class="app-tagline">نظام إدارة التعليم الذكي</p>
+      <p class="app-tagline-en">Smart Education Management</p>
     </div>
   </div>
 
@@ -20,7 +24,10 @@
   <div class="form-sheet">
     <div class="sheet-handle"></div>
 
-    <h2 class="sheet-title">تسجيل الدخول <span class="sheet-title-en">Sign In</span></h2>
+    <h2 class="sheet-title">
+      تسجيل الدخول
+      <span class="sheet-title-en">Sign In</span>
+    </h2>
 
     <!-- Error Banner -->
     @if (error()) {
@@ -103,7 +110,7 @@
           <span>جارٍ تسجيل الدخول...</span>
         } @else {
           <i class="fas fa-sign-in-alt"></i>
-          <span>تسجيل الدخول</span>
+          <span>تسجيل الدخول · Sign In</span>
         }
       </button>
 
@@ -126,7 +133,7 @@
             <span>جارٍ التحقق...</span>
           } @else {
             <i class="fas fa-fingerprint biometric-icon"></i>
-            <span>الدخول ببصمة الإصبع</span>
+            <span>الدخول بالبصمة · Biometric Login</span>
           }
         </button>
       </div>
