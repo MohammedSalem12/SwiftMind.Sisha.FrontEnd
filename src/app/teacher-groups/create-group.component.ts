@@ -39,12 +39,19 @@ import { CurrentUserInfoService } from '@proxy/common';
 
           <div class="field">
             <label>المقرر الدراسي <span class="required">*</span></label>
-            <select name="courseId" [(ngModel)]="courseId" required>
-              <option value="">-- اختر المقرر --</option>
-              <option *ngFor="let c of courses()" [value]="c.id">
-                {{ c.nameAr }} ({{ c.code }})
-              </option>
-            </select>
+            @if (lockedCourseId) {
+              <div class="locked-course">
+                <i class="fas fa-lock"></i>
+                <span>{{ getLockedCourseName() }}</span>
+              </div>
+            } @else {
+              <select name="courseId" [(ngModel)]="courseId" required>
+                <option value="">-- اختر المقرر --</option>
+                <option *ngFor="let c of courses()" [value]="c.id">
+                  {{ c.nameAr }} ({{ c.code }})
+                </option>
+              </select>
+            }
           </div>
 
           <div *ngIf="errorMsg()" class="error-msg">
@@ -77,6 +84,12 @@ import { CurrentUserInfoService } from '@proxy/common';
     .field input, .field select { padding: 0.75rem; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 1rem; }
     .field input:focus, .field select:focus { outline: none; border-color: var(--ngx-primary); box-shadow: 0 0 0 3px rgba(51, 102, 255,0.15); }
     .error-msg { color: #dc3545; background: #fff5f5; padding: 0.75rem; border-radius: 8px; border: 1px solid #ffe0e0; }
+    .locked-course {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem; border: 1.5px solid #e0e0f0; border-radius: 10px;
+      background: #f8f8ff; color: #667eea; font-weight: 600; font-size: 0.95rem;
+    }
+    .locked-course i { font-size: 0.8rem; color: #9ca3af; }
     .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
     .btn-primary { background: var(--ngx-hero-gradient); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -97,12 +110,19 @@ export class CreateGroupComponent implements OnInit {
   teacherId = '';
   name = '';
   courseId = '';
+  lockedCourseId = '';
 
   async ngOnInit() {
-    // Pre-select course from query params if provided
+    // Pre-select and lock course from query params if provided
     const params = this.route.snapshot.queryParamMap;
     this.courseId = params.get('courseId') || '';
+    if (this.courseId) this.lockedCourseId = this.courseId;
     await this.loadData();
+  }
+
+  getLockedCourseName(): string {
+    const c = this.courses().find(c => c.id === this.lockedCourseId);
+    return c ? `${c.nameAr} (${c.code})` : this.lockedCourseId;
   }
 
   private async loadData() {

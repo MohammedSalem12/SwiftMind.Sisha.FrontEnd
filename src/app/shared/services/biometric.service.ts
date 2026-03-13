@@ -28,8 +28,11 @@ export class BiometricService {
       const plugin = await this.getPlugin();
       if (!plugin) return false;
       const info = await plugin.checkBiometry();
-      return !!info?.isAvailable;
-    } catch {
+      console.log('[Biometric] checkBiometry result:', JSON.stringify(info));
+      // Available if biometric hardware exists (even if not enrolled yet)
+      return !!info?.isAvailable || (info?.biometryType != null && info.biometryType > 0);
+    } catch (e) {
+      console.warn('[Biometric] isAvailable error:', e);
       return false;
     }
   }
@@ -42,7 +45,7 @@ export class BiometricService {
       await plugin.authenticate({
         reason: 'تحقق من هويتك للدخول',
         cancelTitle: 'إلغاء',
-        allowDeviceCredential: false,
+        allowDeviceCredential: true,
         iosFallbackTitle: 'استخدم كلمة المرور',
       });
       return true;

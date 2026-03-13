@@ -22,7 +22,7 @@ public class MainActivity extends BridgeActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                 "sesha_alerts",
-                "إشعارات سيشا — Sesha Notifications",
+                "إشعارات KAI — KAI Notifications",
                 NotificationManager.IMPORTANCE_HIGH
             );
             channel.setDescription("Notifications for attendance, grades, and enrollment updates");

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "157846404492",
+    "project_id": "sesha-9999",
+    "storage_bucket": "sesha-9999.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:157846404492:android:ca9cded0f044d7f5946aa9",
+        "android_client_info": {
+          "package_name": "com.swiftmind.sesha"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0BASvnX7_o2RukB_mKXouDfrpr8_DjQk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

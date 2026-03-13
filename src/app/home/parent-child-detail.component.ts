@@ -12,6 +12,7 @@ import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
+import { CourseService } from '@proxy/courses';
 
 @Component({
   selector: 'app-parent-child-detail',
@@ -590,6 +591,7 @@ export class ParentChildDetailComponent implements OnInit {
   private readonly attendanceService = inject(AttendanceService);
   private readonly examGradeService = inject(ExamGradeService);
   private readonly enrollmentRequestSvc = inject(EnrollmentRequestService);
+  private readonly courseService = inject(CourseService);
 
   readonly EnrollmentRequestStatus = EnrollmentRequestStatus;
 
@@ -664,6 +666,28 @@ export class ParentChildDetailComponent implements OnInit {
     try {
       const all = await lastValueFrom(this.enrollmentRequestSvc.getList({ skipHandleError: true } as any));
       const forThisStudent = (all || []).filter(r => r.studentId === this.studentId);
+
+      // If courseName is missing, fetch course details to fill them
+      const missingCourseIds = forThisStudent
+        .filter(r => !r.courseName && r.courseId)
+        .map(r => r.courseId!)
+        .filter((id, i, arr) => arr.indexOf(id) === i);
+
+      if (missingCourseIds.length > 0) {
+        const courseMap = new Map<string, string>();
+        await Promise.all(missingCourseIds.map(async (cid) => {
+          try {
+            const course = await lastValueFrom(this.courseService.get(cid));
+            if (course) courseMap.set(cid, course.nameAr || course.nameEn || '');
+          } catch { /* skip */ }
+        }));
+        for (const req of forThisStudent) {
+          if (!req.courseName && req.courseId && courseMap.has(req.courseId)) {
+            req.courseName = courseMap.get(req.courseId);
+          }
+        }
+      }
+
       this.enrolledCourses.set(forThisStudent);
     } catch {
       // silent — courses tab will show empty state

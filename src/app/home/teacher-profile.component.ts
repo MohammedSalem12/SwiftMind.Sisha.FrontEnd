@@ -586,7 +586,7 @@ export class TeacherProfileComponent implements OnInit {
     this.locSaveError.set(null);
     try {
       const t = this.teacherInfo();
-      await lastValueFrom(
+      const updated = await lastValueFrom(
         this.restSvc.request<any, any>(
           {
             method: 'PUT',
@@ -605,6 +605,7 @@ export class TeacherProfileComponent implements OnInit {
           { apiName: 'Default', skipHandleError: true }
         )
       );
+      if (updated) this.teacherInfo.set(updated);
       this.editingLocation.set(false);
     } catch (err: any) {
       this.locSaveError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ');
