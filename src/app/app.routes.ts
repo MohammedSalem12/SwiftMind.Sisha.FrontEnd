@@ -364,6 +364,11 @@ export const appRoutes: Routes = [
     data: { roles: ['TEACHER'] },
   },
   {
+    path: 'settings',
+    loadComponent: () => import('./shared/app-settings.component').then(m => m.AppSettingsComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'privacy-policy',
     loadComponent: () => import('./privacy-policy/privacy-policy.component').then(m => m.PrivacyPolicyComponent),
   },

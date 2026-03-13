@@ -88,6 +88,15 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           </a>
         }
 
+        <!-- Settings tab -->
+        <a class="mn-tab" routerLink="/settings" [class.active]="isActive('/settings')">
+          <div class="mn-icon-wrap">
+            <i class="fas fa-cog"></i>
+          </div>
+          <span class="mn-label">إعدادات</span>
+          @if (isActive('/settings')) { <span class="mn-bar"></span> }
+        </a>
+
         <!-- Profile tab → navigates to profile page (logout is on profile page) -->
         <a class="mn-tab" [routerLink]="profilePath()" [class.active]="isActive(profilePath()!)">
           <div class="mn-avatar-sm">
@@ -134,6 +143,17 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
             </div>
           </a>
         }
+
+        <!-- Settings link -->
+        <a class="dn-item" routerLink="/settings" [class.active]="isActive('/settings')">
+          <div class="dn-item-icon">
+            <i class="fas fa-cog"></i>
+          </div>
+          <div class="dn-item-text">
+            <span class="dn-item-label">إعدادات التطبيق</span>
+            <span class="dn-item-label-en">App Settings</span>
+          </div>
+        </a>
 
         <!-- Profile link -->
         <a class="dn-item" [routerLink]="profilePath()" [class.active]="isActive(profilePath()!)">
@@ -582,7 +602,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     const cur = this.currentPath();
     const exact = ['/', '/student', '/teacher', '/parent', '/secretary', '/secretary-assignments',
                    '/profile', '/secretary/profile', '/student/profile', '/teacher/profile', '/parent/profile',
-                   '/academies', '/teacher/academies', '/feeds', '/notifications'];
+                   '/academies', '/teacher/academies', '/feeds', '/notifications', '/settings'];
     if (exact.includes(path)) return cur === path;
     return cur.startsWith(path);
   }
