@@ -508,20 +508,32 @@ export class TeacherProfileComponent implements OnInit {
 
       // Load full teacher dto for government/town
       if (info?.actorId) {
-        // Use the sesha custom endpoint — more permissive than the admin CRUD endpoint
-        const t = await lastValueFrom(
-          this.restSvc.request<any, any>(
-            { method: 'GET', url: `/api/sesha/teachers/${info.actorId}` },
-            { apiName: 'Default', skipHandleError: true }
-          )
-        ).catch(() => null)
-          // Fallback to standard proxy endpoint
-          ?? await lastValueFrom(this.teacherSvc.get(info.actorId)).catch(() => null);
-
-        this.teacherInfo.set(t);
-        if (t) {
-          this.locGov.set(t.government ?? '');
-          this.locTown.set(t.town ?? '');
+        try {
+          const t = await lastValueFrom(this.teacherSvc.get(info.actorId));
+          console.log('[TeacherProfile] loaded teacher:', t?.government, t?.town);
+          this.teacherInfo.set(t);
+          if (t) {
+            this.locGov.set(t.government ?? '');
+            this.locTown.set(t.town ?? '');
+          }
+        } catch (e) {
+          console.warn('[TeacherProfile] failed to load teacher by actorId, trying custom endpoint:', e);
+          try {
+            const t2 = await lastValueFrom(
+              this.restSvc.request<any, any>(
+                { method: 'GET', url: `/api/sesha/teachers/${info.actorId}` },
+                { apiName: 'Default', skipHandleError: true }
+              )
+            );
+            console.log('[TeacherProfile] loaded from sesha endpoint:', t2?.government, t2?.town);
+            this.teacherInfo.set(t2);
+            if (t2) {
+              this.locGov.set(t2.government ?? '');
+              this.locTown.set(t2.town ?? '');
+            }
+          } catch (e2) {
+            console.warn('[TeacherProfile] both GET endpoints failed:', e2);
+          }
         }
       }
     } catch (e) { console.error(e); }
@@ -586,29 +598,31 @@ export class TeacherProfileComponent implements OnInit {
     this.locSaveError.set(null);
     try {
       const t = this.teacherInfo();
-      const updated = await lastValueFrom(
-        this.restSvc.request<any, any>(
-          {
-            method: 'PUT',
-            url: `/api/app/teacher/${id}`,
-            body: {
-              firstName: t?.firstName ?? '',
-              lastName:  t?.lastName  ?? '',
-              address:   t?.address,
-              email:     t?.email,
-              phoneNumber: t?.phoneNumber,
-              password: '',
-              government: this.locGov(),
-              town: this.locTown(),
-            },
-          },
-          { apiName: 'Default', skipHandleError: true }
-        )
-      );
-      if (updated) this.teacherInfo.set(updated);
+      const info = this.userInfo();
+      // Use name from teacherInfo, fall back to actorName from userInfo
+      const nameParts = (info?.actorName || '').split(' ');
+      const body = {
+        firstName: t?.firstName || nameParts[0] || 'Teacher',
+        lastName:  t?.lastName  || nameParts.slice(1).join(' ') || '',
+        address:   t?.address ?? '',
+        email:     t?.email ?? info?.email ?? '',
+        phoneNumber: t?.phoneNumber ?? '',
+        password: '',
+        government: this.locGov(),
+        town: this.locTown(),
+      };
+      console.log('[TeacherProfile] saving location:', body.government, body.town);
+      const updated = await lastValueFrom(this.teacherSvc.update(id, body));
+      console.log('[TeacherProfile] save result:', updated?.government, updated?.town);
+      if (updated) {
+        this.teacherInfo.set(updated);
+        this.locGov.set(updated.government ?? this.locGov());
+        this.locTown.set(updated.town ?? this.locTown());
+      }
       this.editingLocation.set(false);
     } catch (err: any) {
-      this.locSaveError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ');
+      console.error('[TeacherProfile] save location error:', err);
+      this.locSaveError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ · Error saving location');
     } finally {
       this.locSaving.set(false);
     }

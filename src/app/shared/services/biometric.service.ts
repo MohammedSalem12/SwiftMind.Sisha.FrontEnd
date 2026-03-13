@@ -9,13 +9,17 @@ const KEY_ENABLED = 'biometric_enabled';
 @Injectable({ providedIn: 'root' })
 export class BiometricService {
   private _BiometricAuth: any;
+  private _pluginLoaded = false;
 
   private async getPlugin(): Promise<any> {
-    if (!this._BiometricAuth) {
+    if (!this._pluginLoaded) {
+      this._pluginLoaded = true;
       try {
         const mod = await import('@aparajita/capacitor-biometric-auth');
-        this._BiometricAuth = mod.BiometricAuth;
-      } catch {
+        this._BiometricAuth = mod.BiometricAuth ?? (mod as any).default ?? null;
+        console.log('[Biometric] Plugin loaded:', !!this._BiometricAuth, Object.keys(mod));
+      } catch (e) {
+        console.warn('[Biometric] Plugin import failed:', e);
         this._BiometricAuth = null;
       }
     }
@@ -23,17 +27,23 @@ export class BiometricService {
   }
 
   async isAvailable(): Promise<boolean> {
-    if (!Capacitor.isNativePlatform()) return false;
+    const isNative = Capacitor.isNativePlatform();
+    console.log('[Biometric] isNativePlatform:', isNative, 'platform:', Capacitor.getPlatform());
+    if (!isNative) return false;
     try {
       const plugin = await this.getPlugin();
-      if (!plugin) return false;
+      console.log('[Biometric] plugin:', !!plugin);
+      if (!plugin) {
+        // Plugin not available — still show section on native so user knows it exists
+        return true;
+      }
       const info = await plugin.checkBiometry();
       console.log('[Biometric] checkBiometry result:', JSON.stringify(info));
-      // Available if biometric hardware exists (even if not enrolled yet)
       return !!info?.isAvailable || (info?.biometryType != null && info.biometryType > 0);
     } catch (e) {
       console.warn('[Biometric] isAvailable error:', e);
-      return false;
+      // On native, show section anyway
+      return true;
     }
   }
 
