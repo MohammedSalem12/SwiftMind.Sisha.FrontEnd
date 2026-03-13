@@ -31,4 +31,5 @@ export const environment = {
     },
   },
   googleClientId: '1092548471447-c3m8tge7gh1tuiipvtcdnd1aohvs8a67.apps.googleusercontent.com',
+  facebookAppId: '2045487372682150',
 } as Environment;

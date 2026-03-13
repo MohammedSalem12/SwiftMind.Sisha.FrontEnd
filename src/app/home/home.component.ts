@@ -6,7 +6,7 @@ import { UserProfileService } from '@volo/ngx-lepton-x.core';
 import { StudentService } from '@proxy/students';
 import { TeacherService } from '@proxy/teachers';
 import { StudentEnrollmentService } from '@proxy/student-enrollments';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, filter, take } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -66,54 +66,60 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     if (this.authService.isAuthenticated) {
       this.checkUserRoleAndRedirect();
-    }
-    // Only load counts for ADMIN/SECRETARY — other roles are redirected immediately
-    // and may not have permission to call these endpoints (causes error toasts)
-    const currentUser = this.configStateService.getOne('currentUser') as any;
-    const roles: string[] = currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [];
-    const isAdmin = Array.isArray(roles) && roles.some(
-      (r: any) => typeof r === 'string' && r.toUpperCase() === 'ADMIN'
-    );
-    if (!this.authService.isAuthenticated || isAdmin) {
+    } else {
       void this.loadCounts();
     }
   }
 
   private checkUserRoleAndRedirect(): void {
-    try {
-      const currentUser = this.configStateService.getOne('currentUser') as any;
-      const roles: string[] = currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [];
+    // Use observable instead of synchronous getOne() — on Android WebView the
+    // config state may not be populated yet at init time, causing empty roles
+    // and a false redirect to /complete-profile which crashes the app.
+    this.configStateService
+      .getOne$('currentUser')
+      .pipe(
+        filter((u: any) => !!u && u.isAuthenticated === true),
+        take(1)
+      )
+      .subscribe((currentUser: any) => {
+        try {
+          const roles: string[] = (currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [])
+            .map((r: any) => (typeof r === 'string' ? r.toLowerCase() : ''))
+            .filter(Boolean);
 
-      const has = (r: string) => Array.isArray(roles) && roles.some(
-        (role: any) => typeof role === 'string' && role.toLowerCase() === r);
+          const has = (r: string) => roles.includes(r);
+          const isStudent   = has('student');
+          const isParent    = has('parent');
+          const isTeacher   = has('teacher');
+          const isSecretary = has('secretary');
+          const isAdmin     = has('admin');
+          const knownRoles  = ['student','teacher','parent','admin','secretary'];
+          const hasKnown    = roles.some(r => knownRoles.includes(r));
 
-      const isStudent   = has('student');
-      const isParent    = has('parent');
-      const isTeacher   = has('teacher');
-      const isSecretary = has('secretary');
-      const isAdmin     = has('admin');
-      const knownRoles  = ['student','teacher','parent','admin','secretary'];
-      const hasKnown    = Array.isArray(roles) && roles.some(
-        (r: any) => typeof r === 'string' && knownRoles.includes(r.toLowerCase()));
+          if (isAdmin) {
+            void this.loadCounts();
+            return;
+          }
 
-      // Social-login user with no role yet → complete their profile
-      if (!hasKnown) {
-        this.redirecting.set(true);
-        this.router.navigate(['/complete-profile']);
-        return;
-      }
+          // Social-login user with no role yet → complete their profile
+          if (!hasKnown) {
+            this.redirecting.set(true);
+            this.router.navigate(['/complete-profile']);
+            return;
+          }
 
-      if (isStudent || isParent || isTeacher || isSecretary) {
-        this.redirecting.set(true);
-      }
+          if (isStudent || isParent || isTeacher || isSecretary) {
+            this.redirecting.set(true);
+          }
 
-      if (isStudent)        this.router.navigate(['/student']);
-      else if (isParent)    this.router.navigate(['/parent']);
-      else if (isTeacher)   this.router.navigate(['/teacher']);
-      else if (isSecretary) this.router.navigate(['/secretary']);
-    } catch (error) {
-      console.error('Error checking user role:', error);
-    }
+          if (isStudent)        this.router.navigate(['/student']);
+          else if (isParent)    this.router.navigate(['/parent']);
+          else if (isTeacher)   this.router.navigate(['/teacher']);
+          else if (isSecretary) this.router.navigate(['/secretary']);
+        } catch (error) {
+          console.error('Error checking user role:', error);
+        }
+      });
   }
 
   async loadCounts() {

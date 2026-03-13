@@ -361,6 +361,14 @@ export const appRoutes: Routes = [
     data: { roles: ['TEACHER'] },
   },
   {
+    path: 'privacy-policy',
+    loadComponent: () => import('./privacy-policy/privacy-policy.component').then(m => m.PrivacyPolicyComponent),
+  },
+  {
+    path: 'data-deletion',
+    loadComponent: () => import('./data-deletion/data-deletion.component').then(m => m.DataDeletionComponent),
+  },
+  {
     path: '**',
     redirectTo: '/'
   }

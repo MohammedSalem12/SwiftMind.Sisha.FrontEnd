@@ -9,6 +9,7 @@ import { BottomNavComponent } from './shared/bottom-nav.component';
 import { RealtimeNotificationService } from './shared/services/realtime-notification.service';
 import { PushNotificationService } from './shared/services/push-notification.service';
 import { SidebarNotificationDirective } from './shared/sidebar-notification.directive';
+import { TopBarComponent } from './shared/top-bar.component';
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profile'];
 
@@ -16,6 +17,7 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
   selector: 'app-root',
   template: `
     <abp-loader-bar />
+    <app-top-bar />
     <div class="app-content" appSidebarNotification>
       <abp-dynamic-layout />
     </div>
@@ -24,6 +26,13 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     <app-toasts />
   `,
   styles: [`
+    /* Reserve space for fixed top bar on mobile */
+    @media (max-width: 767px) {
+      .app-content {
+        padding-top: calc(48px + env(safe-area-inset-top, 0px));
+      }
+    }
+
     /* Reserve space for fixed bottom nav — always visible */
     .app-content {
       padding-bottom: 70px;
@@ -41,6 +50,7 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     InternetConnectionStatusComponent,
     ToastContainerComponent,
     BottomNavComponent,
+    TopBarComponent,
     SidebarNotificationDirective,
   ],
 })
@@ -69,7 +79,8 @@ export class AppComponent implements OnInit {
       }
       if (event.type === 'logout') {
         this.realtimeNotificationService.disconnect();
-        this.pushNotificationService.unregisterCurrentToken();
+        // unregisterCurrentToken() is called in the logout patch (app.config.ts)
+        // BEFORE tokens are cleared, so we don't repeat it here.
       }
       // If the refresh token itself has expired or any auth error occurs,
       // redirect to Angular /login instead of letting the OAuth library

@@ -2,17 +2,19 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '@abp/ng.core';
+import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CurrentUserActorDto } from '@proxy/common/models';
 import { StudentService } from '@proxy/students';
 import { StudentDto } from '@proxy/students/models';
 import { ParentStudentDto } from '@proxy/parents/models';
+import { BiometricService } from '../shared/services/biometric.service';
 
 @Component({
   selector: 'app-student-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   template: `
     <div class="page" dir="rtl">
 
@@ -114,6 +116,60 @@ import { ParentStudentDto } from '@proxy/parents/models';
             </div>
           }
         </div>
+
+
+
+        <!-- Biometric Security -->
+        @if (biometricAvailable()) {
+          <div class="section">
+            <div class="section-title"><i class="fas fa-fingerprint"></i> الأمان · Security</div>
+            <div class="bio-card">
+              <div class="bio-row">
+                <div class="bio-icon" [class.bio-icon--on]="biometricEnabled()">
+                  <i class="fas fa-fingerprint"></i>
+                </div>
+                <div class="bio-info">
+                  <span class="bio-label">تسجيل الدخول بالبصمة</span>
+                  <span class="bio-sub">{{ biometricEnabled() ? 'مفعّل · Enabled' : 'معطّل · Disabled' }}</span>
+                </div>
+                <button class="bio-toggle" [class.bio-toggle--on]="biometricEnabled()"
+                        (click)="biometricEnabled() ? disableBiometric() : showEnableForm.set(true)"
+                        [disabled]="biometricBusy()">
+                  <span class="bio-knob"></span>
+                </button>
+              </div>
+
+              @if (showEnableForm() && !biometricEnabled()) {
+                <div class="bio-form">
+                  <p class="bio-form-hint">
+                    <i class="fas fa-info-circle"></i>
+                    أدخل كلمة المرور الحالية لحفظها بشكل آمن وتفعيل تسجيل الدخول بالبصمة
+                  </p>
+                  <p class="bio-form-hint-en">Enter your password to enable biometric login</p>
+                  <input class="bio-input" type="password" [(ngModel)]="enablePassword"
+                         placeholder="كلمة المرور · Password" autocomplete="current-password" />
+                  <div class="bio-form-actions">
+                    <button class="bio-cancel-btn" (click)="showEnableForm.set(false); enablePassword = ''">
+                      إلغاء · Cancel
+                    </button>
+                    <button class="bio-save-btn" (click)="enableBiometric()" [disabled]="biometricBusy() || !enablePassword">
+                      @if (biometricBusy()) { <i class="fas fa-spinner fa-spin"></i> }
+                      @else { <i class="fas fa-check"></i> }
+                      تفعيل · Enable
+                    </button>
+                  </div>
+                  @if (biometricMsg()) {
+                    <p class="bio-msg" [class.bio-msg--error]="biometricError()">{{ biometricMsg() }}</p>
+                  }
+                </div>
+              }
+
+              @if (biometricEnabled() && biometricMsg()) {
+                <p class="bio-msg" [class.bio-msg--error]="biometricError()">{{ biometricMsg() }}</p>
+              }
+            </div>
+          </div>
+        }
 
       }
 
@@ -233,17 +289,94 @@ import { ParentStudentDto } from '@proxy/parents/models';
     .empty-box i { font-size:2rem; color:#c4c4d4; display:block; margin-bottom:.5rem; }
     .empty-box p { font-size:.9rem; font-weight:600; color:#555; margin:0 0 .25rem; }
     .empty-box span { font-size:.75rem; color:#9090aa; }
+
+    /* ── Biometric ── */
+    .bio-card {
+      background:#fff; border-radius:16px; border:1.5px solid #f0f0f0;
+      overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.04);
+    }
+    .bio-row {
+      display:flex; align-items:center; gap:.875rem; padding:.875rem;
+    }
+    .bio-icon {
+      width:44px; height:44px; border-radius:12px; flex-shrink:0;
+      background:rgba(156,163,175,.12); color:#9ca3af;
+      display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+      transition:background .25s, color .25s;
+    }
+    .bio-icon--on { background:rgba(102,126,234,.12); color:#667eea; }
+    .bio-info { flex:1; min-width:0; }
+    .bio-label { display:block; font-size:.92rem; font-weight:700; color:#1a1a2e; }
+    .bio-sub { display:block; font-size:.72rem; color:#9090aa; margin-top:.1rem; }
+    .bio-toggle {
+      position:relative; width:48px; height:28px; border-radius:14px;
+      background:#d1d5db; border:none; cursor:pointer; padding:0; flex-shrink:0;
+      transition:background .25s; outline:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .bio-toggle--on { background:linear-gradient(135deg,#667eea,#764ba2); }
+    .bio-toggle:disabled { opacity:.5; cursor:not-allowed; }
+    .bio-knob {
+      position:absolute; top:3px; right:3px; width:22px; height:22px;
+      border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.25);
+      transition:transform .25s;
+    }
+    .bio-toggle--on .bio-knob { transform:translateX(-20px); }
+    .bio-form {
+      border-top:1px solid #f0f0f0; padding:.875rem;
+      display:flex; flex-direction:column; gap:.6rem;
+    }
+    .bio-form-hint {
+      font-size:.78rem; color:#555; margin:0;
+      display:flex; align-items:flex-start; gap:.35rem; line-height:1.4;
+    }
+    .bio-form-hint i { color:#667eea; margin-top:.1rem; flex-shrink:0; }
+    .bio-form-hint-en { font-size:.7rem; color:#9090aa; margin:0; }
+    .bio-input {
+      width:100%; padding:.65rem .75rem; border-radius:10px;
+      border:1.5px solid #e5e7eb; font-size:.9rem; outline:none;
+      box-sizing:border-box; direction:ltr; text-align:left;
+      transition:border-color .2s;
+    }
+    .bio-input:focus { border-color:#667eea; }
+    .bio-form-actions { display:flex; gap:.5rem; }
+    .bio-cancel-btn {
+      flex:1; padding:.65rem; border-radius:10px; border:1.5px solid #e5e7eb;
+      background:#fff; color:#555; font-size:.82rem; font-weight:600; cursor:pointer;
+    }
+    .bio-save-btn {
+      flex:1; padding:.65rem; border-radius:10px; border:none;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      color:#fff; font-size:.82rem; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:.35rem;
+    }
+    .bio-save-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .bio-msg {
+      font-size:.78rem; color:#059669; font-weight:600; margin:0;
+      padding:.5rem .75rem; background:rgba(16,185,129,.08); border-radius:8px;
+    }
+    .bio-msg--error { color:#dc2626; background:rgba(239,68,68,.08); }
   `],
 })
 export class StudentProfileComponent implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly studentSvc     = inject(StudentService);
+  private readonly biometricSvc   = inject(BiometricService);
 
   loading  = signal(true);
   userInfo = signal<CurrentUserActorDto | null>(null);
   student  = signal<StudentDto | null>(null);
   parents  = signal<ParentStudentDto[]>([]);
+
+  // Biometric
+  biometricAvailable = signal(false);
+  biometricEnabled   = signal(false);
+  biometricBusy      = signal(false);
+  biometricMsg       = signal('');
+  biometricError     = signal(false);
+  showEnableForm     = signal(false);
+  enablePassword     = '';
 
   readonly gradeNames: Record<number, string> = {
     1:'الأول الابتدائي',2:'الثاني الابتدائي',3:'الثالث الابتدائي',
@@ -275,6 +408,58 @@ export class StudentProfileComponent implements OnInit {
       this.parents.set(parents ?? []);
     } catch (e) { console.error(e); }
     finally { this.loading.set(false); }
+
+    // Check biometric availability after data loads
+    const available = await this.biometricSvc.isAvailable();
+    this.biometricAvailable.set(available);
+    if (available) {
+      this.biometricEnabled.set(await this.biometricSvc.hasStoredCredentials());
+    }
+  }
+
+  async enableBiometric(): Promise<void> {
+    if (!this.enablePassword) return;
+    this.biometricBusy.set(true);
+    this.biometricMsg.set('');
+    try {
+      // Verify identity with biometric before saving credentials
+      const verified = await this.biometricSvc.authenticate();
+      if (!verified) {
+        this.biometricError.set(true);
+        this.biometricMsg.set('فشل التحقق بالبصمة · Biometric verification failed');
+        return;
+      }
+      const username = this.userInfo()?.userName || this.userInfo()?.email || '';
+      await this.biometricSvc.saveCredentials(username, this.enablePassword);
+      this.biometricEnabled.set(true);
+      this.showEnableForm.set(false);
+      this.enablePassword = '';
+      this.biometricError.set(false);
+      this.biometricMsg.set('تم تفعيل تسجيل الدخول بالبصمة · Biometric login enabled');
+      setTimeout(() => this.biometricMsg.set(''), 3000);
+    } catch {
+      this.biometricError.set(true);
+      this.biometricMsg.set('حدث خطأ · Something went wrong');
+    } finally {
+      this.biometricBusy.set(false);
+    }
+  }
+
+  async disableBiometric(): Promise<void> {
+    this.biometricBusy.set(true);
+    this.biometricMsg.set('');
+    try {
+      await this.biometricSvc.clearCredentials();
+      this.biometricEnabled.set(false);
+      this.biometricError.set(false);
+      this.biometricMsg.set('تم إلغاء تفعيل البصمة · Biometric login disabled');
+      setTimeout(() => this.biometricMsg.set(''), 3000);
+    } catch {
+      this.biometricError.set(true);
+      this.biometricMsg.set('حدث خطأ · Something went wrong');
+    } finally {
+      this.biometricBusy.set(false);
+    }
   }
 
   logout(): void { this.authService.logout(); }

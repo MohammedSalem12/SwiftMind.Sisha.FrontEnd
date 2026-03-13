@@ -319,7 +319,7 @@
             (click)="toggleStudentAbsent(s, i)"
             [disabled]="saving()">
             <i class="fas" [class.fa-user-times]="!s.isAbsent" [class.fa-user-check]="s.isAbsent"></i>
-            <span>{{ s.isAbsent ? 'إلغاء' : 'غياب' }}</span>
+            <span>{{ s.isAbsent ? 'إلغاء الغياب' : 'تسجيل غياب' }}</span>
           </button>
         </div>
 

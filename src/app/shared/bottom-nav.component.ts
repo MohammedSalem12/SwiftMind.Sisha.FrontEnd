@@ -195,24 +195,24 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       position: fixed;
       bottom: 0; left: 0; right: 0;
       z-index: 1000;
-      background: rgba(255,255,255,0.95);
-      -webkit-backdrop-filter: blur(20px);
-      backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(0,0,0,0.07);
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
-      padding-bottom: max(6px, env(safe-area-inset-bottom));
+      background: #ffffff;
+      border-top: 1px solid #e5e7eb;
+      box-shadow: 0 -2px 16px rgba(0,0,0,0.06);
+      padding-bottom: max(4px, env(safe-area-inset-bottom));
     }
 
     .mn-inner {
       display: flex;
       align-items: stretch;
-      justify-content: space-around;
-      height: 72px;
+      height: 58px;
+      width: 100%;
+      padding: 0;
     }
 
     .mn-tab {
       position: relative;
       flex: 1;
+      width: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -223,7 +223,8 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       background: transparent;
       border: none;
       cursor: pointer;
-      padding: 0 22px 0 2px;
+      padding: 6px 0 4px;
+      min-width: 0;
       transition: color 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
@@ -231,59 +232,63 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
 
     .mn-icon-wrap {
       position: relative;
-      width: 44px; height: 32px;
+      width: 44px; height: 28px;
       display: flex; align-items: center; justify-content: center;
-      border-radius: 12px;
+      border-radius: 14px;
       transition: background 0.2s;
     }
     .mn-tab.active .mn-icon-wrap {
-      background: rgba(91,33,182,0.1);
+      background: rgba(91,33,182,0.12);
     }
-    .mn-icon-wrap i { font-size: 1.35rem; }
+    .mn-icon-wrap i { font-size: 1.25rem; }
 
     .mn-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 600;
       white-space: nowrap;
-      letter-spacing: 0.01em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      text-align: center;
+      line-height: 1;
     }
 
     .mn-bar {
       position: absolute;
       top: 0; left: 50%;
       transform: translateX(-50%);
-      width: 18px; height: 3px;
+      width: 24px; height: 3px;
       border-radius: 0 0 3px 3px;
       background: linear-gradient(90deg, #7c3aed, #5b21b6);
     }
 
     .mn-badge {
       position: absolute;
-      top: -3px; right: -3px;
+      top: -4px; right: -2px;
       background: #ef4444;
       color: #fff;
       font-size: 0.5rem;
       font-weight: 700;
-      min-width: 14px; height: 14px;
-      border-radius: 7px;
+      min-width: 16px; height: 16px;
+      border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      padding: 0 2px;
-      border: 1.5px solid white;
+      padding: 0 3px;
+      border: 2px solid white;
+      box-shadow: 0 1px 4px rgba(239,68,68,0.3);
     }
 
     .mn-avatar-sm {
-      width: 38px; height: 38px;
+      width: 28px; height: 28px;
       border-radius: 50%;
       background: linear-gradient(135deg, #7c3aed, #5b21b6);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; font-weight: 700;
+      font-size: 0.65rem; font-weight: 700;
       border: 2px solid rgba(255,255,255,0.9);
-      box-shadow: 0 2px 8px rgba(124,58,237,0.35);
-      transition: transform 0.15s;
+      box-shadow: 0 1px 4px rgba(124,58,237,0.25);
     }
     .mn-tab.active .mn-avatar-sm {
-      box-shadow: 0 2px 12px rgba(124,58,237,0.5);
+      box-shadow: 0 2px 8px rgba(124,58,237,0.45);
     }
 
     /* Profile tab avatar */
@@ -448,7 +453,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
 
     /* iOS safe area for mobile nav */
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
-      .mobile-nav { padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+      .mobile-nav { padding-bottom: calc(4px + env(safe-area-inset-bottom)); }
     }
   `],
 })

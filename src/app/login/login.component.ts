@@ -82,10 +82,10 @@ export class LoginComponent implements OnInit {
     script.defer = true;
     script.onload = () => {
       (window as any).FB.init({
-        appId: '811779008607282',
+        appId: environment.facebookAppId,
         cookie: true,
         xfbml: false,
-        version: 'v19.0',
+        version: 'v21.0',
       });
       this.fbReady = true;
     };

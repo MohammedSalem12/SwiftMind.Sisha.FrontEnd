@@ -930,10 +930,24 @@ export class ParentLinkChildComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleQrResult(code: string): void {
+  private handleQrResult(raw: string): void {
     this.stopQrScan();
-    this.studentCode = code;
-    this.searchMethod.set('code');
+
+    // QR may contain a full URL like .../parent/link-child?code=STU-2024-001
+    // Extract just the student code from the "code" query param if present.
+    try {
+      const url = new URL(raw);
+      const code = url.searchParams.get('code');
+      if (code) {
+        this.studentCode = code;
+      } else {
+        this.studentCode = raw;
+      }
+    } catch {
+      // Not a URL — use raw value as the student code directly
+      this.studentCode = raw;
+    }
+
     this.searchStudent();
   }
 

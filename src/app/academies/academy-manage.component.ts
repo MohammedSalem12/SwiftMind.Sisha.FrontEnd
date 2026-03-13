@@ -1613,7 +1613,7 @@ export class AcademyManageComponent implements OnInit {
       await lastValueFrom(this.academyService.addCourseToAcademy(this.academyId, this.selectedCourseId));
       const course = this.availableCourses().find(c => c.id === this.selectedCourseId);
       if (course) {
-        this.academyCourses.update(list => [...list, course]);
+        this.academyCourses.update(list => [...list, course as unknown as AcademyCourseDto]);
         this.availableCourses.update(list => list.filter(c => c.id !== this.selectedCourseId));
       }
       this.selectedCourseId = '';

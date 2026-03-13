@@ -22,6 +22,7 @@ import { provideSideMenuLayout, SideMenuLayoutModule } from '@abp/ng.theme.lepto
 import { AccountLayoutModule } from '@abp/ng.theme.lepton-x/account';
 import { ThemeSharedModule, withHttpErrorConfig, withValidationBluePrint, provideAbpThemeShared } from '@abp/ng.theme.shared';
 import { OAuthService } from 'angular-oauth2-oidc';
+import { PushNotificationService } from './shared/services/push-notification.service';
 
 // Patch AuthService.navigateToLogin() so every ABP component (including the
 // LeptonX navbar login button) uses our Angular /login page instead of
@@ -39,11 +40,21 @@ function patchAuthServiceLogin(authService: AuthService, router: Router) {
 // OpenIddict rejects the post_logout_redirect_uri unless it is registered in
 // the DB, which requires running the DbMigrator against the live SQL Server.
 // Instead we clear tokens locally and navigate to /login — identical UX.
-function patchAuthServiceLogout(authService: AuthService, oauthService: OAuthService, router: Router) {
+//
+// IMPORTANT: unregisterCurrentToken() is called BEFORE oauthService.logOut()
+// so the API call goes out while the token is still valid. Otherwise the
+// 'logout' event fires after tokens are cleared, causing a 401 that ABP's
+// error interceptor shows as an error toast on Android.
+function patchAuthServiceLogout(
+  authService: AuthService,
+  oauthService: OAuthService,
+  router: Router,
+  pushNotificationSvc: PushNotificationService,
+) {
   return () => {
     (authService as any).logout = async () => {
-      // noRedirectToWellKnownEndSession = true → skips the end_session call
-      oauthService.logOut(true);
+      await pushNotificationSvc.unregisterCurrentToken(); // while token still valid
+      oauthService.logOut(true); // noRedirectToWellKnownEndSession = true
       await router.navigate(['/login']);
     };
   };
@@ -70,7 +81,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: patchAuthServiceLogout,
-      deps: [AuthService, OAuthService, Router],
+      deps: [AuthService, OAuthService, Router, PushNotificationService],
       multi: true,
     },
     provideSettingManagementConfig(),

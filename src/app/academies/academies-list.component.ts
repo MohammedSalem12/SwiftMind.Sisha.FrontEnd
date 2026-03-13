@@ -18,6 +18,9 @@ import { CurrentUserInfoService } from '@proxy/common';
       <!-- ── Header ── -->
       <div class="page-header">
         <div class="blob b1"></div><div class="blob b2"></div>
+        <button class="back-btn" (click)="goBack()">
+          <i class="fas fa-arrow-right"></i>
+        </button>
         <div class="header-content">
           <div class="header-text">
             <h1>الأكاديميات</h1>
@@ -169,6 +172,13 @@ import { CurrentUserInfoService } from '@proxy/common';
       background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
       padding:calc(env(safe-area-inset-top,0px) + 1rem) 1.25rem 1.5rem;
       position:relative; overflow:hidden;
+    }
+    .back-btn {
+      position:relative; z-index:1; width:44px; height:44px; border-radius:50%; flex-shrink:0;
+      background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.25);
+      color:#fff; font-size:1rem; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; margin-bottom:.75rem; transition:background .15s;
+      &:active { background:rgba(255,255,255,.28); }
     }
     .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
     .b1 { width:200px; height:200px; top:-70px; right:-60px; }
@@ -416,4 +426,6 @@ export class AcademiesListComponent implements OnInit {
   }
 
   trackById = (_: number, item: AcademyDto) => item.id;
+
+  goBack(): void { this.router.navigate(['/student']); }
 }
