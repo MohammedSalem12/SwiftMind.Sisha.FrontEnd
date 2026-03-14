@@ -163,6 +163,14 @@ $text-light:   #9090aa;
   .card-cta  { background: rgba(0,0,0,0.12); }
 }
 
+// ─── Students: blue gradient ─────────────────────────────────
+.card-students {
+  background: linear-gradient(160deg, #3b82f6 0%, #1d4ed8 100%);
+
+  .card-icon { background: rgba(255,255,255,0.18); }
+  .card-cta  { background: rgba(0,0,0,0.12); }
+}
+
 // ─── Card inner layout ────────────────────────────────────────
 .card-inner {
   flex: 1;

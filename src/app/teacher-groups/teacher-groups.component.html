@@ -145,27 +145,14 @@
 
             <!-- Actions -->
             <div class="group-actions">
-              <button class="act act-attend" (click)="takeAttendance(g)">
-                <i class="fas fa-clipboard-check"></i>
-                <span>حضور</span>
-              </button>
               <button class="act act-sched" (click)="manageSchedule(g)">
-                <i class="fas fa-calendar-alt"></i>
-                <span>جدول</span>
-              </button>
-              <button class="act act-marks" (click)="goToMarks(g)">
-                <i class="fas fa-star"></i>
-                <span>درجات</span>
-              </button>
-              <button class="act act-students" (click)="viewStudents(g)">
-                <i class="fas fa-users"></i>
-                <span>طلاب</span>
+                جدول · Schedule
               </button>
               <button class="act act-edit" [routerLink]="['edit', g.groupId]">
-                <i class="fas fa-edit"></i>
+                تعديل · Edit
               </button>
               <button class="act act-delete" (click)="deleteGroup(g)">
-                <i class="fas fa-trash-alt"></i>
+                حذف · Delete
               </button>
             </div>
 
