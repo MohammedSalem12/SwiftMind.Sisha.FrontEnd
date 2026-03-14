@@ -89,12 +89,12 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           </a>
         }
 
-        <!-- Marketplace tab -->
+        <!-- Ads tab -->
         <a class="mn-tab" routerLink="/ads" [class.active]="isActive('/ads')">
           <div class="mn-icon-wrap">
-            <i class="fas fa-store"></i>
+            <i class="fas fa-bullhorn"></i>
           </div>
-          <span class="mn-label">السوق</span>
+          <span class="mn-label">إعلانات</span>
           @if (isActive('/ads')) { <span class="mn-bar"></span> }
         </a>
 
@@ -154,14 +154,14 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           </a>
         }
 
-        <!-- Marketplace link -->
+        <!-- Ads link -->
         <a class="dn-item" routerLink="/ads" [class.active]="isActive('/ads')">
           <div class="dn-item-icon">
-            <i class="fas fa-store"></i>
+            <i class="fas fa-bullhorn"></i>
           </div>
           <div class="dn-item-text">
-            <span class="dn-item-label">السوق</span>
-            <span class="dn-item-label-en">Marketplace</span>
+            <span class="dn-item-label">إعلانات</span>
+            <span class="dn-item-label-en">Ads</span>
           </div>
         </a>
 

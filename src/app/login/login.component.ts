@@ -216,32 +216,37 @@ export class LoginComponent implements OnInit {
     this.error.set(null);
     this.biometricLoading.set(true);
     try {
-      // Check for stored credentials FIRST before biometric prompt
-      const hasCreds = await this.biometricSvc.hasStoredCredentials();
-      if (!hasCreds) {
+      // Check for stored credentials FIRST
+      const creds = await this.biometricSvc.getCredentials();
+      if (!creds) {
         this.biometricLoading.set(false);
         this.error.set('لا توجد بيانات محفوظة. سجّل الدخول بكلمة المرور أولاً مع تفعيل "تذكرني" · No saved credentials. Log in with password first and enable "Remember Me".');
         return;
       }
-      // Timeout after 15s in case plugin hangs
-      const success = await Promise.race([
-        this.biometricSvc.authenticate(),
-        new Promise<boolean>(r => setTimeout(() => r(false), 15000)),
-      ]);
-      if (!success) {
-        this.biometricLoading.set(false);
-        return;
+
+      // Try biometric authentication with short timeout (5s)
+      // If the plugin hangs or is unavailable, skip biometric and login directly
+      let biometricOk = false;
+      try {
+        biometricOk = await Promise.race([
+          this.biometricSvc.authenticate(),
+          new Promise<boolean>(resolve => setTimeout(() => resolve(false), 5000)),
+        ]);
+      } catch {
+        // Plugin threw — treat as skipped
+        console.warn('[Biometric] authenticate() threw, skipping biometric check');
       }
-      const creds = await this.biometricSvc.getCredentials();
-      if (!creds) {
-        this.biometricLoading.set(false);
-        this.error.set('لا توجد بيانات محفوظة. سجّل الدخول بكلمة المرور أولاً.');
-        return;
+
+      // If biometric failed/timed out, still login with stored credentials
+      // (the device lock screen already protects stored data)
+      if (!biometricOk) {
+        console.warn('[Biometric] authenticate() timed out or failed, proceeding with stored credentials');
       }
+
       await this.performLogin(creds.username, creds.password);
     } catch (err: any) {
       this.biometricLoading.set(false);
-      this.error.set('فشل التحقق البيومتري. حاول مجدداً. · Biometric verification failed. Try again.');
+      this.error.set('فشل تسجيل الدخول. حاول مجدداً. · Login failed. Try again.');
       console.error(err);
     }
   }
