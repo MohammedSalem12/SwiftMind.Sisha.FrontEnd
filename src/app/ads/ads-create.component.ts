@@ -277,14 +277,36 @@ export class AdsCreateComponent {
     this.error.set('');
     this.success.set('');
     try {
-      const payload = { ...this.model, submitForReview: submit };
+      const payload: any = {
+        title: this.model.title,
+        titleEn: this.model.titleEn || undefined,
+        description: this.model.description,
+        descriptionEn: this.model.descriptionEn || undefined,
+        imageUrl: this.model.imageUrl || undefined,
+        adType: this.model.adType,
+        targetAudience: this.model.targetAudience,
+        targetGrades: this.model.targetGrades?.length ? this.model.targetGrades : undefined,
+        price: this.model.price || undefined,
+        currency: this.model.currency || 'SAR',
+        contactInfo: this.model.contactInfo || undefined,
+        externalUrl: this.model.externalUrl || undefined,
+        dealPartnerName: this.model.dealPartnerName || undefined,
+        startDate: this.model.startDate || undefined,
+        endDate: this.model.endDate || undefined,
+        submitForReview: submit,
+      };
       await this.http.post(`${this.apiBase}/api/app/advertisement`, payload).toPromise();
       this.success.set(submit ? 'تم إرسال الإعلان للمراجعة · Ad submitted for review' : 'تم حفظ المسودة · Draft saved');
       if (submit) {
         setTimeout(() => this.location.back(), 1500);
       }
     } catch (e: any) {
-      this.error.set(e?.error?.error?.message || 'حدث خطأ · Something went wrong');
+      console.error('[AdsCreate] save error:', e);
+      const msg = e?.error?.error?.message
+        || e?.error?.error_description
+        || e?.message
+        || 'حدث خطأ · Something went wrong';
+      this.error.set(msg);
     } finally {
       this.saving.set(false);
     }
