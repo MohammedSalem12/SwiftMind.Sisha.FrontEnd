@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
 import { AcademyService } from '@proxy/academies';
@@ -291,7 +290,6 @@ interface EditForm {
 export class TeacherAcademiesComponent implements OnInit {
   private readonly router        = inject(Router);
   private readonly academyService = inject(AcademyService);
-  private readonly restSvc       = inject(RestService);
 
   loading    = signal(true);
   academies  = signal<AcademyDto[]>([]);
@@ -311,31 +309,30 @@ export class TeacherAcademiesComponent implements OnInit {
     try {
       const result: AcademyDto[] = [];
 
-      // 1. Get supervised academy
+      // 1. Get supervised academy (using proxy service)
       const ownAcademy = await lastValueFrom(
-        this.restSvc.request<void, AcademyDto>(
-          { method: 'GET', url: '/api/sesha/academies/my-academy' },
-          { apiName: 'Default', skipHandleError: true }
-        )
+        this.academyService.getMyAcademy({ skipHandleError: true })
       ).catch(() => null);
       if (ownAcademy?.id) result.push(ownAcademy);
 
       // 2. Get membership (academy the teacher joined)
       const membership = await lastValueFrom(
-        this.restSvc.request<void, any>(
-          { method: 'GET', url: '/api/sesha/academies/my-membership' },
-          { apiName: 'Default', skipHandleError: true }
-        )
+        this.academyService.getMyMembership(undefined, { skipHandleError: true })
       ).catch(() => null);
       if (membership?.academyId && !result.some(a => a.id === membership.academyId)) {
-        // Fetch that academy's details
         const memberAcademy = await lastValueFrom(
-          this.restSvc.request<void, AcademyDto>(
-            { method: 'GET', url: `/api/sesha/academies/${membership.academyId}` },
-            { apiName: 'Default', skipHandleError: true }
-          )
+          this.academyService.get(membership.academyId, { skipHandleError: true })
         ).catch(() => null);
         if (memberAcademy?.id) result.push(memberAcademy);
+      }
+
+      // 3. If still empty, try loading all academies (teacher sees all)
+      if (result.length === 0) {
+        const allAcademies = await lastValueFrom(
+          this.academyService.getList({ skipHandleError: true })
+        ).catch(() => []);
+        this.academies.set(allAcademies || []);
+        return;
       }
 
       this.academies.set(result);
@@ -363,11 +360,11 @@ export class TeacherAcademiesComponent implements OnInit {
     this.editError.set(null);
     try {
       const updated = await lastValueFrom(
-        this.restSvc.request<any, AcademyDto>(
-          { method: 'PUT', url: `/api/sesha/academies/${a.id}`,
-            body: { nameAr: this.editForm.nameAr, nameEn: this.editForm.nameEn, description: this.editForm.description || null } },
-          { apiName: 'Default' }
-        )
+        this.academyService.update(a.id!, {
+          nameAr: this.editForm.nameAr,
+          nameEn: this.editForm.nameEn,
+          description: this.editForm.description || undefined,
+        } as any)
       );
       this.academies.update(list => list.map(x => x.id === a.id ? { ...x, ...updated } : x));
       this.editingId.set(null);
@@ -382,9 +379,7 @@ export class TeacherAcademiesComponent implements OnInit {
     this.togglingId.set(a.id);
     try {
       await lastValueFrom(
-        this.restSvc.request<any, void>(
-          { method: 'POST', url: `/api/sesha/academies/${a.id}/set-active`, params: { isActive: !a.isActive } },
-          { apiName: 'Default' }
+        this.academyService.setActive(a.id!, !a.isActive
         )
       );
       this.academies.update(list => list.map(x => x.id === a.id ? { ...x, isActive: !a.isActive } : x));
