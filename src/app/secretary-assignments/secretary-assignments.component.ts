@@ -12,110 +12,248 @@ import type { SecretaryTeacherDto } from '@proxy/teachers/models';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="page-container" dir="rtl">
-      <div class="container py-4">
-        <h2 class="mb-4"><i class="bi bi-person-lines-fill me-2"></i>إدارة ارتباط السكرتارية بالمعلمين</h2>
+    <div class="page" dir="rtl">
 
-        <!-- Assign Form -->
-        <div class="card mb-4">
-          <div class="card-header fw-bold">ربط معلم بسكرتير</div>
-          <div class="card-body">
-            <div class="row g-3 align-items-end">
-              <div class="col-md-4">
-                <label class="form-label">معرّف مستخدم السكرتير (User ID)</label>
-                <input type="text" class="form-control" [(ngModel)]="secretaryUserId"
-                       placeholder="GUID الخاص بالسكرتير" />
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">المعلم</label>
-                <select class="form-select" [(ngModel)]="selectedTeacherId">
-                  <option value="">-- اختر المعلم --</option>
-                  <option *ngFor="let t of teachers()" [value]="t.id">{{ t.displayName }}</option>
-                </select>
-              </div>
-              <div class="col-md-4">
-                <button class="btn btn-primary w-100" (click)="assign()"
-                        [disabled]="!secretaryUserId || !selectedTeacherId || saving()">
-                  <span *ngIf="saving()" class="spinner-border spinner-border-sm me-1"></span>
-                  ربط
-                </button>
-              </div>
-            </div>
-            <div *ngIf="assignError()" class="alert alert-danger mt-3 mb-0">{{ assignError() }}</div>
-            <div *ngIf="assignSuccess()" class="alert alert-success mt-3 mb-0">{{ assignSuccess() }}</div>
+      <!-- Header -->
+      <div class="page-header">
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="header-content">
+          <div class="header-icon-wrap">
+            <i class="fas fa-user-cog"></i>
           </div>
-        </div>
-
-        <!-- View Assignments for Secretary -->
-        <div class="card mb-4">
-          <div class="card-header fw-bold">عرض معلمي سكرتير</div>
-          <div class="card-body">
-            <div class="input-group mb-3">
-              <input type="text" class="form-control" [(ngModel)]="lookupSecretaryUserId"
-                     placeholder="معرّف مستخدم السكرتير (User ID)" />
-              <button class="btn btn-outline-secondary" (click)="loadAssignments()" [disabled]="!lookupSecretaryUserId || loadingAssignments()">
-                <span *ngIf="loadingAssignments()" class="spinner-border spinner-border-sm me-1"></span>
-                بحث
-              </button>
-            </div>
-
-            <div *ngIf="assignments().length > 0">
-              <table class="table table-bordered table-sm">
-                <thead class="table-light">
-                  <tr>
-                    <th>المعلم</th>
-                    <th>معرّف المعلم</th>
-                    <th>إجراء</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let a of assignments()">
-                    <td>{{ a.teacherName }}</td>
-                    <td><small class="text-muted">{{ a.teacherId }}</small></td>
-                    <td>
-                      <button class="btn btn-danger btn-sm" (click)="removeAssignment(a)"
-                              [disabled]="removingId() === a.teacherId">
-                        <span *ngIf="removingId() === a.teacherId" class="spinner-border spinner-border-sm"></span>
-                        <span *ngIf="removingId() !== a.teacherId">إزالة</span>
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div *ngIf="assignments().length === 0 && assignmentsLoaded()" class="alert alert-info mb-0">
-              لا يوجد معلمون مرتبطون بهذا السكرتير
-            </div>
-          </div>
-        </div>
-
-        <!-- My Assigned Teachers (for SECRETARY role) -->
-        <div class="card">
-          <div class="card-header fw-bold">معلميّ (للسكرتير الحالي)</div>
-          <div class="card-body">
-            <button class="btn btn-outline-primary btn-sm mb-3" (click)="loadMyTeachers()" [disabled]="loadingMine()">
-              <span *ngIf="loadingMine()" class="spinner-border spinner-border-sm me-1"></span>
-              تحميل معلميّ
-            </button>
-            <div *ngIf="myTeachers().length > 0">
-              <ul class="list-group">
-                <li *ngFor="let t of myTeachers()" class="list-group-item">
-                  <i class="bi bi-person-fill me-2 text-primary"></i>{{ t.teacherName }}
-                </li>
-              </ul>
-            </div>
-            <div *ngIf="myTeachers().length === 0 && myTeachersLoaded()" class="alert alert-info mb-0">
-              لا يوجد معلمون مرتبطون بحسابك
-            </div>
-          </div>
+          <h1>إدارة ارتباط السكرتارية</h1>
+          <p>Secretary-Teacher Assignments</p>
         </div>
       </div>
+
+      <!-- Assign Section -->
+      <div class="section">
+        <div class="section-title"><i class="fas fa-link"></i> ربط معلم بسكرتير · Assign Teacher</div>
+        <div class="card">
+          <div class="form-field">
+            <label class="field-label">معرّف مستخدم السكرتير · Secretary User ID</label>
+            <input class="field-input" type="text" [(ngModel)]="secretaryUserId"
+                   placeholder="GUID الخاص بالسكرتير" dir="ltr" />
+          </div>
+          <div class="form-field">
+            <label class="field-label">المعلم · Teacher</label>
+            <select class="field-select" [(ngModel)]="selectedTeacherId">
+              <option value="">-- اختر المعلم --</option>
+              @for (t of teachers(); track t.id) {
+                <option [value]="t.id">{{ t.displayName }}</option>
+              }
+            </select>
+          </div>
+          <button class="btn-primary" (click)="assign()"
+                  [disabled]="!secretaryUserId || !selectedTeacherId || saving()">
+            @if (saving()) { <i class="fas fa-spinner fa-spin"></i> }
+            @else { <i class="fas fa-link"></i> }
+            ربط · Assign
+          </button>
+
+          @if (assignError()) {
+            <div class="msg msg--error"><i class="fas fa-exclamation-circle"></i> {{ assignError() }}</div>
+          }
+          @if (assignSuccess()) {
+            <div class="msg msg--success"><i class="fas fa-check-circle"></i> {{ assignSuccess() }}</div>
+          }
+        </div>
+      </div>
+
+      <!-- Lookup Section -->
+      <div class="section">
+        <div class="section-title"><i class="fas fa-search"></i> عرض معلمي سكرتير · Lookup</div>
+        <div class="card">
+          <div class="search-row">
+            <input class="field-input" type="text" [(ngModel)]="lookupSecretaryUserId"
+                   placeholder="معرّف مستخدم السكرتير" dir="ltr" />
+            <button class="btn-search" (click)="loadAssignments()"
+                    [disabled]="!lookupSecretaryUserId || loadingAssignments()">
+              @if (loadingAssignments()) { <i class="fas fa-spinner fa-spin"></i> }
+              @else { <i class="fas fa-search"></i> }
+            </button>
+          </div>
+
+          @if (assignments().length > 0) {
+            <div class="list">
+              @for (a of assignments(); track a.teacherId) {
+                <div class="list-row">
+                  <div class="list-avatar">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                  </div>
+                  <div class="list-info">
+                    <span class="list-name">{{ a.teacherName }}</span>
+                    <span class="list-sub">{{ a.teacherId }}</span>
+                  </div>
+                  <button class="btn-remove" (click)="removeAssignment(a)"
+                          [disabled]="removingId() === a.teacherId">
+                    @if (removingId() === a.teacherId) {
+                      <i class="fas fa-spinner fa-spin"></i>
+                    } @else {
+                      <i class="fas fa-unlink"></i>
+                    }
+                  </button>
+                </div>
+              }
+            </div>
+          }
+          @if (assignments().length === 0 && assignmentsLoaded()) {
+            <div class="empty-msg">
+              <i class="fas fa-inbox"></i>
+              <span>لا يوجد معلمون مرتبطون · No assigned teachers</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- My Teachers -->
+      <div class="section">
+        <div class="section-title"><i class="fas fa-users"></i> معلميّ · My Teachers</div>
+        <div class="card">
+          <button class="btn-outline" (click)="loadMyTeachers()" [disabled]="loadingMine()">
+            @if (loadingMine()) { <i class="fas fa-spinner fa-spin"></i> }
+            @else { <i class="fas fa-sync"></i> }
+            تحميل معلميّ · Load My Teachers
+          </button>
+
+          @if (myTeachers().length > 0) {
+            <div class="list">
+              @for (t of myTeachers(); track t.teacherId) {
+                <div class="list-row">
+                  <div class="list-avatar">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                  </div>
+                  <div class="list-info">
+                    <span class="list-name">{{ t.teacherName }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+          @if (myTeachers().length === 0 && myTeachersLoaded()) {
+            <div class="empty-msg">
+              <i class="fas fa-inbox"></i>
+              <span>لا يوجد معلمون مرتبطون بحسابك · No teachers linked to your account</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div style="height:calc(80px + env(safe-area-inset-bottom,0px))"></div>
     </div>
   `,
   styles: [`
-    .page-container { min-height: calc(100vh - 200px); background: #f8f9fa; }
-    .card { box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
-    .card-header { background: var(--ngx-hero-gradient); color: white; }
+    .page { min-height:100vh; background:#f4f5fb; }
+
+    .page-header {
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      padding:calc(env(safe-area-inset-top,0px) + 1.5rem) 1.25rem 2rem;
+      position:relative; overflow:hidden; text-align:center;
+    }
+    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
+    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
+    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
+    .header-content { position:relative; z-index:1; }
+    .header-icon-wrap {
+      width:56px; height:56px; border-radius:16px;
+      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+      display:inline-flex; align-items:center; justify-content:center;
+      color:#fff; font-size:1.5rem; margin-bottom:.75rem;
+    }
+    .header-content h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
+    .header-content p { margin:.15rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
+
+    .section { padding:1rem 1rem 0; }
+    .section-title {
+      display:flex; align-items:center; gap:.5rem; font-size:.8rem; font-weight:700;
+      color:#555; text-transform:uppercase; letter-spacing:.05em; margin-bottom:.75rem;
+    }
+    .section-title i { color:#667eea; font-size:.85rem; }
+
+    .card {
+      background:#fff; border-radius:16px; border:1.5px solid #f0f0f0;
+      padding:1rem; box-shadow:0 2px 8px rgba(0,0,0,.04);
+      display:flex; flex-direction:column; gap:.75rem;
+    }
+
+    .form-field { display:flex; flex-direction:column; gap:.3rem; }
+    .field-label { font-size:.78rem; font-weight:600; color:#555; }
+    .field-input, .field-select {
+      width:100%; padding:.7rem .875rem; border-radius:12px;
+      border:1.5px solid #e5e7eb; font-size:.88rem; color:#1a1a2e;
+      background:#fafaff; box-sizing:border-box; outline:none;
+      transition:border-color .2s;
+    }
+    .field-input:focus, .field-select:focus { border-color:#667eea; }
+    .field-select { appearance:auto; }
+
+    .search-row { display:flex; gap:.5rem; }
+    .search-row .field-input { flex:1; }
+    .btn-search {
+      width:48px; height:48px; border-radius:12px; border:none; flex-shrink:0;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      color:#fff; font-size:1rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .btn-search:disabled { opacity:.5; cursor:not-allowed; }
+
+    .btn-primary {
+      width:100%; padding:.75rem; border-radius:12px; border:none;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      color:#fff; font-size:.88rem; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:.35rem;
+      min-height:48px;
+    }
+    .btn-primary:disabled { opacity:.5; cursor:not-allowed; }
+
+    .btn-outline {
+      width:100%; padding:.65rem; border-radius:12px;
+      border:1.5px solid rgba(102,126,234,.25); background:rgba(102,126,234,.04);
+      color:#667eea; font-size:.82rem; font-weight:600; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:.35rem;
+      min-height:44px;
+    }
+    .btn-outline:disabled { opacity:.5; cursor:not-allowed; }
+
+    .msg {
+      padding:.65rem .875rem; border-radius:10px; font-size:.82rem; font-weight:600;
+      display:flex; align-items:center; gap:.35rem;
+    }
+    .msg--error { background:rgba(239,68,68,.08); color:#dc2626; }
+    .msg--success { background:rgba(16,185,129,.08); color:#059669; }
+
+    .list { display:flex; flex-direction:column; gap:.5rem; }
+    .list-row {
+      display:flex; align-items:center; gap:.75rem;
+      padding:.75rem; border-radius:12px; background:#fafaff;
+      border:1px solid #f0f0f0;
+    }
+    .list-avatar {
+      width:40px; height:40px; border-radius:10px; flex-shrink:0;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-size:.9rem;
+    }
+    .list-info { flex:1; min-width:0; }
+    .list-name { display:block; font-size:.88rem; font-weight:700; color:#1a1a2e; }
+    .list-sub {
+      display:block; font-size:.65rem; color:#9090aa; margin-top:.1rem;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .btn-remove {
+      width:40px; height:40px; border-radius:10px; border:none; flex-shrink:0;
+      background:rgba(239,68,68,.08); color:#dc2626;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      font-size:.9rem;
+    }
+    .btn-remove:disabled { opacity:.5; cursor:not-allowed; }
+
+    .empty-msg {
+      text-align:center; padding:1rem; color:#9090aa; font-size:.82rem;
+      display:flex; flex-direction:column; align-items:center; gap:.5rem;
+    }
+    .empty-msg i { font-size:1.5rem; color:#c4c4d4; }
   `]
 })
 export class SecretaryAssignmentsComponent implements OnInit {
@@ -158,13 +296,13 @@ export class SecretaryAssignmentsComponent implements OnInit {
         secretaryUserId: this.secretaryUserId,
         teacherId: this.selectedTeacherId,
       }));
-      this.assignSuccess.set('تم ربط المعلم بالسكرتير بنجاح');
+      this.assignSuccess.set('تم ربط المعلم بالسكرتير بنجاح · Teacher assigned successfully');
       this.selectedTeacherId = '';
       if (this.lookupSecretaryUserId === this.secretaryUserId) {
         await this.loadAssignments();
       }
     } catch (e: any) {
-      this.assignError.set(e?.error?.error?.message || 'حدث خطأ أثناء الربط');
+      this.assignError.set(e?.error?.error?.message || 'حدث خطأ أثناء الربط · Assignment failed');
     } finally {
       this.saving.set(false);
     }

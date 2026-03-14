@@ -58,6 +58,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     { path: '/attendance',           label: 'الحضور',               labelEn: 'Attendance',         icon: 'fas fa-user-check' },
     { path: '/add-teacher',          label: 'إضافة معلم',          labelEn: 'Add Teacher',        icon: 'fas fa-user-plus' },
     { path: '/add-student',          label: 'إضافة طالب',          labelEn: 'Add Student',        icon: 'fas fa-user-plus' },
+    { path: '/ads/admin',            label: 'إدارة الإعلانات',     labelEn: 'Ads Management',     icon: 'fas fa-bullhorn' },
   ];
   return [];
 }
@@ -87,6 +88,15 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
             @if (isActive(item.path)) { <span class="mn-bar"></span> }
           </a>
         }
+
+        <!-- Marketplace tab -->
+        <a class="mn-tab" routerLink="/ads" [class.active]="isActive('/ads')">
+          <div class="mn-icon-wrap">
+            <i class="fas fa-store"></i>
+          </div>
+          <span class="mn-label">السوق</span>
+          @if (isActive('/ads')) { <span class="mn-bar"></span> }
+        </a>
 
         <!-- Settings tab -->
         <a class="mn-tab" routerLink="/settings" [class.active]="isActive('/settings')">
@@ -121,8 +131,8 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           <i class="fas fa-graduation-cap"></i>
         </div>
         <div class="dn-brand-text">
-          <span class="dn-brand-name">SwiftMind</span>
-          <span class="dn-brand-sub">KAI</span>
+          <span class="dn-brand-name">KAI</span>
+          <span class="dn-brand-sub">نظام إدارة التعليم</span>
         </div>
       </div>
 
@@ -143,6 +153,17 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
             </div>
           </a>
         }
+
+        <!-- Marketplace link -->
+        <a class="dn-item" routerLink="/ads" [class.active]="isActive('/ads')">
+          <div class="dn-item-icon">
+            <i class="fas fa-store"></i>
+          </div>
+          <div class="dn-item-text">
+            <span class="dn-item-label">السوق</span>
+            <span class="dn-item-label-en">Marketplace</span>
+          </div>
+        </a>
 
         <!-- Settings link -->
         <a class="dn-item" routerLink="/settings" [class.active]="isActive('/settings')">
@@ -602,7 +623,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     const cur = this.currentPath();
     const exact = ['/', '/student', '/teacher', '/parent', '/secretary', '/secretary-assignments',
                    '/profile', '/secretary/profile', '/student/profile', '/teacher/profile', '/parent/profile',
-                   '/academies', '/teacher/academies', '/feeds', '/notifications', '/settings'];
+                   '/academies', '/teacher/academies', '/feeds', '/notifications', '/settings', '/ads'];
     if (exact.includes(path)) return cur === path;
     return cur.startsWith(path);
   }

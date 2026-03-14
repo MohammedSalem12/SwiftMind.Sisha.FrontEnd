@@ -364,6 +364,11 @@ export const appRoutes: Routes = [
     data: { roles: ['TEACHER'] },
   },
   {
+    path: 'ads',
+    loadChildren: () => import('./ads/ads.routes').then(m => m.adsRoutes),
+    canActivate: [authGuard],
+  },
+  {
     path: 'settings',
     loadComponent: () => import('./shared/app-settings.component').then(m => m.AppSettingsComponent),
     canActivate: [authGuard],
