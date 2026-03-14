@@ -1,224 +1,98 @@
-import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 
 @Component({
   selector: 'app-data-deletion',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule],
   template: `
-    <div class="deletion-page">
-      <div class="container">
-        <!-- Language Toggle -->
-        <div class="lang-toggle">
-          <button (click)="toggleLanguage()" class="lang-btn">
-            {{ isArabic ? 'English' : 'العربية' }}
+    <div class="page" dir="rtl">
+      <div class="page-header">
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="header-row">
+          <button class="btn-back" (click)="goBack()">
+            <i class="fas fa-arrow-right"></i>
           </button>
-        </div>
-
-        @if (isArabic) {
-          <!-- Arabic Version -->
-          <h1>تعليمات حذف البيانات</h1>
-          <p>
-            في <strong>KAI (سويفت مايند سيشا)</strong>، نقدر خصوصيتك ونوفر لك التحكم الكامل في بياناتك. 
-            وفقًا لقواعد منصة فيسبوك، نوفر خيارات شاملة لحذف بيانات المستخدم.
-          </p>
-          
-          <h3>كيفية حذف بياناتك عبر فيسبوك:</h3>
-          <ol>
-            <li>انتقل إلى قائمة <strong>الإعدادات والخصوصية</strong> في ملفك الشخصي على فيسبوك.</li>
-            <li>انقر على <strong>الإعدادات</strong>.</li>
-            <li>قم بالتمرير لأسفل وانقر على <strong>التطبيقات والمواقع الإلكترونية</strong>.</li>
-            <li>ابحث عن <strong>KAI</strong> أو <strong>سويفت مايند سيشا</strong> وانقر عليه.</li>
-            <li>انقر على زر <strong>إزالة</strong>.</li>
-          </ol>
-
-          <h3>طلب حذف البيانات يدويًا:</h3>
-          <p>إذا كنت ترغب في حذف بيانات حسابك من قاعدة بياناتنا، يرجى اتباع الخطوات التالية:</p>
-          <ul>
-            <li>أرسل بريدًا إلكترونيًا إلى: <strong>support&#64;swiftmind.com</strong></li>
-            <li>الموضوع: <strong>طلب حذف البيانات</strong></li>
-            <li>قم بتضمين: <strong>معرف مستخدم فيسبوك</strong> أو <strong>عنوان البريد الإلكتروني</strong> المرتبط بحسابك.</li>
-          </ul>
-          <p>
-            سنقوم بمعالجة طلبك وحذف جميع البيانات المرتبطة خلال <strong>30 يومًا</strong>. 
-            ستتلقى بريدًا إلكترونيًا للتأكيد بمجرد اكتمال العملية.
-          </p>
-
-          <h3>ما هي البيانات التي نحذفها:</h3>
-          <ul>
-            <li>معلومات ملفك الشخصي (الاسم، البريد الإلكتروني، معرف فيسبوك)</li>
-            <li>أي سجلات أكاديمية مرتبطة بحسابك</li>
-            <li>رموز المصادقة وبيانات الجلسة</li>
-            <li>جميع البيانات الشخصية المخزنة في أنظمتنا</li>
-          </ul>
-        } @else {
-          <!-- English Version -->
-          <h1>Data Deletion Instructions</h1>
-          <p>
-            At <strong>KAI (SwiftMind Sesha)</strong>, we value your privacy and provide you with full control over your data. 
-            According to Facebook's Platform Rules, we provide comprehensive User Data Deletion options.
-          </p>
-          
-          <h3>How to Delete Your Data via Facebook:</h3>
-          <ol>
-            <li>Go to your Facebook Profile's <strong>Settings & Privacy</strong> menu.</li>
-            <li>Click <strong>Settings</strong>.</li>
-            <li>Scroll down and click <strong>Apps and Websites</strong>.</li>
-            <li>Find and click on <strong>KAI</strong> or <strong>SwiftMind Sesha</strong>.</li>
-            <li>Click the <strong>Remove</strong> button.</li>
-          </ol>
-
-          <h3>Manual Data Deletion Request:</h3>
-          <p>If you wish to delete your specific user account data from our database, please follow these steps:</p>
-          <ul>
-            <li>Send an email to: <strong>support&#64;swiftmind.com</strong></li>
-            <li>Subject: <strong>Data Deletion Request</strong></li>
-            <li>Include your: <strong>Facebook User ID</strong> or the <strong>Email Address</strong> associated with your account.</li>
-          </ul>
-          <p>
-            We will process your request and delete all associated data within <strong>30 days</strong>. 
-            You will receive a confirmation email once the process is complete.
-          </p>
-
-          <h3>What Data We Delete:</h3>
-          <ul>
-            <li>Your profile information (name, email, Facebook ID)</li>
-            <li>Any academic records associated with your account</li>
-            <li>Authentication tokens and session data</li>
-            <li>All personal data stored in our systems</li>
-          </ul>
-        }
-
-        <div class="back-link">
-          <a routerLink="/login">{{ isArabic ? '← العودة إلى تسجيل الدخول' : '← Back to Login' }}</a>
+          <div class="header-text">
+            <h1>حذف البيانات</h1>
+            <p>Data Deletion</p>
+          </div>
+          <div class="header-icon"><i class="fas fa-trash-alt"></i></div>
         </div>
       </div>
+
+      <div class="content">
+        <div class="card">
+          <h2>طلب حذف البيانات · Data Deletion Request</h2>
+          <p>يمكنك طلب حذف بياناتك الشخصية من نظامنا في أي وقت.</p>
+          <p>You can request deletion of your personal data from our system at any time.</p>
+
+          <h3>كيفية طلب الحذف · How to Request Deletion</h3>
+          <p>للتقدم بطلب حذف بياناتك، يرجى التواصل معنا عبر البريد الإلكتروني مع ذكر اسم المستخدم الخاص بك.</p>
+          <p>To request data deletion, please contact us via email with your username.</p>
+
+          <h3>ما الذي سيتم حذفه · What Will Be Deleted</h3>
+          <p>عند تأكيد طلب الحذف، سيتم إزالة جميع بياناتك الشخصية بما في ذلك:</p>
+          <p>Upon confirming the deletion request, all your personal data will be removed including:</p>
+          <ul>
+            <li>معلومات الحساب · Account information</li>
+            <li>بيانات الملف الشخصي · Profile data</li>
+            <li>سجل النشاطات · Activity history</li>
+          </ul>
+
+          <h3>المدة الزمنية · Timeline</h3>
+          <p>سيتم معالجة طلبك خلال 30 يوم عمل من تاريخ الاستلام.</p>
+          <p>Your request will be processed within 30 business days of receipt.</p>
+
+          <h3>ملاحظة · Note</h3>
+          <p>بعض البيانات قد يتم الاحتفاظ بها لأغراض قانونية أو تنظيمية.</p>
+          <p>Some data may be retained for legal or regulatory purposes.</p>
+        </div>
+      </div>
+
+      <div style="height:calc(80px + env(safe-area-inset-bottom,0px))"></div>
     </div>
   `,
   styles: [`
-    .deletion-page {
-      min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+    .page { min-height:100vh; background:#f4f5fb; }
+    .page-header {
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 2rem;
+      position:relative; overflow:hidden;
     }
-
-    .container {
-      background: white;
-      border-radius: 12px;
-      padding: 40px;
-      max-width: 800px;
-      width: 100%;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-      margin: 20px;
-      position: relative;
+    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
+    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
+    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
+    .header-row { position:relative; z-index:1; display:flex; align-items:center; gap:1rem; }
+    .btn-back {
+      width:40px; height:40px; border-radius:12px;
+      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+      color:#fff; font-size:1rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
     }
-
-    h1 {
-      color: #667eea;
-      margin-bottom: 20px;
-      font-size: 28px;
-      font-weight: 600;
+    .header-text { flex:1; }
+    .header-text h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
+    .header-text p { margin:.1rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
+    .header-icon {
+      width:48px; height:48px; border-radius:14px;
+      background:rgba(255,255,255,.15);
+      display:flex; align-items:center; justify-content:center;
+      color:rgba(255,255,255,.9); font-size:1.3rem; flex-shrink:0;
     }
-
-    h3 {
-      color: #764ba2;
-      margin-top: 30px;
-      margin-bottom: 15px;
-      font-size: 20px;
-      font-weight: 600;
+    .content { padding:1rem; }
+    .card {
+      background:#fff; border-radius:16px; padding:1.25rem;
+      box-shadow:0 2px 12px rgba(0,0,0,.06);
     }
-
-    p {
-      color: #333;
-      line-height: 1.6;
-      margin-bottom: 15px;
-    }
-
-    ol, ul {
-      color: #333;
-      line-height: 1.8;
-      margin-bottom: 20px;
-      padding-left: 25px;
-    }
-
-    li {
-      margin-bottom: 10px;
-    }
-
-    strong {
-      color: #667eea;
-      font-weight: 600;
-    }
-
-    .back-link {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid #e0e0e0;
-      text-align: center;
-    }
-
-    .back-link a {
-      color: #667eea;
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.3s;
-    }
-
-    .back-link a:hover {
-      color: #764ba2;
-    }
-
-    .lang-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 10;
-    }
-
-    .lang-btn {
-      background: #667eea;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background 0.3s;
-    }
-
-    .lang-btn:hover {
-      background: #764ba2;
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        padding: 20px;
-        margin: 10px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      h3 {
-        font-size: 18px;
-      }
-
-      .lang-toggle {
-        top: 10px;
-        right: 10px;
-      }
-    }
-  `]
+    .card h2 { font-size:1.1rem; font-weight:800; color:#1a1a2e; margin:0 0 1rem; }
+    .card h3 { font-size:.95rem; font-weight:700; color:#667eea; margin:1.25rem 0 .5rem; }
+    .card p { font-size:.85rem; color:#555; line-height:1.6; margin:0 0 .5rem; }
+    .card ul { padding-right:1.25rem; margin:.5rem 0; }
+    .card li { font-size:.85rem; color:#555; line-height:1.8; }
+  `],
 })
 export class DataDeletionComponent {
-  isArabic = signal(true);
-
-  toggleLanguage(): void {
-    this.isArabic.update(val => !val);
-  }
+  private readonly location = inject(Location);
+  goBack(): void { this.location.back(); }
 }

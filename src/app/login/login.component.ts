@@ -224,23 +224,18 @@ export class LoginComponent implements OnInit {
         return;
       }
 
-      // Try biometric authentication with short timeout (5s)
-      // If the plugin hangs or is unavailable, skip biometric and login directly
+      // Require biometric verification (fingerprint/face) before proceeding
       let biometricOk = false;
       try {
-        biometricOk = await Promise.race([
-          this.biometricSvc.authenticate(),
-          new Promise<boolean>(resolve => setTimeout(() => resolve(false), 5000)),
-        ]);
-      } catch {
-        // Plugin threw — treat as skipped
-        console.warn('[Biometric] authenticate() threw, skipping biometric check');
+        biometricOk = await this.biometricSvc.authenticate();
+      } catch (bioErr) {
+        console.warn('[Biometric] authenticate() threw:', bioErr);
       }
 
-      // If biometric failed/timed out, still login with stored credentials
-      // (the device lock screen already protects stored data)
       if (!biometricOk) {
-        console.warn('[Biometric] authenticate() timed out or failed, proceeding with stored credentials');
+        this.biometricLoading.set(false);
+        this.error.set('فشل التحقق البيومتري. حاول مجدداً. · Biometric verification failed. Try again.');
+        return;
       }
 
       await this.performLogin(creds.username, creds.password);

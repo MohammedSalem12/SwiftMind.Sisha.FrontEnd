@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
+import { BiometricAuth } from '@aparajita/capacitor-biometric-auth';
 
 const KEY_USERNAME = 'biometric_username';
 const KEY_PASSWORD = 'biometric_password';
@@ -8,58 +9,33 @@ const KEY_ENABLED = 'biometric_enabled';
 
 @Injectable({ providedIn: 'root' })
 export class BiometricService {
-  private _BiometricAuth: any;
-  private _pluginLoaded = false;
-
-  private async getPlugin(): Promise<any> {
-    if (!this._pluginLoaded) {
-      this._pluginLoaded = true;
-      try {
-        const mod = await import('@aparajita/capacitor-biometric-auth');
-        this._BiometricAuth = mod.BiometricAuth ?? (mod as any).default ?? null;
-        console.log('[Biometric] Plugin loaded:', !!this._BiometricAuth, Object.keys(mod));
-      } catch (e) {
-        console.warn('[Biometric] Plugin import failed:', e);
-        this._BiometricAuth = null;
-      }
-    }
-    return this._BiometricAuth;
-  }
 
   async isAvailable(): Promise<boolean> {
-    const isNative = Capacitor.isNativePlatform();
-    console.log('[Biometric] isNativePlatform:', isNative, 'platform:', Capacitor.getPlatform());
-    if (!isNative) return false;
+    if (!Capacitor.isNativePlatform()) return false;
     try {
-      const plugin = await this.getPlugin();
-      console.log('[Biometric] plugin:', !!plugin);
-      if (!plugin) {
-        // Plugin not available — still show section on native so user knows it exists
-        return true;
-      }
-      const info = await plugin.checkBiometry();
-      console.log('[Biometric] checkBiometry result:', JSON.stringify(info));
+      const info = await BiometricAuth.checkBiometry();
+      console.log('[Biometric] checkBiometry:', JSON.stringify(info));
       return !!info?.isAvailable || (info?.biometryType != null && info.biometryType > 0);
     } catch (e) {
       console.warn('[Biometric] isAvailable error:', e);
-      // On native, show section anyway
-      return true;
+      return false;
     }
   }
 
   async authenticate(): Promise<boolean> {
     if (!Capacitor.isNativePlatform()) return false;
     try {
-      const plugin = await this.getPlugin();
-      if (!plugin) return false;
-      await plugin.authenticate({
-        reason: 'تحقق من هويتك للدخول',
-        cancelTitle: 'إلغاء',
+      console.log('[Biometric] calling authenticate()...');
+      await BiometricAuth.authenticate({
+        reason: 'تحقق من هويتك للدخول · Verify your identity to log in',
+        cancelTitle: 'إلغاء · Cancel',
         allowDeviceCredential: true,
-        iosFallbackTitle: 'استخدم كلمة المرور',
+        iosFallbackTitle: 'استخدم كلمة المرور · Use Password',
       });
+      console.log('[Biometric] authenticate() succeeded');
       return true;
-    } catch {
+    } catch (e) {
+      console.warn('[Biometric] authenticate() failed:', e);
       return false;
     }
   }
