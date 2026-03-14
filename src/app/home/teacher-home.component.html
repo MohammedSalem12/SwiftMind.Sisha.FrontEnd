@@ -73,6 +73,10 @@
 
   <!-- Academy Courses Sections -->
   @if (!loadingAcademies() && academyGroups().length > 0) {
+    <div class="section-divider">
+      <i class="fas fa-university"></i>
+      <span>مقررات الأكاديمية · Academy Courses</span>
+    </div>
     @for (group of academyGroups(); track group.academy.id) {
       <div class="section-label section-label-academy">
         <i class="fas fa-university"></i>

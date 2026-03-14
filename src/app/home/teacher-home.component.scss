@@ -135,6 +135,19 @@ $radius-card:   18px;
   }
 }
 
+// ─── Section Divider ─────────────────────────────────────────
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 1.25rem 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: $academy-start;
+
+  i { font-size: 0.9rem; }
+}
+
 // ─── Section Label ────────────────────────────────────────────
 .section-label {
   display: flex;
