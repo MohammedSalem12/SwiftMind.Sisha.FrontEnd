@@ -145,7 +145,7 @@ export class StudentHomeComponent implements OnInit {
     try {
       const res: any = await lastValueFrom(
         this.http.get(`${this.apiBase}/api/app/advertisement/active-ads`, {
-          params: { audience: '1', maxResultCount: '2' }, // 1 = Students
+          params: { audience: '1', maxResultCount: '3' }, // 1 = Students
         })
       );
       this.promoAds.set(res?.items ?? []);
@@ -155,11 +155,7 @@ export class StudentHomeComponent implements OnInit {
   trackAdClick(ad: any): void {
     if (ad?.id) {
       this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/click`, {}).subscribe();
-    }
-    if (ad?.externalUrl) {
-      window.open(ad.externalUrl, '_blank');
-    } else {
-      this.router.navigate(['/ads']);
+      this.router.navigate(['/ads', 'detail', ad.id]);
     }
   }
 

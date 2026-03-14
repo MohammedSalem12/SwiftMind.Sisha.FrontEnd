@@ -67,27 +67,17 @@
 
   <!-- Promo Ads -->
   @if (promoAds().length > 0) {
-    <div class="promo-ads">
+    <div class="promo-strip">
       @for (ad of promoAds(); track ad.id) {
-        <button class="promo-card" (click)="trackAdClick(ad)">
-          @if (ad.imageUrl) {
-            <img [src]="ad.imageUrl" alt="" class="promo-img" />
-          } @else {
-            <div class="promo-icon-wrap">
-              <i class="fas" [class.fa-chalkboard-teacher]="ad.adType === 0"
-                             [class.fa-book]="ad.adType === 1"
-                             [class.fa-handshake]="ad.adType === 2"></i>
-            </div>
-          }
-          <div class="promo-body">
-            <span class="promo-title">{{ ad.title }}</span>
-            <span class="promo-sub">{{ ad.advertiserName }}</span>
-            @if (ad.price) {
-              <span class="promo-price">{{ ad.price }} {{ ad.currency || 'SAR' }}</span>
-            }
+        <button class="promo-chip" (click)="trackAdClick(ad)">
+          <div class="promo-chip-icon">
+            <i class="fas" [class.fa-chalkboard-teacher]="ad.adType === 0"
+                           [class.fa-book]="ad.adType === 1"
+                           [class.fa-handshake]="ad.adType === 2"></i>
           </div>
+          <span class="promo-chip-text">{{ ad.title }}</span>
           @if (ad.isFeatured) {
-            <span class="promo-featured"><i class="fas fa-star"></i></span>
+            <i class="fas fa-star promo-chip-star"></i>
           }
         </button>
       }
