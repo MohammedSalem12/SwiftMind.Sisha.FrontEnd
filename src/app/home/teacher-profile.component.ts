@@ -383,30 +383,14 @@ export class TeacherProfileComponent implements OnInit {
       if (info?.actorId) {
         try {
           const t = await lastValueFrom(this.teacherSvc.get(info.actorId));
-          console.log('[TeacherProfile] loaded teacher:', t?.government, t?.town);
+          console.log('[TeacherProfile] loaded teacher:', JSON.stringify({ gov: t?.government, town: t?.town }));
           this.teacherInfo.set(t);
           if (t) {
-            this.locGov.set(t.government ?? '');
-            this.locTown.set(t.town ?? '');
+            this.locGov.set(t.government || '');
+            this.locTown.set(t.town || '');
           }
         } catch (e) {
-          console.warn('[TeacherProfile] failed to load teacher by actorId, trying custom endpoint:', e);
-          try {
-            const t2 = await lastValueFrom(
-              this.restSvc.request<any, any>(
-                { method: 'GET', url: `/api/sesha/teachers/${info.actorId}` },
-                { apiName: 'Default', skipHandleError: true }
-              )
-            );
-            console.log('[TeacherProfile] loaded from sesha endpoint:', t2?.government, t2?.town);
-            this.teacherInfo.set(t2);
-            if (t2) {
-              this.locGov.set(t2.government ?? '');
-              this.locTown.set(t2.town ?? '');
-            }
-          } catch (e2) {
-            console.warn('[TeacherProfile] both GET endpoints failed:', e2);
-          }
+          console.warn('[TeacherProfile] failed to load teacher by actorId:', e);
         }
       }
     } catch (e) { console.error(e); }
@@ -421,25 +405,31 @@ export class TeacherProfileComponent implements OnInit {
     try {
       const t = this.teacherInfo();
       const info = this.userInfo();
-      // Use name from teacherInfo, fall back to actorName from userInfo
       const nameParts = (info?.actorName || '').split(' ');
-      const body = {
+      const gov = this.locGov() || '';
+      const town = this.locTown() || '';
+      const body: any = {
         firstName: t?.firstName || nameParts[0] || 'Teacher',
         lastName:  t?.lastName  || nameParts.slice(1).join(' ') || '',
         address:   t?.address ?? '',
         email:     t?.email ?? info?.email ?? '',
         phoneNumber: t?.phoneNumber ?? '',
-        password: '',
-        government: this.locGov(),
-        town: this.locTown(),
+        government: gov,
+        town: town,
       };
-      console.log('[TeacherProfile] saving location:', body.government, body.town);
-      const updated = await lastValueFrom(this.teacherSvc.update(id, body));
-      console.log('[TeacherProfile] save result:', updated?.government, updated?.town);
-      if (updated) {
-        this.teacherInfo.set(updated);
-        this.locGov.set(updated.government ?? this.locGov());
-        this.locTown.set(updated.town ?? this.locTown());
+      console.log('[TeacherProfile] saving location:', JSON.stringify({ gov, town, body }));
+      await lastValueFrom(this.teacherSvc.update(id, body));
+      // Re-fetch to confirm the saved values from the server
+      const refreshed = await lastValueFrom(this.teacherSvc.get(id));
+      console.log('[TeacherProfile] refreshed after save:', JSON.stringify({ gov: refreshed?.government, town: refreshed?.town }));
+      if (refreshed) {
+        this.teacherInfo.set(refreshed);
+        this.locGov.set(refreshed.government || gov);
+        this.locTown.set(refreshed.town || town);
+      } else {
+        // Fallback to local values if fetch failed
+        this.locGov.set(gov);
+        this.locTown.set(town);
       }
       this.editingLocation.set(false);
     } catch (err: any) {

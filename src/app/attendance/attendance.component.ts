@@ -10,6 +10,7 @@ import { GroupService } from '@proxy/groups';
 import { TeacherService } from '@proxy/teachers';
 import { AcademyService } from '@proxy/academies';
 import type { AcademyDto } from '@proxy/academies/models';
+import type { GroupScheduleDto } from '@proxy/groups/dtos/models';
 import { lastValueFrom } from 'rxjs';
 
 interface StudentEntry {
@@ -27,6 +28,7 @@ interface GroupOption {
   name: string;
   teacherId: string;
   teacherName: string;
+  schedules: GroupScheduleDto[];
 }
 
 @Component({
@@ -60,13 +62,16 @@ export class AttendanceComponent implements OnInit {
   selectedCourseId = signal<string | null>(null);
   selectedCourseName = signal<string>('');
 
-  // Date (default today)
-  attendanceDate = signal<string>(new Date().toISOString().slice(0, 10));
-
-  // Group (optional)
+  // Group (before date — user picks group first, then dates from schedule)
   groups = signal<GroupOption[]>([]);
   selectedGroupId = signal<string | null>(null);
   effectiveTeacherId = signal<string | null>(null);
+
+  // Schedule dates (computed from selected group's schedule)
+  scheduleDates = signal<{ date: string; label: string }[]>([]);
+
+  // Date (default today)
+  attendanceDate = signal<string>(new Date().toISOString().slice(0, 10));
 
   // Students
   students = signal<StudentEntry[]>([]);
@@ -238,6 +243,7 @@ export class AttendanceComponent implements OnInit {
             name: g.name || '',
             teacherId: g.teacherId || '',
             teacherName: g.teacherName || '',
+            schedules: g.schedules || [],
           }))
         );
       } else {
@@ -252,6 +258,7 @@ export class AttendanceComponent implements OnInit {
               name: g.name || '',
               teacherId: g.teacherId || '',
               teacherName: g.teacherName || '',
+              schedules: g.schedules || [],
             }))
         );
       }
@@ -270,11 +277,64 @@ export class AttendanceComponent implements OnInit {
     if (groupId) {
       const group = this.groups().find(g => g.id === groupId);
       this.effectiveTeacherId.set(group?.teacherId || this.teacherId());
+      // Compute schedule dates from group's schedule
+      this.computeScheduleDates(group?.schedules || []);
     } else {
       this.effectiveTeacherId.set(this.teacherId());
+      this.scheduleDates.set([]);
     }
 
     await this.loadStudents();
+  }
+
+  private computeScheduleDates(schedules: GroupScheduleDto[]): void {
+    if (schedules.length === 0) {
+      this.scheduleDates.set([]);
+      return;
+    }
+
+    const ARABIC_DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const scheduleDays = schedules.map(s => s.dayOfWeek); // 0=Sunday .. 6=Saturday
+
+    const dates: { date: string; label: string }[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Generate past 4 weeks + current week of schedule dates
+    for (let offset = -28; offset <= 7; offset++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + offset);
+      const jsDow = d.getDay(); // JS: 0=Sunday, 1=Monday...
+      if (scheduleDays.includes(jsDow)) {
+        const iso = d.toISOString().slice(0, 10);
+        const dayName = ARABIC_DAYS[jsDow];
+        const label = `${dayName} ${d.getDate()}/${d.getMonth() + 1}`;
+        dates.push({ date: iso, label });
+      }
+    }
+
+    this.scheduleDates.set(dates);
+
+    // Auto-select today if it's a schedule day, otherwise pick the most recent past schedule date
+    const todayIso = today.toISOString().slice(0, 10);
+    if (dates.some(d => d.date === todayIso)) {
+      this.attendanceDate.set(todayIso);
+    } else {
+      // Find the closest past date
+      const pastDates = dates.filter(d => d.date <= todayIso);
+      if (pastDates.length > 0) {
+        this.attendanceDate.set(pastDates[pastDates.length - 1].date);
+      }
+    }
+  }
+
+  selectScheduleDate(date: string): void {
+    this.attendanceDate.set(date);
+    this.message.set(null);
+    this.page.set(1);
+    if (this.selectedCourseId()) {
+      this.loadStudents();
+    }
   }
 
   async onDateChange(date: string): Promise<void> {

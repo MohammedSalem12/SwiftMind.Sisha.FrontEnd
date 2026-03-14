@@ -4,6 +4,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
+import { CurrentUserInfoService } from '@proxy/common';
 
 interface AdDto {
   id: string;
@@ -41,8 +42,17 @@ interface AdDto {
         <div class="blob b1"></div>
         <div class="blob b2"></div>
         <div class="header-content">
-          <h1><i class="fas fa-bullhorn"></i> سوق الإعلانات</h1>
-          <p>Marketplace</p>
+          <div class="header-top-row">
+            <div>
+              <h1><i class="fas fa-bullhorn"></i> سوق الإعلانات</h1>
+              <p>Marketplace</p>
+            </div>
+            @if (canCreate()) {
+              <a routerLink="/ads/my" class="my-ads-btn">
+                <i class="fas fa-list"></i> إعلاناتي
+              </a>
+            }
+          </div>
         </div>
       </div>
 
@@ -147,6 +157,13 @@ interface AdDto {
         }
       }
 
+      <!-- Create Ad FAB -->
+      @if (canCreate()) {
+        <a routerLink="/ads/create" class="fab-create">
+          <i class="fas fa-plus"></i>
+        </a>
+      }
+
       <div style="height:calc(80px + env(safe-area-inset-bottom,0px))"></div>
     </div>
   `,
@@ -162,11 +179,22 @@ interface AdDto {
     .b1 { width:200px; height:200px; top:-70px; right:-60px; }
     .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
     .header-content { position:relative; z-index:1; }
+    .header-top-row {
+      display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem;
+    }
     .header-content h1 {
       margin:0; font-size:1.4rem; font-weight:800; color:#fff;
       display:flex; align-items:center; gap:.5rem;
     }
     .header-content p { margin:.15rem 0 0; font-size:.8rem; color:rgba(255,255,255,.7); }
+    .my-ads-btn {
+      display:flex; align-items:center; gap:.35rem;
+      padding:.4rem .75rem; border-radius:10px; flex-shrink:0;
+      background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.25);
+      color:rgba(255,255,255,.9); font-size:.75rem; font-weight:600;
+      text-decoration:none; white-space:nowrap;
+      min-height:36px;
+    }
 
     .filters { padding:.75rem 1rem 0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
     .filter-chips { display:flex; gap:.5rem; padding-bottom:.25rem; }
@@ -272,10 +300,24 @@ interface AdDto {
       min-height:44px;
     }
     .btn-load-more:disabled { opacity:.5; cursor:not-allowed; }
+
+    .fab-create {
+      position:fixed; bottom:calc(80px + env(safe-area-inset-bottom,0px) + 1rem); left:1.25rem;
+      width:56px; height:56px; border-radius:50%;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      color:#fff; font-size:1.5rem;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 20px rgba(102,126,234,.4);
+      z-index:100; text-decoration:none;
+      transition:transform .15s;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .fab-create:active { transform:scale(.9); }
   `],
 })
 export class AdsBrowseComponent implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly apiBase = environment.apis?.default?.url || '';
 
   loading = signal(true);
@@ -283,10 +325,17 @@ export class AdsBrowseComponent implements OnInit {
   ads = signal<AdDto[]>([]);
   activeFilter = signal<string>('all');
   hasMore = signal(false);
+  canCreate = signal(false);
   private skipCount = 0;
   private readonly pageSize = 20;
 
   async ngOnInit(): Promise<void> {
+    // Teachers and admins can create ads
+    try {
+      const info = await this.currentUserSvc.getCurrentUserActorInfo().toPromise();
+      const roles = (info?.userRoles || []).map((r: string) => r.toUpperCase());
+      this.canCreate.set(roles.some((r: string) => ['TEACHER', 'ADMIN', 'SECRETARY'].includes(r)));
+    } catch { /* ignore */ }
     await this.loadAds();
   }
 

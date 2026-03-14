@@ -44,10 +44,10 @@ export class LoginComponent implements OnInit {
       this.router.navigate(['/']);
       return;
     }
-    // Show biometric button on native when credentials are saved
+    // Show biometric button on ALL native platforms — if no credentials are stored,
+    // loginWithBiometric() will show a helpful message instead of silently hiding the button
     if (Capacitor.isNativePlatform()) {
-      const hasStored = await this.biometricSvc.hasStoredCredentials();
-      this.biometricAvailable.set(hasStored);
+      this.biometricAvailable.set(true);
     }
     this.initGoogleSignIn();
     this.initFacebook();
@@ -216,6 +216,13 @@ export class LoginComponent implements OnInit {
     this.error.set(null);
     this.biometricLoading.set(true);
     try {
+      // Check for stored credentials FIRST before biometric prompt
+      const hasCreds = await this.biometricSvc.hasStoredCredentials();
+      if (!hasCreds) {
+        this.biometricLoading.set(false);
+        this.error.set('لا توجد بيانات محفوظة. سجّل الدخول بكلمة المرور أولاً مع تفعيل "تذكرني" · No saved credentials. Log in with password first and enable "Remember Me".');
+        return;
+      }
       // Timeout after 15s in case plugin hangs
       const success = await Promise.race([
         this.biometricSvc.authenticate(),
@@ -234,7 +241,7 @@ export class LoginComponent implements OnInit {
       await this.performLogin(creds.username, creds.password);
     } catch (err: any) {
       this.biometricLoading.set(false);
-      this.error.set('فشل التحقق البيومتري. حاول مجدداً.');
+      this.error.set('فشل التحقق البيومتري. حاول مجدداً. · Biometric verification failed. Try again.');
       console.error(err);
     }
   }
@@ -269,10 +276,12 @@ export class LoginComponent implements OnInit {
       }
       this.loading.set(false);
       this.biometricLoading.set(false);
-      await this.router.navigateByUrl('/');
-      // window.location.reload() crashes Capacitor WebView on Android/iOS — skip on native
+      // On web: full reload to refresh ABP state (navigateByUrl causes flash before reload)
+      // On native: just navigate (reload crashes Capacitor WebView)
       if (!Capacitor.isNativePlatform()) {
-        try { window.location.reload(); } catch { /* ignore */ }
+        window.location.href = '/';
+      } else {
+        await this.router.navigateByUrl('/');
       }
       return;
     }
@@ -294,10 +303,10 @@ export class LoginComponent implements OnInit {
     }
     this.loading.set(false);
     this.biometricLoading.set(false);
-    await this.router.navigateByUrl('/');
-    // window.location.reload() crashes Capacitor WebView on Android/iOS — skip on native
     if (!Capacitor.isNativePlatform()) {
-      try { window.location.reload(); } catch { /* ignore */ }
+      window.location.href = '/';
+    } else {
+      await this.router.navigateByUrl('/');
     }
   }
 

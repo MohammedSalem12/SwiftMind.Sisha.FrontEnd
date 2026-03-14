@@ -64,34 +64,53 @@
       </select>
     </div>
 
-    <!-- Date + Group side by side on mobile -->
-    <div class="filter-inline-row">
-      <div class="filter-row filter-row--half">
+    <!-- Group selector (shown first — user picks group before date) -->
+    <div class="filter-row" *ngIf="selectedCourseId() && groups().length > 0">
+      <div class="filter-label">
+        <i class="fas fa-users"></i>
+        <span>المجموعة · Group</span>
+      </div>
+      <select
+        [ngModel]="selectedGroupId()"
+        (ngModelChange)="onGroupChange($event)"
+        [disabled]="loading()">
+        <option value="">-- الكل · All --</option>
+        <option *ngFor="let g of groups()" [value]="g.id">
+          {{ g.name }}{{ g.teacherName ? ' — ' + g.teacherName : '' }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Schedule date pills (from group schedule) -->
+    @if (scheduleDates().length > 0) {
+      <div class="schedule-dates-section">
         <div class="filter-label">
           <i class="fas fa-calendar-alt"></i>
-          <span>التاريخ</span>
+          <span>مواعيد المجموعة · Schedule Dates</span>
         </div>
-        <input
-          type="date"
-          [ngModel]="attendanceDate()"
-          (ngModelChange)="onDateChange($event)" />
+        <div class="schedule-dates-pills">
+          @for (sd of scheduleDates(); track sd.date) {
+            <button
+              class="schedule-date-pill"
+              [class.schedule-date-pill--active]="attendanceDate() === sd.date"
+              (click)="selectScheduleDate(sd.date)">
+              {{ sd.label }}
+            </button>
+          }
+        </div>
       </div>
+    }
 
-      <div class="filter-row filter-row--half" *ngIf="selectedCourseId() && groups().length > 0">
-        <div class="filter-label">
-          <i class="fas fa-users"></i>
-          <span>المجموعة <span class="optional">(اختياري)</span></span>
-        </div>
-        <select
-          [ngModel]="selectedGroupId()"
-          (ngModelChange)="onGroupChange($event)"
-          [disabled]="loading()">
-          <option value="">-- الكل --</option>
-          <option *ngFor="let g of groups()" [value]="g.id">
-            {{ g.name }}{{ g.teacherName ? ' — ' + g.teacherName : '' }}
-          </option>
-        </select>
+    <!-- Date picker (manual fallback or when no group selected) -->
+    <div class="filter-row">
+      <div class="filter-label">
+        <i class="fas fa-calendar-alt"></i>
+        <span>التاريخ · Date</span>
       </div>
+      <input
+        type="date"
+        [ngModel]="attendanceDate()"
+        (ngModelChange)="onDateChange($event)" />
     </div>
   </div>
 
