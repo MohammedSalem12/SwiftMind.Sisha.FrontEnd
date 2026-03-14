@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
@@ -9,6 +10,7 @@ import { StudentService } from '@proxy/students';
 import { CourseService } from '@proxy/courses';
 import type { ParentStudentDto } from '@proxy/parents/models';
 import type { StudentCourseDto } from '@proxy/courses/dtos/models';
+import { environment } from '../../environments/environment';
 
 const GRADE_NAMES: Record<number, string> = {
   1: 'الصف الأول الابتدائي',
@@ -37,6 +39,8 @@ export class StudentHomeComponent implements OnInit {
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly studentService = inject(StudentService);
   private readonly courseService  = inject(CourseService);
+  private readonly http           = inject(HttpClient);
+  private readonly apiBase        = environment.apis?.default?.url || '';
 
   studentName        = signal('');
   studentCode        = signal('');
@@ -44,6 +48,7 @@ export class StudentHomeComponent implements OnInit {
   confirmedParents   = signal<ParentStudentDto[]>([]);
   pendingParentLinks = signal<ParentStudentDto[]>([]);
   courses            = signal<StudentCourseDto[]>([]);
+  promoAds           = signal<any[]>([]);
   loading            = signal(true);
   qrDataUrl          = signal<string | null>(null);
   showQr             = signal(false);
@@ -61,6 +66,7 @@ export class StudentHomeComponent implements OnInit {
         this.loadPendingParentLinks(),
         this.loadConfirmedParents(),
         this.loadCourses(),
+        this.loadPromoAds(),
       ]);
       if (userInfo?.actorCode) {
         this.generateQr(userInfo.actorCode);
@@ -133,6 +139,28 @@ export class StudentHomeComponent implements OnInit {
 
   availableCourses(): StudentCourseDto[] {
     return this.courses().filter(c => !c.isEnrolled && !c.hasPendingRequest);
+  }
+
+  private async loadPromoAds(): Promise<void> {
+    try {
+      const res: any = await lastValueFrom(
+        this.http.get(`${this.apiBase}/api/app/advertisement/active-ads`, {
+          params: { audience: '1', maxResultCount: '2' }, // 1 = Students
+        })
+      );
+      this.promoAds.set(res?.items ?? []);
+    } catch { /* silent */ }
+  }
+
+  trackAdClick(ad: any): void {
+    if (ad?.id) {
+      this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/click`, {}).subscribe();
+    }
+    if (ad?.externalUrl) {
+      window.open(ad.externalUrl, '_blank');
+    } else {
+      this.router.navigate(['/ads']);
+    }
   }
 
   goRegister(): void {

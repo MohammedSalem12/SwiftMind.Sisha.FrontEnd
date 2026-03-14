@@ -65,26 +65,34 @@
     }
   </div>
 
-  <!-- Quick Actions -->
-  <div class="quick-actions">
-    <button class="quick-action-btn" (click)="goToRequests()">
-      <div class="qa-icon">
-        <i class="fas fa-clipboard-list"></i>
-        @if (pendingParentLinks().length > 0) {
-          <span class="qa-badge">{{ pendingParentLinks().length }}</span>
-        }
-      </div>
-      <span class="qa-label">طلباتي</span>
-      <span class="qa-sub">My Requests</span>
-    </button>
-    <button class="quick-action-btn" (click)="goRegister()">
-      <div class="qa-icon">
-        <i class="fas fa-plus-circle"></i>
-      </div>
-      <span class="qa-label">تسجيل مقرر</span>
-      <span class="qa-sub">Browse Courses</span>
-    </button>
-  </div>
+  <!-- Promo Ads -->
+  @if (promoAds().length > 0) {
+    <div class="promo-ads">
+      @for (ad of promoAds(); track ad.id) {
+        <button class="promo-card" (click)="trackAdClick(ad)">
+          @if (ad.imageUrl) {
+            <img [src]="ad.imageUrl" alt="" class="promo-img" />
+          } @else {
+            <div class="promo-icon-wrap">
+              <i class="fas" [class.fa-chalkboard-teacher]="ad.adType === 0"
+                             [class.fa-book]="ad.adType === 1"
+                             [class.fa-handshake]="ad.adType === 2"></i>
+            </div>
+          }
+          <div class="promo-body">
+            <span class="promo-title">{{ ad.title }}</span>
+            <span class="promo-sub">{{ ad.advertiserName }}</span>
+            @if (ad.price) {
+              <span class="promo-price">{{ ad.price }} {{ ad.currency || 'SAR' }}</span>
+            }
+          </div>
+          @if (ad.isFeatured) {
+            <span class="promo-featured"><i class="fas fa-star"></i></span>
+          }
+        </button>
+      }
+    </div>
+  }
 
   <!-- Loading Skeleton -->
   @if (loading()) {
