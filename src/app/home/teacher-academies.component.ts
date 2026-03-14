@@ -309,13 +309,36 @@ export class TeacherAcademiesComponent implements OnInit {
   private async loadAcademies(): Promise<void> {
     this.loading.set(true);
     try {
+      const result: AcademyDto[] = [];
+
+      // 1. Get supervised academy
       const ownAcademy = await lastValueFrom(
-        this.restSvc.request<any, AcademyDto>(
+        this.restSvc.request<void, AcademyDto>(
           { method: 'GET', url: '/api/sesha/academies/my-academy' },
           { apiName: 'Default', skipHandleError: true }
         )
       ).catch(() => null);
-      this.academies.set(ownAcademy?.id ? [ownAcademy] : []);
+      if (ownAcademy?.id) result.push(ownAcademy);
+
+      // 2. Get membership (academy the teacher joined)
+      const membership = await lastValueFrom(
+        this.restSvc.request<void, any>(
+          { method: 'GET', url: '/api/sesha/academies/my-membership' },
+          { apiName: 'Default', skipHandleError: true }
+        )
+      ).catch(() => null);
+      if (membership?.academyId && !result.some(a => a.id === membership.academyId)) {
+        // Fetch that academy's details
+        const memberAcademy = await lastValueFrom(
+          this.restSvc.request<void, AcademyDto>(
+            { method: 'GET', url: `/api/sesha/academies/${membership.academyId}` },
+            { apiName: 'Default', skipHandleError: true }
+          )
+        ).catch(() => null);
+        if (memberAcademy?.id) result.push(memberAcademy);
+      }
+
+      this.academies.set(result);
     } catch {
       this.academies.set([]);
     } finally {
