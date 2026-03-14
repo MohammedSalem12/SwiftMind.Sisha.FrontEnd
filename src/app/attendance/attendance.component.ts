@@ -300,11 +300,17 @@ export class AttendanceComponent implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Generate past 4 weeks + current week of schedule dates
-    for (let offset = -28; offset <= 7; offset++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + offset);
-      const jsDow = d.getDay(); // JS: 0=Sunday, 1=Monday...
+    // Find start of current week (Saturday as first day for Arabic calendar)
+    const todayDow = today.getDay(); // 0=Sun
+    const satOffset = todayDow === 6 ? 0 : -(todayDow + 1); // offset to previous Saturday
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() + satOffset);
+
+    // Generate only current week's schedule days (Sat–Fri = 7 days)
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      const jsDow = d.getDay();
       if (scheduleDays.includes(jsDow)) {
         const iso = d.toISOString().slice(0, 10);
         const dayName = ARABIC_DAYS[jsDow];
@@ -320,10 +326,11 @@ export class AttendanceComponent implements OnInit {
     if (dates.some(d => d.date === todayIso)) {
       this.attendanceDate.set(todayIso);
     } else {
-      // Find the closest past date
       const pastDates = dates.filter(d => d.date <= todayIso);
       if (pastDates.length > 0) {
         this.attendanceDate.set(pastDates[pastDates.length - 1].date);
+      } else if (dates.length > 0) {
+        this.attendanceDate.set(dates[0].date);
       }
     }
   }
