@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 import { CurrentUserInfoService } from '@proxy/common';
@@ -44,14 +44,31 @@ interface AdDto {
         <div class="header-content">
           <div class="header-top-row">
             <div>
-              <h1><i class="fas fa-bullhorn"></i> سوق الإعلانات</h1>
-              <p>Marketplace</p>
+              <h1><i class="fas fa-bullhorn"></i> إعلانات</h1>
+              <p>Ads</p>
             </div>
-            @if (canCreate()) {
-              <a routerLink="/ads/my" class="my-ads-btn">
-                <i class="fas fa-list"></i> إعلاناتي
-              </a>
-            }
+            <div class="header-actions">
+              @if (isStudent()) {
+                <a routerLink="/ads/my-coupons" class="header-link-btn">
+                  <i class="fas fa-ticket-alt"></i> كوبوناتي
+                </a>
+              }
+              @if (isAdvertiser()) {
+                <a routerLink="/ads/redeem" class="header-link-btn">
+                  <i class="fas fa-qrcode"></i> استرداد
+                </a>
+              }
+              @if (canCreate()) {
+                <a routerLink="/ads/my" class="header-link-btn">
+                  <i class="fas fa-list"></i> إعلاناتي
+                </a>
+              }
+              @if (isAdmin()) {
+                <a routerLink="/ads/advertisers" class="header-link-btn">
+                  <i class="fas fa-store"></i> المعلنين
+                </a>
+              }
+            </div>
           </div>
         </div>
       </div>
@@ -187,13 +204,16 @@ interface AdDto {
       display:flex; align-items:center; gap:.5rem;
     }
     .header-content p { margin:.15rem 0 0; font-size:.8rem; color:rgba(255,255,255,.7); }
-    .my-ads-btn {
-      display:flex; align-items:center; gap:.35rem;
-      padding:.4rem .75rem; border-radius:10px; flex-shrink:0;
+    .header-actions {
+      display:flex; gap:.4rem; flex-wrap:wrap; justify-content:flex-end;
+    }
+    .header-link-btn {
+      display:flex; align-items:center; gap:.25rem;
+      padding:.3rem .6rem; border-radius:10px; flex-shrink:0;
       background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.25);
-      color:rgba(255,255,255,.9); font-size:.75rem; font-weight:600;
+      color:rgba(255,255,255,.9); font-size:.68rem; font-weight:600;
       text-decoration:none; white-space:nowrap;
-      min-height:36px;
+      min-height:32px;
     }
 
     .filters { padding:.75rem 1rem 0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -317,6 +337,7 @@ interface AdDto {
 })
 export class AdsBrowseComponent implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly apiBase = environment.apis?.default?.url || '';
 
@@ -326,15 +347,20 @@ export class AdsBrowseComponent implements OnInit {
   activeFilter = signal<string>('all');
   hasMore = signal(false);
   canCreate = signal(false);
+  isStudent = signal(false);
+  isAdvertiser = signal(false);
+  isAdmin = signal(false);
   private skipCount = 0;
   private readonly pageSize = 20;
 
   async ngOnInit(): Promise<void> {
-    // Teachers and admins can create ads
     try {
       const info = await this.currentUserSvc.getCurrentUserActorInfo().toPromise();
       const roles = (info?.userRoles || []).map((r: string) => r.toUpperCase());
-      this.canCreate.set(roles.some((r: string) => ['TEACHER', 'ADMIN', 'SECRETARY'].includes(r)));
+      this.canCreate.set(roles.some((r: string) => ['TEACHER', 'ADMIN', 'SECRETARY', 'ADVERTISER'].includes(r)));
+      this.isStudent.set(roles.includes('STUDENT'));
+      this.isAdvertiser.set(roles.includes('ADVERTISER'));
+      this.isAdmin.set(roles.some((r: string) => ['ADMIN', 'SECRETARY'].includes(r)));
     } catch { /* ignore */ }
     await this.loadAds();
   }
@@ -388,11 +414,8 @@ export class AdsBrowseComponent implements OnInit {
   }
 
   viewAd(ad: AdDto): void {
-    // Increment view count
-    this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/increment-view`, {}).subscribe();
-    if (ad.externalUrl) {
-      window.open(ad.externalUrl, '_blank');
-    }
+    this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/view`, {}).subscribe();
+    this.router.navigate(['/ads', 'detail', ad.id]);
   }
 
   getAdTypeIcon(type: number): string {

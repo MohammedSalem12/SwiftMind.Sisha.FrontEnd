@@ -1,0 +1,716 @@
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Location } from '@angular/common';
+import { environment } from '../../environments/environment';
+
+interface AdvertiserDto {
+  id: string;
+  name: string;
+  nameEn?: string;
+  type: number;
+  contactPhone: string;
+  contactEmail: string;
+  description?: string;
+  address?: string;
+  websiteUrl?: string;
+  isApproved: boolean;
+  userId?: string;
+  creationTime?: string;
+}
+
+interface CreateAdvertiserForm {
+  name: string;
+  nameEn: string;
+  type: number;
+  contactPhone: string;
+  contactEmail: string;
+  description: string;
+  address: string;
+  websiteUrl: string;
+  createUser: boolean;
+  userName: string;
+  password: string;
+}
+
+@Component({
+  selector: 'app-advertiser-admin',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="page" dir="rtl">
+      <div class="page-header">
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="header-row">
+          <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
+          <div class="header-text">
+            <h1>ادارة المعلنين</h1>
+            <p>Advertiser Management</p>
+          </div>
+          <div class="header-icon"><i class="fas fa-store"></i></div>
+        </div>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <button class="btn-create" (click)="showForm.set(!showForm())">
+          <i class="fas" [class.fa-plus]="!showForm()" [class.fa-times]="showForm()"></i>
+          {{ showForm() ? 'الغاء' : 'اضافة معلن' }}
+        </button>
+        <span class="total-count" *ngIf="totalCount() > 0">{{ totalCount() }} معلن</span>
+      </div>
+
+      <!-- Create Form -->
+      @if (showForm()) {
+        <div class="form-card">
+          <div class="form-title"><i class="fas fa-plus-circle"></i> معلن جديد · New Advertiser</div>
+
+          <div class="form-group">
+            <label>الاسم <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="form.name" placeholder="اسم المعلن" />
+          </div>
+
+          <div class="form-group">
+            <label>الاسم بالانجليزية</label>
+            <input type="text" [(ngModel)]="form.nameEn" placeholder="Name in English" dir="ltr" />
+          </div>
+
+          <div class="form-group">
+            <label>النوع <span class="req">*</span></label>
+            <select [(ngModel)]="form.type">
+              <option [ngValue]="0">معلم · Teacher</option>
+              <option [ngValue]="1">مكتبة · Library</option>
+              <option [ngValue]="2">قرطاسية · Bookstore</option>
+              <option [ngValue]="3">مركز تعليمي · Educational Center</option>
+              <option [ngValue]="4">اخرى · Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>رقم الهاتف <span class="req">*</span></label>
+            <input type="tel" [(ngModel)]="form.contactPhone" placeholder="05XXXXXXXX" dir="ltr" />
+          </div>
+
+          <div class="form-group">
+            <label>البريد الالكتروني <span class="req">*</span></label>
+            <input type="email" [(ngModel)]="form.contactEmail" placeholder="email@example.com" dir="ltr" />
+          </div>
+
+          <div class="form-group">
+            <label>الوصف</label>
+            <textarea [(ngModel)]="form.description" placeholder="وصف المعلن" rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>العنوان</label>
+            <input type="text" [(ngModel)]="form.address" placeholder="العنوان" />
+          </div>
+
+          <div class="form-group">
+            <label>الموقع الالكتروني</label>
+            <input type="url" [(ngModel)]="form.websiteUrl" placeholder="https://..." dir="ltr" />
+          </div>
+
+          <!-- Create User Toggle -->
+          <div class="toggle-row" (click)="form.createUser = !form.createUser">
+            <div class="toggle-info">
+              <span class="toggle-label">انشاء حساب مستخدم</span>
+              <span class="toggle-sub">Create user account</span>
+            </div>
+            <button type="button" class="toggle-btn" [class.toggle-btn--on]="form.createUser">
+              <span class="toggle-knob"></span>
+            </button>
+          </div>
+
+          @if (form.createUser) {
+            <div class="user-fields">
+              <div class="form-group">
+                <label>اسم المستخدم <span class="req">*</span></label>
+                <input type="text" [(ngModel)]="form.userName" placeholder="username" dir="ltr" />
+              </div>
+              <div class="form-group">
+                <label>كلمة المرور <span class="req">*</span></label>
+                <input type="password" [(ngModel)]="form.password" placeholder="Password" dir="ltr" />
+              </div>
+            </div>
+          }
+
+          @if (formError()) {
+            <div class="form-error"><i class="fas fa-exclamation-circle"></i> {{ formError() }}</div>
+          }
+
+          <button class="btn-submit" (click)="createAdvertiser()" [disabled]="submitting()">
+            @if (submitting()) {
+              <i class="fas fa-spinner fa-spin"></i> جاري الحفظ...
+            } @else {
+              <i class="fas fa-check"></i> حفظ المعلن
+            }
+          </button>
+        </div>
+      }
+
+      <!-- Loading -->
+      @if (loading()) {
+        <div class="shimmer-area">
+          @for (i of [1,2,3]; track i) { <div class="shimmer-card"></div> }
+        </div>
+      }
+
+      @if (!loading()) {
+        @if (advertisers().length === 0) {
+          <div class="empty-state">
+            <i class="fas fa-store-slash"></i>
+            <p>لا يوجد معلنون</p>
+            <span>No advertisers yet</span>
+          </div>
+        }
+
+        <div class="cards-list">
+          @for (adv of advertisers(); track adv.id) {
+            <div class="adv-card">
+              <div class="adv-card-header">
+                <div class="adv-type-chip" [class]="getTypeClass(adv.type)">
+                  {{ getTypeLabel(adv.type) }}
+                </div>
+                <div class="status-chip" [class]="adv.isApproved ? 'status-approved' : 'status-pending'">
+                  {{ adv.isApproved ? 'معتمد · Approved' : 'بانتظار الموافقة · Pending' }}
+                </div>
+              </div>
+
+              <h3 class="adv-name">{{ adv.name }}</h3>
+              @if (adv.nameEn) {
+                <span class="adv-name-en">{{ adv.nameEn }}</span>
+              }
+
+              <div class="adv-meta">
+                <span><i class="fas fa-phone"></i> {{ adv.contactPhone }}</span>
+                <span><i class="fas fa-envelope"></i> {{ adv.contactEmail }}</span>
+                @if (adv.userId) {
+                  <span class="user-linked"><i class="fas fa-user-check"></i> حساب مرتبط</span>
+                } @else {
+                  <span class="user-not-linked"><i class="fas fa-user-slash"></i> بدون حساب</span>
+                }
+              </div>
+
+              @if (adv.description) {
+                <p class="adv-desc">{{ adv.description | slice:0:120 }}{{ adv.description.length > 120 ? '...' : '' }}</p>
+              }
+
+              <div class="adv-actions">
+                @if (!adv.isApproved) {
+                  <button class="btn-approve" (click)="approveAdvertiser(adv.id)" [disabled]="actionLoading()">
+                    <i class="fas fa-check"></i> موافقة
+                  </button>
+                }
+                @if (adv.isApproved) {
+                  <button class="btn-reject-sm" (click)="rejectAdvertiser(adv.id)" [disabled]="actionLoading()">
+                    <i class="fas fa-ban"></i> رفض
+                  </button>
+                }
+                <button class="btn-delete" (click)="confirmDelete(adv)" [disabled]="actionLoading()">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalCount() > pageSize) {
+          <div class="pagination">
+            <button class="page-btn" (click)="prevPage()" [disabled]="currentPage() <= 0">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+            <span class="page-info">{{ currentPage() + 1 }} / {{ totalPages() }}</span>
+            <button class="page-btn" (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+          </div>
+        }
+      }
+
+      <!-- Delete Confirmation Modal -->
+      @if (deleteTarget()) {
+        <div class="modal-overlay" (click)="deleteTarget.set(null)">
+          <div class="modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <h3>حذف المعلن</h3>
+            <p>هل انت متاكد من حذف <strong>{{ deleteTarget()!.name }}</strong>؟</p>
+            <p class="modal-sub">This action cannot be undone.</p>
+            <div class="modal-actions">
+              <button class="btn-modal-cancel" (click)="deleteTarget.set(null)">الغاء</button>
+              <button class="btn-modal-delete" (click)="deleteAdvertiser()" [disabled]="actionLoading()">
+                @if (actionLoading()) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                } @else {
+                  <i class="fas fa-trash"></i> حذف
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <div style="height:calc(80px + env(safe-area-inset-bottom,0px))"></div>
+    </div>
+  `,
+  styles: [`
+    .page { min-height:100vh; background:#f4f5fb; }
+
+    .page-header {
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 1.5rem;
+      position:relative; overflow:hidden;
+    }
+    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
+    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
+    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
+    .header-row {
+      position:relative; z-index:1; display:flex; align-items:center; gap:.75rem;
+    }
+    .btn-back {
+      width:44px; height:44px; border-radius:12px; border:none;
+      background:rgba(255,255,255,.15); color:#fff; font-size:1.1rem;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      -webkit-tap-highlight-color:transparent; flex-shrink:0;
+    }
+    .header-text { flex:1; }
+    .header-text h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
+    .header-text p { margin:.1rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
+    .header-icon {
+      width:44px; height:44px; border-radius:12px;
+      background:rgba(255,255,255,.15); color:#fff; font-size:1.2rem;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+
+    .action-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1rem 1rem .5rem;
+    }
+    .btn-create {
+      padding:.6rem 1rem; border-radius:12px; border:none;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      color:#fff; font-size:.82rem; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; gap:.35rem; min-height:44px;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .total-count { font-size:.8rem; color:#9090aa; font-weight:600; }
+
+    /* Form */
+    .form-card {
+      margin:.5rem 1rem; background:#fff; border-radius:16px;
+      border:1.5px solid #f0f0f0; padding:1rem;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+    }
+    .form-title {
+      font-size:.85rem; font-weight:700; color:#667eea; margin-bottom:1rem;
+      display:flex; align-items:center; gap:.4rem;
+    }
+    .form-group { margin-bottom:.75rem; }
+    .form-group label {
+      display:block; font-size:.78rem; font-weight:600; color:#555; margin-bottom:.3rem;
+    }
+    .req { color:#dc2626; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width:100%; padding:.6rem .75rem; border-radius:10px; border:1.5px solid #e5e7eb;
+      font-size:.85rem; color:#1a1a2e; background:#fafafe;
+      box-sizing:border-box; min-height:44px; outline:none;
+      transition:border-color .2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color:#667eea;
+    }
+    .form-group textarea { min-height:80px; resize:vertical; }
+
+    .toggle-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:.75rem 0; border-top:1px solid #f0f0f4; margin-top:.5rem;
+      cursor:pointer; -webkit-tap-highlight-color:transparent;
+    }
+    .toggle-info { display:flex; flex-direction:column; gap:.1rem; }
+    .toggle-label { font-size:.82rem; font-weight:600; color:#1a1a2e; }
+    .toggle-sub { font-size:.7rem; color:#9090aa; }
+    .toggle-btn {
+      position:relative; width:48px; height:28px; border-radius:14px;
+      background:#d1d5db; border:none; cursor:pointer; padding:0; flex-shrink:0;
+      transition:background .25s; outline:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .toggle-btn--on { background:linear-gradient(135deg,#667eea,#764ba2); }
+    .toggle-knob {
+      position:absolute; top:3px; right:3px; width:22px; height:22px;
+      border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.25);
+      transition:transform .25s;
+    }
+    .toggle-btn--on .toggle-knob { transform:translateX(-20px); }
+
+    .user-fields {
+      background:#f8f7ff; border-radius:12px; padding:.75rem; margin-top:.5rem;
+      border:1px dashed #c4b5fd;
+    }
+
+    .form-error {
+      padding:.5rem .75rem; border-radius:10px; background:rgba(239,68,68,.08);
+      color:#dc2626; font-size:.78rem; font-weight:600; margin-bottom:.75rem;
+      display:flex; align-items:center; gap:.35rem;
+    }
+
+    .btn-submit {
+      width:100%; padding:.65rem; border-radius:12px; border:none;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      color:#fff; font-size:.88rem; font-weight:700; cursor:pointer;
+      min-height:48px; display:flex; align-items:center; justify-content:center; gap:.35rem;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .btn-submit:disabled { opacity:.6; cursor:not-allowed; }
+
+    /* Shimmer */
+    .shimmer-area { padding:1rem; display:flex; flex-direction:column; gap:.75rem; }
+    .shimmer-card {
+      height:140px; border-radius:16px;
+      background:linear-gradient(90deg,#e8e8f0 25%,#f0f0f8 50%,#e8e8f0 75%);
+      background-size:200% 100%; animation:shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* Empty State */
+    .empty-state { text-align:center; padding:2.5rem 1rem; }
+    .empty-state i { font-size:2.5rem; color:#c4c4d4; display:block; margin-bottom:.75rem; }
+    .empty-state p { font-size:.9rem; font-weight:600; color:#555; margin:0 0 .25rem; }
+    .empty-state span { font-size:.78rem; color:#9090aa; }
+
+    /* Cards */
+    .cards-list { padding:.5rem 1rem; display:flex; flex-direction:column; gap:.75rem; }
+
+    .adv-card {
+      background:#fff; border-radius:14px; border:1.5px solid #f0f0f0;
+      padding:.875rem; box-shadow:0 2px 8px rgba(0,0,0,.04);
+    }
+    .adv-card-header {
+      display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;
+    }
+    .adv-type-chip {
+      font-size:.65rem; font-weight:700; padding:.15rem .5rem; border-radius:8px;
+    }
+    .type-teacher { background:rgba(102,126,234,.1); color:#667eea; }
+    .type-library { background:rgba(16,185,129,.1); color:#059669; }
+    .type-bookstore { background:rgba(245,158,11,.1); color:#d97706; }
+    .type-educational { background:rgba(139,92,246,.1); color:#7c3aed; }
+    .type-other { background:rgba(156,163,175,.1); color:#6b7280; }
+
+    .status-chip { font-size:.62rem; font-weight:700; padding:.15rem .5rem; border-radius:8px; }
+    .status-approved { background:rgba(16,185,129,.1); color:#059669; }
+    .status-pending { background:rgba(245,158,11,.1); color:#d97706; }
+
+    .adv-name { margin:0 0 .15rem; font-size:.95rem; font-weight:700; color:#1a1a2e; }
+    .adv-name-en { font-size:.75rem; color:#9090aa; display:block; margin-bottom:.4rem; }
+
+    .adv-meta {
+      display:flex; flex-wrap:wrap; gap:.6rem; margin:.5rem 0;
+      font-size:.72rem; color:#9090aa;
+    }
+    .adv-meta span { display:flex; align-items:center; gap:.25rem; }
+    .user-linked { color:#059669; }
+    .user-not-linked { color:#d97706; }
+
+    .adv-desc { margin:0 0 .5rem; font-size:.78rem; color:#666; line-height:1.45; }
+
+    .adv-actions { display:flex; gap:.5rem; margin-top:.5rem; }
+    .btn-approve {
+      flex:1; padding:.5rem; border-radius:10px; border:none;
+      background:rgba(16,185,129,.1); color:#059669;
+      font-size:.78rem; font-weight:700; cursor:pointer;
+      min-height:44px; display:flex; align-items:center; justify-content:center; gap:.25rem;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .btn-reject-sm {
+      flex:1; padding:.5rem; border-radius:10px; border:none;
+      background:rgba(245,158,11,.08); color:#d97706;
+      font-size:.78rem; font-weight:700; cursor:pointer;
+      min-height:44px; display:flex; align-items:center; justify-content:center; gap:.25rem;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .btn-delete {
+      width:44px; height:44px; border-radius:10px; border:none;
+      background:rgba(239,68,68,.08); color:#dc2626;
+      font-size:.88rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      -webkit-tap-highlight-color:transparent; flex-shrink:0;
+    }
+    .btn-approve:disabled, .btn-reject-sm:disabled, .btn-delete:disabled { opacity:.5; cursor:not-allowed; }
+
+    /* Pagination */
+    .pagination {
+      display:flex; align-items:center; justify-content:center; gap:1rem;
+      padding:1rem;
+    }
+    .page-btn {
+      width:44px; height:44px; border-radius:12px; border:1.5px solid #e5e7eb;
+      background:#fff; color:#555; font-size:.9rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .page-btn:disabled { opacity:.4; cursor:not-allowed; }
+    .page-info { font-size:.82rem; font-weight:600; color:#555; }
+
+    /* Modal */
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:10000;
+      display:flex; align-items:center; justify-content:center; padding:1rem;
+    }
+    .modal-card {
+      background:#fff; border-radius:20px; padding:1.5rem; max-width:340px; width:100%;
+      text-align:center;
+    }
+    .modal-icon { font-size:2.5rem; color:#dc2626; margin-bottom:.75rem; }
+    .modal-card h3 { margin:0 0 .5rem; font-size:1rem; font-weight:700; color:#1a1a2e; }
+    .modal-card p { margin:0 0 .25rem; font-size:.85rem; color:#555; }
+    .modal-sub { font-size:.75rem; color:#9090aa; margin-bottom:1rem !important; }
+    .modal-actions { display:flex; gap:.5rem; margin-top:1rem; }
+    .btn-modal-cancel {
+      flex:1; padding:.6rem; border-radius:12px; border:1.5px solid #e5e7eb;
+      background:#fff; color:#555; font-size:.82rem; font-weight:600;
+      cursor:pointer; min-height:44px;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .btn-modal-delete {
+      flex:1; padding:.6rem; border-radius:12px; border:none;
+      background:#dc2626; color:#fff; font-size:.82rem; font-weight:700;
+      cursor:pointer; min-height:44px;
+      display:flex; align-items:center; justify-content:center; gap:.25rem;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .btn-modal-delete:disabled { opacity:.6; cursor:not-allowed; }
+  `],
+})
+export class AdvertiserAdminComponent implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly location = inject(Location);
+  private readonly apiBase = environment.apis?.default?.url || '';
+
+  loading = signal(true);
+  submitting = signal(false);
+  actionLoading = signal(false);
+  showForm = signal(false);
+  formError = signal<string | null>(null);
+  advertisers = signal<AdvertiserDto[]>([]);
+  totalCount = signal(0);
+  currentPage = signal(0);
+  deleteTarget = signal<AdvertiserDto | null>(null);
+  pageSize = 10;
+
+  form: CreateAdvertiserForm = this.getEmptyForm();
+
+  async ngOnInit(): Promise<void> {
+    await this.loadAdvertisers();
+  }
+
+  goBack(): void {
+    this.location.back();
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.totalCount() / this.pageSize) || 1;
+  }
+
+  async loadAdvertisers(): Promise<void> {
+    this.loading.set(true);
+    try {
+      const skip = this.currentPage() * this.pageSize;
+      const res = await this.http.get<{ totalCount: number; items: AdvertiserDto[] }>(
+        `${this.apiBase}/api/app/advertiser?skipCount=${skip}&maxResultCount=${this.pageSize}`
+      ).toPromise();
+      this.advertisers.set(res?.items ?? []);
+      this.totalCount.set(res?.totalCount ?? 0);
+    } catch (e) {
+      console.error('Error loading advertisers:', e);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async nextPage(): Promise<void> {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.update(p => p + 1);
+      await this.loadAdvertisers();
+    }
+  }
+
+  async prevPage(): Promise<void> {
+    if (this.currentPage() > 0) {
+      this.currentPage.update(p => p - 1);
+      await this.loadAdvertisers();
+    }
+  }
+
+  async createAdvertiser(): Promise<void> {
+    this.formError.set(null);
+
+    if (!this.form.name.trim()) {
+      this.formError.set('الاسم مطلوب · Name is required');
+      return;
+    }
+    if (!this.form.contactPhone.trim()) {
+      this.formError.set('رقم الهاتف مطلوب · Phone is required');
+      return;
+    }
+    if (!this.form.contactEmail.trim()) {
+      this.formError.set('البريد الالكتروني مطلوب · Email is required');
+      return;
+    }
+    if (this.form.createUser) {
+      if (!this.form.userName.trim()) {
+        this.formError.set('اسم المستخدم مطلوب · Username is required');
+        return;
+      }
+      if (!this.form.password.trim()) {
+        this.formError.set('كلمة المرور مطلوبة · Password is required');
+        return;
+      }
+    }
+
+    this.submitting.set(true);
+    try {
+      // Step 1: Create the advertiser
+      const body: any = {
+        name: this.form.name.trim(),
+        nameEn: this.form.nameEn.trim() || undefined,
+        type: this.form.type,
+        contactPhone: this.form.contactPhone.trim(),
+        contactEmail: this.form.contactEmail.trim(),
+        description: this.form.description.trim() || undefined,
+        address: this.form.address.trim() || undefined,
+        websiteUrl: this.form.websiteUrl.trim() || undefined,
+      };
+
+      const advertiser = await this.http.post<AdvertiserDto>(
+        `${this.apiBase}/api/app/advertiser`, body
+      ).toPromise();
+
+      // Step 2: If createUser is checked, create ABP user and link
+      if (this.form.createUser && advertiser?.id) {
+        try {
+          const userBody = {
+            userName: this.form.userName.trim(),
+            password: this.form.password,
+            email: this.form.contactEmail.trim(),
+            name: this.form.name.trim(),
+            isActive: true,
+            roleNames: ['ADVERTISER'],
+          };
+          const user = await this.http.post<{ id: string }>(
+            `${this.apiBase}/api/identity/users`, userBody
+          ).toPromise();
+
+          if (user?.id) {
+            // Link user to advertiser
+            await this.http.put(
+              `${this.apiBase}/api/app/advertiser/${advertiser.id}`,
+              { ...body, userId: user.id }
+            ).toPromise();
+          }
+        } catch (userErr: any) {
+          console.error('Error creating user:', userErr);
+          this.formError.set('تم انشاء المعلن لكن فشل انشاء حساب المستخدم · Advertiser created but user creation failed');
+        }
+      }
+
+      // Reset form and reload
+      this.form = this.getEmptyForm();
+      this.showForm.set(false);
+      this.currentPage.set(0);
+      await this.loadAdvertisers();
+    } catch (e: any) {
+      console.error('Error creating advertiser:', e);
+      this.formError.set(e?.error?.error?.message || 'حدث خطا اثناء الحفظ · Error saving advertiser');
+    } finally {
+      this.submitting.set(false);
+    }
+  }
+
+  async approveAdvertiser(id: string): Promise<void> {
+    this.actionLoading.set(true);
+    try {
+      await this.http.post(`${this.apiBase}/api/app/advertiser/${id}/approve`, {}).toPromise();
+      this.advertisers.update(list =>
+        list.map(a => a.id === id ? { ...a, isApproved: true } : a)
+      );
+    } catch (e) {
+      console.error('Error approving advertiser:', e);
+    } finally {
+      this.actionLoading.set(false);
+    }
+  }
+
+  async rejectAdvertiser(id: string): Promise<void> {
+    this.actionLoading.set(true);
+    try {
+      await this.http.post(`${this.apiBase}/api/app/advertiser/${id}/reject`, {}).toPromise();
+      this.advertisers.update(list =>
+        list.map(a => a.id === id ? { ...a, isApproved: false } : a)
+      );
+    } catch (e) {
+      console.error('Error rejecting advertiser:', e);
+    } finally {
+      this.actionLoading.set(false);
+    }
+  }
+
+  confirmDelete(adv: AdvertiserDto): void {
+    this.deleteTarget.set(adv);
+  }
+
+  async deleteAdvertiser(): Promise<void> {
+    const target = this.deleteTarget();
+    if (!target) return;
+
+    this.actionLoading.set(true);
+    try {
+      await this.http.delete(`${this.apiBase}/api/app/advertiser/${target.id}`).toPromise();
+      this.deleteTarget.set(null);
+      this.advertisers.update(list => list.filter(a => a.id !== target.id));
+      this.totalCount.update(c => c - 1);
+    } catch (e) {
+      console.error('Error deleting advertiser:', e);
+    } finally {
+      this.actionLoading.set(false);
+    }
+  }
+
+  getTypeClass(type: number): string {
+    const map: Record<number, string> = {
+      0: 'adv-type-chip type-teacher',
+      1: 'adv-type-chip type-library',
+      2: 'adv-type-chip type-bookstore',
+      3: 'adv-type-chip type-educational',
+      4: 'adv-type-chip type-other',
+    };
+    return map[type] ?? 'adv-type-chip type-other';
+  }
+
+  getTypeLabel(type: number): string {
+    const map: Record<number, string> = {
+      0: 'معلم · Teacher',
+      1: 'مكتبة · Library',
+      2: 'قرطاسية · Bookstore',
+      3: 'مركز تعليمي · Edu Center',
+      4: 'اخرى · Other',
+    };
+    return map[type] ?? 'اخرى';
+  }
+
+  private getEmptyForm(): CreateAdvertiserForm {
+    return {
+      name: '', nameEn: '', type: 1,
+      contactPhone: '', contactEmail: '',
+      description: '', address: '', websiteUrl: '',
+      createUser: false, userName: '', password: '',
+    };
+  }
+}
