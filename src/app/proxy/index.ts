@@ -1,4 +1,5 @@
 import * as Academies from './academies';
+import * as Advertisements from './advertisements';
 import * as Attendances from './attendances';
 import * as Common from './common';
 import * as Controllers from './controllers';
@@ -20,4 +21,4 @@ import * as StudentEnrollments from './student-enrollments';
 import * as Students from './students';
 import * as Teachers from './teachers';
 import * as Volo from './volo';
-export { Academies, Attendances, Common, Controllers, Courses, Domain, Enums, ExamGrades, Exams, Feedbacks, Feeds, Grades, GroupSchedules, Groups, Home, Notifications, Parents, SocialRegistration, StudentEnrollments, Students, Teachers, Volo };
+export { Academies, Advertisements, Attendances, Common, Controllers, Courses, Domain, Enums, ExamGrades, Exams, Feedbacks, Feeds, Grades, GroupSchedules, Groups, Home, Notifications, Parents, SocialRegistration, StudentEnrollments, Students, Teachers, Volo };

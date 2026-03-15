@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import { RestService } from '@abp/ng.core';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
 import { AcademyService } from '@proxy/academies';
@@ -26,8 +25,6 @@ export class TeacherHomeComponent implements OnInit {
   private readonly currentUserService = inject(CurrentUserInfoService);
   private readonly teacherService     = inject(TeacherService);
   private readonly academyService     = inject(AcademyService);
-  private readonly restSvc            = inject(RestService);
-
   loading          = signal(false);
   teacherName      = signal<string>('');
   teacherId        = signal<string | null>(null);
@@ -37,7 +34,9 @@ export class TeacherHomeComponent implements OnInit {
   loadingAcademies = signal(false);
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([this.loadCourses(), this.loadAcademies()]);
+    // Load courses first — academy section filters by teacher's courses
+    await this.loadCourses();
+    await this.loadAcademies();
   }
 
   private async loadCourses(): Promise<void> {
@@ -60,36 +59,52 @@ export class TeacherHomeComponent implements OnInit {
   private async loadAcademies(): Promise<void> {
     this.loadingAcademies.set(true);
     try {
-      const membership = await lastValueFrom(this.academyService.getMyMembership(undefined, { skipHandleError: true })).catch(() => null);
-      if (!membership?.teacherId) {
-        // Check if this teacher owns an academy
-        const ownAcademy = await lastValueFrom(
-          this.restSvc.request<any, AcademyDto>(
-            { method: 'GET', url: '/api/sesha/academies/my-academy' },
-            { apiName: 'Default', skipHandleError: true }
-          )
-        ).catch(() => null);
-        if (ownAcademy) {
-          this.myAcademy.set(ownAcademy);
-          const academyCourses = await lastValueFrom(
-            this.academyService.getAcademyCourses(ownAcademy.id!)
-          ).catch(() => []);
-          this.academyGroups.set([{ academy: ownAcademy, courses: academyCourses || [] }]);
+      const tId = this.teacherId();
+      if (!tId) return;
+
+      // Load all academies visible to this teacher
+      const allAcademies = await lastValueFrom(
+        this.academyService.getList({ skipHandleError: true })
+      ).catch(() => [] as AcademyDto[]);
+
+      if (!allAcademies?.length) return;
+
+      // Filter: only academies the teacher owns (supervisor) or has joined (approved member)
+      const myAcademies: AcademyDto[] = [];
+      for (const a of allAcademies) {
+        if (a.supervisorTeacherId === tId) {
+          this.myAcademy.set(a);
+          myAcademies.push(a);
+          continue;
         }
-        return;
+        // Check membership for non-supervised academies
+        try {
+          const m = await lastValueFrom(
+            this.academyService.getMyMembership(a.id, { skipHandleError: true })
+          );
+          if (m?.teacherId && m.status === 1) { // Approved
+            myAcademies.push(a);
+          }
+        } catch { /* not a member */ }
       }
 
-      // Teacher is a member — load the academy they belong to
-      const academies: AcademyDto[] = await lastValueFrom(this.academyService.getList()).catch(() => []);
+      if (myAcademies.length === 0) return;
 
-      if (academies.length === 0) return;
+      // Get teacher's own course IDs to filter academy courses
+      const teacherCourseIds = new Set(this.courses().map(c => c.id));
 
       const groups: AcademyCourseGroup[] = [];
-      for (const academy of academies.slice(0, 5)) {
+      for (const academy of myAcademies) {
         try {
-          const courses = await lastValueFrom(this.academyService.getAcademyCourses(academy.id!, { skipHandleError: true }));
-          if (courses?.length > 0) {
-            groups.push({ academy, courses });
+          const allCourses = await lastValueFrom(
+            this.academyService.getAcademyCourses(academy.id!, { skipHandleError: true })
+          );
+          // Only keep courses assigned to this teacher
+          const teacherCourses = (allCourses || []).filter(c => {
+            return c.courseId && teacherCourseIds.has(c.courseId);
+          });
+          if (teacherCourses.length > 0) {
+            groups.push({ academy, courses: teacherCourses });
           }
         } catch { /* silent */ }
       }

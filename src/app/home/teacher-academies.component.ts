@@ -5,7 +5,8 @@ import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { AcademyService } from '@proxy/academies';
-import type { AcademyDto } from '@proxy/academies/models';
+import type { AcademyDto, AcademyMemberDto } from '@proxy/academies/models';
+import { CurrentUserInfoService } from '@proxy/common';
 
 interface EditForm {
   nameAr: string;
@@ -92,13 +93,21 @@ interface EditForm {
                 <div class="academy-info">
                   <div class="name-row">
                     <h4>{{ a.nameAr || a.nameEn }}</h4>
+                    @if (isSupervisor(a)) {
+                      <span class="supervisor-badge">مشرف · Supervisor</span>
+                    } @else if (isMember(a)) {
+                      <span class="member-badge">عضو · Member</span>
+                    } @else if (isPending(a)) {
+                      <span class="pending-badge">طلب معلق · Pending</span>
+                    }
                     @if (!a.isActive) {
                       <span class="inactive-badge">غير نشط</span>
-                    } @else {
-                      <span class="active-badge">نشط</span>
                     }
                   </div>
                   @if (a.nameAr && a.nameEn) { <p class="name-en">{{ a.nameEn }}</p> }
+                  @if (a.supervisorName && !isSupervisor(a)) {
+                    <p class="supervisor-name"><i class="fas fa-user-shield"></i> {{ a.supervisorName }}</p>
+                  }
                   @if (a.code) { <span class="code-badge">{{ a.code }}</span> }
                   <div class="stats">
                     <span><i class="fas fa-book-open"></i>{{ a.courseCount || 0 }} مقرر</span>
@@ -108,24 +117,49 @@ interface EditForm {
                 <i class="fas fa-chevron-left nav-arrow"></i>
               </div>
 
-              <!-- Action strip -->
-              <div class="action-strip" (click)="$event.stopPropagation()">
-                <button class="action-btn edit-btn" (click)="startEdit(a)">
-                  <i class="fas fa-pen"></i> تعديل
-                </button>
-                <button class="action-btn"
-                        [class.deactivate-btn]="a.isActive"
-                        [class.activate-btn]="!a.isActive"
-                        [disabled]="togglingId() === a.id"
-                        (click)="toggleActive(a)">
-                  @if (togglingId() === a.id) { <span class="spinner-sm"></span> }
-                  @else { <i [class]="a.isActive ? 'fas fa-eye-slash' : 'fas fa-eye'"></i> }
-                  {{ a.isActive ? 'إخفاء' : 'تفعيل' }}
-                </button>
-                <button class="action-btn manage-btn" (click)="goToManage(a)">
-                  <i class="fas fa-cog"></i> إدارة
-                </button>
-              </div>
+              <!-- Action strip: supervisor actions -->
+              @if (isSupervisor(a)) {
+                <div class="action-strip" (click)="$event.stopPropagation()">
+                  <button class="action-btn edit-btn" (click)="startEdit(a)">
+                    <i class="fas fa-pen"></i> تعديل · Edit
+                  </button>
+                  <button class="action-btn"
+                          [class.deactivate-btn]="a.isActive"
+                          [class.activate-btn]="!a.isActive"
+                          [disabled]="togglingId() === a.id"
+                          (click)="toggleActive(a)">
+                    @if (togglingId() === a.id) { <span class="spinner-sm"></span> }
+                    @else { <i [class]="a.isActive ? 'fas fa-eye-slash' : 'fas fa-eye'"></i> }
+                    {{ a.isActive ? 'إخفاء' : 'تفعيل' }}
+                  </button>
+                  <button class="action-btn manage-btn" (click)="goToManage(a)">
+                    <i class="fas fa-cog"></i> إدارة · Manage
+                  </button>
+                </div>
+              }
+
+              <!-- Action strip: not a member yet — show Join button -->
+              @if (!isSupervisor(a) && !isMember(a) && !isPending(a)) {
+                <div class="action-strip" (click)="$event.stopPropagation()">
+                  <button class="action-btn join-btn"
+                          [disabled]="joiningId() === a.id"
+                          (click)="requestJoin(a)">
+                    @if (joiningId() === a.id) { <span class="spinner-sm"></span> }
+                    @else { <i class="fas fa-user-plus"></i> }
+                    طلب الانضمام · Join
+                  </button>
+                </div>
+              }
+
+              <!-- Action strip: pending request -->
+              @if (isPending(a)) {
+                <div class="action-strip" (click)="$event.stopPropagation()">
+                  <div class="action-btn pending-info">
+                    <i class="fas fa-hourglass-half"></i>
+                    تم إرسال الطلب · Request Sent
+                  </div>
+                </div>
+              }
 
             </div>
           }
@@ -239,8 +273,22 @@ interface EditForm {
     .academy-avatar.avatar-inactive { background:linear-gradient(135deg,#9090a0,#7a7a8a); }
 
     .academy-info { flex:1; min-width:0; }
-    .name-row { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-bottom:.15rem; }
+    .name-row { display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; margin-bottom:.15rem; }
     .academy-info h4 { margin:0; font-size:1rem; font-weight:600; color:#1a1a2e; }
+
+    .supervisor-badge {
+      font-size:.6rem; font-weight:700; padding:.12rem .45rem; border-radius:20px;
+      background:linear-gradient(135deg,rgba(102,126,234,.15),rgba(118,75,162,.15));
+      color:#764ba2; flex-shrink:0;
+    }
+    .member-badge {
+      font-size:.6rem; font-weight:700; padding:.12rem .45rem; border-radius:20px;
+      background:rgba(16,185,129,.12); color:#059669; flex-shrink:0;
+    }
+    .pending-badge {
+      font-size:.6rem; font-weight:700; padding:.12rem .45rem; border-radius:20px;
+      background:rgba(245,158,11,.12); color:#d97706; flex-shrink:0;
+    }
     .active-badge {
       font-size:.62rem; font-weight:700; padding:.1rem .45rem; border-radius:20px;
       background:rgba(16,185,129,.12); color:#059669; flex-shrink:0;
@@ -250,6 +298,11 @@ interface EditForm {
       background:rgba(239,68,68,.1); color:#dc2626; flex-shrink:0;
     }
     .name-en { font-size:.78rem; color:#6c757d; margin:.1rem 0 .2rem; }
+    .supervisor-name {
+      font-size:.72rem; color:#764ba2; margin:.1rem 0 .2rem;
+      display:flex; align-items:center; gap:.3rem;
+    }
+    .supervisor-name i { font-size:.65rem; }
     .code-badge {
       display:inline-block; background:rgba(102,126,234,.1); color:#667eea;
       font-size:.7rem; font-weight:600; padding:.1rem .45rem; border-radius:10px; margin-bottom:.3rem;
@@ -278,6 +331,8 @@ interface EditForm {
     .deactivate-btn { color:#d97706; }
     .activate-btn   { color:#059669; }
     .manage-btn     { color:#764ba2; }
+    .join-btn       { color:#10b981; }
+    .pending-info   { color:#d97706; cursor:default; }
 
     .spinner-sm {
       width:13px; height:13px; border:2px solid currentColor;
@@ -288,8 +343,9 @@ interface EditForm {
   `],
 })
 export class TeacherAcademiesComponent implements OnInit {
-  private readonly router        = inject(Router);
-  private readonly academyService = inject(AcademyService);
+  private readonly router          = inject(Router);
+  private readonly academyService  = inject(AcademyService);
+  private readonly currentUserSvc  = inject(CurrentUserInfoService);
 
   loading    = signal(true);
   academies  = signal<AcademyDto[]>([]);
@@ -297,49 +353,74 @@ export class TeacherAcademiesComponent implements OnInit {
   saving     = signal(false);
   editError  = signal<string | null>(null);
   togglingId = signal<string | null>(null);
+  joiningId  = signal<string | null>(null);
+  teacherId  = signal<string | null>(null);
+  membershipMap = signal<Record<string, 'approved' | 'pending'>>({});
 
   editForm: EditForm = { nameAr: '', nameEn: '', description: '' };
 
   async ngOnInit(): Promise<void> {
-    await this.loadAcademies();
+    await this.loadData();
   }
 
-  private async loadAcademies(): Promise<void> {
+  private async loadData(): Promise<void> {
     this.loading.set(true);
     try {
-      const result: AcademyDto[] = [];
+      // Get current teacher's actorId
+      const userInfo = await lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo());
+      this.teacherId.set(userInfo?.actorId ?? null);
 
-      // 1. Get supervised academy (using proxy service)
-      const ownAcademy = await lastValueFrom(
-        this.academyService.getMyAcademy({ skipHandleError: true })
-      ).catch(() => null);
-      if (ownAcademy?.id) result.push(ownAcademy);
+      // Load all academies
+      const allAcademies = await lastValueFrom(
+        this.academyService.getList({ skipHandleError: true })
+      ).catch(() => [] as AcademyDto[]);
+      this.academies.set(allAcademies || []);
 
-      // 2. Get membership (academy the teacher joined)
-      const membership = await lastValueFrom(
-        this.academyService.getMyMembership(undefined, { skipHandleError: true })
-      ).catch(() => null);
-      if (membership?.academyId && !result.some(a => a.id === membership.academyId)) {
-        const memberAcademy = await lastValueFrom(
-          this.academyService.get(membership.academyId, { skipHandleError: true })
-        ).catch(() => null);
-        if (memberAcademy?.id) result.push(memberAcademy);
+      // For non-supervised academies, check membership status
+      const tId = this.teacherId();
+      if (tId && allAcademies?.length) {
+        const map: Record<string, 'approved' | 'pending'> = {};
+        for (const a of allAcademies) {
+          if (a.supervisorTeacherId === tId) continue; // supervisor, no need to check
+          try {
+            const membership = await lastValueFrom(
+              this.academyService.getMyMembership(a.id, { skipHandleError: true })
+            );
+            if (membership?.teacherId) {
+              map[a.id!] = membership.status === 1 ? 'approved' : (membership.status === 0 ? 'pending' : 'approved');
+            }
+          } catch { /* not a member */ }
+        }
+        this.membershipMap.set(map);
       }
-
-      // 3. If still empty, try loading all academies (teacher sees all)
-      if (result.length === 0) {
-        const allAcademies = await lastValueFrom(
-          this.academyService.getList({ skipHandleError: true })
-        ).catch(() => []);
-        this.academies.set(allAcademies || []);
-        return;
-      }
-
-      this.academies.set(result);
     } catch {
       this.academies.set([]);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  isSupervisor(a: AcademyDto): boolean {
+    return !!this.teacherId() && a.supervisorTeacherId === this.teacherId();
+  }
+
+  isMember(a: AcademyDto): boolean {
+    return this.membershipMap()[a.id!] === 'approved';
+  }
+
+  isPending(a: AcademyDto): boolean {
+    return this.membershipMap()[a.id!] === 'pending';
+  }
+
+  async requestJoin(a: AcademyDto): Promise<void> {
+    this.joiningId.set(a.id);
+    try {
+      await lastValueFrom(this.academyService.requestToJoin(a.id!));
+      this.membershipMap.update(m => ({ ...m, [a.id!]: 'pending' }));
+    } catch (err: any) {
+      console.error('Error requesting to join:', err);
+    } finally {
+      this.joiningId.set(null);
     }
   }
 
@@ -378,10 +459,7 @@ export class TeacherAcademiesComponent implements OnInit {
   async toggleActive(a: AcademyDto): Promise<void> {
     this.togglingId.set(a.id);
     try {
-      await lastValueFrom(
-        this.academyService.setActive(a.id!, !a.isActive
-        )
-      );
+      await lastValueFrom(this.academyService.setActive(a.id!, !a.isActive));
       this.academies.update(list => list.map(x => x.id === a.id ? { ...x, isActive: !a.isActive } : x));
     } catch { /* silent */ }
     finally { this.togglingId.set(null); }

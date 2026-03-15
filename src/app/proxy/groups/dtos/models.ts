@@ -27,5 +27,6 @@ export interface GroupWithSchedulesDto {
   groupCode?: string;
   courseId?: string;
   courseName?: string;
+  gradeName?: string;
   schedules: GroupScheduleDto[];
 }

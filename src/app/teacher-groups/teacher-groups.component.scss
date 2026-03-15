@@ -384,6 +384,7 @@ $days: (
 
   &.chip-code   { background: #f3f4f6; color: $text-mid; font-family: monospace; }
   &.chip-course { background: rgba($grad-start, 0.08); color: $grad-start; i { color: $grad-start; } }
+  &.chip-grade  { background: rgba(#10b981, 0.1); color: #059669; i { color: #059669; } }
 }
 
 .sched-badge {

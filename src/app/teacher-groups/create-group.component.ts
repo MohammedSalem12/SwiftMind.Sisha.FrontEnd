@@ -15,85 +15,183 @@ import { CurrentUserInfoService } from '@proxy/common';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="page">
-      <div class="form-card">
-        <div class="card-header-section">
-          <button class="btn-back" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
-          <div>
-            <h2>إنشاء مجموعة جديدة</h2>
-            <p class="subtitle">أضف مجموعة جديدة لأحد المقررات المسندة إليك</p>
-          </div>
-        </div>
+    <div class="create-page" dir="rtl">
 
-        <form class="card-body-section" (ngSubmit)="submit()">
-          <div class="field">
-            <label>اسم المجموعة <span class="required">*</span></label>
-            <input
+      <!-- Hero header -->
+      <div class="hero">
+        <div class="hero-blob b1"></div>
+        <div class="hero-blob b2"></div>
+        <button class="back-btn" (click)="goBack()">
+          <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="hero-text">
+          <h1>إنشاء مجموعة</h1>
+          <p>Create Group · أضف مجموعة جديدة لأحد المقررات</p>
+        </div>
+        <div class="hero-icon">
+          <i class="fas fa-layer-group"></i>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="form-wrap">
+        <form (ngSubmit)="submit()">
+
+          <!-- Group name -->
+          <div class="field-group">
+            <label class="field-label">
+              <i class="fas fa-pen-fancy"></i> اسم المجموعة <span class="req">*</span>
+            </label>
+            <input class="field-input"
               name="name"
               [(ngModel)]="name"
               required
               placeholder="مثال: مجموعة أ - رياضيات" />
           </div>
 
-          <div class="field">
-            <label>المقرر الدراسي <span class="required">*</span></label>
+          <!-- Course selection -->
+          <div class="field-group">
+            <label class="field-label">
+              <i class="fas fa-book-open"></i> المقرر الدراسي <span class="req">*</span>
+            </label>
             @if (lockedCourseId) {
               <div class="locked-course">
-                <i class="fas fa-lock"></i>
+                <div class="locked-icon">
+                  <i class="fas fa-lock"></i>
+                </div>
                 <span>{{ getLockedCourseName() }}</span>
               </div>
+            } @else if (loadingCourses()) {
+              <div class="loading-field">
+                <div class="spinner-sm"></div>
+                <span>جاري تحميل المقررات...</span>
+              </div>
             } @else {
-              <select name="courseId" [(ngModel)]="courseId" required>
+              <select class="field-input" name="courseId" [(ngModel)]="courseId" required>
                 <option value="">-- اختر المقرر --</option>
-                <option *ngFor="let c of courses()" [value]="c.id">
-                  {{ c.nameAr }} ({{ c.code }})
-                </option>
+                @for (c of courses(); track c.id) {
+                  <option [value]="c.id">
+                    {{ c.nameAr || c.nameEn }} ({{ c.code }})
+                  </option>
+                }
               </select>
+              @if (courses().length === 0) {
+                <p class="hint-text">
+                  <i class="fas fa-info-circle"></i>
+                  لا توجد مقررات مسندة إليك حالياً
+                </p>
+              }
             }
           </div>
 
-          <div *ngIf="errorMsg()" class="error-msg">
-            <i class="fas fa-exclamation-circle me-1"></i>
-            {{ errorMsg() }}
+          <!-- Selected course preview -->
+          @if (courseId && !lockedCourseId) {
+            <div class="course-preview">
+              <i class="fas fa-book"></i>
+              <span>{{ getSelectedCourseName() }}</span>
+            </div>
+          }
+
+          <!-- Error -->
+          @if (errorMsg()) {
+            <div class="error-banner">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ errorMsg() }}
+            </div>
+          }
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button class="btn-submit" type="submit"
+              [disabled]="saving() || !name || !courseId">
+              @if (saving()) {
+                <div class="spinner"></div>
+                <span>جاري الإنشاء...</span>
+              } @else {
+                <i class="fas fa-plus"></i>
+                <span>إنشاء المجموعة</span>
+              }
+            </button>
+            <button class="btn-cancel" type="button" (click)="goBack()">إلغاء</button>
           </div>
 
-          <div class="actions">
-            <button class="btn-primary" type="submit" [disabled]="saving() || !name || !courseId">
-              <i class="fas fa-plus me-1"></i>
-              {{ saving() ? 'جاري الحفظ...' : 'إنشاء المجموعة' }}
-            </button>
-            <button type="button" class="btn-outline" (click)="goBack()">إلغاء</button>
-          </div>
         </form>
       </div>
     </div>
   `,
   styles: [`
-    .page { display: flex; justify-content: center; padding: 2rem; background: #f8f9fa; min-height: 100vh; }
-    .form-card { width: 100%; max-width: 600px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
-    .card-header-section { padding: 1.5rem; background: var(--ngx-hero-gradient); color: white; display: flex; align-items: center; gap: 1rem; }
-    .card-header-section h2 { margin: 0; font-size: 1.5rem; }
-    .card-header-section .subtitle { margin: 0.25rem 0 0; opacity: 0.85; font-size: 0.9rem; }
-    .btn-back { background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; }
-    .card-body-section { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
-    .field { display: flex; flex-direction: column; }
-    .field label { font-weight: 600; margin-bottom: 0.5rem; color: #333; }
-    .field .required { color: #dc3545; }
-    .field input, .field select { padding: 0.75rem; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 1rem; }
-    .field input:focus, .field select:focus { outline: none; border-color: var(--ngx-primary); box-shadow: 0 0 0 3px rgba(51, 102, 255,0.15); }
-    .error-msg { color: #dc3545; background: #fff5f5; padding: 0.75rem; border-radius: 8px; border: 1px solid #ffe0e0; }
+    .create-page { direction: rtl; min-height: 100vh; background: #f4f5fb; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+
+    /* Hero */
+    .hero { background: linear-gradient(145deg, #667eea 0%, #764ba2 100%); padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 1.5rem; position: relative; overflow: hidden; display: flex; align-items: center; gap: 0.875rem; }
+    .hero-blob { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.07); pointer-events: none; }
+    .b1 { width: 200px; height: 200px; top: -70px; right: -50px; }
+    .b2 { width: 130px; height: 130px; bottom: -50px; left: -25px; }
+    .back-btn { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.25); color: #fff; font-size: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1; transition: background 0.15s; }
+    .back-btn:active { background: rgba(255,255,255,0.28); }
+    .hero-text { flex: 1; z-index: 1; min-width: 0; }
+    .hero-text h1 { font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0 0 0.15rem; }
+    .hero-text p { font-size: 0.72rem; color: rgba(255,255,255,0.65); margin: 0; }
+    .hero-icon { z-index: 1; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .hero-icon i { font-size: 1.3rem; color: #fff; }
+
+    /* Form */
+    .form-wrap { padding: 1.25rem 1rem; }
+    .field-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+    .field-label { font-size: 0.8rem; font-weight: 700; color: #4a4a6a; display: flex; align-items: center; gap: 0.35rem; }
+    .field-label i { color: #667eea; font-size: 0.72rem; }
+    .req { color: #ef4444; }
+    .field-input { padding: 0.75rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 0.95rem; background: #fff; width: 100%; box-sizing: border-box; transition: border-color 0.15s, box-shadow 0.15s; direction: rtl; font-family: inherit; }
+    .field-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+    select.field-input { appearance: none; -webkit-appearance: none; cursor: pointer; }
+
     .locked-course {
-      display: flex; align-items: center; gap: 0.5rem;
-      padding: 0.75rem; border: 1.5px solid #e0e0f0; border-radius: 10px;
-      background: #f8f8ff; color: #667eea; font-weight: 600; font-size: 0.95rem;
+      display: flex; align-items: center; gap: 0.65rem;
+      padding: 0.75rem 1rem; border: 1.5px solid rgba(102,126,234,0.25);
+      border-radius: 12px; background: rgba(102,126,234,0.06);
+      font-weight: 600; font-size: 0.92rem; color: #4a4a6a;
     }
-    .locked-course i { font-size: 0.8rem; color: #9ca3af; }
-    .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
-    .btn-primary { background: var(--ngx-hero-gradient); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-outline { background: transparent; border: 1px solid #ccc; padding: 0.75rem 1.5rem; border-radius: 10px; cursor: pointer; }
+    .locked-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .locked-icon i { font-size: 0.7rem; color: #fff; }
+
+    .loading-field {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.75rem 1rem; background: #f9fafb;
+      border: 1.5px solid #e5e7eb; border-radius: 12px;
+      font-size: 0.85rem; color: #6b7280;
+    }
+
+    .hint-text {
+      font-size: 0.78rem; color: #9ca3af; margin: 0.35rem 0 0;
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .hint-text i { font-size: 0.7rem; color: #667eea; }
+
+    .course-preview {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1rem; background: #f0f4ff;
+      border: 1px solid #c7d7fd; border-radius: 12px;
+      font-size: 0.875rem; font-weight: 600; color: #3730a3;
+      margin-bottom: 1rem;
+    }
+    .course-preview i { font-size: 0.8rem; color: #667eea; }
+
+    .error-banner { display: flex; align-items: center; gap: 0.6rem; padding: 0.875rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; color: #dc2626; font-size: 0.85rem; margin-bottom: 1rem; }
+    .error-banner i { font-size: 1rem; flex-shrink: 0; }
+
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+    .btn-submit { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: linear-gradient(145deg, #667eea, #764ba2); color: #fff; border: none; padding: 0.875rem; border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; min-height: 50px; box-shadow: 0 4px 14px rgba(102,126,234,0.35); transition: opacity 0.15s; }
+    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+    .btn-cancel { padding: 0.875rem 1.25rem; border-radius: 12px; border: 1.5px solid #e5e7eb; background: #fff; color: #6b7280; font-size: 0.9rem; font-weight: 600; cursor: pointer; min-height: 50px; }
+
+    .spinner { width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    .spinner-sm { width: 14px; height: 14px; border: 2px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   `],
 })
 export class CreateGroupComponent implements OnInit {
@@ -106,6 +204,7 @@ export class CreateGroupComponent implements OnInit {
 
   courses = signal<CourseDto[]>([]);
   saving = signal(false);
+  loadingCourses = signal(false);
   errorMsg = signal<string | null>(null);
   teacherId = '';
   name = '';
@@ -113,7 +212,6 @@ export class CreateGroupComponent implements OnInit {
   lockedCourseId = '';
 
   async ngOnInit() {
-    // Pre-select and lock course from query params if provided
     const params = this.route.snapshot.queryParamMap;
     this.courseId = params.get('courseId') || '';
     if (this.courseId) this.lockedCourseId = this.courseId;
@@ -122,15 +220,20 @@ export class CreateGroupComponent implements OnInit {
 
   getLockedCourseName(): string {
     const c = this.courses().find(c => c.id === this.lockedCourseId);
-    return c ? `${c.nameAr} (${c.code})` : this.lockedCourseId;
+    return c ? `${c.nameAr || c.nameEn} (${c.code})` : this.lockedCourseId;
+  }
+
+  getSelectedCourseName(): string {
+    const c = this.courses().find(c => c.id === this.courseId);
+    return c ? `${c.nameAr || c.nameEn} (${c.code})` : '';
   }
 
   private async loadData() {
+    this.loadingCourses.set(true);
     try {
       const userInfo = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
       this.teacherId = userInfo?.actorId || '';
 
-      // Load teacher's own courses + any academy courses they supervise
       const [teacherCourses, myAcademy] = await Promise.all([
         lastValueFrom(this.courseService.getCoursesForTeacher()).catch(() => [] as CourseDto[]),
         lastValueFrom(this.academyService.getMyAcademy()).catch(() => null),
@@ -159,6 +262,8 @@ export class CreateGroupComponent implements OnInit {
       this.courses.set(merged);
     } catch (err) {
       console.error('Error loading data:', err);
+    } finally {
+      this.loadingCourses.set(false);
     }
   }
 
