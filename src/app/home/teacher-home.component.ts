@@ -5,8 +5,13 @@ import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
 import { AcademyService } from '@proxy/academies';
+import { SessionService } from '@proxy/groups';
 import type { CourseDto } from '@proxy/courses/dtos/models';
 import type { AcademyDto } from '@proxy/academies/models';
+import type { NextSessionDto } from '@proxy/groups/dtos/models';
+import { SessionTimerComponent } from '../shared/components/session-timer.component';
+import { OfflineCacheService } from '../shared/services/offline-cache.service';
+import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 
 interface AcademyCourseGroup {
   academy: AcademyDto;
@@ -16,7 +21,7 @@ interface AcademyCourseGroup {
 @Component({
   selector: 'app-teacher-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent],
   templateUrl: './teacher-home.component.html',
   styleUrls: ['./teacher-home.component.scss'],
 })
@@ -25,6 +30,9 @@ export class TeacherHomeComponent implements OnInit {
   private readonly currentUserService = inject(CurrentUserInfoService);
   private readonly teacherService     = inject(TeacherService);
   private readonly academyService     = inject(AcademyService);
+  private readonly sessionService     = inject(SessionService);
+  private readonly cache              = inject(OfflineCacheService);
+
   loading          = signal(false);
   teacherName      = signal<string>('');
   teacherId        = signal<string | null>(null);
@@ -32,11 +40,38 @@ export class TeacherHomeComponent implements OnInit {
   academyGroups    = signal<AcademyCourseGroup[]>([]);
   myAcademy        = signal<AcademyDto | null>(null);
   loadingAcademies = signal(false);
+  nextSession      = signal<NextSessionDto | null>(null);
+  offline            = signal(false);
+  offlineLastUpdated = signal('');
+  // Set of courseIds this teacher is assigned to within academies
+  assignedAcademyCourseIds = signal<Set<string>>(new Set());
+
+  // Collapse/expand state
+  coursesExpanded    = signal(true);
+  academyExpanded    = signal<Record<string, boolean>>({});
+
+  private readonly CACHE_KEY = 'teacher_home';
 
   async ngOnInit(): Promise<void> {
     // Load courses first — academy section filters by teacher's courses
     await this.loadCourses();
-    await this.loadAcademies();
+    if (this.offline()) return; // loadCourses failed and restored cache
+    await Promise.all([this.loadAcademies(), this.loadNextSession()]);
+    // Cache successful data
+    this.cache.set(this.CACHE_KEY, {
+      teacherName: this.teacherName(),
+      teacherId: this.teacherId(),
+      courses: this.courses(),
+      academyGroups: this.academyGroups(),
+      myAcademy: this.myAcademy(),
+    });
+  }
+
+  private async loadNextSession(): Promise<void> {
+    try {
+      const session = await lastValueFrom(this.sessionService.getNextSession({ skipHandleError: true }));
+      this.nextSession.set(session ?? null);
+    } catch { /* no sessions */ }
   }
 
   private async loadCourses(): Promise<void> {
@@ -51,8 +86,22 @@ export class TeacherHomeComponent implements OnInit {
       this.courses.set(courses || []);
     } catch (error) {
       console.error('Error loading teacher courses:', error);
+      this.restoreFromCache();
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private restoreFromCache(): void {
+    const cached = this.cache.get<any>(this.CACHE_KEY);
+    if (cached) {
+      this.teacherName.set(cached.teacherName || '');
+      this.teacherId.set(cached.teacherId || null);
+      this.courses.set(cached.courses || []);
+      this.academyGroups.set(cached.academyGroups || []);
+      this.myAcademy.set(cached.myAcademy || null);
+      this.offline.set(true);
+      this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
     }
   }
 
@@ -109,6 +158,25 @@ export class TeacherHomeComponent implements OnInit {
         } catch { /* silent */ }
       }
       this.academyGroups.set(groups);
+
+      // Load course-teacher assignments to know which courses this teacher can act on
+      const assignedIds = new Set<string>();
+      for (const academy of myAcademies) {
+        // Supervisor can act on ALL courses
+        if (academy.supervisorTeacherId === tId) {
+          const acCourses = groups.find(g => g.academy.id === academy.id)?.courses || [];
+          acCourses.forEach(c => assignedIds.add(c.courseId ?? c.id));
+          continue;
+        }
+        // Member: only assigned courses
+        try {
+          const assignments = await lastValueFrom(
+            this.academyService.getMyAcademyCourseAssignments(academy.id!, { skipHandleError: true })
+          );
+          (assignments || []).forEach((a: any) => assignedIds.add(a.courseId));
+        } catch { /* silent */ }
+      }
+      this.assignedAcademyCourseIds.set(assignedIds);
     } catch { /* silent — teacher may not be in any academy */ } finally {
       this.loadingAcademies.set(false);
     }
@@ -123,12 +191,29 @@ export class TeacherHomeComponent implements OnInit {
     this.router.navigate(['/teacher/qr-codes'], { queryParams: { courseId: course.id } });
   }
 
+  goToProfile(): void {
+    this.router.navigate(['/teacher/profile']);
+  }
+
+  goTodaySessions(): void {
+    this.router.navigate(['/teacher/today-sessions']);
+  }
+
   goToEnroll(): void {
     this.router.navigate(['/teacher/enroll']);
   }
 
+  goToAcademies(): void {
+    this.router.navigate(['/teacher/academies']);
+  }
+
   goToReports(): void {
     this.router.navigate(['/reports/absence']);
+  }
+
+  isAcademyCourseAssigned(course: any): boolean {
+    const id = course.courseId ?? course.id;
+    return this.assignedAcademyCourseIds().has(id);
   }
 
   selectAcademyCourse(course: any): void {
@@ -155,6 +240,18 @@ export class TeacherHomeComponent implements OnInit {
     if (id) this.router.navigate(['/marks-entry'], {
       queryParams: { courseId: id, ...(academyId ? { academyId } : {}) }
     });
+  }
+
+  toggleCourses(): void {
+    this.coursesExpanded.update(v => !v);
+  }
+
+  toggleAcademy(id: string): void {
+    this.academyExpanded.update(map => ({ ...map, [id]: !(map[id] ?? true) }));
+  }
+
+  isAcademyExpanded(id: string): boolean {
+    return this.academyExpanded()[id] ?? true;
   }
 
   trackById = (_: number, item: any) => item.id;

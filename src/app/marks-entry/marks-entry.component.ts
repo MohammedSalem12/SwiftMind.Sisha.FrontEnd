@@ -108,6 +108,12 @@ export class MarksEntryComponent implements OnInit {
   ungradedCount = computed(() => this.students().filter(s => s.savedGrade === null).length);
   totalCount    = computed(() => this.students().length);
 
+  // Display helpers
+  selectedCourseName = computed(() => {
+    const course = this.selectedCourse();
+    return course?.nameAr || course?.nameEn || '';
+  });
+
   // Academy helpers
   isAcademyCourse = computed(() => {
     const course = this.selectedCourse();

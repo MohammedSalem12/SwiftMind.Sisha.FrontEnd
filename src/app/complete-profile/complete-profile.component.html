@@ -1,102 +1,108 @@
-<div class="reg-page" dir="rtl">
+<div class="cp-page" dir="rtl">
 
-  <!-- Background blobs -->
-  <div class="bg-blob blob-1"></div>
-  <div class="bg-blob blob-2"></div>
-
-  <div class="reg-card">
-
-    <!-- Header -->
-    <div class="reg-header">
-      <div class="logo-wrap">
-        <img src="/assets/images/logo/logo.png" alt="SwiftMind" class="reg-logo" />
+  <!-- Gradient hero -->
+  <div class="cp-hero">
+    <div class="hero-blob hero-blob-1"></div>
+    <div class="hero-blob hero-blob-2"></div>
+    <div class="hero-content">
+      <div class="hero-logo">
+        <img src="/assets/images/logo/logo-light.png" alt="SwiftMind" />
       </div>
-      <h1>SwiftMind</h1>
-      <p>أكمل إنشاء حسابك</p>
+      <h1 class="hero-title">أكمل حسابك</h1>
+      <p class="hero-sub">Complete your profile</p>
     </div>
 
+    <!-- Step indicator -->
+    <div class="step-dots">
+      <span class="dot" [class.dot--active]="step() === 'role'" [class.dot--done]="step() !== 'role'"></span>
+      <span class="dot-line" [class.dot-line--done]="step() !== 'role'"></span>
+      <span class="dot" [class.dot--active]="step() === 'form'" [class.dot--done]="step() === 'success'"></span>
+      <span class="dot-line" [class.dot-line--done]="step() === 'success'"></span>
+      <span class="dot" [class.dot--active]="step() === 'success'"></span>
+    </div>
+  </div>
+
+  <div class="cp-body">
+
     <!-- ═══════════ STEP 1: Role Selection ═══════════ -->
-    @if (step() === 1) {
-      <div class="reg-body">
-        <div class="step-title">
-          <i class="fas fa-user-circle"></i>
-          اختر نوع حسابك
+    @if (step() === 'role') {
+      <div class="section-enter">
+        <div class="section-heading">
+          <span class="heading-ar">اختر نوع حسابك</span>
+          <span class="heading-en">Choose your account type</span>
         </div>
 
         <div class="role-grid">
-          @for (role of roles; track role.type) {
-            <button
-              class="role-card"
-              [style.--card-color]="role.color"
-              [style.--card-bg]="role.bg"
-              [style.--card-border]="role.border"
-              (click)="selectType(role.type)"
-              type="button">
-              <div class="role-icon">
+          @for (role of roles; track role.type; let i = $index) {
+            <button class="role-card role-card--v{{i}}" (click)="selectType(role.type)" type="button">
+              <div class="role-card-icon">
                 <i class="fas" [class]="'fas ' + role.icon"></i>
               </div>
-              <div class="role-text">
-                <span class="role-label">{{ role.label }}</span>
-                <span class="role-desc">{{ role.description }}</span>
+              <div class="role-card-text">
+                <span class="role-ar">{{ role.labelAr }}</span>
+                <span class="role-en">{{ role.labelEn }}</span>
+                <span class="role-desc">{{ role.descAr }}</span>
+                <span class="role-desc-en">{{ role.descEn }}</span>
               </div>
-              <i class="fas fa-chevron-left role-arrow"></i>
+              <div class="role-card-arrow">
+                <i class="fas fa-chevron-left"></i>
+              </div>
             </button>
           }
         </div>
 
         <button class="btn-logout" (click)="logout()" type="button">
           <i class="fas fa-sign-out-alt"></i>
-          تسجيل الخروج
+          <span>تسجيل الخروج · Logout</span>
         </button>
       </div>
     }
 
     <!-- ═══════════ STEP 2: Form ═══════════ -->
-    @if (step() === 2) {
-      <div class="reg-body">
+    @if (step() === 'form') {
+      <div class="section-enter">
 
-        <!-- Selected role badge -->
+        <!-- Selected role chip + back -->
         @if (getSelectedRole(); as role) {
-          <div class="selected-role-bar"
-               [style.background]="role.bg"
-               [style.border-color]="role.border">
-            <button class="back-btn" (click)="back()" type="button">
+          <div class="selected-chip">
+            <button class="chip-back" (click)="back()" type="button">
               <i class="fas fa-arrow-right"></i>
             </button>
-            <i class="fas role-badge-icon" [class]="'fas ' + role.icon" [style.color]="role.color"></i>
-            <span [style.color]="role.color">{{ role.label }}</span>
+            <div class="chip-icon chip-icon--v{{ roles.indexOf(role) }}">
+              <i class="fas" [class]="'fas ' + role.icon"></i>
+            </div>
+            <div class="chip-label">
+              <span>{{ role.labelAr }}</span>
+              <small>{{ role.labelEn }}</small>
+            </div>
           </div>
         }
 
         <form (ngSubmit)="submit()" autocomplete="off">
 
-          <!-- Email (read-only, pre-filled) -->
+          <!-- Email (read-only) -->
           @if (socialEmail()) {
-            <div class="field-group">
+            <div class="field">
               <label>
                 <i class="fas fa-envelope"></i>
-                البريد الإلكتروني
+                البريد الإلكتروني · Email
               </label>
-              <input
-                type="email"
-                class="field-input field-readonly"
-                [value]="socialEmail()"
-                readonly />
+              <input type="email" class="field-input field-input--readonly" [value]="socialEmail()" readonly />
             </div>
           }
 
-          <!-- Full Name (pre-filled from social login) -->
-          <div class="field-group">
+          <!-- Full Name -->
+          <div class="field">
             <label for="fullName">
               <i class="fas fa-user"></i>
-              الاسم الكامل
+              الاسم الكامل · Full Name
             </label>
             <input
               id="fullName"
               name="fullName"
               type="text"
               class="field-input"
-              placeholder="أدخل اسمك الكامل"
+              placeholder="أدخل اسمك الكامل · Enter full name"
               [(ngModel)]="form.fullName"
               required
               autocomplete="name" />
@@ -104,24 +110,24 @@
 
           <!-- Grade (Student only) -->
           @if (userType() === 'STUDENT') {
-            <div class="field-group">
+            <div class="field">
               <label for="grade">
                 <i class="fas fa-graduation-cap"></i>
-                الصف الدراسي
+                الصف الدراسي · Grade
               </label>
               <div class="select-wrap">
                 <select
                   id="grade"
                   name="grade"
-                  class="field-input field-select"
+                  class="field-input field-input--select"
                   [(ngModel)]="form.grade"
                   required>
-                  <option value="">-- اختر الصف --</option>
+                  <option value="">-- اختر الصف · Select grade --</option>
                   @for (g of gradeOptions(); track g.value) {
                     <option [value]="g.value">{{ g.label }}</option>
                   }
                 </select>
-                <i class="fas fa-chevron-down select-chevron"></i>
+                <i class="fas fa-chevron-down select-arrow"></i>
               </div>
             </div>
           }
@@ -129,27 +135,35 @@
           <!-- Error -->
           @if (error()) {
             <div class="error-bar">
-              <i class="fas fa-exclamation-circle"></i>
-              {{ error() }}
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>{{ error() }}</span>
             </div>
           }
 
           <!-- Submit -->
-          <button class="submit-btn" type="submit" [disabled]="loading()">
+          <button class="btn-submit" type="submit" [disabled]="loading()">
             @if (loading()) {
-              <span class="btn-loading">
-                <span class="spinner-sm"></span>
-                جاري إنشاء الحساب...
-              </span>
+              <span class="btn-spinner"></span>
+              <span>جاري الحفظ... · Saving...</span>
             } @else {
-              <span>
-                <i class="fas fa-user-plus"></i>
-                إنشاء الحساب
-              </span>
+              <i class="fas fa-check-circle"></i>
+              <span>إنشاء الحساب · Create Account</span>
             }
           </button>
 
         </form>
+      </div>
+    }
+
+    <!-- ═══════════ STEP 3: Success ═══════════ -->
+    @if (step() === 'success') {
+      <div class="success-area section-enter">
+        <div class="success-circle">
+          <i class="fas fa-check"></i>
+        </div>
+        <h2 class="success-title">تم إنشاء حسابك بنجاح!</h2>
+        <p class="success-sub">Account created successfully</p>
+        <p class="success-redirect">جاري التوجيه... · Redirecting...</p>
       </div>
     }
 

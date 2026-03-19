@@ -30,3 +30,31 @@ export interface GroupWithSchedulesDto {
   gradeName?: string;
   schedules: GroupScheduleDto[];
 }
+
+export interface NextSessionDto {
+  groupId?: string;
+  groupScheduleId?: string;
+  courseId?: string;
+  courseName?: string;
+  groupName?: string;
+  dayOfWeek: number;
+  startTime?: string;
+  endTime?: string;
+  location?: string;
+  nextOccurrence?: string;
+  secondsUntilStart: number;
+  isNow: boolean;
+}
+
+export interface SendSessionMessageDto {
+  message: string;
+}
+
+export interface SessionMessageDto {
+  id?: string;
+  groupScheduleId?: string;
+  groupId?: string;
+  senderName?: string;
+  message?: string;
+  creationTime?: string;
+}

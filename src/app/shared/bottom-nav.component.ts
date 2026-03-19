@@ -29,14 +29,16 @@ function getRoleHomePath(roles: string[]): string {
   if (roles.includes(ROLES.PARENT))     return '/parent';
   if (roles.includes(ROLES.SECRETARY))  return '/secretary';
   if (roles.includes(ROLES.ADMIN))      return '/secretary-assignments';
+  if (roles.includes(ROLES.ADVERTISER)) return '/ads/my';
   return '/';
 }
 
 function getRoleProfilePath(roles: string[]): string {
-  if (roles.includes(ROLES.STUDENT))   return '/student/profile';
-  if (roles.includes(ROLES.TEACHER))   return '/teacher/profile';
-  if (roles.includes(ROLES.PARENT))    return '/parent/profile';
-  if (roles.includes(ROLES.SECRETARY)) return '/secretary/profile';
+  if (roles.includes(ROLES.STUDENT))    return '/student/profile';
+  if (roles.includes(ROLES.TEACHER))    return '/teacher/profile';
+  if (roles.includes(ROLES.PARENT))     return '/parent/profile';
+  if (roles.includes(ROLES.SECRETARY))  return '/secretary/profile';
+  if (roles.includes(ROLES.ADVERTISER)) return '/profile';
   return '/profile';
 }
 
@@ -46,6 +48,7 @@ function getRoleRequestsPath(roles: string[]): string {
   if (roles.includes(ROLES.PARENT))     return '/parent/requests';
   if (roles.includes(ROLES.SECRETARY))  return '/secretary/requests';
   if (roles.includes(ROLES.ADMIN))      return '/enrollment-requests';
+  if (roles.includes(ROLES.ADVERTISER)) return '/notifications';
   return '/notifications';
 }
 
@@ -89,36 +92,84 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           </a>
         }
 
-        <!-- Ads tab -->
-        <a class="mn-tab" routerLink="/ads" [class.active]="isActive('/ads')">
+        <!-- More tab -->
+        <button class="mn-tab" (click)="toggleMore()" [class.active]="showMore()">
           <div class="mn-icon-wrap">
-            <i class="fas fa-bullhorn"></i>
+            <i class="fas fa-ellipsis-h"></i>
           </div>
-          <span class="mn-label">إعلانات</span>
-          @if (isActive('/ads')) { <span class="mn-bar"></span> }
-        </a>
-
-        <!-- Settings tab -->
-        <a class="mn-tab" routerLink="/settings" [class.active]="isActive('/settings')">
-          <div class="mn-icon-wrap">
-            <i class="fas fa-cog"></i>
-          </div>
-          <span class="mn-label">إعدادات</span>
-          @if (isActive('/settings')) { <span class="mn-bar"></span> }
-        </a>
-
-        <!-- Profile tab → navigates to profile page (logout is on profile page) -->
-        <a class="mn-tab" [routerLink]="profilePath()" [class.active]="isActive(profilePath()!)">
-          <div class="mn-avatar-sm">
-            @if (userInitials() !== '?') { <span>{{ userInitials() }}</span> }
-            @else { <i class="fas fa-user"></i> }
-          </div>
-          <span class="mn-label">ملفي</span>
-          @if (isActive(profilePath()!)) { <span class="mn-bar"></span> }
-        </a>
+          <span class="mn-label">المزيد</span>
+          @if (showMore()) { <span class="mn-bar"></span> }
+        </button>
 
       </div>
     </nav>
+
+    <!-- More Menu Overlay -->
+    @if (showMore()) {
+      <div class="more-overlay" (click)="showMore.set(false)"></div>
+      <div class="more-sheet" dir="rtl">
+        <div class="more-handle"></div>
+
+        <!-- Profile row -->
+        <a class="more-profile" [routerLink]="profilePath()" (click)="showMore.set(false)">
+          <div class="more-avatar">
+            @if (userInitials() !== '?') { <span>{{ userInitials() }}</span> }
+            @else { <i class="fas fa-user"></i> }
+          </div>
+          <div class="more-profile-info">
+            <span class="more-profile-name">{{ displayName() || 'مستخدم' }}</span>
+            @if (userEmail()) {
+              <span class="more-profile-email">{{ userEmail() }}</span>
+            }
+          </div>
+          <i class="fas fa-chevron-left more-arrow"></i>
+        </a>
+
+        <div class="more-divider"></div>
+
+        <!-- Menu items -->
+        <div class="more-items">
+          @if (isAdvertiserRole()) {
+            <a class="more-item" routerLink="/ads/settlement" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-green"><i class="fas fa-file-invoice-dollar"></i></div>
+              <div class="more-item-text">
+                <span>التسويات المالية</span>
+                <span class="more-item-en">Settlements</span>
+              </div>
+            </a>
+          } @else {
+            <a class="more-item" routerLink="/ads" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-amber"><i class="fas fa-bullhorn"></i></div>
+              <div class="more-item-text">
+                <span>إعلانات</span>
+                <span class="more-item-en">Ads</span>
+              </div>
+            </a>
+            <a class="more-item" routerLink="/feeds" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-blue"><i class="fas fa-rss"></i></div>
+              <div class="more-item-text">
+                <span>النشرات</span>
+                <span class="more-item-en">Feeds</span>
+              </div>
+            </a>
+          }
+          <a class="more-item" routerLink="/settings" (click)="showMore.set(false)">
+            <div class="more-item-icon more-icon-gray"><i class="fas fa-cog"></i></div>
+            <div class="more-item-text">
+              <span>إعدادات</span>
+              <span class="more-item-en">Settings</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="more-divider"></div>
+
+        <button class="more-logout" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>تسجيل الخروج · Logout</span>
+        </button>
+      </div>
+    }
 
     <!-- ══════════════════════════════════════════════════
          DESKTOP — Right sidebar (≥ 768px)
@@ -154,16 +205,29 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           </a>
         }
 
-        <!-- Ads link -->
-        <a class="dn-item" routerLink="/ads" [class.active]="isActive('/ads')">
-          <div class="dn-item-icon">
-            <i class="fas fa-bullhorn"></i>
-          </div>
-          <div class="dn-item-text">
-            <span class="dn-item-label">إعلانات</span>
-            <span class="dn-item-label-en">Ads</span>
-          </div>
-        </a>
+        @if (isAdvertiserRole()) {
+          <!-- Advertiser: settlements link -->
+          <a class="dn-item" routerLink="/ads/settlement" [class.active]="isActive('/ads/settlement')">
+            <div class="dn-item-icon">
+              <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div class="dn-item-text">
+              <span class="dn-item-label">التسويات المالية</span>
+              <span class="dn-item-label-en">Settlements</span>
+            </div>
+          </a>
+        } @else {
+          <!-- Ads link -->
+          <a class="dn-item" routerLink="/ads" [class.active]="isActive('/ads')">
+            <div class="dn-item-icon">
+              <i class="fas fa-bullhorn"></i>
+            </div>
+            <div class="dn-item-text">
+              <span class="dn-item-label">إعلانات</span>
+              <span class="dn-item-label-en">Ads</span>
+            </div>
+          </a>
+        }
 
         <!-- Settings link -->
         <a class="dn-item" routerLink="/settings" [class.active]="isActive('/settings')">
@@ -496,6 +560,144 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
       .mobile-nav { padding-bottom: calc(4px + env(safe-area-inset-bottom)); }
     }
+
+    /* ═══════════════════════════════════════════════════════
+       MORE SHEET  (mobile slide-up)
+    ═══════════════════════════════════════════════════════ */
+    .more-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 1100;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .more-sheet {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      z-index: 1200;
+      padding: 0.5rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.15);
+      animation: slideUp 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .more-handle {
+      width: 36px; height: 4px;
+      border-radius: 2px;
+      background: #d1d5db;
+      margin: 0.25rem auto 0.75rem;
+    }
+
+    .more-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.25rem;
+      text-decoration: none;
+      color: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .more-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; font-weight: 700;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+    }
+    .more-profile-info {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column;
+    }
+    .more-profile-name {
+      font-size: 0.95rem; font-weight: 700; color: #1a202c;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .more-profile-email {
+      font-size: 0.72rem; color: #9ca3af;
+      direction: ltr; text-align: right;
+    }
+    .more-arrow { font-size: 0.7rem; color: #d1d5db; }
+
+    .more-divider {
+      height: 1px;
+      background: #f3f4f6;
+      margin: 0.65rem 0;
+    }
+
+    .more-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .more-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.5rem;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #374151;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: background 0.15s;
+      min-height: 48px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .more-item:active { background: #f9fafb; }
+
+    .more-item-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .more-icon-amber { background: rgba(245,158,11,0.1); color: #f59e0b; }
+    .more-icon-gray  { background: rgba(107,114,128,0.1); color: #6b7280; }
+    .more-icon-blue  { background: rgba(59,130,246,0.1);  color: #3b82f6; }
+    .more-icon-green { background: rgba(16,185,129,0.1);  color: #10b981; }
+
+    .more-item-text {
+      display: flex; flex-direction: column;
+    }
+    .more-item-en {
+      font-size: 0.68rem; font-weight: 400; color: #9ca3af;
+    }
+
+    .more-logout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 12px;
+      border: 1.5px solid rgba(239,68,68,0.2);
+      background: rgba(239,68,68,0.05);
+      color: #ef4444;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 48px;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+    .more-logout:active { background: rgba(239,68,68,0.12); }
   `],
 })
 export class BottomNavComponent implements OnInit, OnDestroy {
@@ -520,9 +722,11 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   displayName   = signal('');
   userEmail     = signal('');
 
-  profilePath  = signal('/profile');
-  coreNav      = signal<NavItem[]>([]);
-  secondaryNav = signal<SecondaryItem[]>([]);
+  profilePath      = signal('/profile');
+  coreNav          = signal<NavItem[]>([]);
+  secondaryNav     = signal<SecondaryItem[]>([]);
+  showMore         = signal(false);
+  isAdvertiserRole = signal(false);
 
   private readonly NAV_HIDDEN_PATHS = ['/complete-profile', '/login', '/register'];
   navHidden = computed(() => this.NAV_HIDDEN_PATHS.some(p => this.currentPath().startsWith(p)));
@@ -538,6 +742,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: NavigationEnd) => {
         this.currentPath.set(e.urlAfterRedirects);
+        this.showMore.set(false);
       });
   }
 
@@ -582,18 +787,31 @@ export class BottomNavComponent implements OnInit, OnDestroy {
 
         const isStudent = roles.includes(ROLES.STUDENT);
         const isTeacher = roles.includes(ROLES.TEACHER);
-        this.coreNav.set([
-          { path: homePath,         label: 'الرئيسية',    labelEn: 'Home',          icon: 'fas fa-home' },
-          { path: requestsPath,     label: 'طلباتي',      labelEn: 'Requests',      icon: 'fas fa-clipboard-list', badge: 'requests' },
-          // Students & Teachers get Academies in core nav; other roles get Feeds
-          ...(isStudent
-            ? [{ path: '/academies',         label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
-            : isTeacher
-            ? [{ path: '/teacher/academies', label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
-            : [{ path: '/feeds',             label: 'النشرات',     labelEn: 'Feeds',     icon: 'fas fa-rss' }]
-          ),
-          { path: '/notifications', label: 'إشعارات',  labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' },
-        ]);
+        const isAdvertiser = roles.includes(ROLES.ADVERTISER);
+        this.isAdvertiserRole.set(isAdvertiser);
+
+        if (isAdvertiser) {
+          // Advertiser gets minimal nav: My Ads, Create Ad, Redeem, Notifications
+          this.coreNav.set([
+            { path: '/ads/my',        label: 'إعلاناتي',   labelEn: 'My Ads',        icon: 'fas fa-bullhorn' },
+            { path: '/ads/create',    label: 'إعلان جديد',  labelEn: 'New Ad',        icon: 'fas fa-plus-circle' },
+            { path: '/ads/redeem',    label: 'استبدال',      labelEn: 'Redeem',        icon: 'fas fa-qrcode' },
+            { path: '/notifications', label: 'إشعارات',     labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' },
+          ]);
+        } else {
+          this.coreNav.set([
+            { path: homePath,         label: 'الرئيسية',    labelEn: 'Home',          icon: 'fas fa-home' },
+            { path: requestsPath,     label: 'طلباتي',      labelEn: 'Requests',      icon: 'fas fa-clipboard-list', badge: 'requests' },
+            // Students & Teachers get Academies in core nav; other roles get Feeds
+            ...(isStudent
+              ? [{ path: '/academies',         label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
+              : isTeacher
+              ? [{ path: '/teacher/academies', label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
+              : [{ path: '/feeds',             label: 'النشرات',     labelEn: 'Feeds',     icon: 'fas fa-rss' }]
+            ),
+            { path: '/notifications', label: 'إشعارات',  labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' },
+          ]);
+        }
 
         this.profilePath.set(getRoleProfilePath(roles));
         this.secondaryNav.set(getSecondaryItems(roles));
@@ -623,12 +841,18 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     const cur = this.currentPath();
     const exact = ['/', '/student', '/teacher', '/parent', '/secretary', '/secretary-assignments',
                    '/profile', '/secretary/profile', '/student/profile', '/teacher/profile', '/parent/profile',
-                   '/academies', '/teacher/academies', '/feeds', '/notifications', '/settings', '/ads'];
+                   '/academies', '/teacher/academies', '/feeds', '/notifications', '/settings', '/ads',
+                   '/ads/my', '/ads/create', '/ads/redeem', '/ads/settlement'];
     if (exact.includes(path)) return cur === path;
     return cur.startsWith(path);
   }
 
+  toggleMore(): void {
+    this.showMore.update(v => !v);
+  }
+
   async logout(): Promise<void> {
+    this.showMore.set(false);
     await this.authService.logout();
   }
 }

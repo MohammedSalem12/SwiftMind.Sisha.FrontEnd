@@ -30,7 +30,7 @@ import { TeacherService } from '@proxy/teachers';
           @if (isSupervisor()) {
             <button class="add-btn" (click)="goToAddCourse()">
               <i class="fas fa-plus"></i>
-              إضافة
+              إضافة مقرر
             </button>
           }
         </div>
@@ -69,12 +69,14 @@ import { TeacherService } from '@proxy/teachers';
       @if (!loading() && courses().length > 0) {
         <div class="courses-list">
           @for (c of courses(); track c.courseId) {
-            <div class="course-card" [class.inactive-course]="!c.isActive">
+            <div class="course-card" [class.inactive-course]="!c.isActive" [class.locked-course]="!isCourseAssigned(c)">
 
               <!-- Course info -->
-              <div class="course-row" (click)="goToCourse(c)">
-                <div class="course-icon">
-                  <i class="fas fa-book-open"></i>
+              <div class="course-row"
+                   [class.course-row--locked]="!isCourseAssigned(c)"
+                   (click)="isCourseAssigned(c) && goToCourse(c)">
+                <div class="course-icon" [class.course-icon--locked]="!isCourseAssigned(c)">
+                  <i class="fas" [class]="isCourseAssigned(c) ? 'fas fa-book-open' : 'fas fa-lock'"></i>
                 </div>
                 <div class="course-info">
                   <span class="course-name">{{ c.courseNameAr || c.courseNameEn }}</span>
@@ -91,40 +93,47 @@ import { TeacherService } from '@proxy/teachers';
                     @if (!c.isActive) {
                       <span class="inactive-pill">مخفي</span>
                     }
+                    @if (!isCourseAssigned(c)) {
+                      <span class="chip chip-locked">غير معيّن · Not Assigned</span>
+                    }
                   </div>
                 </div>
-                <i class="fas fa-chevron-left nav-arrow"></i>
-              </div>
-
-              <!-- Quick actions -->
-              <div class="action-row">
-                <button class="action-btn attendance-btn" (click)="goToAttendance(c)">
-                  <i class="fas fa-user-check"></i>
-                  الحضور
-                </button>
-                <button class="action-btn marks-btn" (click)="goToMarks(c)">
-                  <i class="fas fa-star-half-alt"></i>
-                  الدرجات
-                </button>
-                <button class="action-btn students-btn" (click)="goToCourse(c)">
-                  <i class="fas fa-users"></i>
-                  الطلاب
-                </button>
-                @if (isSupervisor()) {
-                  <button class="action-btn"
-                          [class.hide-btn]="c.isActive"
-                          [class.show-btn]="!c.isActive"
-                          [disabled]="togglingCourseId() === c.courseId"
-                          (click)="toggleCourseActive(c)">
-                    @if (togglingCourseId() === c.courseId) {
-                      <span class="spinner-sm"></span>
-                    } @else {
-                      <i [class]="c.isActive ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                    }
-                    {{ c.isActive ? 'إخفاء' : 'إظهار' }}
-                  </button>
+                @if (isCourseAssigned(c)) {
+                  <i class="fas fa-chevron-left nav-arrow"></i>
                 }
               </div>
+
+              <!-- Quick actions: only for assigned courses -->
+              @if (isCourseAssigned(c)) {
+                <div class="action-row">
+                  <button class="action-btn attendance-btn" (click)="goToAttendance(c)">
+                    <i class="fas fa-user-check"></i>
+                    الحضور
+                  </button>
+                  <button class="action-btn marks-btn" (click)="goToMarks(c)">
+                    <i class="fas fa-star-half-alt"></i>
+                    الدرجات
+                  </button>
+                  <button class="action-btn students-btn" (click)="goToCourse(c)">
+                    <i class="fas fa-users"></i>
+                    الطلاب
+                  </button>
+                  @if (isSupervisor()) {
+                    <button class="action-btn"
+                            [class.hide-btn]="c.isActive"
+                            [class.show-btn]="!c.isActive"
+                            [disabled]="togglingCourseId() === c.courseId"
+                            (click)="toggleCourseActive(c)">
+                      @if (togglingCourseId() === c.courseId) {
+                        <span class="spinner-sm"></span>
+                      } @else {
+                        <i [class]="c.isActive ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                      }
+                      {{ c.isActive ? 'إخفاء' : 'إظهار' }}
+                    </button>
+                  }
+                </div>
+              }
 
             </div>
           }
@@ -271,6 +280,11 @@ import { TeacherService } from '@proxy/teachers';
     .show-btn:hover { background:rgba(16,185,129,.05); }
 
     .course-card.inactive-course { opacity:.65; }
+    .course-card.locked-course { opacity:.55; }
+    .course-row--locked { cursor:default; }
+    .course-row--locked:active { background:transparent; }
+    .course-icon--locked { background:linear-gradient(135deg,#9ca3af,#6b7280) !important; }
+    .chip-locked { background:rgba(239,68,68,.1); color:#dc2626; }
     .inactive-pill {
       font-size:.6rem; font-weight:700; padding:.1rem .4rem; border-radius:20px;
       background:rgba(239,68,68,.1); color:#dc2626; margin-top:.2rem; display:inline-block;
@@ -297,6 +311,7 @@ export class TeacherAcademyCoursesComponent implements OnInit {
   courses      = signal<AcademyCourseDto[]>([]);
   isSupervisor = signal(false);
   togglingCourseId = signal<string | null>(null);
+  assignedCourseIds = signal<Set<string>>(new Set());
 
   private academyId: string | null = null;
 
@@ -308,6 +323,7 @@ export class TeacherAcademyCoursesComponent implements OnInit {
       return;
     }
     await Promise.all([this.loadAcademy(), this.loadCourses()]);
+    await this.loadAssignments();
   }
 
   private async loadAcademy(): Promise<void> {
@@ -338,6 +354,29 @@ export class TeacherAcademyCoursesComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private async loadAssignments(): Promise<void> {
+    if (!this.academyId) return;
+    // Supervisor has access to all courses
+    if (this.isSupervisor()) {
+      const ids = new Set<string>();
+      this.courses().forEach(c => { if (c.courseId) ids.add(c.courseId); });
+      this.assignedCourseIds.set(ids);
+      return;
+    }
+    try {
+      const assignments = await lastValueFrom(
+        this.academySvc.getMyAcademyCourseAssignments(this.academyId, { skipHandleError: true })
+      );
+      const ids = new Set<string>();
+      (assignments || []).forEach((a: any) => { if (a.courseId) ids.add(a.courseId); });
+      this.assignedCourseIds.set(ids);
+    } catch { /* silent */ }
+  }
+
+  isCourseAssigned(c: AcademyCourseDto): boolean {
+    return !!c.courseId && this.assignedCourseIds().has(c.courseId);
   }
 
   goToCourse(c: AcademyCourseDto): void {
@@ -378,7 +417,7 @@ export class TeacherAcademyCoursesComponent implements OnInit {
   }
 
   goToAddCourse(): void {
-    this.router.navigate(['/add-course'], { queryParams: { academyId: this.academyId } });
+    this.router.navigate(['/academies', this.academyId, 'manage'], { queryParams: { tab: 'courses' } });
   }
 
   goBack(): void {

@@ -84,16 +84,18 @@
         <div class="field-group">
           <label for="userName">
             <i class="fas fa-at"></i>
-            اسم المستخدم
+            رقم الموبايل أو اسم مستخدم
           </label>
+          <span class="field-sub-hint">سيتم استخدامه لتسجيل الدخول · Will be used for login</span>
           <input
             id="userName"
             name="userName"
             type="text"
             class="field-input"
-            placeholder="أدخل اسم المستخدم"
+            placeholder="01XXXXXXXXX / username"
             [(ngModel)]="form.userName"
             required
+            dir="ltr"
             autocomplete="username" />
         </div>
 
@@ -202,16 +204,66 @@
         <i class="fas fa-check-circle"></i>
       </div>
       <h2 class="success-title">تم إنشاء الحساب بنجاح!</h2>
-      <p class="success-msg">يمكنك الآن تسجيل الدخول باستخدام بياناتك</p>
+      <p class="success-subtitle">Account created successfully</p>
 
-      <div class="success-code" *ngIf="successCode()">
-        <span class="code-label">رمز المستخدم:</span>
-        <span class="code-value">{{ successCode() }}</span>
+      <!-- Warning to save credentials -->
+      <div class="save-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>مهم: احفظ بياناتك التالية!</strong>
+          <span>Important: Save the following info for login</span>
+        </div>
+      </div>
+
+      <!-- Credentials card -->
+      <div class="creds-card">
+        <!-- Full Name -->
+        <div class="cred-row" *ngIf="successFullName()">
+          <div class="cred-label">
+            <i class="fas fa-user"></i>
+            <span>الاسم · Name</span>
+          </div>
+          <div class="cred-value">{{ successFullName() }}</div>
+        </div>
+
+        <!-- Username -->
+        <div class="cred-row" *ngIf="successUserName()">
+          <div class="cred-label">
+            <i class="fas fa-at"></i>
+            <span>اسم المستخدم · Username</span>
+          </div>
+          <div class="cred-value cred-value--mono">{{ successUserName() }}</div>
+        </div>
+
+        <!-- Password -->
+        <div class="cred-row" *ngIf="successPassword()">
+          <div class="cred-label">
+            <i class="fas fa-lock"></i>
+            <span>كلمة المرور · Password</span>
+          </div>
+          <div class="cred-value-row">
+            <span class="cred-value cred-value--mono">{{ showSuccessPassword() ? successPassword() : '••••••••' }}</span>
+            <button class="cred-toggle" type="button" (click)="showSuccessPassword.set(!showSuccessPassword())">
+              <i class="fas" [class.fa-eye]="!showSuccessPassword()" [class.fa-eye-slash]="showSuccessPassword()"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- User Code -->
+        <div class="cred-row cred-row--highlight" *ngIf="successCode()">
+          <div class="cred-label">
+            <i class="fas fa-id-badge"></i>
+            <span>الكود · Code</span>
+          </div>
+          <div class="cred-value cred-value--code">{{ successCode() }}</div>
+          <div class="cred-hint">قد يُطلب منك هذا الكود للتسجيل في المقررات أو الربط بولي الأمر</div>
+          <div class="cred-hint">This code may be needed for enrollment or parent linking</div>
+        </div>
       </div>
 
       <a routerLink="/login" class="submit-btn login-link">
         <i class="fas fa-sign-in-alt"></i>
-        الذهاب إلى تسجيل الدخول
+        الذهاب إلى تسجيل الدخول · Go to Login
       </a>
     </div>
 

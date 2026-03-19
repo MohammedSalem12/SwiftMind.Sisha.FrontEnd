@@ -67,7 +67,7 @@ import { lastValueFrom } from 'rxjs';
             class="notification-item"
             [class.unread]="!n.isRead"
             [style.border-right-color]="!n.isRead ? currentTheme().primary : 'transparent'"
-            (click)="markRead(n)">
+            (click)="onNotificationClick(n)">
             
             <div 
               class="notification-icon"
@@ -87,12 +87,15 @@ import { lastValueFrom } from 'rxjs';
               <p class="notification-message">{{ n.message }}</p>
             </div>
             
-            <div class="notification-indicator" *ngIf="!n.isRead">
-              <div 
-                class="unread-dot" 
-                [style.background]="currentTheme().primary"
-                [style.box-shadow]="'0 0 0 4px ' + currentTheme().light">
+            <div class="notification-right">
+              <div class="notification-indicator" *ngIf="!n.isRead">
+                <div
+                  class="unread-dot"
+                  [style.background]="currentTheme().primary"
+                  [style.box-shadow]="'0 0 0 4px ' + currentTheme().light">
+                </div>
               </div>
+              <i class="fas fa-chevron-left nav-arrow" *ngIf="hasRoute(n)"></i>
             </div>
           </div>
         </div>
@@ -374,14 +377,25 @@ import { lastValueFrom } from 'rxjs';
         }
       }
 
+      .notification-right {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+      }
+
       .notification-indicator {
         .unread-dot {
-          width: 12px;
-          height: 12px;
+          width: 10px;
+          height: 10px;
           border-radius: 50%;
-          flex-shrink: 0;
-          margin-top: 0.5rem;
         }
+      }
+
+      .nav-arrow {
+        color: #c0c0d0;
+        font-size: 0.75rem;
       }
     }
 
@@ -546,6 +560,14 @@ export class NotificationsComponent implements OnInit {
     return item.id || index.toString();
   }
 
+  onNotificationClick(n: NotificationDto): void {
+    this.markRead(n);
+    const route = this.getRouteForNotification(n);
+    if (route) {
+      this.router.navigate(route.path, route.extras ? { queryParams: route.extras } : undefined);
+    }
+  }
+
   markRead(n: NotificationDto): void {
     if (n.isRead) return;
     this.notificationSvc.markAsRead(n.id!).subscribe(() => {
@@ -554,11 +576,105 @@ export class NotificationsComponent implements OnInit {
     });
   }
 
+  private getRouteForNotification(n: NotificationDto): { path: string[]; extras?: Record<string, string> } | null {
+    const role = this.userRole.toUpperCase();
+    const ref = n.referenceId || '';
+    const type = n.type;
+
+    switch (type) {
+      // ── Enrollment ──
+      case NotificationType.EnrollmentApproved:
+      case NotificationType.EnrollmentRejected:
+        if (role === 'STUDENT') return { path: ['/student/requests'] };
+        if (role === 'PARENT') return { path: ['/parent/requests'] };
+        return null;
+
+      case NotificationType.EnrollmentRequestPending:
+        if (role === 'TEACHER') return { path: ['/teacher/enrollment-requests'] };
+        if (role === 'PARENT') return { path: ['/parent/enrollment-approval'] };
+        if (role === 'STUDENT') return { path: ['/student/requests'] };
+        return null;
+
+      // ── Parent-Student Link ──
+      case NotificationType.ParentStudentLinked:
+        if (role === 'STUDENT') return { path: ['/student/profile'] };
+        if (role === 'PARENT') return { path: ['/parent'] };
+        return null;
+
+      // ── Grades ──
+      case NotificationType.ExamGradePosted:
+        if (role === 'STUDENT') return { path: ['/student/grades'] };
+        if (role === 'PARENT' && ref) return { path: ['/parent/child', ref] };
+        if (role === 'PARENT') return { path: ['/parent'] };
+        return null;
+
+      // ── Attendance ──
+      case NotificationType.AttendanceMarkedAbsent:
+      case NotificationType.AttendanceMarkedPresent:
+        if (role === 'STUDENT') return { path: ['/student/attendance'] };
+        if (role === 'PARENT' && ref) return { path: ['/parent/child', ref] };
+        if (role === 'PARENT') return { path: ['/parent'] };
+        return null;
+
+      // ── Secretary Link ──
+      case NotificationType.SecretaryLinkRequestSent:
+        if (role === 'TEACHER') return { path: ['/teacher/secretary-requests'] };
+        return null;
+
+      case NotificationType.SecretaryLinkRequestApproved:
+      case NotificationType.SecretaryLinkRequestRejected:
+        if (role === 'SECRETARY') return { path: ['/secretary/requests'] };
+        if (role === 'TEACHER') return { path: ['/teacher/my-requests'] };
+        return null;
+
+      // ── Academy ──
+      case NotificationType.AcademyJoinRequestPending:
+        if (role === 'TEACHER' && ref) return { path: ['/academies', ref, 'manage'] };
+        return { path: ['/teacher/academies'] };
+
+      case NotificationType.AcademyJoinRequestApproved:
+      case NotificationType.AcademyJoinRequestRejected:
+        return { path: ['/teacher/academies'] };
+
+      // ── Sessions ──
+      case NotificationType.SessionStarted:
+      case NotificationType.SessionMessage:
+        if (role === 'STUDENT') return { path: ['/student/today-sessions'] };
+        if (role === 'TEACHER') return { path: ['/teacher/today-sessions'] };
+        return null;
+
+      // ── Password Reset ──
+      case NotificationType.PasswordResetRequested:
+      case NotificationType.PasswordResetCompleted:
+        if (role === 'ADMIN') return { path: ['/admin/password-resets'] };
+        return null;
+
+      // ── Academy Course-Teacher ──
+      case NotificationType.AcademyCourseTeacherAssigned:
+      case NotificationType.AcademyCourseTeacherApproved:
+      case NotificationType.AcademyCourseTeacherRejected:
+        return { path: ['/teacher/academies'] };
+
+      case NotificationType.AcademyCourseTeacherRequestPending:
+        if (ref) return { path: ['/academies', ref, 'manage'] };
+        return { path: ['/teacher/academies'] };
+
+      // ── General / Unknown ──
+      case NotificationType.General:
+      default:
+        return null;
+    }
+  }
+
   markAllRead(): void {
     this.notificationSvc.markAllAsRead().subscribe(() => {
       this.notifications().forEach(n => (n.isRead = true));
       this.realtimeSvc.resetUnread();
     });
+  }
+
+  hasRoute(n: NotificationDto): boolean {
+    return this.getRouteForNotification(n) !== null;
   }
 
   getIcon(type: NotificationType): string {
@@ -569,6 +685,10 @@ export class NotificationsComponent implements OnInit {
       [NotificationType.ParentStudentLinked]: 'fa-link',
       [NotificationType.ExamGradePosted]: 'fa-chart-bar',
       [NotificationType.AttendanceMarkedAbsent]: 'fa-calendar-times',
+      [NotificationType.AcademyCourseTeacherAssigned]: 'fa-chalkboard-teacher',
+      [NotificationType.AcademyCourseTeacherRequestPending]: 'fa-hand-paper',
+      [NotificationType.AcademyCourseTeacherApproved]: 'fa-check-circle',
+      [NotificationType.AcademyCourseTeacherRejected]: 'fa-times-circle',
     };
     return map[type] ?? 'fa-bell';
   }
@@ -581,6 +701,10 @@ export class NotificationsComponent implements OnInit {
       [NotificationType.ParentStudentLinked]: 'info',
       [NotificationType.ExamGradePosted]: 'success',
       [NotificationType.AttendanceMarkedAbsent]: 'danger',
+      [NotificationType.AcademyCourseTeacherAssigned]: 'info',
+      [NotificationType.AcademyCourseTeacherRequestPending]: 'warning',
+      [NotificationType.AcademyCourseTeacherApproved]: 'success',
+      [NotificationType.AcademyCourseTeacherRejected]: 'danger',
     };
     return map[type] ?? 'info';
   }

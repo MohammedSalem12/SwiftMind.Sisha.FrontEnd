@@ -3,36 +3,57 @@
   <!-- Hero -->
   <div class="report-hero">
     <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
-    <div class="report-hero-icon"><i class="fas fa-chart-bar"></i></div>
     <div class="report-hero-info">
       <h1>تقرير الدرجات</h1>
-      <p *ngIf="examName()">{{ examName() }}</p>
+      <p>Grades Report</p>
     </div>
+    <div class="report-hero-icon"><i class="fas fa-chart-bar"></i></div>
   </div>
+
+  <!-- Context info -->
+  @if (examName() || courseName() || groupName()) {
+    <div class="context-bar">
+      @if (examName()) {
+        <span class="context-chip"><i class="fas fa-file-alt"></i> {{ examName() }}</span>
+      }
+      @if (courseName()) {
+        <span class="context-chip"><i class="fas fa-book"></i> {{ courseName() }}</span>
+      }
+      @if (groupName()) {
+        <span class="context-chip"><i class="fas fa-users"></i> {{ groupName() }}</span>
+      }
+    </div>
+  }
 
   <div class="page-body">
 
     <!-- Loading -->
-    <div class="loading-state" *ngIf="loading()">
-      <div class="spinner"></div>
-      <span>جاري تحميل التقرير...</span>
-    </div>
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>جاري تحميل التقرير...</span>
+      </div>
+    }
 
     <!-- Error -->
-    <div class="error-state" *ngIf="error() && !loading()">
-      <i class="fas fa-exclamation-circle"></i>
-      <p>{{ error() }}</p>
-    </div>
+    @if (error() && !loading()) {
+      <div class="error-state">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>{{ error() }}</p>
+      </div>
+    }
 
-    <ng-container *ngIf="!loading() && !error()">
+    @if (!loading() && !error()) {
 
       <!-- Empty -->
-      <div class="empty-state" *ngIf="entries().length === 0">
-        <i class="fas fa-clipboard-check"></i>
-        <p>لا توجد درجات مسجلة لهذا الاختبار بعد</p>
-      </div>
+      @if (entries().length === 0) {
+        <div class="empty-state">
+          <i class="fas fa-clipboard-check"></i>
+          <p>لا توجد درجات مسجلة لهذا التقييم بعد</p>
+        </div>
+      }
 
-      <ng-container *ngIf="entries().length > 0">
+      @if (entries().length > 0) {
 
         <!-- Key stats -->
         <div class="stats-row">
@@ -100,28 +121,30 @@
             <span>ترتيب الطلاب</span>
             <span class="max-grade-chip">من {{ maxGrade() }}</span>
           </div>
-          <div class="student-row" *ngFor="let e of ranked(); let i = index">
-            <div class="rank" [class.rank-gold]="i === 0" [class.rank-silver]="i === 1" [class.rank-bronze]="i === 2">
-              {{ i + 1 }}
-            </div>
-            <div class="student-info">
-              <div class="student-avatar">{{ e.studentName.charAt(0) }}</div>
-              <div class="student-name">{{ e.studentName }}</div>
-            </div>
-            <div class="grade-badge" [class]="'badge-' + e.gradeClass">
-              {{ e.grade }}/{{ e.maxGrade }}
-            </div>
-            <div class="pct-ring" [class]="'ring-' + e.gradeClass">{{ e.pct }}%</div>
-            <div class="grade-label-col">{{ e.gradeLabel }}</div>
-            <div class="bar-col">
-              <div class="mini-bar-track">
-                <div class="mini-bar-fill" [class]="'fill-' + e.gradeClass" [style.width.%]="e.pct"></div>
+          @for (e of ranked(); track $index; let i = $index) {
+            <div class="student-row">
+              <div class="rank" [class.rank-gold]="i === 0" [class.rank-silver]="i === 1" [class.rank-bronze]="i === 2">
+                {{ i + 1 }}
+              </div>
+              <div class="student-info">
+                <div class="student-avatar">{{ e.studentName.charAt(0) }}</div>
+                <div class="student-name">{{ e.studentName }}</div>
+              </div>
+              <div class="grade-badge" [class]="'badge-' + e.gradeClass">
+                {{ e.grade }}/{{ e.maxGrade }}
+              </div>
+              <div class="pct-ring" [class]="'ring-' + e.gradeClass">{{ e.pct }}%</div>
+              <div class="grade-label-col">{{ e.gradeLabel }}</div>
+              <div class="bar-col">
+                <div class="mini-bar-track">
+                  <div class="mini-bar-fill" [class]="'fill-' + e.gradeClass" [style.width.%]="e.pct"></div>
+                </div>
               </div>
             </div>
-          </div>
+          }
         </div>
 
-      </ng-container>
-    </ng-container>
+      }
+    }
   </div>
 </div>

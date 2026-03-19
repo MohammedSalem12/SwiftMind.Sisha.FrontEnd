@@ -207,18 +207,46 @@ import type { AcademyCourseDto } from '@proxy/academies/models';
           <div class="add-course-section">
             <h3 class="subsection-title">
               <i class="fas fa-link me-2"></i>
-              إضافة مقرر موجود
+              إضافة مقرر موجود · Add Existing Course
             </h3>
-            <div class="add-course-form">
-              <select [(ngModel)]="selectedCourseId" class="form-select">
-                <option value="">اختر مقرراً...</option>
-                <option *ngFor="let c of availableCourses()" [value]="c.id">{{ c.nameAr }} ({{ c.code }})</option>
-              </select>
-              <button class="btn-add" (click)="addExistingCourse()" [disabled]="!selectedCourseId || actionLoading()">
-                <i class="fas fa-plus"></i>
-                <span>إضافة</span>
-              </button>
+            <!-- Search filter -->
+            <div class="course-filter">
+              <div class="filter-box">
+                <i class="fas fa-search filter-icon"></i>
+                <input
+                  type="text"
+                  class="filter-input"
+                  placeholder="بحث بالاسم أو الكود · Filter by name or code"
+                  [ngModel]="courseFilter"
+                  (ngModelChange)="courseFilter = $event" />
+                <button class="filter-clear" *ngIf="courseFilter" (click)="courseFilter = ''">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
             </div>
+            <div class="add-course-list">
+              <div *ngFor="let c of filteredAvailableCourses()" class="add-course-item" (click)="selectedCourseId = c.id!">
+                <div class="aci-radio" [class.aci-radio--selected]="selectedCourseId === c.id">
+                  <i class="fas fa-check" *ngIf="selectedCourseId === c.id"></i>
+                </div>
+                <div class="aci-info">
+                  <span class="aci-name">{{ c.nameAr || c.nameEn }}</span>
+                  <span class="aci-meta">
+                    <span class="aci-code" *ngIf="c.code">{{ c.code }}</span>
+                    <span class="aci-grade" *ngIf="c.gradeName">{{ c.gradeName }}</span>
+                  </span>
+                </div>
+              </div>
+              <div *ngIf="filteredAvailableCourses().length === 0" class="add-course-empty">
+                <i class="fas fa-search"></i>
+                <span *ngIf="courseFilter">لا توجد نتائج · No results</span>
+                <span *ngIf="!courseFilter">لا توجد مقررات متاحة · No available courses</span>
+              </div>
+            </div>
+            <button class="btn-add" (click)="addExistingCourse()" [disabled]="!selectedCourseId || actionLoading()">
+              <i class="fas fa-plus"></i>
+              <span>إضافة المقرر المحدد · Add Selected</span>
+            </button>
           </div>
 
           <!-- Create New Course -->
@@ -271,109 +299,83 @@ import type { AcademyCourseDto } from '@proxy/academies/models';
     // ─── Page Header ───────────────────────────────────────────────
     .page-header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 2rem 1.5rem;
+      padding: calc(env(safe-area-inset-top, 0px) + .75rem) 1rem .75rem;
       color: white;
       position: relative;
       overflow: hidden;
 
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        pointer-events: none;
-      }
-
       .header-content {
-        max-width: 1200px;
-        margin: 0 auto;
         display: flex;
         align-items: center;
-        gap: 1.5rem;
+        gap: .75rem;
         position: relative;
         z-index: 1;
       }
 
       .btn-back {
-        width: 48px;
-        height: 48px;
+        width: 40px;
+        height: 40px;
         background: rgba(255, 255, 255, 0.2);
         border: none;
-        border-radius: 12px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        cursor: pointer;
+        color: white;
+        flex-shrink: 0;
+      }
+
+      .header-icon {
+        width: 42px;
+        height: 42px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.3);
-          transform: translateY(-1px);
-        }
-      }
-
-      .header-icon {
-        width: 60px;
-        height: 60px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
       }
 
       h1 {
-        font-size: 2rem;
+        font-size: 1.1rem;
         font-weight: 700;
-        margin: 0 0 0.25rem;
+        margin: 0;
       }
 
       p {
         margin: 0;
-        opacity: 0.9;
-        font-size: 1rem;
+        opacity: 0.75;
+        font-size: .75rem;
       }
     }
 
     // ─── Stats Grid ─────────────────────────────────────────────────
     .stats-grid {
-      max-width: 1200px;
-      margin: -1.5rem auto 2rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      padding: 0 1.5rem;
+      display: flex;
+      gap: .5rem;
+      padding: .75rem 1rem;
     }
 
     .stat-card {
+      flex: 1;
       background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      border-radius: 14px;
+      padding: .65rem .5rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 1rem;
-      transition: all 0.3s ease;
-
-      &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      }
+      gap: .35rem;
+      text-align: center;
     }
 
     .stat-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -395,81 +397,69 @@ import type { AcademyCourseDto } from '@proxy/academies/models';
     }
 
     .stat-content {
-      flex: 1;
-
       .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
+        font-size: 1.3rem;
+        font-weight: 800;
         color: #1e293b;
         line-height: 1;
       }
 
       .stat-label {
-        font-size: 0.875rem;
+        font-size: .68rem;
         color: #64748b;
         font-weight: 500;
-        margin-top: 0.25rem;
+        margin-top: .15rem;
       }
     }
 
     // ─── Tabs Container ─────────────────────────────────────────────
     .tabs-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
+      padding: 0 1rem;
     }
 
     .tabs-wrapper {
       background: white;
-      border-radius: 16px;
-      padding: 0.5rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      border-radius: 14px;
+      padding: .3rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
       display: flex;
-      gap: 0.5rem;
+      gap: .25rem;
     }
 
     .tab-btn {
       flex: 1;
       background: none;
       border: none;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      font-size: 0.95rem;
+      padding: .6rem .5rem;
+      border-radius: 10px;
+      font-size: .78rem;
       font-weight: 600;
       color: #64748b;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all .2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
+      gap: .35rem;
       position: relative;
-
-      &:hover {
-        background: #f8fafc;
-        color: #334155;
-      }
+      min-height: 44px;
+      -webkit-tap-highlight-color: transparent;
 
       &.active {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.35);
       }
 
-      i {
-        font-size: 1rem;
-      }
+      i { font-size: .8rem; }
 
       .tab-badge {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.75rem;
         background: #ef4444;
         color: white;
         border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        font-size: 0.7rem;
+        width: 18px;
+        height: 18px;
+        font-size: .6rem;
         font-weight: 700;
         display: flex;
         align-items: center;
@@ -479,9 +469,92 @@ import type { AcademyCourseDto } from '@proxy/academies/models';
 
     // ─── Content Container ─────────────────────────────────────────────
     .content-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1.5rem 2rem;
+      padding: 0 1rem calc(80px + env(safe-area-inset-bottom, 0px));
+    }
+
+    // ─── Course Filter & List ─────────────────────────────────────────
+    .course-filter { margin-bottom: .75rem; }
+    .filter-box {
+      display: flex; align-items: center; gap: .5rem;
+      background: #f8fafc; border-radius: 12px;
+      border: 1.5px solid #e5e7eb; padding: 0 .75rem;
+      transition: border-color .2s;
+      &:focus-within { border-color: #667eea; }
+    }
+    .filter-icon { color: #9ca3af; font-size: .8rem; flex-shrink: 0; }
+    .filter-input {
+      flex: 1; border: none; outline: none; background: transparent;
+      font-size: 16px; padding: .6rem 0; font-family: inherit;
+      color: #1a1a2e; min-width: 0;
+      &::placeholder { color: #b0b0c0; font-size: .8rem; }
+    }
+    .filter-clear {
+      border: none; background: none; color: #9ca3af; cursor: pointer;
+      padding: 4px; font-size: .75rem;
+      min-width: 44px; min-height: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .add-course-list {
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      background: #f9fafb;
+      margin-bottom: .75rem;
+    }
+
+    .add-course-item {
+      display: flex; align-items: center; gap: .6rem;
+      padding: .65rem .85rem;
+      border-bottom: 1px solid #f0f0f5;
+      cursor: pointer;
+      transition: background .15s;
+      min-height: 48px;
+      -webkit-tap-highlight-color: transparent;
+      &:last-child { border-bottom: none; }
+      &:active { background: #eef0ff; }
+    }
+
+    .aci-radio {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid #d1d5db; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+      &--selected {
+        border-color: #667eea; background: #667eea; color: white;
+        i { font-size: .6rem; }
+      }
+    }
+
+    .aci-info {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; gap: .1rem;
+    }
+    .aci-name {
+      font-size: .85rem; font-weight: 600; color: #1a1a2e;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .aci-meta {
+      display: flex; gap: .4rem; flex-wrap: wrap;
+    }
+    .aci-code {
+      font-size: .65rem; font-weight: 600;
+      background: rgba(102,126,234,.1); color: #667eea;
+      padding: .05rem .35rem; border-radius: 6px;
+      font-family: monospace;
+    }
+    .aci-grade {
+      font-size: .65rem; font-weight: 600;
+      background: rgba(16,185,129,.1); color: #059669;
+      padding: .05rem .35rem; border-radius: 6px;
+    }
+
+    .add-course-empty {
+      padding: 1.5rem; text-align: center;
+      color: #9ca3af; font-size: .82rem;
+      display: flex; flex-direction: column; align-items: center; gap: .4rem;
+      i { font-size: 1.2rem; }
     }
 
     // ─── Loading State ─────────────────────────────────────────────
@@ -960,573 +1033,25 @@ import type { AcademyCourseDto } from '@proxy/academies/models';
     }
 
     // ─── Responsive Design ─────────────────────────────────────────────
-    @media (max-width: 1024px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.25rem;
-      }
-    }
-
     @media (max-width: 768px) {
-      .page-header {
-        padding: 1.5rem 1rem;
-
-        .header-content {
-          flex-direction: column;
-          text-align: center;
-          gap: 1rem;
-          position: relative;
-        }
-
-        h1 {
-          font-size: 1.5rem;
-          margin: 0;
-        }
-
-        p {
-          font-size: 0.9rem;
-          margin: 0;
-        }
-
-        .btn-back {
-          position: absolute;
-          top: 1.5rem;
-          right: 1rem;
-          width: 40px;
-          height: 40px;
-          font-size: 1rem;
-        }
-
-        .header-icon {
-          width: 50px;
-          height: 50px;
-          font-size: 1.25rem;
-        }
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-        margin: -1rem 1rem 1.5rem;
-        padding: 0;
-      }
-
-      .stat-card {
-        padding: 1.25rem;
-
-        .stat-icon {
-          width: 48px;
-          height: 48px;
-          font-size: 1.1rem;
-        }
-
-        .stat-content .stat-value {
-          font-size: 1.75rem;
-        }
-      }
-
-      .tabs-container {
-        padding: 0 1rem;
-      }
-
-      .tabs-wrapper {
-        flex-direction: column;
-        gap: 0.5rem;
-        padding: 0.375rem;
-      }
-
-      .tab-btn {
-        padding: 1rem;
-        font-size: 0.875rem;
-        gap: 0.75rem;
-
-        i {
-          font-size: 0.9rem;
-        }
-
-        .tab-badge {
-          top: 0.375rem;
-          right: 0.625rem;
-          width: 18px;
-          height: 18px;
-          font-size: 0.65rem;
-        }
-      }
-
-      .content-container {
-        padding: 0 1rem 1.5rem;
-      }
-
-      .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-        padding: 1rem;
-
-        .section-title {
-          font-size: 1.1rem;
-
-          i {
-            font-size: 1rem;
-          }
-        }
-
-        .section-count {
-          font-size: 0.8rem;
-          padding: 0.375rem 0.875rem;
-        }
-      }
-
       .requests-grid,
       .members-grid,
       .courses-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-
-      .request-card,
-      .member-card {
-        padding: 1.25rem;
-        border-radius: 12px;
-      }
-
-      .card-header {
-        margin-bottom: 1rem;
-      }
-
-      .member-avatar {
-        width: 48px;
-        height: 48px;
-        font-size: 1.125rem;
-      }
-
-      .member-info .member-name {
-        font-size: 1rem;
-      }
-
-      .card-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-        width: 100%;
-
-        .btn-action {
-          justify-content: center;
-          padding: 0.625rem 1rem;
-        }
-      }
-
-      .course-card {
-        padding: 1rem;
-        border-radius: 12px;
-      }
-
-      .course-icon {
-        width: 42px;
-        height: 42px;
-        font-size: 1rem;
-      }
-
-      .add-course-section,
-      .create-course-section {
-        padding: 1.25rem;
-        margin-bottom: 1.5rem;
-      }
-
-      .add-course-form,
-      .create-course-form {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
-        margin-bottom: 0.75rem;
       }
 
       .form-row {
         grid-template-columns: 1fr;
-        gap: 1rem;
       }
 
-      .form-group {
-        margin-bottom: 0.75rem;
-
-        label {
-          font-size: 0.8rem;
-          margin-bottom: 0.375rem;
-        }
-      }
-
-      .form-select,
-      .form-input {
-        padding: 0.625rem 0.875rem;
-        font-size: 0.875rem;
-      }
-
-      .btn-add,
-      .btn-create {
-        padding: 0.75rem 1.25rem;
-        font-size: 0.875rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .page-header {
-        padding: 1.25rem 0.75rem;
-
-        .header-content {
-          gap: 0.75rem;
-        }
-
-        h1 {
-          font-size: 1.25rem;
-        }
-
-        p {
-          font-size: 0.85rem;
-        }
-
-        .btn-back {
-          top: 1.25rem;
-          right: 0.75rem;
-          width: 36px;
-          height: 36px;
-          font-size: 0.9rem;
-        }
-
-        .header-icon {
-          width: 45px;
-          height: 45px;
-          font-size: 1.125rem;
-        }
-      }
-
-      .stats-grid {
-        margin: -0.75rem 0.75rem 1.25rem;
-        gap: 0.875rem;
-      }
-
-      .stat-card {
-        padding: 1rem;
-
-        .stat-icon {
-          width: 42px;
-          height: 42px;
-          font-size: 1rem;
-        }
-
-        .stat-content .stat-value {
-          font-size: 1.5rem;
-        }
-
-        .stat-content .stat-label {
-          font-size: 0.8rem;
-        }
-      }
-
-      .tabs-container {
-        padding: 0 0.75rem;
-      }
-
-      .tabs-wrapper {
-        padding: 0.25rem;
-        gap: 0.375rem;
-      }
-
-      .tab-btn {
-        padding: 0.875rem 0.75rem;
-        font-size: 0.8rem;
-        gap: 0.5rem;
-
-        i {
-          font-size: 0.85rem;
-        }
-
-        .tab-badge {
-          width: 16px;
-          height: 16px;
-          font-size: 0.6rem;
-          top: 0.25rem;
-          right: 0.5rem;
-        }
-      }
-
-      .content-container {
-        padding: 0 0.75rem 1.25rem;
-      }
-
-      .section-header {
-        padding: 0.875rem;
-        gap: 0.75rem;
-
-        .section-title {
-          font-size: 1rem;
-
-          i {
-            font-size: 0.9rem;
-          }
-        }
-
-        .section-count {
-          font-size: 0.75rem;
-          padding: 0.25rem 0.75rem;
-        }
-      }
-
-      .subsection-title {
-        font-size: 1rem;
-        margin-bottom: 0.875rem;
-
-        i {
-          font-size: 0.9rem;
-        }
-      }
-
-      .empty-state {
-        padding: 2rem 1rem;
-
-        i {
-          font-size: 2.5rem;
-          margin-bottom: 0.875rem;
-        }
-
-        h3 {
-          font-size: 1.125rem;
-          margin-bottom: 0.5rem;
-        }
-
-        h4 {
-          font-size: 1rem;
-          margin-bottom: 0.5rem;
-        }
-
-        p {
-          font-size: 0.875rem;
-        }
-      }
-
-      .request-card,
-      .member-card {
-        padding: 1rem;
-        border-radius: 10px;
-      }
-
-      .card-header {
+      .create-course-form {
         flex-direction: column;
-        text-align: center;
-        gap: 0.75rem;
-        margin-bottom: 0.875rem;
-      }
-
-      .member-avatar {
-        width: 42px;
-        height: 42px;
-        font-size: 1rem;
-      }
-
-      .member-info .member-name {
-        font-size: 0.95rem;
-      }
-
-      .member-info .member-code {
-        font-size: 0.75rem;
-      }
-
-      .member-badge {
-        font-size: 0.675rem;
-        padding: 0.1875rem 0.625rem;
+        align-items: stretch;
       }
 
       .card-actions {
-        gap: 0.375rem;
-
-        .btn-action {
-          padding: 0.5rem 0.875rem;
-          font-size: 0.8rem;
-          gap: 0.375rem;
-        }
-      }
-
-      .course-card {
-        padding: 0.875rem;
-        border-radius: 10px;
-        gap: 0.75rem;
-      }
-
-      .course-icon {
-        width: 36px;
-        height: 36px;
-        font-size: 0.9rem;
-      }
-
-      .course-info .course-name {
-        font-size: 0.9rem;
-      }
-
-      .course-info .course-code {
-        font-size: 0.75rem;
-      }
-
-      .btn-remove {
-        padding: 0.375rem 0.625rem;
-        font-size: 0.75rem;
-      }
-
-      .add-course-section,
-      .create-course-section {
-        padding: 1rem;
-        margin-bottom: 1rem;
-      }
-
-      .add-course-form,
-      .create-course-form {
-        gap: 0.75rem;
-        margin-bottom: 0.625rem;
-      }
-
-      .form-group {
-        margin-bottom: 0.625rem;
-
-        label {
-          font-size: 0.75rem;
-          margin-bottom: 0.3125rem;
-        }
-      }
-
-      .form-select,
-      .form-input {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.8rem;
-      }
-
-      .btn-add,
-      .btn-create {
-        padding: 0.625rem 1rem;
-        font-size: 0.8rem;
-      }
-
-      .error-message {
-        padding: 0.625rem 0.875rem;
-        font-size: 0.75rem;
-      }
-    }
-
-    @media (max-width: 360px) {
-      .page-header {
-        padding: 1rem 0.5rem;
-
-        .btn-back {
-          top: 1rem;
-          right: 0.5rem;
-          width: 32px;
-          height: 32px;
-          font-size: 0.8rem;
-        }
-
-        .header-icon {
-          width: 40px;
-          height: 40px;
-          font-size: 1rem;
-        }
-
-        h1 {
-          font-size: 1.125rem;
-        }
-      }
-
-      .stats-grid {
-        margin: -0.5rem 0.5rem 1rem;
-        gap: 0.75rem;
-      }
-
-      .stat-card {
-        padding: 0.875rem;
-        flex-direction: column;
-        text-align: center;
-        gap: 0.75rem;
-
-        .stat-icon {
-          width: 40px;
-          height: 40px;
-          font-size: 0.9rem;
-        }
-
-        .stat-content .stat-value {
-          font-size: 1.375rem;
-        }
-
-        .stat-content .stat-label {
-          font-size: 0.75rem;
-        }
-      }
-
-      .tabs-container {
-        padding: 0 0.5rem;
-      }
-
-      .tab-btn {
-        padding: 0.75rem 0.625rem;
-        font-size: 0.75rem;
-        gap: 0.375rem;
-      }
-
-      .content-container {
-        padding: 0 0.5rem 1rem;
-      }
-
-      .section-header {
-        padding: 0.75rem;
-
-        .section-title {
-          font-size: 0.95rem;
-        }
-
-        .section-count {
-          font-size: 0.7rem;
-          padding: 0.1875rem 0.625rem;
-        }
-      }
-
-      .request-card,
-      .member-card {
-        padding: 0.875rem;
-      }
-
-      .member-avatar {
-        width: 38px;
-        height: 38px;
-        font-size: 0.9rem;
-      }
-
-      .member-info .member-name {
-        font-size: 0.9rem;
-      }
-
-      .card-actions .btn-action {
-        padding: 0.4375rem 0.75rem;
-        font-size: 0.75rem;
-      }
-
-      .course-card {
-        padding: 0.75rem;
-        flex-direction: column;
-        text-align: center;
-        gap: 0.625rem;
-      }
-
-      .course-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 0.8rem;
-      }
-
-      .form-select,
-      .form-input {
-        padding: 0.4375rem 0.625rem;
-        font-size: 0.75rem;
-      }
-
-      .btn-add,
-      .btn-create {
-        padding: 0.5625rem 0.875rem;
-        font-size: 0.75rem;
+        flex-direction: row;
+        .btn-action { flex: 1; justify-content: center; }
       }
     }
   `]
@@ -1549,12 +1074,17 @@ export class AcademyManageComponent implements OnInit {
   availableCourses = signal<CourseDto[]>([]);
 
   selectedCourseId = '';
+  courseFilter = '';
   creatingCourse = signal(false);
   courseError = signal<string | null>(null);
   newCourse: CreateUpdateCourseDto = { nameAr: '', nameEn: '', gradeId: undefined as any };
 
   async ngOnInit(): Promise<void> {
     this.academyId = this.route.snapshot.paramMap.get('id') || '';
+    const tabParam = this.route.snapshot.queryParamMap.get('tab');
+    if (tabParam === 'courses' || tabParam === 'members' || tabParam === 'requests') {
+      this.activeTab.set(tabParam);
+    }
     try {
       const [academyData, requests, membersData, courses, allCourses] = await Promise.all([
         lastValueFrom(this.academyService.get(this.academyId)),
@@ -1604,6 +1134,18 @@ export class AcademyManageComponent implements OnInit {
     } finally {
       this.actionLoading.set(false);
     }
+  }
+
+  filteredAvailableCourses(): CourseDto[] {
+    const q = (this.courseFilter || '').trim().toLowerCase();
+    const list = this.availableCourses();
+    if (!q) return list;
+    return list.filter(c =>
+      (c.nameAr || '').toLowerCase().includes(q) ||
+      (c.nameEn || '').toLowerCase().includes(q) ||
+      (c.code || '').toLowerCase().includes(q) ||
+      ((c as any).gradeName || '').toLowerCase().includes(q)
+    );
   }
 
   async addExistingCourse(): Promise<void> {

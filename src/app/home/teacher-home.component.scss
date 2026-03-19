@@ -27,6 +27,11 @@ $radius-card:   18px;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
+
+  &--compact {
+    padding: calc(env(safe-area-inset-top, 0px) + 0.6rem) 1.25rem 0.7rem;
+    align-items: center;
+  }
 }
 
 .hero-blob {
@@ -48,12 +53,12 @@ $radius-card:   18px;
 }
 
 .hero-hello {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.75);
 }
 
 .hero-name {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: $white;
   line-height: 1.2;
@@ -73,17 +78,17 @@ $radius-card:   18px;
 
 .hero-icon {
   z-index: 1;
-  width: 56px;
-  height: 56px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 
-  i { font-size: 1.4rem; color: $white; }
+  i { font-size: 1.1rem; color: $white; }
 }
 
 // ─── Loading Skeletons ────────────────────────────────────────
@@ -176,7 +181,6 @@ $radius-card:   18px;
 }
 
 .count-pill {
-  margin-right: auto;
   background: rgba(102, 126, 234, 0.12);
   color: $grad-start;
   font-size: 0.75rem;
@@ -185,6 +189,34 @@ $radius-card:   18px;
   border-radius: 20px;
   min-width: 22px;
   text-align: center;
+}
+
+// ─── Collapsible Section Toggle ─────────────────────────────────
+.section-label--toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+
+  &:active { opacity: 0.7; }
+}
+
+.toggle-chevron {
+  margin-right: auto;
+  font-size: 0.7rem;
+  color: $text-light;
+  transition: transform 0.2s ease;
+}
+
+.collapsible-content {
+  animation: collapseIn 0.2s ease-out;
+}
+
+@keyframes collapseIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 // ─── Courses Grid ─────────────────────────────────────────────
@@ -363,6 +395,23 @@ $radius-card:   18px;
 
 .ca-attendance { color: #059669; }
 .ca-marks      { color: #667eea; }
+
+// ─── Locked (not assigned) academy course ──────────────────
+.course-card--locked {
+  opacity: 0.6;
+  .course-card-inner {
+    cursor: default;
+    &:active { background: transparent; }
+    &:disabled { opacity: 1; } // don't double-dim
+  }
+}
+.course-card-icon--locked {
+  background: linear-gradient(135deg, #9ca3af, #6b7280) !important;
+}
+.chip-locked {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
 
 // ─── Quick Actions (inline, above courses) ────────────────────
 .quick-actions {

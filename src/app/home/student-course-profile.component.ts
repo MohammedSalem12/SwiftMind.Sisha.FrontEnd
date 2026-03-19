@@ -23,294 +23,405 @@ import { StudentService } from '@proxy/students';
   template: `
     <div class="profile-page" dir="rtl">
 
-      <!-- Hero Header -->
-      <div class="hero-header">
-        <button class="back-btn" (click)="goBack()">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <button class="top-back-btn" (click)="goBack()">
           <i class="fas fa-arrow-right"></i>
         </button>
-        <div class="hero-text" *ngIf="course()">
-          <h1>{{ course()!.nameAr || course()!.nameEn }}</h1>
-          <div class="hero-meta">
-            <span *ngIf="course()!.code" class="hero-chip">{{ course()!.code }}</span>
-            <span *ngIf="course()!.gradeName" class="hero-chip">{{ course()!.gradeName }}</span>
-          </div>
+        <div class="top-bar-text">
+          @if (course()) {
+            <h1>{{ course()!.nameAr || course()!.nameEn }}</h1>
+            <div class="top-chips">
+              @if (course()!.code) {
+                <span class="top-chip">{{ course()!.code }}</span>
+              }
+              @if (course()!.gradeName) {
+                <span class="top-chip">{{ course()!.gradeName }}</span>
+              }
+            </div>
+          } @else if (loading()) {
+            <h1>تحميل...</h1>
+          }
         </div>
-        <div class="hero-text" *ngIf="!course() && loading()">
-          <h1>تحميل...</h1>
+        <div class="top-icon">
+          <i class="fas fa-book-open"></i>
         </div>
       </div>
 
       <!-- Loading -->
-      <div *ngIf="loading()" class="loading-state">
-        <div class="spinner"></div>
-        <p>جاري تحميل بيانات المقرر...</p>
-      </div>
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>جاري تحميل بيانات المقرر...</p>
+        </div>
+      }
 
       <!-- Error -->
-      <div *ngIf="error() && !loading()" class="error-banner">
-        <i class="fas fa-exclamation-circle me-2"></i>{{ error() }}
-      </div>
-
-      <div *ngIf="!loading()" class="content">
-
-        <!-- ── Enrollment Status ─────────────────────────── -->
-        <div class="section-card">
-          <div class="section-title">
-            <i class="fas fa-user-check me-2"></i>حالة التسجيل
-          </div>
-
-          <div *ngIf="!enrollment()" class="not-enrolled">
-            <i class="fas fa-info-circle me-2"></i>لم تسجّل في هذا المقرر بعد
-            <button class="btn-enroll" (click)="goToEnroll()">
-              <i class="fas fa-plus me-1"></i> سجّل الآن
-            </button>
-          </div>
-
-          <div *ngIf="enrollment()" class="enrollment-info">
-            <div class="info-row">
-              <span class="info-label"><i class="fas fa-certificate me-1"></i>الحالة</span>
-              <span class="status-badge" [class]="statusClass()">{{ statusLabel() }}</span>
-            </div>
-            <div class="info-row" *ngIf="enrollment()!.teacherName">
-              <span class="info-label"><i class="fas fa-chalkboard-teacher me-1"></i>المعلم</span>
-              <span class="info-value">{{ enrollment()!.teacherName }}</span>
-            </div>
-            <div class="info-row" *ngIf="enrollment()!.groupName">
-              <span class="info-label"><i class="fas fa-users me-1"></i>المجموعة</span>
-              <span class="info-value">{{ enrollment()!.groupName }}</span>
-            </div>
-          </div>
+      @if (error() && !loading()) {
+        <div class="error-banner">
+          <i class="fas fa-exclamation-circle"></i>{{ error() }}
         </div>
+      }
 
-        <!-- ── Schedule ──────────────────────────────────── -->
-        <div class="section-card" *ngIf="group() && group()!.schedules?.length">
-          <div class="section-title">
-            <i class="fas fa-calendar-alt me-2"></i>جدول الحصص
-          </div>
-          <div class="schedules">
-            <div class="schedule-row" *ngFor="let s of group()!.schedules">
-              <span class="day-chip">{{ getDayName(s.dayOfWeek) }}</span>
-              <span class="schedule-time">
-                <i class="fas fa-clock me-1"></i>
-                {{ formatTime(s.startTime) }} — {{ formatTime(s.endTime) }}
-              </span>
-              <span class="schedule-location" *ngIf="s.location">
-                <i class="fas fa-map-marker-alt me-1"></i>{{ s.location }}
-              </span>
-            </div>
-          </div>
-        </div>
+      @if (!loading()) {
+        <div class="content">
 
-        <!-- ── Attendance ─────────────────────────────────── -->
-        <div class="section-card" *ngIf="attendance()">
-          <div class="section-title">
-            <i class="fas fa-calendar-check me-2"></i>الحضور — {{ currentMonthLabel() }}
-          </div>
-          <div class="attendance-stats">
-            <div class="att-stat present">
-              <div class="att-num">{{ attendance()!.attendedDays }}</div>
-              <div class="att-label">حضور</div>
+          <!-- Enrollment Status -->
+          <div class="section-card">
+            <div class="section-title">
+              <i class="fas fa-user-check"></i> حالة التسجيل · Enrollment
             </div>
-            <div class="att-stat absent">
-              <div class="att-num">{{ attendance()!.absentDays }}</div>
-              <div class="att-label">غياب</div>
-            </div>
-            <div class="att-stat total">
-              <div class="att-num">{{ attendance()!.totalDaysInMonth }}</div>
-              <div class="att-label">إجمالي</div>
-            </div>
-          </div>
-          <div class="att-bar-wrap">
-            <div class="att-bar">
-              <div class="att-fill"
-                   [style.width.%]="attendance()!.attendancePercentage"
-                   [class]="attBarClass()"></div>
-            </div>
-            <span class="att-pct" [class]="attPctClass()">{{ attendance()!.attendancePercentage }}%</span>
-          </div>
-          <div class="att-note" [class]="attBarClass()">
-            <i class="fas fa-info-circle me-1"></i>
-            <ng-container *ngIf="attendance()!.attendancePercentage >= 90">ممتاز! حافظ على هذا المستوى</ng-container>
-            <ng-container *ngIf="attendance()!.attendancePercentage >= 75 && attendance()!.attendancePercentage < 90">جيد — حاول تحسين الحضور</ng-container>
-            <ng-container *ngIf="attendance()!.attendancePercentage < 75">تحذير — نسبة الحضور أقل من 75%</ng-container>
-          </div>
-        </div>
 
-        <div class="section-card" *ngIf="enrollment() && !attendance() && !loadingAttendance()">
-          <div class="section-title"><i class="fas fa-calendar-check me-2"></i>الحضور</div>
-          <div class="empty-sub">لا توجد بيانات حضور لهذا الشهر</div>
-        </div>
-
-        <!-- ── Grades ─────────────────────────────────────── -->
-        <div class="section-card" *ngIf="grades().length > 0">
-          <div class="section-title">
-            <i class="fas fa-star me-2"></i>الدرجات
-          </div>
-          <div class="grades-list">
-            <div *ngFor="let g of grades()" class="grade-row">
-              <div class="grade-exam">
-                <div class="exam-name">{{ g.examName || 'اختبار' }}</div>
-                <div class="exam-code" *ngIf="g.examCode">{{ g.examCode }}</div>
+            @if (!enrollment()) {
+              <div class="not-enrolled">
+                <i class="fas fa-info-circle"></i>
+                <span>لم تسجّل في هذا المقرر بعد</span>
+                <button class="btn-enroll" (click)="goToEnroll()">
+                  <i class="fas fa-plus"></i> سجّل الآن
+                </button>
               </div>
-              <div class="grade-score">
-                <span class="score-num" [class]="gradeClass(g)">{{ g.grade }}</span>
-                <span class="score-max">/ {{ g.maxGrade }}</span>
-              </div>
-              <div class="grade-bar-wrap">
-                <div class="grade-bar">
-                  <div class="grade-fill" [class]="gradeClass(g)"
-                       [style.width.%]="gradePercent(g)"></div>
+            } @else {
+              <div class="enrollment-info">
+                <div class="info-row">
+                  <span class="info-label"><i class="fas fa-certificate"></i> الحالة</span>
+                  <span class="status-badge" [class]="statusClass()">{{ statusLabel() }}</span>
                 </div>
-                <span class="grade-pct" [class]="gradeClass(g)">{{ gradePercent(g) }}%</span>
+                @if (enrollment()!.teacherName) {
+                  <div class="info-row">
+                    <span class="info-label"><i class="fas fa-chalkboard-teacher"></i> المعلم</span>
+                    <span class="info-value">{{ enrollment()!.teacherName }}</span>
+                  </div>
+                }
+                @if (enrollment()!.groupName) {
+                  <div class="info-row">
+                    <span class="info-label"><i class="fas fa-users"></i> المجموعة</span>
+                    <span class="info-value">{{ enrollment()!.groupName }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Schedule -->
+          @if (group() && group()!.schedules?.length) {
+            <div class="section-card">
+              <div class="section-title">
+                <i class="fas fa-calendar-alt"></i> جدول الحصص · Schedule
+              </div>
+              <div class="schedules">
+                @for (s of group()!.schedules; track $index) {
+                  <div class="schedule-row">
+                    <span class="day-chip">{{ getDayName(s.dayOfWeek) }}</span>
+                    <span class="schedule-time">
+                      <i class="fas fa-clock"></i>
+                      {{ formatTime(s.startTime) }} — {{ formatTime(s.endTime) }}
+                    </span>
+                    @if (s.location) {
+                      <span class="schedule-location">
+                        <i class="fas fa-map-marker-alt"></i>{{ s.location }}
+                      </span>
+                    }
+                  </div>
+                }
               </div>
             </div>
-          </div>
-          <div class="grades-avg" *ngIf="grades().length > 1">
-            <span>المتوسط العام</span>
-            <span class="avg-val" [class]="avgClass()">{{ avgGrade() }}%</span>
-          </div>
-        </div>
+          }
 
-        <div class="section-card" *ngIf="enrollment() && grades().length === 0 && !loadingGrades()">
-          <div class="section-title"><i class="fas fa-star me-2"></i>الدرجات</div>
-          <div class="empty-sub">لا توجد درجات مسجّلة بعد</div>
-        </div>
+          <!-- Attendance -->
+          @if (attendance()) {
+            <div class="section-card">
+              <div class="section-title">
+                <i class="fas fa-calendar-check"></i> الحضور — {{ currentMonthLabel() }}
+              </div>
+              <div class="attendance-stats">
+                <div class="att-stat present">
+                  <div class="att-num">{{ attendance()!.attendedDays }}</div>
+                  <div class="att-label">حضور</div>
+                </div>
+                <div class="att-stat absent">
+                  <div class="att-num">{{ attendance()!.absentDays }}</div>
+                  <div class="att-label">غياب</div>
+                </div>
+                <div class="att-stat total">
+                  <div class="att-num">{{ attendance()!.totalDaysInMonth }}</div>
+                  <div class="att-label">إجمالي</div>
+                </div>
+              </div>
+              <div class="att-bar-wrap">
+                <div class="att-bar">
+                  <div class="att-fill"
+                       [style.width.%]="attendance()!.attendancePercentage"
+                       [class]="attBarClass()"></div>
+                </div>
+                <span class="att-pct" [class]="attPctClass()">{{ attendance()!.attendancePercentage }}%</span>
+              </div>
+              <div class="att-note" [class]="attBarClass()">
+                <i class="fas fa-info-circle"></i>
+                @if (attendance()!.attendancePercentage >= 90) {
+                  ممتاز! حافظ على هذا المستوى
+                } @else if (attendance()!.attendancePercentage >= 75) {
+                  جيد — حاول تحسين الحضور
+                } @else {
+                  تحذير — نسبة الحضور أقل من 75%
+                }
+              </div>
+            </div>
+          }
 
-      </div>
+          @if (enrollment() && !attendance() && !loadingAttendance()) {
+            <div class="section-card">
+              <div class="section-title"><i class="fas fa-calendar-check"></i> الحضور</div>
+              <div class="empty-sub">لا توجد بيانات حضور لهذا الشهر</div>
+            </div>
+          }
+
+          <!-- Grades -->
+          @if (grades().length > 0) {
+            <div class="section-card">
+              <div class="section-title">
+                <i class="fas fa-star"></i> الدرجات · Grades
+              </div>
+              <div class="grades-list">
+                @for (g of grades(); track $index) {
+                  <div class="grade-row">
+                    <div class="grade-exam">
+                      <div class="exam-name">{{ g.examName || 'تقييم' }}</div>
+                      @if (g.examCode) {
+                        <div class="exam-code">{{ g.examCode }}</div>
+                      }
+                    </div>
+                    <div class="grade-score">
+                      <span class="score-num" [class]="gradeClass(g)">{{ g.grade }}</span>
+                      <span class="score-max">/ {{ g.maxGrade }}</span>
+                    </div>
+                    <div class="grade-bar-wrap">
+                      <div class="grade-bar">
+                        <div class="grade-fill" [class]="gradeClass(g)"
+                             [style.width.%]="gradePercent(g)"></div>
+                      </div>
+                      <span class="grade-pct" [class]="gradeClass(g)">{{ gradePercent(g) }}%</span>
+                    </div>
+                  </div>
+                }
+              </div>
+              @if (grades().length > 1) {
+                <div class="grades-avg">
+                  <span>المتوسط العام</span>
+                  <span class="avg-val" [class]="avgClass()">{{ avgGrade() }}%</span>
+                </div>
+              }
+            </div>
+          }
+
+          @if (enrollment() && grades().length === 0 && !loadingGrades()) {
+            <div class="section-card">
+              <div class="section-title"><i class="fas fa-star"></i> الدرجات</div>
+              <div class="empty-sub">لا توجد درجات مسجّلة بعد</div>
+            </div>
+          }
+
+        </div>
+      }
     </div>
   `,
   styles: [`
+    $purple-start: #667eea;
+    $purple-end: #764ba2;
+
     .profile-page {
       min-height: 100vh;
-      background: #f4f6fb;
-      padding-bottom: env(safe-area-inset-bottom);
+      background: #f4f5fb;
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     }
 
-    /* ── Hero ────────────────────────────────────── */
-    .hero-header {
-      background: var(--ngx-hero-gradient);
-      padding: 1.25rem 1rem;
-      display: flex; align-items: flex-start; gap: 0.75rem;
+    /* ── Top Bar ─────────────────────────────────── */
+    .top-bar {
+      background: linear-gradient(145deg, $purple-start 0%, $purple-end 100%);
+      padding: calc(env(safe-area-inset-top, 0px) + 0.6rem) 1rem 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      box-shadow: 0 2px 12px rgba(102, 126, 234, 0.25);
     }
-    .back-btn {
-      background: rgba(255,255,255,0.2); border: none; color: white;
-      width: 40px; height: 40px; border-radius: 50%;
+
+    .top-back-btn {
+      flex-shrink: 0;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 1.5px solid rgba(255,255,255,0.25);
+      color: #fff;
+      font-size: 0.9rem;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; cursor: pointer; flex-shrink: 0; margin-top: 2px;
-      touch-action: manipulation;
+      cursor: pointer;
+      min-width: 44px; min-height: 44px;
+      transition: background 0.15s;
+      &:active { background: rgba(255,255,255,0.28); }
     }
-    .hero-text {
-      flex: 1;
-      h1 { font-size: 1.1rem; font-weight: 700; color: white; margin: 0 0 0.4rem; }
+
+    .top-bar-text {
+      flex: 1; min-width: 0;
+      h1 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
-    .hero-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-    .hero-chip {
-      background: rgba(255,255,255,0.22); color: white;
-      padding: 0.15rem 0.55rem; border-radius: 6px;
-      font-size: 0.75rem; font-weight: 600;
+
+    .top-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-top: 0.15rem;
+    }
+
+    .top-chip {
+      font-size: 0.62rem;
+      font-weight: 600;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 0.1rem 0.4rem;
+      border-radius: 12px;
+    }
+
+    .top-icon {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 1.5px solid rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      i { font-size: 1rem; color: #fff; }
     }
 
     /* ── Loading / Error ──────────────────────────── */
     .loading-state {
       display: flex; flex-direction: column; align-items: center;
-      gap: 0.75rem; padding: 3rem 1rem; color: #718096;
+      gap: 0.75rem; padding: 3rem 1rem; color: #9ca3af;
       p { font-size: 0.9rem; margin: 0; }
     }
     .spinner {
       width: 36px; height: 36px;
-      border: 3px solid #e2e8f0; border-top-color: var(--ngx-primary);
+      border: 3px solid #e5e7eb; border-top-color: $purple-start;
       border-radius: 50%; animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .error-banner {
       margin: 0.75rem 1rem;
-      background: #fff5f5; color: #c53030;
-      border: 1px solid #feb2b2; border-radius: 10px;
+      background: #fef2f2; color: #dc2626;
+      border: 1px solid #fecaca; border-radius: 12px;
       padding: 0.75rem 1rem; font-size: 0.88rem;
+      display: flex; align-items: center; gap: 0.5rem;
+      i { flex-shrink: 0; }
     }
 
     /* ── Content ──────────────────────────────────── */
-    .content { padding: 0.75rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .content { padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
 
     .section-card {
       background: white; border-radius: 14px;
-      padding: 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+      padding: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.07);
     }
     .section-title {
-      font-size: 0.88rem; font-weight: 700; color: #4a5568;
+      font-size: 0.88rem; font-weight: 700; color: #4a4a6a;
       margin-bottom: 0.875rem;
-      i { color: var(--ngx-primary); }
+      display: flex; align-items: center; gap: 0.4rem;
+      i { color: $purple-start; font-size: 0.8rem; }
     }
 
     /* ── Enrollment ───────────────────────────────── */
     .not-enrolled {
       display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
-      font-size: 0.88rem; color: #718096;
+      font-size: 0.88rem; color: #9ca3af;
+      i { color: #667eea; }
     }
     .btn-enroll {
-      background: var(--ngx-hero-gradient);
-      color: white; border: none; border-radius: 8px;
-      padding: 0.4rem 0.9rem; font-size: 0.82rem;
+      background: linear-gradient(145deg, $purple-start, $purple-end);
+      color: white; border: none; border-radius: 10px;
+      padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 700;
       cursor: pointer; white-space: nowrap;
+      min-height: 44px;
+      display: flex; align-items: center; gap: 0.3rem;
+      box-shadow: 0 4px 12px rgba(102,126,234,0.3);
     }
     .enrollment-info { display: flex; flex-direction: column; gap: 0.6rem; }
     .info-row {
       display: flex; align-items: center; gap: 0.75rem;
       font-size: 0.88rem;
     }
-    .info-label { color: #718096; white-space: nowrap; min-width: 90px; }
+    .info-label {
+      color: #9ca3af; white-space: nowrap; min-width: 90px;
+      display: flex; align-items: center; gap: 0.3rem;
+      i { font-size: 0.75rem; color: $purple-start; }
+    }
     .info-value { font-weight: 600; color: #1a202c; }
 
     .status-badge {
       display: inline-flex; align-items: center;
-      padding: 0.2rem 0.65rem; border-radius: 8px;
+      padding: 0.25rem 0.65rem; border-radius: 10px;
       font-size: 0.78rem; font-weight: 700;
     }
     .status-pending  { background: #fffbeb; color: #d97706; }
     .status-approved { background: #f0fdf4; color: #15803d; }
-    .status-rejected { background: #fff5f5; color: #c53030; }
+    .status-rejected { background: #fef2f2; color: #dc2626; }
 
     /* ── Schedule ─────────────────────────────────── */
     .schedules { display: flex; flex-direction: column; gap: 0.5rem; }
     .schedule-row {
       display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;
-      background: #f7fafc; border-radius: 8px;
-      padding: 0.5rem 0.75rem; font-size: 0.82rem;
+      background: #f5f3ff; border: 1px solid #ede9fe;
+      border-radius: 10px;
+      padding: 0.6rem 0.75rem; font-size: 0.82rem;
     }
     .day-chip {
-      background: #edf2ff; color: var(--ngx-primary);
-      padding: 0.15rem 0.5rem; border-radius: 4px;
+      background: linear-gradient(145deg, $purple-start, $purple-end);
+      color: #fff;
+      padding: 0.2rem 0.6rem; border-radius: 8px;
       font-weight: 700; font-size: 0.75rem;
     }
-    .schedule-time { color: #4a5568; }
-    .schedule-location { color: #718096; }
+    .schedule-time {
+      color: #4a4a6a;
+      display: flex; align-items: center; gap: 0.3rem;
+      i { font-size: 0.7rem; color: $purple-start; }
+    }
+    .schedule-location {
+      color: #9ca3af;
+      display: flex; align-items: center; gap: 0.25rem;
+      i { font-size: 0.7rem; }
+    }
 
     /* ── Attendance ───────────────────────────────── */
     .attendance-stats {
-      display: flex; gap: 0; margin-bottom: 0.875rem;
+      display: flex; gap: 0.4rem; margin-bottom: 0.875rem;
     }
     .att-stat {
       flex: 1; text-align: center; padding: 0.75rem 0.5rem;
-      border-radius: 10px; margin: 0 0.2rem;
+      border-radius: 10px;
     }
     .att-stat.present { background: #f0fdf4; }
-    .att-stat.absent  { background: #fff5f5; }
-    .att-stat.total   { background: #f7fafc; }
-    .att-num {
-      font-size: 1.5rem; font-weight: 800;
-      .att-stat.present & { color: #15803d; }
-      .att-stat.absent &  { color: #c53030; }
-      .att-stat.total &   { color: #4a5568; }
-    }
-    .att-label { font-size: 0.72rem; color: #718096; margin-top: 0.1rem; }
+    .att-stat.absent  { background: #fef2f2; }
+    .att-stat.total   { background: #f5f3ff; }
+    .att-num { font-size: 1.5rem; font-weight: 800; }
+    .att-stat.present .att-num { color: #15803d; }
+    .att-stat.absent .att-num  { color: #dc2626; }
+    .att-stat.total .att-num   { color: #5b21b6; }
+    .att-label { font-size: 0.72rem; color: #9ca3af; margin-top: 0.1rem; }
 
     .att-bar-wrap {
       display: flex; align-items: center; gap: 0.75rem;
       margin-bottom: 0.5rem;
     }
     .att-bar {
-      flex: 1; height: 8px; background: #e2e8f0;
+      flex: 1; height: 8px; background: #e5e7eb;
       border-radius: 4px; overflow: hidden;
     }
     .att-fill {
@@ -323,14 +434,16 @@ import { StudentService } from '@proxy/students';
       font-size: 0.85rem; font-weight: 700; white-space: nowrap;
       &.rate-excellent { color: #15803d; }
       &.rate-good      { color: #d97706; }
-      &.rate-poor      { color: #c53030; }
+      &.rate-poor      { color: #dc2626; }
     }
     .att-note {
-      font-size: 0.78rem; padding: 0.4rem 0.6rem;
-      border-radius: 6px;
+      font-size: 0.78rem; padding: 0.5rem 0.6rem;
+      border-radius: 8px;
+      display: flex; align-items: center; gap: 0.3rem;
+      i { font-size: 0.72rem; flex-shrink: 0; }
       &.rate-excellent { background: #f0fdf4; color: #15803d; }
       &.rate-good      { background: #fffbeb; color: #d97706; }
-      &.rate-poor      { background: #fff5f5; color: #c53030; }
+      &.rate-poor      { background: #fef2f2; color: #dc2626; }
     }
 
     /* ── Grades ───────────────────────────────────── */
@@ -341,7 +454,7 @@ import { StudentService } from '@proxy/students';
     .grade-exam {
       display: flex; align-items: baseline; gap: 0.5rem;
       .exam-name { font-weight: 600; color: #1a202c; font-size: 0.9rem; }
-      .exam-code { font-size: 0.75rem; color: #a0aec0; }
+      .exam-code { font-size: 0.75rem; color: #9ca3af; }
     }
     .grade-score {
       display: flex; align-items: baseline; gap: 0.2rem;
@@ -349,15 +462,15 @@ import { StudentService } from '@proxy/students';
         font-size: 1.3rem; font-weight: 800;
         &.grade-excellent { color: #15803d; }
         &.grade-good      { color: #d97706; }
-        &.grade-poor      { color: #c53030; }
+        &.grade-poor      { color: #dc2626; }
       }
-      .score-max { font-size: 0.82rem; color: #a0aec0; }
+      .score-max { font-size: 0.82rem; color: #9ca3af; }
     }
     .grade-bar-wrap {
       display: flex; align-items: center; gap: 0.6rem;
     }
     .grade-bar {
-      flex: 1; height: 6px; background: #e2e8f0;
+      flex: 1; height: 6px; background: #e5e7eb;
       border-radius: 3px; overflow: hidden;
     }
     .grade-fill {
@@ -370,28 +483,24 @@ import { StudentService } from '@proxy/students';
       font-size: 0.75rem; font-weight: 700; white-space: nowrap;
       &.grade-excellent { color: #15803d; }
       &.grade-good      { color: #d97706; }
-      &.grade-poor      { color: #c53030; }
+      &.grade-poor      { color: #dc2626; }
     }
     .grades-avg {
       display: flex; justify-content: space-between; align-items: center;
       margin-top: 0.875rem; padding-top: 0.75rem;
-      border-top: 1px solid #e2e8f0;
-      font-size: 0.88rem; color: #4a5568; font-weight: 600;
+      border-top: 1px solid #e5e7eb;
+      font-size: 0.88rem; color: #4a4a6a; font-weight: 600;
     }
     .avg-val {
       font-size: 1rem; font-weight: 800;
       &.grade-excellent { color: #15803d; }
       &.grade-good      { color: #d97706; }
-      &.grade-poor      { color: #c53030; }
+      &.grade-poor      { color: #dc2626; }
     }
 
     /* ── Empty sub ────────────────────────────────── */
     .empty-sub {
-      font-size: 0.85rem; color: #a0aec0; text-align: center; padding: 0.75rem 0;
-    }
-
-    @media (min-width: 480px) {
-      .content { max-width: 480px; margin: 0 auto; }
+      font-size: 0.85rem; color: #9ca3af; text-align: center; padding: 0.75rem 0;
     }
   `]
 })
@@ -416,6 +525,8 @@ export class StudentCourseProfileComponent implements OnInit {
   loadingAttendance = signal(false);
   loadingGrades = signal(false);
   error = signal<string | null>(null);
+
+  private studentId = signal<string | null>(null);
 
   currentMonthLabel = computed(() => {
     const now = new Date();
@@ -475,6 +586,7 @@ export class StudentCourseProfileComponent implements OnInit {
       ]);
 
       if (course) this.course.set(course);
+      if (student?.id) this.studentId.set(student.id);
 
       // Find the enrollment request for this course
       const enroll = (requests as any[]).find((r: any) => r.courseId === id) ?? null;
@@ -515,15 +627,23 @@ export class StudentCourseProfileComponent implements OnInit {
         }
       }
 
-      // Load grades when enrollment exists and is approved
-      const enrollmentId = enroll?.id;
-      if (enrollmentId && enroll.status === EnrollmentRequestStatus.Approved) {
+      // Load grades using getGradesByStudent (works with student entity ID)
+      if (student?.id && enroll?.status === EnrollmentRequestStatus.Approved) {
         this.loadingGrades.set(true);
         try {
-          const gs = await lastValueFrom(
-            this.examGradeService.getGradesByEnrollment(enrollmentId)
+          const gradesResult = await lastValueFrom(
+            this.examGradeService.getGradesByStudent(student.id, {
+              skipCount: 0,
+              maxResultCount: 100,
+            })
           );
-          this.grades.set(gs ?? []);
+          // Filter grades to only show ones for this course
+          const courseName = course?.nameAr || course?.nameEn || '';
+          const allGrades = gradesResult?.items ?? [];
+          const courseGrades = courseName
+            ? allGrades.filter(g => g.courseName === courseName || g.courseName === (course?.nameEn || '') || g.courseName === (course?.nameAr || ''))
+            : allGrades;
+          this.grades.set(courseGrades.length > 0 ? courseGrades : allGrades);
         } catch { /* non-critical */ } finally {
           this.loadingGrades.set(false);
         }

@@ -17,6 +17,7 @@ export const ROLES = {
   PARENT: 'PARENT',
   ADMIN: 'ADMIN',
   SECRETARY: 'SECRETARY',
+  ADVERTISER: 'ADVERTISER',
 } as const;
 
 // ─── Route definitions ────────────────────────────────────────────────────────

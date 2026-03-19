@@ -9,16 +9,19 @@ export const homeRoutes: Routes = [
   },
   {
     path: 'student',
+    pathMatch: 'full',
     loadComponent: () => import('./student-home.component').then(m => m.StudentHomeComponent),
     canActivate: [authGuard]
   },
   {
     path: 'parent',
+    pathMatch: 'full',
     loadComponent: () => import('./parent-home.component').then(m => m.ParentHomeComponent),
     canActivate: [authGuard]
   },
   {
     path: 'teacher',
+    pathMatch: 'full',
     loadComponent: () => import('./teacher-home.component').then(m => m.TeacherHomeComponent),
     canActivate: [authGuard]
   },

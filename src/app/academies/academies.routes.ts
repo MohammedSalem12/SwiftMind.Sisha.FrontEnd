@@ -15,6 +15,12 @@ export const academiesRoutes: Routes = [
     data: { roles: ['TEACHER', 'ADMIN'] },
   },
   {
+    path: ':id/edit',
+    loadComponent: () => import('./academy-create.component').then(m => m.AcademyCreateComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'ADMIN'] },
+  },
+  {
     path: ':id/profile',
     loadComponent: () => import('./academy-profile.component').then(m => m.AcademyProfileComponent),
     canActivate: [authGuard],

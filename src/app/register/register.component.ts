@@ -28,6 +28,10 @@ export class RegisterComponent implements OnInit {
   registering = signal(false);
   error = signal<string | null>(null);
   successCode = signal<string | null>(null);
+  successUserName = signal<string | null>(null);
+  successPassword = signal<string | null>(null);
+  successFullName = signal<string | null>(null);
+  showSuccessPassword = signal(false);
 
   readonly roles = [
     {
@@ -102,6 +106,8 @@ export class RegisterComponent implements OnInit {
     } catch {
       // Fallback to Arabic grade names if API fails
       this.gradeOptions.set([
+        { value: '-1', label: 'رياض أطفال 1 · KG1' },
+        { value: '0', label: 'رياض أطفال 2 · KG2' },
         { value: '1', label: 'الصف الأول الابتدائي' },
         { value: '2', label: 'الصف الثاني الابتدائي' },
         { value: '3', label: 'الصف الثالث الابتدائي' },
@@ -141,7 +147,7 @@ export class RegisterComponent implements OnInit {
       return;
     }
     if (!this.form.userName.trim()) {
-      this.error.set('يرجى إدخال اسم المستخدم');
+      this.error.set('يرجى إدخال رقم الموبايل أو اسم المستخدم');
       return;
     }
     if (!this.form.password) {
@@ -197,6 +203,9 @@ export class RegisterComponent implements OnInit {
           throw new Error('نوع المستخدم غير معروف');
       }
       this.successCode.set(result?.userCode ?? null);
+      this.successUserName.set(this.form.userName.trim());
+      this.successPassword.set(this.form.password);
+      this.successFullName.set(this.form.fullName.trim());
       this.step.set('success');
     } catch (e: any) {
       console.error('Registration error:', e);

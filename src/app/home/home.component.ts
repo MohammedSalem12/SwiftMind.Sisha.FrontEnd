@@ -7,13 +7,15 @@ import { StudentService } from '@proxy/students';
 import { TeacherService } from '@proxy/teachers';
 import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import { lastValueFrom, filter, take } from 'rxjs';
+import { OfflineCacheService } from '../shared/services/offline-cache.service';
+import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 
 @Component({
   standalone: true,
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  imports: [CommonModule, RouterModule]
+  imports: [CommonModule, RouterModule, OfflineBannerComponent]
 })
 export class HomeComponent implements OnInit {
   private authService = inject(AuthService);
@@ -23,6 +25,7 @@ export class HomeComponent implements OnInit {
   private studentSvc = inject(StudentService);
   private teacherSvc = inject(TeacherService);
   private enrollmentSvc = inject(StudentEnrollmentService);
+  private cache = inject(OfflineCacheService);
 
   // Observable for current user info
   readonly user$ = this.userProfileService.user$;
@@ -32,9 +35,13 @@ export class HomeComponent implements OnInit {
   teachersCount = signal<number | null>(null);
   parentsCount = signal<number | null>(null);
   loadingCounts = signal(false);
-  
+  offline = signal(false);
+  offlineLastUpdated = signal('');
+
   // Track if we're redirecting (to prevent flash of dashboard)
   redirecting = signal(false);
+
+  private readonly CACHE_KEY = 'admin_home';
 
   // Mock ads and suggestions (UI-only, not real ads)
   ads = signal<any[]>([
@@ -88,12 +95,13 @@ export class HomeComponent implements OnInit {
             .filter(Boolean);
 
           const has = (r: string) => roles.includes(r);
-          const isStudent   = has('student');
-          const isParent    = has('parent');
-          const isTeacher   = has('teacher');
-          const isSecretary = has('secretary');
-          const isAdmin     = has('admin');
-          const knownRoles  = ['student','teacher','parent','admin','secretary'];
+          const isStudent     = has('student');
+          const isParent      = has('parent');
+          const isTeacher     = has('teacher');
+          const isSecretary   = has('secretary');
+          const isAdmin       = has('admin');
+          const isAdvertiser  = has('advertiser');
+          const knownRoles  = ['student','teacher','parent','admin','secretary','advertiser'];
           const hasKnown    = roles.some(r => knownRoles.includes(r));
 
           if (isAdmin) {
@@ -108,14 +116,15 @@ export class HomeComponent implements OnInit {
             return;
           }
 
-          if (isStudent || isParent || isTeacher || isSecretary) {
+          if (isStudent || isParent || isTeacher || isSecretary || isAdvertiser) {
             this.redirecting.set(true);
           }
 
-          if (isStudent)        this.router.navigate(['/student']);
-          else if (isParent)    this.router.navigate(['/parent']);
-          else if (isTeacher)   this.router.navigate(['/teacher']);
-          else if (isSecretary) this.router.navigate(['/secretary']);
+          if (isStudent)          this.router.navigate(['/student']);
+          else if (isParent)      this.router.navigate(['/parent']);
+          else if (isTeacher)     this.router.navigate(['/teacher']);
+          else if (isSecretary)   this.router.navigate(['/secretary']);
+          else if (isAdvertiser)  this.router.navigate(['/ads/my']);
         } catch (error) {
           console.error('Error checking user role:', error);
         }
@@ -136,11 +145,26 @@ export class HomeComponent implements OnInit {
       const enrolls = enrollResp?.items ?? [];
       const parentIds = new Set(enrolls.filter((e: any) => e.parentId).map((e: any) => e.parentId));
       this.parentsCount.set(parentIds.size);
+      this.cache.set(this.CACHE_KEY, {
+        studentsCount: this.studentsCount(),
+        teachersCount: this.teachersCount(),
+        parentsCount: this.parentsCount(),
+      });
+      this.offline.set(false);
     } catch (e) {
       console.error('Failed to load dashboard counts', e);
-      this.studentsCount.set(null);
-      this.teachersCount.set(null);
-      this.parentsCount.set(null);
+      const cached = this.cache.get<any>(this.CACHE_KEY);
+      if (cached) {
+        this.studentsCount.set(cached.studentsCount ?? null);
+        this.teachersCount.set(cached.teachersCount ?? null);
+        this.parentsCount.set(cached.parentsCount ?? null);
+        this.offline.set(true);
+        this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
+      } else {
+        this.studentsCount.set(null);
+        this.teachersCount.set(null);
+        this.parentsCount.set(null);
+      }
     } finally {
       this.loadingCounts.set(false);
     }

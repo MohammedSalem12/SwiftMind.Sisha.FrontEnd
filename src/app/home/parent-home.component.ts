@@ -11,11 +11,13 @@ import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status.enum';
+import { OfflineCacheService } from '../shared/services/offline-cache.service';
+import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 
 @Component({
   selector: 'app-parent-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, OfflineBannerComponent],
   templateUrl: './parent-home.component.html',
   styleUrls: ['./parent-home.component.scss'],
 })
@@ -25,6 +27,7 @@ export class ParentHomeComponent implements OnInit {
   private readonly parentService = inject(ParentService);
   private readonly notificationService = inject(NotificationService);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
+  private readonly cache = inject(OfflineCacheService);
 
   parentName = signal('');
   children = signal<ParentStudentDto[]>([]);
@@ -33,6 +36,14 @@ export class ParentHomeComponent implements OnInit {
   pendingRequestsCount = signal(0);
   loading = signal(false);
   currentParent = signal<ParentDto | null>(null);
+  offline = signal(false);
+  offlineLastUpdated = signal('');
+
+  // Collapse/expand state
+  childrenExpanded = signal(true);
+  notificationsExpanded = signal(true);
+
+  private readonly CACHE_KEY = 'parent_home';
 
   async ngOnInit(): Promise<void> {
     await Promise.all([
@@ -40,6 +51,15 @@ export class ParentHomeComponent implements OnInit {
       this.loadRecentNotifications(),
       this.loadPendingRequestsCount()
     ]);
+    if (!this.offline()) {
+      this.cache.set(this.CACHE_KEY, {
+        parentName: this.parentName(),
+        children: this.children(),
+        childCoursesMap: this.childCoursesMap(),
+        recentNotifications: this.recentNotifications(),
+        pendingRequestsCount: this.pendingRequestsCount(),
+      });
+    }
   }
 
   getInitials(name: string | undefined): string {
@@ -93,8 +113,22 @@ export class ParentHomeComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error loading parent children:', error);
+      this.restoreFromCache();
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private restoreFromCache(): void {
+    const cached = this.cache.get<any>(this.CACHE_KEY);
+    if (cached) {
+      this.parentName.set(cached.parentName || '');
+      this.children.set(cached.children || []);
+      this.childCoursesMap.set(cached.childCoursesMap || {});
+      this.recentNotifications.set(cached.recentNotifications || []);
+      this.pendingRequestsCount.set(cached.pendingRequestsCount || 0);
+      this.offline.set(true);
+      this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
     }
   }
 

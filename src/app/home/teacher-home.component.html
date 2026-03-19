@@ -1,21 +1,26 @@
 <div class="teacher-home" dir="rtl">
 
-  <!-- Hero Header -->
-  <div class="hero">
+  @if (offline()) {
+    <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
+  }
+
+  <!-- Hero Header (compact) -->
+  <div class="hero hero--compact">
     <div class="hero-blob hero-blob-1"></div>
     <div class="hero-blob hero-blob-2"></div>
     <div class="hero-content">
-      <div class="hero-greeting">
-        <span class="hero-hello">مرحباً،</span>
-        <span class="hero-name">{{ teacherName() || 'المعلم' }}</span>
-      </div>
-      <p class="hero-sub">اختر مقرراً لتسجيل الحضور أو الدرجات</p>
-      <p class="hero-sub-en">Select a course to record attendance or marks</p>
+      <span class="hero-hello">مرحباً،</span>
+      <span class="hero-name">{{ teacherName() || 'المعلم' }}</span>
     </div>
-    <div class="hero-icon">
+    <div class="hero-icon" (click)="goToProfile()">
       <i class="fas fa-chalkboard-teacher"></i>
     </div>
   </div>
+
+  <!-- Next Session Timer -->
+  @if (nextSession()) {
+    <app-session-timer [session]="nextSession()" [canSendMessage]="true" (todaySessionsClicked)="goTodaySessions()"></app-session-timer>
+  }
 
   <!-- Loading -->
   @if (loading()) {
@@ -35,40 +40,43 @@
 
   <!-- My Courses Grid -->
   @if (!loading() && courses().length > 0) {
-    <div class="section-label">
+    <button class="section-label section-label--toggle" (click)="toggleCourses()">
       <i class="fas fa-layer-group"></i>
       <span>مقرراتي · My Courses</span>
       <span class="count-pill">{{ courses().length }}</span>
-    </div>
+      <i class="fas toggle-chevron" [class.fa-chevron-down]="!coursesExpanded()" [class.fa-chevron-up]="coursesExpanded()"></i>
+    </button>
 
-    <div class="courses-grid">
-      @for (course of courses(); track course.id) {
-        <button class="course-card" (click)="selectCourse(course)">
-          <div class="course-card-icon">
-            <i class="fas fa-book"></i>
-          </div>
-          <div class="course-card-body">
-            <div class="course-name">{{ course.nameAr || course.nameEn || course.name }}</div>
-            <div class="course-name-en">{{ course.nameEn }}</div>
-            <div class="course-meta">
-              @if (course.code) {
-                <span class="meta-chip chip-code">{{ course.code }}</span>
-              }
-              @if (course.gradeName) {
-                <span class="meta-chip chip-grade">{{ course.gradeName }}</span>
-              }
+    @if (coursesExpanded()) {
+      <div class="courses-grid collapsible-content">
+        @for (course of courses(); track course.id) {
+          <button class="course-card" (click)="selectCourse(course)">
+            <div class="course-card-icon">
+              <i class="fas fa-book"></i>
             </div>
-          </div>
-          <!-- QR Code Button -->
-          <button class="qr-btn" (click)="openQrCodes($event, course)" title="QR Code">
-            <i class="fas fa-qrcode"></i>
+            <div class="course-card-body">
+              <div class="course-name">{{ course.nameAr || course.nameEn || course.name }}</div>
+              <div class="course-name-en">{{ course.nameEn }}</div>
+              <div class="course-meta">
+                @if (course.code) {
+                  <span class="meta-chip chip-code">{{ course.code }}</span>
+                }
+                @if (course.gradeName) {
+                  <span class="meta-chip chip-grade">{{ course.gradeName }}</span>
+                }
+              </div>
+            </div>
+            <!-- QR Code Button -->
+            <button class="qr-btn" (click)="openQrCodes($event, course)" title="QR Code">
+              <i class="fas fa-qrcode"></i>
+            </button>
+            <div class="course-card-arrow">
+              <i class="fas fa-chevron-left"></i>
+            </div>
           </button>
-          <div class="course-card-arrow">
-            <i class="fas fa-chevron-left"></i>
-          </div>
-        </button>
-      }
-    </div>
+        }
+      </div>
+    }
   }
 
   <!-- Academy Courses Sections -->
@@ -78,22 +86,26 @@
       <span>مقررات الأكاديمية · Academy Courses</span>
     </div>
     @for (group of academyGroups(); track group.academy.id) {
-      <div class="section-label section-label-academy">
+      <button class="section-label section-label-academy section-label--toggle" (click)="toggleAcademy(group.academy.id)">
         <i class="fas fa-university"></i>
         <span>{{ group.academy.nameAr || group.academy.nameEn }}</span>
         @if (group.academy.nameEn && group.academy.nameAr) {
           <span class="academy-name-en">· {{ group.academy.nameEn }}</span>
         }
         <span class="count-pill">{{ group.courses.length }}</span>
-      </div>
+        <i class="fas toggle-chevron" [class.fa-chevron-down]="!isAcademyExpanded(group.academy.id)" [class.fa-chevron-up]="isAcademyExpanded(group.academy.id)"></i>
+      </button>
 
-      <div class="courses-grid">
+      @if (isAcademyExpanded(group.academy.id)) {
+      <div class="courses-grid collapsible-content">
         @for (course of group.courses; track (course.courseId ?? course.id)) {
-          <div class="course-card course-card--academy-item">
+          <div class="course-card course-card--academy-item" [class.course-card--locked]="!isAcademyCourseAssigned(course)">
             <!-- Main clickable row -->
-            <button class="course-card-inner" (click)="selectAcademyCourse(course)">
-              <div class="course-card-icon course-card-icon--academy">
-                <i class="fas fa-book-reader"></i>
+            <button class="course-card-inner"
+                    [disabled]="!isAcademyCourseAssigned(course)"
+                    (click)="isAcademyCourseAssigned(course) && selectAcademyCourse(course)">
+              <div class="course-card-icon course-card-icon--academy" [class.course-card-icon--locked]="!isAcademyCourseAssigned(course)">
+                <i class="fas" [class]="isAcademyCourseAssigned(course) ? 'fas fa-book-reader' : 'fas fa-lock'"></i>
               </div>
               <div class="course-card-body">
                 <div class="course-name">{{ course.courseNameAr || course.nameAr || course.courseNameEn || course.nameEn }}</div>
@@ -105,26 +117,34 @@
                   @if (course.gradeName) {
                     <span class="meta-chip chip-grade">{{ course.gradeName }}</span>
                   }
+                  @if (!isAcademyCourseAssigned(course)) {
+                    <span class="meta-chip chip-locked">غير معيّن · Not Assigned</span>
+                  }
                 </div>
               </div>
-              <div class="course-card-arrow">
-                <i class="fas fa-chevron-left"></i>
-              </div>
+              @if (isAcademyCourseAssigned(course)) {
+                <div class="course-card-arrow">
+                  <i class="fas fa-chevron-left"></i>
+                </div>
+              }
             </button>
-            <!-- Quick action buttons -->
-            <div class="course-actions">
-              <button class="ca-btn ca-attendance" (click)="goAcademyAttendance($event, course)">
-                <i class="fas fa-user-check"></i>
-                <span>الحضور</span>
-              </button>
-              <button class="ca-btn ca-marks" (click)="goAcademyMarks($event, course)">
-                <i class="fas fa-star-half-alt"></i>
-                <span>الدرجات</span>
-              </button>
-            </div>
+            <!-- Quick action buttons: only for assigned courses -->
+            @if (isAcademyCourseAssigned(course)) {
+              <div class="course-actions">
+                <button class="ca-btn ca-attendance" (click)="goAcademyAttendance($event, course)">
+                  <i class="fas fa-user-check"></i>
+                  <span>الحضور</span>
+                </button>
+                <button class="ca-btn ca-marks" (click)="goAcademyMarks($event, course)">
+                  <i class="fas fa-star-half-alt"></i>
+                  <span>الدرجات</span>
+                </button>
+              </div>
+            }
           </div>
         }
       </div>
+      }
     }
   }
 
@@ -135,6 +155,13 @@
       <div class="qa-text">
         <span>تسجيل مقرر</span>
         <span class="qa-en">Enroll Course</span>
+      </div>
+    </button>
+    <button class="qa-btn qa-btn-academy" (click)="goToAcademies()">
+      <i class="fas fa-university"></i>
+      <div class="qa-text">
+        <span>الأكاديميات</span>
+        <span class="qa-en">Academies</span>
       </div>
     </button>
     <button class="qa-btn qa-btn-reports" (click)="goToReports()">

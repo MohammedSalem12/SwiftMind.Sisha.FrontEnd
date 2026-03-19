@@ -211,6 +211,33 @@ $quick-h:      62px;
   i { flex-shrink: 0; font-size: 1rem; }
 }
 
+.suggest-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  background: rgba(102, 126, 234, .06);
+  border: 1px solid rgba(102, 126, 234, .2);
+  border-radius: 12px;
+  padding: .75rem 1rem;
+  margin-bottom: 1.25rem;
+  color: #555;
+  font-size: .82rem;
+  text-align: center;
+
+  i { color: #667eea; font-size: 1rem; }
+  .suggest-link {
+    color: #667eea;
+    font-weight: 700;
+    font-size: .85rem;
+    text-decoration: none;
+    padding: .3rem .75rem;
+    border-radius: 8px;
+    background: rgba(102, 126, 234, .1);
+    transition: background .2s;
+  }
+}
+
 // ─── Form Fields ────────────────────────────────────────────────
 .login-form {
   display: flex;

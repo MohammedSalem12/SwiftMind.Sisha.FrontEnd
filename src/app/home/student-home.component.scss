@@ -18,11 +18,8 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 .hero {
   position: relative;
   background: $purple-grad;
-  padding: 2rem 1.5rem 1.5rem;
+  padding: calc(env(safe-area-inset-top, 0px) + 0.6rem) 1.25rem 0.7rem;
   overflow: hidden;
-  transition: padding-bottom 0.3s ease;
-
-  &--expanded { padding-bottom: 0; }
 }
 
 .hero-blob {
@@ -40,10 +37,15 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   z-index: 1;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
 }
 
-.hero-content { flex: 1; }
+.hero-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
 
 .hero-greeting {
   display: flex;
@@ -52,8 +54,9 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   margin-bottom: 0.6rem;
 }
 
-.hero-hello { font-size: 0.95rem; color: rgba(255,255,255,0.8); font-weight: 400; }
-.hero-name  { font-size: 1.45rem; font-weight: 700; color: #fff; }
+.hero-hello { font-size: 0.75rem; color: rgba(255,255,255,0.7); font-weight: 400; }
+.hero-name  { font-size: 1.1rem; font-weight: 800; color: #fff; line-height: 1.2; }
+.hero-grade { font-size: 0.68rem; color: rgba(255,255,255,0.6); font-weight: 500; }
 
 .hero-name-block {
   display: flex;
@@ -122,14 +125,14 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 .hero-icon {
   position: relative;
   z-index: 1;
-  width: 60px;
-  height: 60px;
+  width: 42px;
+  height: 42px;
   background: rgba(255,255,255,0.15);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
+  font-size: 1.15rem;
   color: #fff;
   flex-shrink: 0;
   cursor: pointer;
@@ -196,57 +199,146 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 }
 
 // ──────────────────────────────────────────
-// Promo Ads (compact strip)
+// Promo Ads — two side-by-side flashy boxes
 // ──────────────────────────────────────────
-.promo-strip {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.65rem 1rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  &::-webkit-scrollbar { display: none; }
+.promo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem 0;
 }
 
-.promo-chip {
+.promo-box {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
-  background: #fff;
-  border: 1px solid #e9e6ff;
-  border-radius: 20px;
-  padding: 0.35rem 0.7rem 0.35rem 0.4rem;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.1rem 0.65rem 0.9rem;
+  border-radius: 18px;
+  border: none;
   cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-  transition: transform 0.12s;
-  flex-shrink: 0;
+  text-align: center;
+  overflow: hidden;
+  min-height: 120px;
+  transition: transform 0.15s, box-shadow 0.15s;
 
   &:active { transform: scale(0.96); }
+
+  // Variant 1 — vivid purple/pink
+  &--v0 {
+    background: linear-gradient(145deg, #667eea 0%, #f093fb 100%);
+    box-shadow: 0 6px 24px rgba(102, 126, 234, 0.45);
+  }
+  // Variant 2 — hot orange/red
+  &--v1 {
+    background: linear-gradient(145deg, #f5576c 0%, #ff9a44 100%);
+    box-shadow: 0 6px 24px rgba(245, 87, 108, 0.4);
+  }
 }
 
-.promo-chip-icon {
-  width: 26px; height: 26px;
+// Animated shimmer sweep
+.promo-box-shimmer {
+  position: absolute;
+  top: 0; left: -100%;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(
+    105deg,
+    transparent 25%,
+    rgba(255,255,255,0.3) 50%,
+    transparent 75%
+  );
+  animation: box-shimmer 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes box-shimmer {
+  0%   { left: -100%; }
+  50%  { left: 160%; }
+  100% { left: 160%; }
+}
+
+.promo-box-badge {
+  position: absolute;
+  top: 8px; left: 8px;
+  width: 22px; height: 22px;
   border-radius: 50%;
-  background: $purple-grad;
-  display: flex; align-items: center; justify-content: center;
+  background: rgba(245, 158, 11, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i { font-size: 0.55rem; color: #fff; }
+}
+
+.promo-box-icon {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
   color: #fff;
-  font-size: 0.65rem;
-  flex-shrink: 0;
 }
 
-.promo-chip-text {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #1a202c;
-  max-width: 100px;
+.promo-box-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.promo-chip-star {
-  font-size: 0.55rem;
-  color: #f59e0b;
-  flex-shrink: 0;
+.promo-box-desc {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// "See all" button
+.promo-see-all-row {
+  padding: 0.6rem 1rem 0;
+}
+
+.promo-see-all-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  background: #fff;
+  border: 1.5px solid #e9e6ff;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: $purple-start;
+  transition: background 0.15s;
+
+  &:active { background: #f9f8ff; }
+
+  .fa-chevron-left {
+    margin-right: auto;
+    font-size: 0.65rem;
+    color: #c4b5fd;
+  }
+}
+
+.promo-see-all-en {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #9ca3af;
 }
 
 // ──────────────────────────────────────────
@@ -378,6 +470,36 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   &--warning {
     background: linear-gradient(135deg, #f59e0b, #d97706);
   }
+}
+
+// ──────────────────────────────────────────
+// Collapsible Section Toggle
+// ──────────────────────────────────────────
+.section-label--toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+
+  &:active { opacity: 0.7; }
+}
+
+.toggle-chevron {
+  margin-right: auto;
+  font-size: 0.7rem;
+  color: #9ca3af;
+  transition: transform 0.2s ease;
+}
+
+.collapsible-content {
+  animation: collapseIn 0.2s ease-out;
+}
+
+@keyframes collapseIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .view-all-btn {

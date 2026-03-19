@@ -73,7 +73,10 @@ import { GroupService } from '@proxy/groups';
             </label>
             <div class="duration-row">
               <button type="button" class="dur-btn" [class.active]="duration === 1" (click)="duration = 1">
-                <i class="fas fa-clock"></i> ساعة واحدة
+                <i class="fas fa-clock"></i> ساعة
+              </button>
+              <button type="button" class="dur-btn" [class.active]="duration === 1.5" (click)="duration = 1.5">
+                <i class="fas fa-clock"></i> ساعة ونصف
               </button>
               <button type="button" class="dur-btn" [class.active]="duration === 2" (click)="duration = 2">
                 <i class="fas fa-clock"></i> ساعتان
@@ -211,23 +214,25 @@ export class AddScheduleComponent implements OnInit {
   /** Computed end time display */
   endTimeDisplay(): string {
     if (this.startHour < 0 || this.duration < 1) return '';
-    let h = Number(this.startHour);
-    let ap = this.ampm;
-    // advance by duration hours
-    for (let i = 0; i < this.duration; i++) {
-      if (h === 12 && ap === 'AM') { h = 1; }
-      else if (h === 11 && ap === 'AM') { h = 12; ap = 'PM'; }
-      else if (h === 12 && ap === 'PM') { h = 1; ap = 'AM'; }  // midnight wrap
-      else { h++; }
-    }
-    return this.formatDisplay(h, ap);
+    const startTime = this.to24h(this.startHour, this.ampm);
+    const startH = parseInt(startTime);
+    const totalMinutes = startH * 60 + this.duration * 60;
+    const endH = Math.floor(totalMinutes / 60) % 24;
+    const endM = totalMinutes % 60;
+    const ap = endH >= 12 ? 'PM' : 'AM';
+    const display12 = endH === 0 ? 12 : endH > 12 ? endH - 12 : endH;
+    const suffix = ap === 'AM' ? 'ص' : 'م';
+    return endM > 0 ? `${display12}:${String(endM).padStart(2, '0')} ${suffix}` : `${display12} ${suffix}`;
   }
 
   async submit() {
     if (this.dayOfWeek < 0 || this.startHour < 0 || this.duration < 1 || !this.groupId) return;
     const startTime = this.to24h(this.startHour, this.ampm);
-    const endHour24 = (parseInt(startTime) + this.duration) % 24;
-    const endTime   = `${String(endHour24).padStart(2, '0')}:00`;
+    const startH = parseInt(startTime);
+    const totalMinutes = startH * 60 + this.duration * 60;
+    const endH = Math.floor(totalMinutes / 60) % 24;
+    const endM = totalMinutes % 60;
+    const endTime = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
 
     this.saving.set(true);
     this.errorMsg.set(null);

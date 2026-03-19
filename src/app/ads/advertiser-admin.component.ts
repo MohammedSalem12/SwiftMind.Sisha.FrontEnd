@@ -127,12 +127,14 @@ interface CreateAdvertiserForm {
           @if (form.createUser) {
             <div class="user-fields">
               <div class="form-group">
-                <label>اسم المستخدم <span class="req">*</span></label>
-                <input type="text" [(ngModel)]="form.userName" placeholder="username" dir="ltr" />
+                <label>رقم الموبايل أو اسم مستخدم <span class="req">*</span></label>
+                <span class="field-hint">سيتم استخدامه لتسجيل الدخول · Will be used for login</span>
+                <input type="text" [(ngModel)]="form.userName" placeholder="01XXXXXXXXX / username" dir="ltr" />
               </div>
               <div class="form-group">
                 <label>كلمة المرور <span class="req">*</span></label>
-                <input type="password" [(ngModel)]="form.password" placeholder="Password" dir="ltr" />
+                <span class="field-hint">يجب أن تحتوي على حرف كبير وصغير ورقم ورمز خاص · Must include uppercase, lowercase, number & special char</span>
+                <input type="password" [(ngModel)]="form.password" placeholder="e.g. Pass@123" dir="ltr" />
               </div>
             </div>
           }
@@ -249,6 +251,43 @@ interface CreateAdvertiserForm {
                 }
               </button>
             </div>
+          </div>
+        </div>
+      }
+
+      <!-- Success Modal -->
+      @if (createdInfo()) {
+        <div class="modal-overlay" (click)="createdInfo.set(null)">
+          <div class="modal-card success-modal" (click)="$event.stopPropagation()">
+            <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+            <h3>تم انشاء المعلن بنجاح</h3>
+            <p class="success-sub">Advertiser created successfully</p>
+
+            <div class="credentials-box">
+              <div class="cred-row">
+                <span class="cred-label"><i class="fas fa-user"></i> تسجيل الدخول · Login</span>
+                <span class="cred-value" dir="ltr">{{ createdInfo()!.userName }}</span>
+              </div>
+              <div class="cred-row">
+                <span class="cred-label"><i class="fas fa-key"></i> كلمة المرور · Password</span>
+                <span class="cred-value" dir="ltr">{{ createdInfo()!.password }}</span>
+              </div>
+              <div class="cred-row">
+                <span class="cred-label"><i class="fas fa-hashtag"></i> كود المعلن · Advertiser Code</span>
+                <span class="cred-value" dir="ltr">{{ createdInfo()!.code }}</span>
+              </div>
+              <span class="cred-hint"><i class="fas fa-info-circle"></i> كود المعلن يُستخدم للتعريف والربط مع العروض والصفقات · The code is used for identification and linking with deals</span>
+            </div>
+
+            <div class="cred-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              احفظ هذه البيانات — لن تظهر مرة اخرى
+              <br/><small>Save these credentials — they won't be shown again</small>
+            </div>
+
+            <button class="btn-submit" (click)="createdInfo.set(null)">
+              <i class="fas fa-check"></i> تم · Done
+            </button>
           </div>
         </div>
       }
@@ -487,6 +526,46 @@ interface CreateAdvertiserForm {
       -webkit-tap-highlight-color:transparent;
     }
     .btn-modal-delete:disabled { opacity:.6; cursor:not-allowed; }
+
+    .field-hint {
+      display:block; font-size:.68rem; color:#667eea; margin-bottom:.3rem;
+      font-weight:500;
+    }
+
+    /* Success Modal */
+    .success-modal { max-width:380px; }
+    .success-icon { font-size:2.8rem; color:#059669; margin-bottom:.5rem; }
+    .success-sub { font-size:.78rem; color:#9090aa; margin-bottom:1rem !important; }
+
+    .credentials-box {
+      background:#f8f7ff; border-radius:14px; padding:.875rem;
+      border:1.5px solid #e5e7f0; margin-bottom:.75rem;
+      display:flex; flex-direction:column; gap:.6rem;
+    }
+    .cred-row {
+      display:flex; flex-direction:column; gap:.15rem;
+    }
+    .cred-label {
+      font-size:.7rem; font-weight:600; color:#9090aa;
+      display:flex; align-items:center; gap:.3rem;
+    }
+    .cred-value {
+      font-size:.92rem; font-weight:700; color:#1a1a2e;
+      background:#fff; padding:.4rem .6rem; border-radius:8px;
+      border:1px solid #e5e7eb; font-family:monospace; word-break:break-all;
+      user-select:all;
+    }
+    .cred-hint {
+      font-size:.68rem; color:#667eea; font-weight:500;
+      display:flex; align-items:flex-start; gap:.3rem;
+      line-height:1.4; margin-top:.25rem;
+    }
+    .cred-warning {
+      background:rgba(245,158,11,.08); border-radius:10px; padding:.6rem .75rem;
+      font-size:.75rem; font-weight:600; color:#d97706;
+      text-align:center; line-height:1.5; margin-bottom:.75rem;
+    }
+    .cred-warning small { font-weight:500; }
   `],
 })
 export class AdvertiserAdminComponent implements OnInit {
@@ -503,6 +582,7 @@ export class AdvertiserAdminComponent implements OnInit {
   totalCount = signal(0);
   currentPage = signal(0);
   deleteTarget = signal<AdvertiserDto | null>(null);
+  createdInfo = signal<{ userName: string; password: string; code: string } | null>(null);
   pageSize = 10;
 
   form: CreateAdvertiserForm = this.getEmptyForm();
@@ -594,31 +674,38 @@ export class AdvertiserAdminComponent implements OnInit {
       ).toPromise();
 
       // Step 2: If createUser is checked, create ABP user and link
+      let userCreated = false;
       if (this.form.createUser && advertiser?.id) {
-        try {
-          const userBody = {
-            userName: this.form.userName.trim(),
-            password: this.form.password,
-            email: this.form.contactEmail.trim(),
-            name: this.form.name.trim(),
-            isActive: true,
-            roleNames: ['ADVERTISER'],
-          };
-          const user = await this.http.post<{ id: string }>(
-            `${this.apiBase}/api/identity/users`, userBody
-          ).toPromise();
+        const userBody = {
+          userName: this.form.userName.trim(),
+          password: this.form.password,
+          email: this.form.contactEmail.trim(),
+          name: this.form.name.trim(),
+          surname: this.form.name.trim(),
+          isActive: true,
+          roleNames: ['ADVERTISER'],
+        };
+        const user = await this.http.post<{ id: string }>(
+          `${this.apiBase}/api/identity/users`, userBody
+        ).toPromise();
 
-          if (user?.id) {
-            // Link user to advertiser
-            await this.http.put(
-              `${this.apiBase}/api/app/advertiser/${advertiser.id}`,
-              { ...body, userId: user.id }
-            ).toPromise();
-          }
-        } catch (userErr: any) {
-          console.error('Error creating user:', userErr);
-          this.formError.set('تم انشاء المعلن لكن فشل انشاء حساب المستخدم · Advertiser created but user creation failed');
+        if (user?.id) {
+          // Link user to advertiser
+          await this.http.put(
+            `${this.apiBase}/api/app/advertiser/${advertiser.id}`,
+            { ...body, userId: user.id }
+          ).toPromise();
+          userCreated = true;
         }
+      }
+
+      // Show success modal with credentials if user was created
+      if (userCreated) {
+        this.createdInfo.set({
+          userName: this.form.userName.trim(),
+          password: this.form.password,
+          code: advertiser?.id?.substring(0, 8).toUpperCase() || '',
+        });
       }
 
       // Reset form and reload
@@ -628,7 +715,11 @@ export class AdvertiserAdminComponent implements OnInit {
       await this.loadAdvertisers();
     } catch (e: any) {
       console.error('Error creating advertiser:', e);
-      this.formError.set(e?.error?.error?.message || 'حدث خطا اثناء الحفظ · Error saving advertiser');
+      const msg = e?.error?.error?.message
+        || e?.error?.error_description
+        || e?.message
+        || 'حدث خطا اثناء الحفظ · Error saving advertiser';
+      this.formError.set(msg);
     } finally {
       this.submitting.set(false);
     }

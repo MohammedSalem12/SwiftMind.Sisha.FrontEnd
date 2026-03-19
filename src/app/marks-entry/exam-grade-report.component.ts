@@ -5,6 +5,7 @@ import { lastValueFrom } from 'rxjs';
 
 import { ExamGradeService } from '@proxy/exam-grades';
 import { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
+import { ExamService } from '@proxy/exams';
 
 interface StudentRankEntry {
   studentName: string;
@@ -26,12 +27,15 @@ export class ExamGradeReportComponent implements OnInit {
   private readonly route        = inject(ActivatedRoute);
   private readonly location     = inject(Location);
   private readonly examGradeSvc = inject(ExamGradeService);
+  private readonly examSvc      = inject(ExamService);
 
-  loading   = signal(false);
-  error     = signal<string | null>(null);
-  examName  = signal<string>('');
-  maxGrade  = signal<number>(100);
-  entries   = signal<StudentRankEntry[]>([]);
+  loading    = signal(false);
+  error      = signal<string | null>(null);
+  examName   = signal<string>('');
+  courseName = signal<string>('');
+  groupName  = signal<string>('');
+  maxGrade   = signal<number>(100);
+  entries    = signal<StudentRankEntry[]>([]);
 
   gradedCount = computed(() => this.entries().length);
   avgPct      = computed(() => {
@@ -66,9 +70,21 @@ export class ExamGradeReportComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const grades: ExamGradeDto[] = await lastValueFrom(this.examGradeSvc.getGradesByExam(examId)) as ExamGradeDto[];
-      if (grades?.length) {
+      // Load exam details and grades in parallel
+      const [examInfo, grades] = await Promise.all([
+        lastValueFrom(this.examSvc.get(examId)).catch(() => null),
+        lastValueFrom(this.examGradeSvc.getGradesByExam(examId)) as Promise<ExamGradeDto[]>,
+      ]);
+
+      if (examInfo) {
+        this.examName.set(examInfo.examName || '');
+        this.courseName.set(examInfo.courseName || '');
+        this.groupName.set(examInfo.groupName || '');
+      } else if (grades?.length) {
         this.examName.set(grades[0].examName || '');
+        this.courseName.set(grades[0].courseName || '');
+      }
+      if (grades?.length) {
         this.maxGrade.set(grades[0].maxGrade || 100);
       }
       const mapped: StudentRankEntry[] = (grades || []).map(g => {

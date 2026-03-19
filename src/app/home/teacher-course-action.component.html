@@ -1,120 +1,81 @@
 <div class="action-page" dir="rtl">
 
-  <!-- Header -->
-  <div class="page-header" [class.page-header--academy]="!!academy()">
+  <!-- Hero Header -->
+  <div class="hero">
+    <div class="hero-blob b1"></div>
+    <div class="hero-blob b2"></div>
     <button class="back-btn" (click)="goBack()">
       <i class="fas fa-arrow-right"></i>
     </button>
-    <div class="header-info">
+    <div class="hero-text">
+      @if (academy()) {
+        <div class="hero-academy-tag">
+          <i class="fas fa-university"></i>
+          {{ academy()!.nameAr || academy()!.nameEn }}
+        </div>
+      }
       @if (loading()) {
-        <div class="header-skeleton"></div>
+        <div class="hero-skeleton"></div>
       } @else {
-        @if (academy()) {
-          <div class="academy-sub-line">
-            <i class="fas fa-university"></i>
-            {{ academy()!.nameAr || academy()!.nameEn }}
-          </div>
-        }
-        <h1 class="header-title">{{ course()?.nameAr || course()?.nameEn || 'المقرر' }}</h1>
-        <div class="header-meta">
+        <h1>{{ course()?.nameAr || course()?.nameEn || 'المقرر' }}</h1>
+        <div class="hero-chips">
           @if (course()?.code) {
-            <span class="header-chip">{{ course()!.code }}</span>
+            <span class="hero-chip">{{ course()!.code }}</span>
           }
           @if (course()?.gradeName) {
-            <span class="header-chip">{{ course()!.gradeName }}</span>
+            <span class="hero-chip">{{ course()!.gradeName }}</span>
           }
           @if (studentCount() !== null) {
-            <span class="header-chip chip-students">
-              <i class="fas fa-user-graduate"></i> {{ studentCount() }}
-            </span>
+            <span class="hero-chip"><i class="fas fa-user-graduate"></i> {{ studentCount() }}</span>
           }
           @if (groupCount() !== null) {
-            <span class="header-chip chip-groups">
-              <i class="fas fa-layer-group"></i> {{ groupCount() }}
-            </span>
+            <span class="hero-chip"><i class="fas fa-layer-group"></i> {{ groupCount() }}</span>
           }
         </div>
       }
     </div>
+    <div class="hero-icon">
+      <i class="fas fa-book-open"></i>
+    </div>
   </div>
 
-  <!-- Actions -->
-  <div class="actions-wrap">
+  <!-- Action Boxes Grid -->
+  <div class="actions-grid">
 
-    <!-- Attendance -->
-    <button class="action-card card-attendance" (click)="goToAttendance()">
-      <div class="card-glow"></div>
-      <div class="card-inner">
-        <div class="card-icon">
-          <i class="fas fa-clipboard-check"></i>
-        </div>
-        <div class="card-text">
-          <span class="card-label">تسجيل الغياب</span>
-          <span class="card-label-en">Attendance</span>
-          <span class="card-hint">تسجيل حضور وغياب الطلاب</span>
-        </div>
-        <div class="card-cta">
-          <span>ابدأ</span>
-          <i class="fas fa-arrow-left"></i>
-        </div>
+    <button class="action-box box-attendance" (click)="goToAttendance()">
+
+      <div class="box-icon-wrap">
+        <i class="fas fa-clipboard-check"></i>
       </div>
+      <span class="box-label">تسجيل الغياب</span>
+      <span class="box-label-en">Attendance</span>
     </button>
 
-    <!-- Marks -->
-    <button class="action-card card-marks" (click)="goToMarks()">
-      <div class="card-glow"></div>
-      <div class="card-inner">
-        <div class="card-icon">
-          <i class="fas fa-star"></i>
-        </div>
-        <div class="card-text">
-          <span class="card-label">إدخال الدرجات</span>
-          <span class="card-label-en">Marks Entry</span>
-          <span class="card-hint">رصد درجات الامتحانات والأعمال</span>
-        </div>
-        <div class="card-cta">
-          <span>ابدأ</span>
-          <i class="fas fa-arrow-left"></i>
-        </div>
+    <button class="action-box box-marks" (click)="goToMarks()">
+
+      <div class="box-icon-wrap">
+        <i class="fas fa-star"></i>
       </div>
+      <span class="box-label">إدخال الدرجات</span>
+      <span class="box-label-en">Marks Entry</span>
     </button>
 
-    <!-- Groups -->
-    <button class="action-card card-groups" (click)="goToGroups()">
-      <div class="card-glow"></div>
-      <div class="card-inner">
-        <div class="card-icon">
-          <i class="fas fa-layer-group"></i>
-        </div>
-        <div class="card-text">
-          <span class="card-label">المجموعات</span>
-          <span class="card-label-en">Groups</span>
-          <span class="card-hint">عرض وإدارة مجموعات المقرر</span>
-        </div>
-        <div class="card-cta">
-          <span>عرض</span>
-          <i class="fas fa-arrow-left"></i>
-        </div>
+    <button class="action-box box-groups" (click)="goToGroups()">
+
+      <div class="box-icon-wrap">
+        <i class="fas fa-layer-group"></i>
       </div>
+      <span class="box-label">المجموعات</span>
+      <span class="box-label-en">Groups</span>
     </button>
 
-    <!-- Students -->
-    <button class="action-card card-students" (click)="goToStudents()">
-      <div class="card-glow"></div>
-      <div class="card-inner">
-        <div class="card-icon">
-          <i class="fas fa-user-graduate"></i>
-        </div>
-        <div class="card-text">
-          <span class="card-label">الطلاب</span>
-          <span class="card-label-en">Students</span>
-          <span class="card-hint">عرض قائمة الطلاب المسجلين</span>
-        </div>
-        <div class="card-cta">
-          <span>عرض</span>
-          <i class="fas fa-arrow-left"></i>
-        </div>
+    <button class="action-box box-students" (click)="goToStudents()">
+
+      <div class="box-icon-wrap">
+        <i class="fas fa-user-graduate"></i>
       </div>
+      <span class="box-label">الطلاب</span>
+      <span class="box-label-en">Students</span>
     </button>
 
   </div>

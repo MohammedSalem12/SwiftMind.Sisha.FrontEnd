@@ -6,13 +6,19 @@ import { lastValueFrom } from 'rxjs';
 import { SecretaryTeacherService } from '@proxy/teachers';
 import type { SecretaryTeacherDto } from '@proxy/teachers';
 import { CurrentUserInfoService } from '@proxy/common';
+import { OfflineCacheService } from '../shared/services/offline-cache.service';
+import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 
 @Component({
   selector: 'app-secretary-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, OfflineBannerComponent],
   template: `
     <div class="secretary-home" dir="rtl">
+
+      @if (offline()) {
+        <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
+      }
 
       <!-- Hero -->
       <div class="hero">
@@ -49,36 +55,35 @@ import { CurrentUserInfoService } from '@proxy/common';
 
       <!-- Section label + teacher list -->
       @if (!loading() && teachers().length > 0) {
-        <div class="section-label">
+        <button class="section-label section-label--toggle" (click)="teachersExpanded.set(!teachersExpanded())">
           <i class="fas fa-chalkboard-teacher"></i>
           <span>المعلمون المرتبطون · Linked Teachers</span>
           <span class="count-pill">{{ teachers().length }}</span>
-          <button class="see-all-btn" (click)="goToLinkTeacher()">
-            <i class="fas fa-plus"></i>
-            ربط معلم
-          </button>
-        </div>
+          <i class="fas toggle-chevron" [class.fa-chevron-down]="!teachersExpanded()" [class.fa-chevron-up]="teachersExpanded()"></i>
+        </button>
 
-        <div class="teachers-grid">
-          @for (t of teachers(); track t.id) {
-            <button class="teacher-card" (click)="goToTeacherCourses(t)">
-              <div class="teacher-card-icon">
-                <i class="fas fa-chalkboard-teacher"></i>
-              </div>
-              <div class="teacher-card-body">
-                <div class="teacher-name">{{ t.teacherName }}</div>
-                <div class="teacher-meta">
-                  @if (t.teacherCode) {
-                    <span class="meta-chip chip-code">{{ t.teacherCode }}</span>
-                  }
+        @if (teachersExpanded()) {
+          <div class="teachers-grid collapsible-content">
+            @for (t of teachers(); track t.id) {
+              <button class="teacher-card" (click)="goToTeacherCourses(t)">
+                <div class="teacher-card-icon">
+                  <i class="fas fa-chalkboard-teacher"></i>
                 </div>
-              </div>
-              <div class="teacher-card-arrow">
-                <i class="fas fa-chevron-left"></i>
-              </div>
-            </button>
-          }
-        </div>
+                <div class="teacher-card-body">
+                  <div class="teacher-name">{{ t.teacherName }}</div>
+                  <div class="teacher-meta">
+                    @if (t.teacherCode) {
+                      <span class="meta-chip chip-code">{{ t.teacherCode }}</span>
+                    }
+                  </div>
+                </div>
+                <div class="teacher-card-arrow">
+                  <i class="fas fa-chevron-left"></i>
+                </div>
+              </button>
+            }
+          </div>
+        }
       }
 
       <!-- Quick Actions -->
@@ -130,11 +135,11 @@ import { CurrentUserInfoService } from '@proxy/common';
     /* ── Hero ── */
     .hero {
       background: linear-gradient(145deg, var(--grad-start) 0%, var(--grad-end) 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 1.5rem) 1.25rem 2rem;
+      padding: calc(env(safe-area-inset-top, 0px) + 0.6rem) 1.25rem 0.7rem;
       position: relative;
       overflow: hidden;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: .75rem;
     }
@@ -149,20 +154,20 @@ import { CurrentUserInfoService } from '@proxy/common';
 
     .hero-content { z-index: 1; }
     .hero-greeting { display: flex; flex-direction: column; margin-bottom: .35rem; }
-    .hero-hello { font-size: .875rem; color: rgba(255,255,255,.75); }
-    .hero-name  { font-size: 1.5rem; font-weight: 800; color: var(--white); line-height: 1.2; }
+    .hero-hello { font-size: .75rem; color: rgba(255,255,255,.75); }
+    .hero-name  { font-size: 1.1rem; font-weight: 800; color: var(--white); line-height: 1.2; }
     .hero-sub   { font-size: .85rem; color: rgba(255,255,255,.8); margin: 0; }
     .hero-sub-en { font-size: .72rem; color: rgba(255,255,255,.55); margin: .1rem 0 0; }
 
     .hero-icon {
       z-index: 1;
-      width: 56px; height: 56px; border-radius: 50%;
+      width: 42px; height: 42px; border-radius: 50%;
       background: rgba(255,255,255,.15);
-      border: 2px solid rgba(255,255,255,.25);
+      border: 1.5px solid rgba(255,255,255,.25);
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .hero-icon i { font-size: 1.4rem; color: var(--white); }
+    .hero-icon i { font-size: 1.1rem; color: var(--white); }
 
     /* ── Skeleton shimmer ── */
     .loading-area {
@@ -298,19 +303,54 @@ import { CurrentUserInfoService } from '@proxy/common';
     .qa-btn-reports { background: linear-gradient(135deg, #f093fb, #f5576c); }
     .qa-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
     .qa-en { font-size: .65rem; font-weight: 500; opacity: .85; }
+
+    /* ── Collapsible toggle ── */
+    .section-label--toggle {
+      width: 100%;
+      background: none; border: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    .section-label--toggle:active { opacity: .7; }
+    .toggle-chevron {
+      margin-right: auto;
+      font-size: .7rem;
+      color: var(--text-light);
+      transition: transform .2s ease;
+    }
+    .collapsible-content {
+      animation: collapseIn .2s ease-out;
+    }
+    @keyframes collapseIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
   `],
 })
 export class SecretaryHomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly secretaryTeacherService = inject(SecretaryTeacherService);
   private readonly currentUserService = inject(CurrentUserInfoService);
+  private readonly cache = inject(OfflineCacheService);
 
   teachers = signal<SecretaryTeacherDto[]>([]);
   loading = signal(false);
   secretaryName = signal<string>('');
+  teachersExpanded = signal(true);
+  offline = signal(false);
+  offlineLastUpdated = signal('');
+
+  private readonly CACHE_KEY = 'secretary_home';
 
   async ngOnInit() {
     await Promise.all([this.loadTeachers(), this.loadSecretaryName()]);
+    if (!this.offline()) {
+      this.cache.set(this.CACHE_KEY, {
+        secretaryName: this.secretaryName(),
+        teachers: this.teachers(),
+      });
+    }
   }
 
   private async loadSecretaryName() {
@@ -329,8 +369,19 @@ export class SecretaryHomeComponent implements OnInit {
       this.teachers.set(res ?? []);
     } catch (err) {
       console.error('Error loading teachers:', err);
+      this.restoreFromCache();
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private restoreFromCache(): void {
+    const cached = this.cache.get<any>(this.CACHE_KEY);
+    if (cached) {
+      this.secretaryName.set(cached.secretaryName || '');
+      this.teachers.set(cached.teachers || []);
+      this.offline.set(true);
+      this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
     }
   }
 

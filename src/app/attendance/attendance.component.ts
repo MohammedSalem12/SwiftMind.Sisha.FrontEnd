@@ -69,6 +69,8 @@ export class AttendanceComponent implements OnInit {
 
   // Schedule dates (computed from selected group's schedule)
   scheduleDates = signal<{ date: string; label: string }[]>([]);
+  weekOffset = signal(0);
+  weekLabel = signal('');
 
   // Date (default today)
   attendanceDate = signal<string>(new Date().toISOString().slice(0, 10));
@@ -227,7 +229,7 @@ export class AttendanceComponent implements OnInit {
     this.effectiveTeacherId.set(this.teacherId());
 
     await this.loadGroups(courseId);
-    await this.loadStudents();
+    // Don't load students yet — wait for group selection
   }
 
   private async loadGroups(courseId: string): Promise<void> {
@@ -273,6 +275,7 @@ export class AttendanceComponent implements OnInit {
     this.students.set([]);
     this.message.set(null);
     this.page.set(1);
+    this.weekOffset.set(0);
 
     if (groupId) {
       const group = this.groups().find(g => g.id === groupId);
@@ -282,31 +285,45 @@ export class AttendanceComponent implements OnInit {
     } else {
       this.effectiveTeacherId.set(this.teacherId());
       this.scheduleDates.set([]);
+      this.weekLabel.set('');
     }
 
     await this.loadStudents();
   }
 
-  private computeScheduleDates(schedules: GroupScheduleDto[]): void {
-    if (schedules.length === 0) {
+  private _currentSchedules: GroupScheduleDto[] = [];
+
+  private computeScheduleDates(schedules?: GroupScheduleDto[]): void {
+    if (schedules) this._currentSchedules = schedules;
+    const sched = this._currentSchedules;
+    if (sched.length === 0) {
       this.scheduleDates.set([]);
+      this.weekLabel.set('');
       return;
     }
 
     const ARABIC_DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    const scheduleDays = schedules.map(s => s.dayOfWeek); // 0=Sunday .. 6=Saturday
+    const scheduleDays = sched.map(s => s.dayOfWeek); // 0=Sunday .. 6=Saturday
 
     const dates: { date: string; label: string }[] = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Find start of current week (Saturday as first day for Arabic calendar)
+    // Find start of target week (Saturday as first day for Arabic calendar)
     const todayDow = today.getDay(); // 0=Sun
     const satOffset = todayDow === 6 ? 0 : -(todayDow + 1); // offset to previous Saturday
     const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() + satOffset);
+    weekStart.setDate(today.getDate() + satOffset + (this.weekOffset() * 7));
 
-    // Generate only current week's schedule days (Sat–Fri = 7 days)
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+
+    // Week label
+    this.weekLabel.set(
+      `${weekStart.getDate()}/${weekStart.getMonth() + 1} — ${weekEnd.getDate()}/${weekEnd.getMonth() + 1}`
+    );
+
+    // Generate only this week's schedule days (Sat–Fri = 7 days)
     for (let i = 0; i < 7; i++) {
       const d = new Date(weekStart);
       d.setDate(weekStart.getDate() + i);
@@ -333,6 +350,21 @@ export class AttendanceComponent implements OnInit {
         this.attendanceDate.set(dates[0].date);
       }
     }
+  }
+
+  prevWeek(): void {
+    this.weekOffset.update(v => v - 1);
+    this.computeScheduleDates();
+  }
+
+  nextWeek(): void {
+    this.weekOffset.update(v => v + 1);
+    this.computeScheduleDates();
+  }
+
+  goToCurrentWeek(): void {
+    this.weekOffset.set(0);
+    this.computeScheduleDates();
   }
 
   selectScheduleDate(date: string): void {

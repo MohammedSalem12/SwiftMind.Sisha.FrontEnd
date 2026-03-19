@@ -421,14 +421,14 @@ export class AdsAdminComponent implements OnInit {
 
   async disableAd(id: string): Promise<void> {
     try {
-      await this.http.post(`${this.apiBase}/api/app/advertisement/${id}/disable`, {}).toPromise();
+      await this.http.post(`${this.apiBase}/api/app/advertisement/${id}/disable-ad`, {}).toPromise();
       this.allAds.update(list => list.map(a => a.id === id ? { ...a, status: 5 } : a));
     } catch (e) { console.error(e); }
   }
 
   async enableAd(id: string): Promise<void> {
     try {
-      await this.http.post(`${this.apiBase}/api/app/advertisement/${id}/enable`, {}).toPromise();
+      await this.http.post(`${this.apiBase}/api/app/advertisement/${id}/enable-ad`, {}).toPromise();
       this.allAds.update(list => list.map(a => a.id === id ? { ...a, status: 2 } : a));
     } catch (e) { console.error(e); }
   }

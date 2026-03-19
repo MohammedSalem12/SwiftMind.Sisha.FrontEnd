@@ -11,18 +11,21 @@ export const appRoutes: Routes = [
   },
   {
     path: 'student',
+    pathMatch: 'full',
     loadComponent: () => import('./home/student-home.component').then(m => m.StudentHomeComponent),
     canActivate: [roleGuard],
     data: { roles: ['STUDENT'] }
   },
   {
     path: 'parent',
+    pathMatch: 'full',
     loadComponent: () => import('./home/parent-home.component').then(m => m.ParentHomeComponent),
     canActivate: [roleGuard],
     data: { roles: ['PARENT'] }
   },
   {
     path: 'teacher',
+    pathMatch: 'full',
     loadComponent: () => import('./home/teacher-home.component').then(m => m.TeacherHomeComponent),
     canActivate: [roleGuard],
     data: { roles: ['TEACHER'] }
@@ -76,6 +79,18 @@ export const appRoutes: Routes = [
     data: { roles: ['STUDENT'] }
   },
   {
+    path: 'student/today-sessions',
+    loadComponent: () => import('./home/today-sessions.component').then(m => m.TodaySessionsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'teacher/today-sessions',
+    loadComponent: () => import('./home/today-sessions.component').then(m => m.TodaySessionsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'SECRETARY'] }
+  },
+  {
     path: 'teacher/course/:courseId',
     loadComponent: () => import('./home/teacher-course-action.component').then(m => m.TeacherCourseActionComponent),
     canActivate: [roleGuard],
@@ -120,6 +135,11 @@ export const appRoutes: Routes = [
   {
     path: 'register',
     loadChildren: () => import('./register/register.routes').then(m => m.registerRoutes),
+    data: { layout: 'empty' },
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () => import('./forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
     data: { layout: 'empty' },
   },
   {
@@ -170,6 +190,12 @@ export const appRoutes: Routes = [
     data: { roles: ['ADMIN'] }
   },
   {
+    path: 'admin/password-resets',
+    loadComponent: () => import('./admin/password-reset-requests.component').then(m => m.PasswordResetRequestsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
     path: 'teachers',
     loadChildren: () => import('./teachers/teachers.routes').then(m => m.teachersRoutes),
     canActivate: [roleGuard],
@@ -215,10 +241,11 @@ export const appRoutes: Routes = [
     path: 'enrollment-requests',
     loadComponent: () => import('./enrollment-requests/enrollment-requests.component').then(m => m.EnrollmentRequestsComponent),
     canActivate: [roleGuard],
-    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
+    data: { roles: ['TEACHER', 'SECRETARY'] }
   },
   {
     path: 'secretary',
+    pathMatch: 'full',
     loadComponent: () => import('./home/secretary-home.component').then(m => m.SecretaryHomeComponent),
     canActivate: [roleGuard],
     data: { roles: ['SECRETARY'] }
@@ -315,7 +342,7 @@ export const appRoutes: Routes = [
     path: 'attendance',
     loadChildren: () => import('./attendance/attendance.routes').then(m => m.attendanceRoutes),
     canActivate: [roleGuard],
-    data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
+    data: { roles: ['TEACHER', 'SECRETARY'] }
   },
   {
     path: 'marks-entry',

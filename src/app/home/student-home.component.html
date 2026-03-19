@@ -1,87 +1,64 @@
 <div class="student-home" dir="rtl">
 
-  <!-- Hero -->
-  <div class="hero" [class.hero--expanded]="showQr()">
+  @if (offline()) {
+    <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
+  }
+
+  <!-- Hero (simplified) -->
+  <div class="hero">
     <div class="hero-blob hero-blob-1"></div>
     <div class="hero-blob hero-blob-2"></div>
 
     <div class="hero-main-row">
       <div class="hero-content">
-        <div class="hero-greeting">
-          <div class="hero-name-block">
-            <span class="hero-name">{{ studentName() || 'الطالب' }}</span>
-            @if (confirmedParents().length > 0) {
-              <span class="hero-parent-line">
-                <i class="fas fa-user-shield"></i>
-                @for (p of confirmedParents(); track p.parentId; let last = $last) {
-                  {{ p.parent?.firstName }} {{ p.parent?.lastName }}@if (p.relationshipType) { ({{ p.relationshipType }}) }@if (!last) { · }
-                }
-              </span>
-            }
-          </div>
-        </div>
-
-        <!-- Info pills -->
-        <div class="hero-pills">
-          @if (gradeName()) {
-            <span class="hero-pill">
-              <i class="fas fa-layer-group"></i> {{ gradeName() }}
-            </span>
-          }
-        </div>
-
-        <!-- Student code + QR toggle -->
-        @if (studentCode()) {
-          <button class="qr-toggle" (click)="toggleQr()">
-            <i class="fas fa-id-badge"></i>
-            <span>{{ studentCode() }}</span>
-            <i class="fas qr-arrow" [class.fa-qrcode]="!showQr()" [class.fa-chevron-up]="showQr()"></i>
-          </button>
+        <span class="hero-hello">مرحباً،</span>
+        <span class="hero-name">{{ studentName() || 'الطالب' }}</span>
+        @if (gradeName()) {
+          <span class="hero-grade">{{ gradeName() }}</span>
         }
       </div>
-
-      <div class="hero-icon" (click)="toggleQr()">
-        @if (showQr()) {
-          <i class="fas fa-times"></i>
-        } @else {
-          <i class="fas fa-graduation-cap"></i>
-        }
+      <div class="hero-icon" (click)="goProfile()">
+        <i class="fas fa-graduation-cap"></i>
       </div>
     </div>
-
-    <!-- QR Panel -->
-    @if (showQr()) {
-      <div class="qr-panel">
-        <div class="qr-card">
-          @if (qrDataUrl()) {
-            <img [src]="qrDataUrl()!" alt="QR Code" class="qr-img" />
-          } @else {
-            <div class="qr-placeholder"><i class="fas fa-spinner fa-spin"></i></div>
-          }
-          <div class="qr-label">امسح لربط ولي الأمر</div>
-          <div class="qr-label-en">Scan to link a parent</div>
-        </div>
-      </div>
-    }
   </div>
 
-  <!-- Promo Ads -->
+  <!-- Promo Ads — two side-by-side boxes -->
   @if (promoAds().length > 0) {
-    <div class="promo-strip">
-      @for (ad of promoAds(); track ad.id) {
-        <button class="promo-chip" (click)="trackAdClick(ad)">
-          <div class="promo-chip-icon">
+    <div class="promo-grid">
+      @for (ad of promoAds().slice(0, 2); track ad.id; let i = $index) {
+        <button class="promo-box" [class]="'promo-box promo-box--v' + (i % 2)" (click)="trackAdClick(ad)">
+          <div class="promo-box-shimmer"></div>
+          @if (ad.isFeatured) {
+            <span class="promo-box-badge"><i class="fas fa-star"></i></span>
+          }
+          <div class="promo-box-icon">
             <i class="fas" [class.fa-chalkboard-teacher]="ad.adType === 0"
                            [class.fa-book]="ad.adType === 1"
                            [class.fa-handshake]="ad.adType === 2"></i>
           </div>
-          <span class="promo-chip-text">{{ ad.title }}</span>
-          @if (ad.isFeatured) {
-            <i class="fas fa-star promo-chip-star"></i>
+          <span class="promo-box-title">{{ ad.title }}</span>
+          @if (ad.description) {
+            <span class="promo-box-desc">{{ ad.description }}</span>
           }
         </button>
       }
     </div>
+    @if (promoAds().length > 2) {
+      <div class="promo-see-all-row">
+        <button class="promo-see-all-btn" (click)="goToAllAds()">
+          <i class="fas fa-th-large"></i>
+          <span>عرض جميع العروض</span>
+          <span class="promo-see-all-en">View All</span>
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      </div>
+    }
+  }
+
+  <!-- Next Session Timer -->
+  @if (nextSession()) {
+    <app-session-timer [session]="nextSession()" (todaySessionsClicked)="goTodaySessions()"></app-session-timer>
   }
 
   <!-- Loading Skeleton -->
@@ -95,60 +72,66 @@
 
   <!-- Enrolled / Pending Courses -->
   @if (!loading() && enrolledCourses().length > 0) {
-    <div class="section-label">
+    <button class="section-label section-label--toggle" (click)="coursesExpanded.set(!coursesExpanded())">
       <i class="fas fa-book-open"></i>
       <span>مقرراتي · My Courses</span>
       <span class="count-pill">{{ enrolledCourses().length }}</span>
-    </div>
-    <div class="courses-grid">
-      @for (course of enrolledCourses(); track course.id) {
-        <div class="course-card" [class.course-card--pending]="course.hasPendingRequest && !course.isEnrolled">
-          <div class="course-card-icon" [class.course-card-icon--pending]="course.hasPendingRequest && !course.isEnrolled">
-            <i class="fas" [class.fa-book]="course.isEnrolled" [class.fa-clock]="!course.isEnrolled"></i>
-          </div>
-          <div class="course-card-body">
-            <div class="course-name">{{ course.nameAr }}</div>
-            <div class="course-meta">
-              <span class="meta-chip chip-code"><i class="fas fa-hashtag"></i>{{ course.code }}</span>
-              @if (course.gradeName) {
-                <span class="meta-chip chip-group"><i class="fas fa-layer-group"></i>{{ course.gradeName }}</span>
-              }
-              @if (course.teacherName) {
-                <span class="meta-chip chip-teacher"><i class="fas fa-chalkboard-teacher"></i>{{ course.teacherName }}</span>
-              }
+      <i class="fas toggle-chevron" [class.fa-chevron-down]="!coursesExpanded()" [class.fa-chevron-up]="coursesExpanded()"></i>
+    </button>
+    @if (coursesExpanded()) {
+      <div class="courses-grid collapsible-content">
+        @for (course of enrolledCourses(); track course.id) {
+          <div class="course-card" [class.course-card--pending]="course.hasPendingRequest && !course.isEnrolled" (click)="viewCourse(course)">
+            <div class="course-card-icon" [class.course-card-icon--pending]="course.hasPendingRequest && !course.isEnrolled">
+              <i class="fas" [class.fa-book]="course.isEnrolled" [class.fa-clock]="!course.isEnrolled"></i>
             </div>
+            <div class="course-card-body">
+              <div class="course-name">{{ course.nameAr }}</div>
+              <div class="course-meta">
+                <span class="meta-chip chip-code"><i class="fas fa-hashtag"></i>{{ course.code }}</span>
+                @if (course.gradeName) {
+                  <span class="meta-chip chip-group"><i class="fas fa-layer-group"></i>{{ course.gradeName }}</span>
+                }
+                @if (course.teacherName) {
+                  <span class="meta-chip chip-teacher"><i class="fas fa-chalkboard-teacher"></i>{{ course.teacherName }}</span>
+                }
+              </div>
+            </div>
+            @if (course.isEnrolled) {
+              <div class="status-badge status-enrolled"><i class="fas fa-check"></i></div>
+            } @else {
+              <div class="status-badge status-pending">قيد المراجعة</div>
+            }
           </div>
-          @if (course.isEnrolled) {
-            <div class="status-badge status-enrolled"><i class="fas fa-check"></i></div>
-          } @else {
-            <div class="status-badge status-pending">قيد المراجعة</div>
-          }
-        </div>
-      }
-    </div>
+        }
+      </div>
+    }
   }
 
   <!-- Available (not enrolled) Courses -->
   @if (!loading() && availableCourses().length > 0) {
-    <div class="section-label" style="margin-top: 1.25rem;">
+    <button class="section-label section-label--toggle" style="margin-top: 1.25rem;" (click)="availableExpanded.set(!availableExpanded())">
       <i class="fas fa-plus-circle"></i>
       <span>مقررات متاحة · Available</span>
       <span class="count-pill" style="background: linear-gradient(135deg,#f59e0b,#d97706);">{{ availableCourses().length }}</span>
-    </div>
-    <div class="available-list">
-      @for (course of availableCourses(); track course.id) {
-        <div class="available-item">
-          <div class="available-info">
-            <span class="available-name">{{ course.nameAr }}</span>
-            <span class="available-sub">{{ course.nameEn }} · {{ course.code }}</span>
+      <i class="fas toggle-chevron" [class.fa-chevron-down]="!availableExpanded()" [class.fa-chevron-up]="availableExpanded()"></i>
+    </button>
+    @if (availableExpanded()) {
+      <div class="available-list collapsible-content">
+        @for (course of availableCourses(); track course.id) {
+          <div class="available-item">
+            <div class="available-info">
+              <span class="available-name">{{ course.nameAr }}</span>
+              <span class="available-sub">{{ course.nameEn }} · {{ course.code }}</span>
+            </div>
+            <button class="enroll-btn" (click)="goEnroll(course)">
+              <i class="fas fa-user-plus"></i>
+              تسجيل
+            </button>
           </div>
-          <button class="enroll-btn" (click)="goEnroll(course)">
-            <i class="fas fa-user-plus"></i>
-            تسجيل
-          </button>
-        </div>
-      }
-    </div>
+        }
+      </div>
+    }
   }
 
   <!-- Empty / Welcome State -->
@@ -163,14 +146,5 @@
       </button>
     </div>
   }
-
-  <!-- Fixed Bottom Register Button -->
-  <div class="bottom-bar">
-    <button class="register-btn" (click)="goRegister()">
-      <i class="fas fa-plus-circle"></i>
-      <span>تسجيل مقرر جديد</span>
-      <span class="register-btn-en">Register Course</span>
-    </button>
-  </div>
 
 </div>

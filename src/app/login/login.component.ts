@@ -37,6 +37,7 @@ export class LoginComponent implements OnInit {
   biometricLoading = signal(false);
   googleLoading = signal(false);
   facebookLoading = signal(false);
+  showRegisterSuggestion = signal(false);
   private fbReady = false;
 
   async ngOnInit(): Promise<void> {
@@ -48,9 +49,27 @@ export class LoginComponent implements OnInit {
     // loginWithBiometric() will show a helpful message instead of silently hiding the button
     if (Capacitor.isNativePlatform()) {
       this.biometricAvailable.set(true);
+      // Auto-trigger biometric if credentials are stored — fast native login
+      this.autoTriggerBiometric();
     }
     this.initGoogleSignIn();
     this.initFacebook();
+  }
+
+  private async autoTriggerBiometric(): Promise<void> {
+    try {
+      const hasCreds = await this.biometricSvc.hasStoredCredentials();
+      if (!hasCreds) return;
+      const isAvail = await this.biometricSvc.isAvailable();
+      if (!isAvail) return;
+      // Small delay so the login page renders first (avoids blank screen)
+      await new Promise(r => setTimeout(r, 400));
+      // Only auto-trigger if user hasn't started typing
+      if (this.model().userNameOrEmailAddress || this.loading() || this.biometricLoading()) return;
+      await this.loginWithBiometric();
+    } catch {
+      // Silent — user can still tap the button manually
+    }
   }
 
   private initGoogleSignIn(): void {
@@ -175,7 +194,7 @@ export class LoginComponent implements OnInit {
       // Check if this user already has a role (returning user) or needs to complete profile (new user)
       const currentUser = this.configService.getOne('currentUser') as any;
       const roles: string[] = currentUser?.roles ?? currentUser?.roleNames ?? [];
-      const knownRoles = ['STUDENT', 'TEACHER', 'PARENT', 'ADMIN', 'SECRETARY'];
+      const knownRoles = ['STUDENT', 'TEACHER', 'PARENT', 'ADMIN', 'SECRETARY', 'ADVERTISER'];
       const hasRole = Array.isArray(roles) && roles.some(r => knownRoles.includes(r.toUpperCase()));
 
       if (hasRole) {
@@ -197,6 +216,7 @@ export class LoginComponent implements OnInit {
 
   async submit(): Promise<void> {
     this.error.set(null);
+    this.showRegisterSuggestion.set(false);
     this.loading.set(true);
     try {
       const payload = { ...this.model() } as any;
@@ -208,6 +228,10 @@ export class LoginComponent implements OnInit {
       this.loading.set(false);
       const msg = err?.message || err?.error?.error?.message || err?.error?.error_description || 'خطأ في تسجيل الدخول / Login error';
       this.error.set(msg);
+      // Show register suggestion on invalid credentials
+      if (msg.includes('غير صحيحة') || msg.includes('Invalid')) {
+        this.showRegisterSuggestion.set(true);
+      }
       console.error(err);
     }
   }

@@ -263,7 +263,7 @@ export class AdsCreateComponent {
     targetAudience: 0,
     targetGrades: [],
     price: null,
-    currency: 'SAR',
+    currency: 'EGP',
     contactInfo: '',
     externalUrl: '',
     dealPartnerName: '',

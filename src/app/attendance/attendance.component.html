@@ -1,24 +1,26 @@
 <div class="attendance-page" dir="rtl">
 
-  <!-- Page Header -->
-  <div class="page-header" [class.page-header--academy]="!!academy()">
-    <div class="header-row">
-      <button *ngIf="lockedCourseId()" class="back-btn" (click)="goBack()">
+  <!-- Hero Header -->
+  <div class="hero">
+    <div class="hero-blob b1"></div>
+    <div class="hero-blob b2"></div>
+    @if (lockedCourseId()) {
+      <button class="back-btn" (click)="goBack()">
         <i class="fas fa-arrow-right"></i>
       </button>
-      <div class="header-title-block">
-        <div class="header-icon"><i class="fas fa-clipboard-check"></i></div>
-        <div class="header-text-block">
-          @if (academy()) {
-            <div class="header-academy-sub">
-              <i class="fas fa-university"></i>
-              {{ academy()!.nameAr || academy()!.nameEn }}
-            </div>
-          }
-          <h1>تسجيل الحضور والغياب</h1>
-          <p>{{ academy() ? (selectedCourseName() || 'اختر التاريخ وسجّل الحضور') : 'اختر التاريخ وسجّل حضور الطلاب' }}</p>
+    }
+    <div class="hero-text">
+      @if (academy()) {
+        <div class="hero-academy-tag">
+          <i class="fas fa-university"></i>
+          {{ academy()!.nameAr || academy()!.nameEn }}
         </div>
-      </div>
+      }
+      <h1>تسجيل الحضور والغياب</h1>
+      <p>Attendance · {{ selectedCourseName() || 'اختر المقرر وسجّل الحضور' }}</p>
+    </div>
+    <div class="hero-icon">
+      <i class="fas fa-clipboard-check"></i>
     </div>
   </div>
 
@@ -37,56 +39,76 @@
   <!-- Filters Card -->
   <div class="filters-card">
     <!-- Course -->
-    <div class="filter-row">
-      <div class="filter-label">
-        <i class="fas fa-book"></i>
-        <span>المقرر الدراسي</span>
-      </div>
-      <div *ngIf="lockedCourseId()" class="course-label">
-        <i class="fas fa-lock course-lock-icon"></i>
-        <span class="course-label-name">{{ selectedCourseName() || lockedCourseId() }}</span>
-        @if (academy()) {
-          <span class="course-label-academy">
-            <i class="fas fa-university"></i>
-            {{ academy()!.nameAr || academy()!.nameEn }}
-          </span>
-        }
-      </div>
-      <select
-        *ngIf="!lockedCourseId()"
-        [ngModel]="selectedCourseId()"
-        (ngModelChange)="onCourseChange($event)"
-        [disabled]="loading()">
-        <option value="">-- اختر المقرر --</option>
-        <option *ngFor="let c of courses()" [value]="c.id">
-          {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' — ' + c.gradeName : '' }}
-        </option>
-      </select>
+    <div class="field-group">
+      <label class="field-label">
+        <i class="fas fa-book"></i> المقرر الدراسي · Course
+      </label>
+      @if (lockedCourseId()) {
+        <div class="course-label">
+          <i class="fas fa-lock course-lock-icon"></i>
+          <span class="course-label-name">{{ selectedCourseName() || lockedCourseId() }}</span>
+          @if (academy()) {
+            <span class="course-label-academy">
+              <i class="fas fa-university"></i>
+              {{ academy()!.nameAr || academy()!.nameEn }}
+            </span>
+          }
+        </div>
+      } @else {
+        <select class="field-input"
+          [ngModel]="selectedCourseId()"
+          (ngModelChange)="onCourseChange($event)"
+          [disabled]="loading()">
+          <option value="">-- اختر المقرر --</option>
+          @for (c of courses(); track c.id) {
+            <option [value]="c.id">
+              {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' — ' + c.gradeName : '' }}
+            </option>
+          }
+        </select>
+      }
     </div>
 
-    <!-- Group selector (shown first — user picks group before date) -->
-    <div class="filter-row" *ngIf="selectedCourseId() && groups().length > 0">
-      <div class="filter-label">
-        <i class="fas fa-users"></i>
-        <span>المجموعة · Group</span>
+    <!-- Group selector (shown when course is selected) -->
+    @if (selectedCourseId() && groups().length > 0) {
+      <div class="field-group">
+        <label class="field-label">
+          <i class="fas fa-users"></i> المجموعة · Group
+        </label>
+        <select class="field-input"
+          [ngModel]="selectedGroupId()"
+          (ngModelChange)="onGroupChange($event)"
+          [disabled]="loading()">
+          <option value="">-- اختر المجموعة --</option>
+          @for (g of groups(); track g.id) {
+            <option [value]="g.id">
+              {{ g.name }}{{ g.teacherName ? ' — ' + g.teacherName : '' }}
+            </option>
+          }
+        </select>
       </div>
-      <select
-        [ngModel]="selectedGroupId()"
-        (ngModelChange)="onGroupChange($event)"
-        [disabled]="loading()">
-        <option value="">-- الكل · All --</option>
-        <option *ngFor="let g of groups()" [value]="g.id">
-          {{ g.name }}{{ g.teacherName ? ' — ' + g.teacherName : '' }}
-        </option>
-      </select>
-    </div>
+    }
 
-    <!-- Schedule date pills (from group schedule) -->
-    @if (scheduleDates().length > 0) {
+    <!-- Week-based schedule dates (when group is selected and has schedules) -->
+    @if (selectedGroupId() && scheduleDates().length > 0) {
       <div class="schedule-dates-section">
-        <div class="filter-label">
-          <i class="fas fa-calendar-alt"></i>
-          <span>مواعيد المجموعة · Schedule Dates</span>
+        <label class="field-label">
+          <i class="fas fa-calendar-alt"></i> التاريخ · Date
+        </label>
+        <div class="week-nav-row">
+          <button class="week-nav-btn" (click)="prevWeek()">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+          <div class="week-nav-label">
+            <i class="fas fa-calendar-week"></i>
+            <span>{{ weekLabel() }}</span>
+            @if (weekOffset() !== 0) {
+              <button class="week-today-btn" (click)="goToCurrentWeek()">اليوم</button>
+            }
+          </div>
+          <button class="week-nav-btn" (click)="nextWeek()">
+            <i class="fas fa-chevron-left"></i>
+          </button>
         </div>
         <div class="schedule-dates-pills">
           @for (sd of scheduleDates(); track sd.date) {
@@ -101,44 +123,61 @@
       </div>
     }
 
-    <!-- Date picker (manual fallback or when no group selected) -->
-    <div class="filter-row">
-      <div class="filter-label">
-        <i class="fas fa-calendar-alt"></i>
-        <span>التاريخ · Date</span>
+    <!-- Date picker fallback (only when group selected but no schedule dates) -->
+    @if (selectedGroupId() && scheduleDates().length === 0) {
+      <div class="field-group">
+        <label class="field-label">
+          <i class="fas fa-calendar-alt"></i> التاريخ · Date
+        </label>
+        <input class="field-input"
+          type="date"
+          [ngModel]="attendanceDate()"
+          (ngModelChange)="onDateChange($event)" />
       </div>
-      <input
-        type="date"
-        [ngModel]="attendanceDate()"
-        (ngModelChange)="onDateChange($event)" />
-    </div>
+    }
   </div>
+
+  <!-- Prompt to select group -->
+  @if (selectedCourseId() && !selectedGroupId() && groups().length > 0 && !loading()) {
+    <div class="empty-state">
+      <i class="fas fa-users"></i>
+      <p>اختر المجموعة لعرض قائمة الطلاب</p>
+      <small>Select a group to view students</small>
+    </div>
+  }
 
   <!-- Loading state -->
-  <div class="loading-state" *ngIf="loading()">
-    <div class="spinner"></div>
-    <span>جاري التحميل...</span>
-  </div>
+  @if (loading()) {
+    <div class="loading-area">
+      <div class="spinner"></div>
+      <span>جاري التحميل...</span>
+    </div>
+  }
 
   <!-- No course selected -->
-  <div class="empty-state" *ngIf="!selectedCourseId() && !loading()">
-    <i class="fas fa-book-open"></i>
-    <p>اختر مقرراً لعرض قائمة الطلاب</p>
-  </div>
+  @if (!selectedCourseId() && !loading()) {
+    <div class="empty-state">
+      <i class="fas fa-book-open"></i>
+      <p>اختر مقرراً لعرض قائمة الطلاب</p>
+      <small>Select a course to get started</small>
+    </div>
+  }
 
   <!-- No students -->
-  <div class="empty-state warning"
-    *ngIf="selectedCourseId() && students().length === 0 && !loading()">
-    <i class="fas fa-user-slash"></i>
-    <p>لا يوجد طلاب مسجلون في هذا المقرر</p>
-  </div>
+  @if (selectedCourseId() && selectedGroupId() && students().length === 0 && !loading()) {
+    <div class="empty-state empty-state--warning">
+      <i class="fas fa-user-slash"></i>
+      <p>لا يوجد طلاب مسجلون في هذا المقرر</p>
+      <small>No students enrolled</small>
+    </div>
+  }
 
   <!-- Students section -->
-  <div *ngIf="students().length > 0 && !loading()">
+  @if (students().length > 0 && !loading()) {
 
     <!-- Stats Bar (collapsible) -->
     <div class="stats-bar">
-      <div class="stats-bar-header" (click)="toggleStats()">
+      <button class="stats-bar-header" (click)="toggleStats()">
         <div class="stats-chips">
           <span class="stat-chip chip-total">
             <i class="fas fa-users"></i> {{ totalStudentCount() }} طالب
@@ -153,7 +192,7 @@
         <i class="fas stats-toggle-arrow"
            [class.fa-chevron-down]="!showStats()"
            [class.fa-chevron-up]="showStats()"></i>
-      </div>
+      </button>
 
       @if (showStats()) {
         <div class="stats-detail">
@@ -205,11 +244,11 @@
       <div class="bulk-top-row">
         <label class="checkbox-label">
           <input type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll()" />
-          <span>تحديد الكل</span>
+          <span>تحديد الكل · Select All</span>
         </label>
-        <span class="selected-badge" *ngIf="selectedCount() > 0">
-          {{ selectedCount() }} محدد
-        </span>
+        @if (selectedCount() > 0) {
+          <span class="selected-badge">{{ selectedCount() }} محدد</span>
+        }
       </div>
       <div class="bulk-buttons">
         <button
@@ -218,7 +257,9 @@
           [disabled]="saving() || selectedCount() === 0">
           <i class="fas fa-user-times"></i>
           <span>غياب المحددين</span>
-          <span class="count-badge" *ngIf="selectedCount() > 0">({{ selectedCount() }})</span>
+          @if (selectedCount() > 0) {
+            <span class="count-badge">({{ selectedCount() }})</span>
+          }
         </button>
         <button
           class="btn-bulk btn-mark-all"
@@ -231,118 +272,56 @@
     </div>
 
     <!-- Message bar -->
-    <div
-      class="message-bar"
-      *ngIf="message()"
-      [class.success]="messageType() === 'success'"
-      [class.error]="messageType() === 'error'">
-      <i class="fas me-2"
-        [class.fa-check-circle]="messageType() === 'success'"
-        [class.fa-exclamation-circle]="messageType() === 'error'"></i>
-      {{ message() }}
-    </div>
+    @if (message()) {
+      <div class="message-bar"
+        [class.message-bar--success]="messageType() === 'success'"
+        [class.message-bar--error]="messageType() === 'error'">
+        <i class="fas"
+          [class.fa-check-circle]="messageType() === 'success'"
+          [class.fa-exclamation-circle]="messageType() === 'error'"></i>
+        {{ message() }}
+      </div>
+    }
 
     <!-- Saving overlay -->
-    <div class="saving-bar" *ngIf="saving()">
-      <div class="mini-spinner"></div>
-      <span>جاري الحفظ وإرسال الإشعارات...</span>
-    </div>
-
-    <!-- Desktop: Students table -->
-    <div class="students-table-wrapper desktop-only">
-      <table class="students-table">
-        <thead>
-          <tr>
-            <th class="col-check">
-              <input type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll()" />
-            </th>
-            <th class="col-num">#</th>
-            <th class="col-name">اسم الطالب</th>
-            <th class="col-code">الرمز</th>
-            <th class="col-status">الحالة</th>
-            <th class="col-action">الإجراء</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            *ngFor="let s of students(); let i = index; trackBy: trackByEnrollment"
-            [class.row-absent]="s.isAbsent"
-            [class.row-selected]="s.selected && !s.isAbsent">
-            <td class="col-check">
-              <input type="checkbox" [checked]="s.selected" (change)="toggleSelect(i)" />
-            </td>
-            <td class="col-num">{{ i + 1 }}</td>
-            <td class="col-name">
-              <div class="student-info">
-                <div class="avatar" [class.avatar-absent]="s.isAbsent">
-                  {{ s.studentName.charAt(0) }}
-                </div>
-                <span class="student-name">{{ s.studentName }}</span>
-              </div>
-            </td>
-            <td class="col-code">{{ s.studentCode }}</td>
-            <td class="col-status">
-              <span class="status-badge"
-                [class.status-present]="!s.isAbsent"
-                [class.status-absent]="s.isAbsent">
-                <i class="fas" [class.fa-check-circle]="!s.isAbsent" [class.fa-times-circle]="s.isAbsent"></i>
-                {{ s.isAbsent ? 'غائب' : 'حاضر' }}
-              </span>
-            </td>
-            <td class="col-action">
-              <button
-                class="btn-toggle"
-                [class.btn-mark-absent]="!s.isAbsent"
-                [class.btn-cancel-absent]="s.isAbsent"
-                (click)="toggleStudentAbsent(s, i)"
-                [disabled]="saving()">
-                <i class="fas" [class.fa-user-times]="!s.isAbsent" [class.fa-user-check]="s.isAbsent"></i>
-                {{ s.isAbsent ? 'إلغاء الغياب' : 'تسجيل غياب' }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Mobile: Student cards -->
-    <div class="student-cards mobile-only">
-      <div
-        *ngFor="let s of students(); let i = index; trackBy: trackByEnrollment"
-        class="student-card"
-        [class.card-absent]="s.isAbsent"
-        [class.card-selected]="s.selected && !s.isAbsent">
-
-        <div class="card-main-row">
-          <!-- Checkbox -->
-          <label class="card-check">
-            <input type="checkbox" [checked]="s.selected" (change)="toggleSelect(i)" />
-          </label>
-
-          <!-- Avatar -->
-          <div class="avatar" [class.avatar-absent]="s.isAbsent">
-            {{ s.studentName.charAt(0) }}
-          </div>
-
-          <!-- Name + Code -->
-          <div class="card-info">
-            <span class="student-name">{{ s.studentName }}</span>
-            <span class="card-code" *ngIf="s.studentCode">{{ s.studentCode }}</span>
-          </div>
-
-          <!-- Compact action toggle -->
-          <button
-            class="btn-toggle-compact"
-            [class.btn-compact-absent]="!s.isAbsent"
-            [class.btn-compact-present]="s.isAbsent"
-            (click)="toggleStudentAbsent(s, i)"
-            [disabled]="saving()">
-            <i class="fas" [class.fa-user-times]="!s.isAbsent" [class.fa-user-check]="s.isAbsent"></i>
-            <span>{{ s.isAbsent ? 'إلغاء الغياب' : 'تسجيل غياب' }}</span>
-          </button>
-        </div>
-
+    @if (saving()) {
+      <div class="saving-bar">
+        <div class="mini-spinner"></div>
+        <span>جاري الحفظ وإرسال الإشعارات...</span>
       </div>
+    }
+
+    <!-- Student cards -->
+    <div class="student-cards">
+      @for (s of students(); track s.enrollmentId; let i = $index) {
+        <div class="student-card"
+          [class.card-absent]="s.isAbsent"
+          [class.card-selected]="s.selected && !s.isAbsent">
+          <div class="card-main-row">
+            <label class="card-check">
+              <input type="checkbox" [checked]="s.selected" (change)="toggleSelect(i)" />
+            </label>
+            <div class="avatar" [class.avatar-absent]="s.isAbsent">
+              {{ s.studentName.charAt(0) }}
+            </div>
+            <div class="card-info">
+              <span class="student-name">{{ s.studentName }}</span>
+              @if (s.studentCode) {
+                <span class="card-code">{{ s.studentCode }}</span>
+              }
+            </div>
+            <button
+              class="btn-toggle-compact"
+              [class.btn-compact-absent]="!s.isAbsent"
+              [class.btn-compact-present]="s.isAbsent"
+              (click)="toggleStudentAbsent(s, i)"
+              [disabled]="saving()">
+              <i class="fas" [class.fa-user-times]="!s.isAbsent" [class.fa-user-check]="s.isAbsent"></i>
+              <span>{{ s.isAbsent ? 'إلغاء' : 'غياب' }}</span>
+            </button>
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Pagination -->
@@ -368,6 +347,6 @@
       </div>
     }
 
-  </div>
+  }
 
 </div>

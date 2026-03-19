@@ -3,16 +3,20 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import * as QRCode from 'qrcode';
 
 import { CurrentUserInfoService } from '@proxy/common';
-import { StudentService } from '@proxy/students';
 import { CourseService } from '@proxy/courses';
-import type { ParentStudentDto } from '@proxy/parents/models';
+import { SessionService } from '@proxy/groups';
 import type { StudentCourseDto } from '@proxy/courses/dtos/models';
+import type { NextSessionDto } from '@proxy/groups/dtos/models';
 import { environment } from '../../environments/environment';
+import { SessionTimerComponent } from '../shared/components/session-timer.component';
+import { OfflineCacheService } from '../shared/services/offline-cache.service';
+import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 
 const GRADE_NAMES: Record<number, string> = {
+  [-1]: 'رياض أطفال 1',
+  0: 'رياض أطفال 2',
   1: 'الصف الأول الابتدائي',
   2: 'الصف الثاني الابتدائي',
   3: 'الصف الثالث الابتدائي',
@@ -30,66 +34,73 @@ const GRADE_NAMES: Record<number, string> = {
 @Component({
   selector: 'app-student-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent],
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.scss'],
 })
 export class StudentHomeComponent implements OnInit {
   private readonly router         = inject(Router);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
-  private readonly studentService = inject(StudentService);
   private readonly courseService  = inject(CourseService);
   private readonly http           = inject(HttpClient);
+  private readonly sessionService = inject(SessionService);
+  private readonly cache          = inject(OfflineCacheService);
   private readonly apiBase        = environment.apis?.default?.url || '';
 
   studentName        = signal('');
-  studentCode        = signal('');
   gradeName          = signal('');
-  confirmedParents   = signal<ParentStudentDto[]>([]);
-  pendingParentLinks = signal<ParentStudentDto[]>([]);
   courses            = signal<StudentCourseDto[]>([]);
   promoAds           = signal<any[]>([]);
   loading            = signal(true);
-  qrDataUrl          = signal<string | null>(null);
-  showQr             = signal(false);
+  nextSession        = signal<NextSessionDto | null>(null);
+  offline            = signal(false);
+  offlineLastUpdated = signal('');
+
+  // Collapse/expand state
+  coursesExpanded    = signal(true);
+  availableExpanded  = signal(true);
+
+  private readonly CACHE_KEY = 'student_home';
 
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
       const userInfo = await lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo());
       this.studentName.set(userInfo?.actorName || '');
-      this.studentCode.set(userInfo?.actorCode || '');
       if (userInfo?.currentGrade) {
         this.gradeName.set(GRADE_NAMES[userInfo.currentGrade] || `الصف ${userInfo.currentGrade}`);
       }
       await Promise.all([
-        this.loadPendingParentLinks(),
-        this.loadConfirmedParents(),
         this.loadCourses(),
         this.loadPromoAds(),
+        this.loadNextSession(),
       ]);
-      if (userInfo?.actorCode) {
-        this.generateQr(userInfo.actorCode);
-      }
+      // Cache successful data
+      this.cache.set(this.CACHE_KEY, {
+        studentName: this.studentName(),
+        gradeName: this.gradeName(),
+        courses: this.courses(),
+        promoAds: this.promoAds(),
+      });
+      this.offline.set(false);
     } catch (err) {
       console.error('Error loading student home:', err);
+      this.restoreFromCache();
     } finally {
       this.loading.set(false);
     }
   }
 
-  private async loadPendingParentLinks(): Promise<void> {
-    try {
-      const links = await lastValueFrom(this.studentService.getPendingLinksForCurrentStudent());
-      this.pendingParentLinks.set(links || []);
-    } catch { /* silent */ }
-  }
-
-  private async loadConfirmedParents(): Promise<void> {
-    try {
-      const parents = await lastValueFrom(this.studentService.getConfirmedParentsForCurrentStudent());
-      this.confirmedParents.set(parents || []);
-    } catch { /* silent */ }
+  private restoreFromCache(): void {
+    const cached = this.cache.get<any>(this.CACHE_KEY);
+    if (cached) {
+      this.studentName.set(cached.studentName || '');
+      this.gradeName.set(cached.gradeName || '');
+      this.courses.set(cached.courses || []);
+      this.promoAds.set(cached.promoAds || []);
+      this.offline.set(true);
+      this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
+    }
   }
 
   private async loadCourses(): Promise<void> {
@@ -97,40 +108,6 @@ export class StudentHomeComponent implements OnInit {
       const result = await lastValueFrom(this.courseService.getCoursesForCurrentStudent());
       this.courses.set(result || []);
     } catch { /* silent */ }
-  }
-
-  private async generateQr(code: string): Promise<void> {
-    try {
-      const url = `${window.location.origin}/parent/link-child?code=${code}`;
-      const dataUrl = await QRCode.toDataURL(url, {
-        width: 220,
-        margin: 1,
-        color: { dark: '#764ba2', light: '#ffffff' },
-      });
-      this.qrDataUrl.set(dataUrl);
-    } catch { /* silent */ }
-  }
-
-  toggleQr(): void {
-    this.showQr.update(v => !v);
-  }
-
-  async confirmParentLink(link: ParentStudentDto): Promise<void> {
-    try {
-      await lastValueFrom(this.studentService.confirmParentStudentLink(link.parentId!, link.studentId!));
-      await Promise.all([this.loadPendingParentLinks(), this.loadConfirmedParents()]);
-    } catch (err) {
-      console.error('Error confirming parent link:', err);
-    }
-  }
-
-  async rejectParentLink(link: ParentStudentDto): Promise<void> {
-    try {
-      await lastValueFrom(this.studentService.rejectParentStudentLink(link.parentId!, link.studentId!));
-      await this.loadPendingParentLinks();
-    } catch (err) {
-      console.error('Error rejecting parent link:', err);
-    }
   }
 
   enrolledCourses(): StudentCourseDto[] {
@@ -141,11 +118,18 @@ export class StudentHomeComponent implements OnInit {
     return this.courses().filter(c => !c.isEnrolled && !c.hasPendingRequest);
   }
 
+  private async loadNextSession(): Promise<void> {
+    try {
+      const session = await lastValueFrom(this.sessionService.getNextSession({ skipHandleError: true }));
+      this.nextSession.set(session ?? null);
+    } catch { /* no sessions */ }
+  }
+
   private async loadPromoAds(): Promise<void> {
     try {
       const res: any = await lastValueFrom(
         this.http.get(`${this.apiBase}/api/app/advertisement/active-ads`, {
-          params: { audience: '1', maxResultCount: '3' }, // 1 = Students
+          params: { audience: '1', maxResultCount: '10' }, // 1 = Students
         })
       );
       this.promoAds.set(res?.items ?? []);
@@ -159,8 +143,26 @@ export class StudentHomeComponent implements OnInit {
     }
   }
 
+  goToAllAds(): void {
+    this.router.navigate(['/ads']);
+  }
+
+  goProfile(): void {
+    this.router.navigate(['/student/profile']);
+  }
+
+  goTodaySessions(): void {
+    this.router.navigate(['/student/today-sessions']);
+  }
+
   goRegister(): void {
     this.router.navigate(['/student/courses']);
+  }
+
+  viewCourse(course: StudentCourseDto): void {
+    if (course.isEnrolled) {
+      this.router.navigate(['/student/course', course.id]);
+    }
   }
 
   goToRequests(): void {

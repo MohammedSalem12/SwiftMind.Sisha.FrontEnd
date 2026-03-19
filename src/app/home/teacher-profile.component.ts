@@ -6,8 +6,8 @@ import { AuthService, RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CurrentUserActorDto } from '@proxy/common/models';
-import { TeacherService } from '@proxy/teachers';
-import { TeacherDto, TeacherEnrolledCourseDto } from '@proxy/teachers/models';
+import { TeacherService, SecretaryTeacherService } from '@proxy/teachers';
+import { TeacherDto, TeacherEnrolledCourseDto, SecretaryInfoDto } from '@proxy/teachers/models';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
 
 @Component({
@@ -179,6 +179,40 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
           }
         </div>
 
+        <!-- Secretaries -->
+        <div class="section">
+          <div class="section-title">
+            <i class="fas fa-user-tie"></i> السكرتارية المرتبطة · My Secretaries
+            @if (secretaries().length > 0) { <span class="count-pill">{{ secretaries().length }}</span> }
+          </div>
+          @if (secretaries().length === 0) {
+            <div class="empty-box">
+              <i class="fas fa-user-tie"></i>
+              <p>لا يوجد سكرتارية مرتبطة</p>
+              <span>No linked secretaries</span>
+            </div>
+          }
+          @if (secretaries().length > 0) {
+            <div class="list">
+              @for (s of secretaries(); track s.secretaryUserId) {
+                <div class="list-row">
+                  <div class="list-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+                    <i class="fas fa-user-tie"></i>
+                  </div>
+                  <div class="list-info">
+                    <span class="list-name">{{ s.displayName || s.userName }}</span>
+                    @if (s.email) {
+                      <span class="list-sub">{{ s.email }}</span>
+                    }
+                  </div>
+                  <span class="enrolled-chip" style="background:rgba(245,158,11,.1);color:#d97706">
+                    <i class="fas fa-link"></i> مرتبط
+                  </span>
+                </div>
+              }
+            </div>
+          }
+        </div>
 
       }
 
@@ -343,11 +377,13 @@ export class TeacherProfileComponent implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly teacherSvc     = inject(TeacherService);
+  private readonly secretarySvc   = inject(SecretaryTeacherService);
   private readonly restSvc        = inject(RestService);
   loading         = signal(true);
   userInfo        = signal<CurrentUserActorDto | null>(null);
   teacherInfo     = signal<TeacherDto | null>(null);
   enrolledCourses = signal<TeacherEnrolledCourseDto[]>([]);
+  secretaries     = signal<SecretaryInfoDto[]>([]);
   editingLocation = signal(false);
   locSaving       = signal(false);
   locSaveError    = signal<string | null>(null);
@@ -372,12 +408,14 @@ export class TeacherProfileComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     try {
-      const [info, courses] = await Promise.all([
+      const [info, courses, secs] = await Promise.all([
         lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo()),
         lastValueFrom(this.teacherSvc.getCoursesWithEnrollmentStatus()),
+        lastValueFrom(this.secretarySvc.getSecretariesForCurrentTeacher()).catch(() => [] as SecretaryInfoDto[]),
       ]);
       this.userInfo.set(info);
       this.enrolledCourses.set((courses ?? []).filter(c => c.isEnrolled));
+      this.secretaries.set(secs ?? []);
 
       // Load full teacher dto for government/town
       if (info?.actorId) {

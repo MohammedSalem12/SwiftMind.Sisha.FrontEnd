@@ -1,5 +1,9 @@
 <div class="parent-home" dir="rtl">
 
+  @if (offline()) {
+    <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
+  }
+
   <!-- Hero -->
   <div class="hero">
     <div class="hero-blob hero-blob-1"></div>
@@ -89,12 +93,14 @@
 
   <!-- My Children -->
   @if (!loading() && children().length > 0) {
-    <div class="section-label">
+    <button class="section-label section-label--toggle" (click)="childrenExpanded.set(!childrenExpanded())">
       <i class="fas fa-child"></i>
       <span>أبنائي · My Children</span>
       <span class="count-pill">{{ children().length }}</span>
-    </div>
-    <div class="children-grid">
+      <i class="fas toggle-chevron" [class.fa-chevron-down]="!childrenExpanded()" [class.fa-chevron-up]="childrenExpanded()"></i>
+    </button>
+    @if (childrenExpanded()) {
+    <div class="children-grid collapsible-content">
       @for (child of children(); track child.studentId) {
         <div class="child-card" (click)="viewChildDetails(child)">
           <div class="child-card-icon">
@@ -124,6 +130,7 @@
         </div>
       }
     </div>
+    }
   }
 
   <!-- Empty State -->
@@ -143,24 +150,26 @@
 
   <!-- Recent Notifications -->
   @if (!loading() && recentNotifications().length > 0) {
-    <div class="section-label" style="margin-top: 1.25rem;">
+    <button class="section-label section-label--toggle" style="margin-top: 1.25rem;" (click)="notificationsExpanded.set(!notificationsExpanded())">
       <i class="fas fa-bell"></i>
       <span>آخر الإشعارات · Notifications</span>
-      <button class="see-all-btn" (click)="goToNotifications()">عرض الكل</button>
-    </div>
-    <div class="notifications-list">
-      @for (n of recentNotifications(); track n.id) {
-        <div class="notif-item" [class.notif-unread]="!n.isRead">
-          <div class="notif-icon">
-            <i class="fas fa-bell"></i>
+      <i class="fas toggle-chevron" [class.fa-chevron-down]="!notificationsExpanded()" [class.fa-chevron-up]="notificationsExpanded()"></i>
+    </button>
+    @if (notificationsExpanded()) {
+      <div class="notifications-list collapsible-content">
+        @for (n of recentNotifications(); track n.id) {
+          <div class="notif-item" [class.notif-unread]="!n.isRead">
+            <div class="notif-icon">
+              <i class="fas fa-bell"></i>
+            </div>
+            <div class="notif-body">
+              <span class="notif-title">{{ n.title }}</span>
+              <span class="notif-msg">{{ n.message }}</span>
+            </div>
           </div>
-          <div class="notif-body">
-            <span class="notif-title">{{ n.title }}</span>
-            <span class="notif-msg">{{ n.message }}</span>
-          </div>
-        </div>
-      }
-    </div>
+        }
+      </div>
+    }
   }
 
   <!-- Fixed Bottom Bar -->

@@ -1,3 +1,5 @@
+import type { AcademyCourseTeacherStatus } from './academy-course-teacher-status.enum';
+import type { AcademyCourseTeacherAssignedByType } from './academy-course-teacher-assigned-by-type.enum';
 import type { FullAuditedEntityDto } from '@abp/ng.core';
 import type { AcademyTeacherStatus } from './academy-teacher-status.enum';
 
@@ -9,6 +11,19 @@ export interface AcademyCourseDto {
   courseCode?: string;
   gradeName?: string;
   isActive: boolean;
+}
+
+export interface AcademyCourseTeacherDto {
+  academyId?: string;
+  courseId?: string;
+  teacherId?: string;
+  teacherName?: string;
+  teacherCode?: string;
+  courseNameAr?: string;
+  courseNameEn?: string;
+  courseCode?: string;
+  status?: AcademyCourseTeacherStatus;
+  assignedByType?: AcademyCourseTeacherAssignedByType;
 }
 
 export interface AcademyDto extends FullAuditedEntityDto<string> {

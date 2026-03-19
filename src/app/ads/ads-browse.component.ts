@@ -361,6 +361,12 @@ export class AdsBrowseComponent implements OnInit {
       this.isStudent.set(roles.includes('STUDENT'));
       this.isAdvertiser.set(roles.includes('ADVERTISER'));
       this.isAdmin.set(roles.some((r: string) => ['ADMIN', 'SECRETARY'].includes(r)));
+
+      // Teachers and advertisers should see their own ads page
+      if (roles.includes('TEACHER') && !this.isAdmin()) {
+        this.router.navigate(['/ads/my'], { replaceUrl: true });
+        return;
+      }
     } catch { /* ignore */ }
     await this.loadAds();
   }

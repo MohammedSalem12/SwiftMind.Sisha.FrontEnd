@@ -1,5 +1,9 @@
 <div class="home-landing">
-  
+
+  @if (offline()) {
+    <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
+  }
+
   <!-- Content for unauthenticated users -->
   <div *ngIf="!hasLoggedIn" class="guest-welcome">
     <div class="welcome-card">
@@ -89,10 +93,12 @@
             <a class="service-box" routerLink="/teachers"><span class="icon">🧑‍🏫</span> Teachers</a>
             <a class="service-box" routerLink="/parents"><span class="icon">�‍👩‍👧‍👦</span> Parents</a>
             <a class="service-box" routerLink="/courses"><span class="icon">📚</span> Courses</a>
-            <a class="service-box" routerLink="/attendance"><span class="icon">📋</span> Attendance</a>
+            <!-- <a class="service-box" routerLink="/attendance"><span class="icon">📋</span> Attendance</a> -->
             <a class="service-box" routerLink="/feeds"><span class="icon">📢</span> Feeds</a>
             <a class="service-box" routerLink="/exam-grade"><span class="icon">📝</span> Exam Grades</a>
             <a class="service-box" routerLink="/register"><span class="icon">📝</span> Register</a>
+            <a class="service-box" routerLink="/admin/password-resets"><span class="icon">🔑</span> Password Resets</a>
+            <a class="service-box" routerLink="/ads/advertisers"><span class="icon">📣</span> Advertisers</a>
           </div>
         </div>
       </div>

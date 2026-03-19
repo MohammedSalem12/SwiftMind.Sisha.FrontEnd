@@ -18,7 +18,7 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 .hero {
   position: relative;
   background: $purple-grad;
-  padding: calc(env(safe-area-inset-top, 0px) + 1.5rem) 1.5rem 1.5rem;
+  padding: calc(env(safe-area-inset-top, 0px) + 0.6rem) 1.25rem 0.7rem;
   overflow: hidden;
 }
 
@@ -49,7 +49,7 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   margin-bottom: 0.6rem;
 }
 
-.hero-name { font-size: 1.45rem; font-weight: 700; color: #fff; }
+.hero-name { font-size: 1.1rem; font-weight: 700; color: #fff; }
 
 .hero-name-block {
   display: flex;
@@ -118,14 +118,14 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 .hero-icon {
   position: relative;
   z-index: 1;
-  width: 60px;
-  height: 60px;
+  width: 42px;
+  height: 42px;
   background: rgba(255,255,255,0.15);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
+  font-size: 1.15rem;
   color: #fff;
   flex-shrink: 0;
 }
@@ -245,6 +245,36 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   padding: 0.1rem 0.5rem;
   font-size: 0.7rem;
   font-weight: 700;
+}
+
+// ──────────────────────────────────────────
+// Collapsible Section Toggle
+// ──────────────────────────────────────────
+.section-label--toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+
+  &:active { opacity: 0.7; }
+}
+
+.toggle-chevron {
+  margin-right: auto;
+  font-size: 0.7rem;
+  color: #9ca3af;
+  transition: transform 0.2s ease;
+}
+
+.collapsible-content {
+  animation: collapseIn 0.2s ease-out;
+}
+
+@keyframes collapseIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .see-all-btn {

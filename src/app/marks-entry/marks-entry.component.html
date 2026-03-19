@@ -1,28 +1,23 @@
 <div class="marks-page" dir="rtl">
 
-  <!-- Header -->
-  <div class="page-header" [class.page-header--academy]="isAcademyCourse()">
-    <button class="btn-back" (click)="goBack()">
+  <!-- Top Bar -->
+  <div class="top-bar-fixed">
+    <button class="top-back-btn" (click)="goBack()">
       <i class="fas fa-arrow-right"></i>
     </button>
-    <div class="header-icon-wrap">
-      <i class="fas fa-clipboard-list"></i>
-    </div>
-    <div class="header-text">
+    <div class="top-bar-title">
       <h1>إدخال الدرجات</h1>
-      @if (isAcademyCourse()) {
-        <p class="header-academy-sub">
-          <i class="fas fa-university"></i>
-          {{ selectedCourse()?.academyName }}
-          <span class="header-course-name">· {{ selectedCourse()?.nameAr || selectedCourse()?.nameEn }}</span>
-        </p>
-      } @else {
-        <p>اختر المقرر والامتحان ثم أدخل درجات الطلاب</p>
-      }
+      <p>Marks Entry</p>
     </div>
+    @if (isAcademyCourse()) {
+      <span class="top-academy-tag">
+        <i class="fas fa-university"></i>
+        {{ selectedCourse()?.academyName }}
+      </span>
+    }
   </div>
 
-  <!-- Academy context banner (locked academy course) -->
+  <!-- Academy context banner -->
   @if (isAcademyCourse() && lockedCourseId()) {
     <div class="academy-context-banner">
       <div class="acb-icon"><i class="fas fa-university"></i></div>
@@ -34,211 +29,278 @@
     </div>
   }
 
-  <!-- Setup strip -->
-  <div class="setup-strip">
+  <!-- Filters Card -->
+  <div class="filters-card">
+    <!-- Course -->
+    <div class="field-group">
+      <label class="field-label">
+        <i class="fas fa-book"></i> المقرر · Course
+      </label>
+      @if (lockedCourseId()) {
+        <div class="course-locked-label">
+          <i class="fas fa-lock"></i>
+          <span class="locked-name">{{ selectedCourse()?.nameAr || selectedCourse()?.nameEn || lockedCourseId() }}</span>
+          @if (selectedCourse()?.gradeName) {
+            <span class="grade-tag">{{ selectedCourse()!.gradeName }}</span>
+          }
+          @if (selectedCourse()?.academyName) {
+            <span class="academy-inline-tag">
+              <i class="fas fa-university"></i>
+              {{ selectedCourse()!.academyName }}
+            </span>
+          }
+        </div>
+      } @else {
+        <select class="field-input"
+          [ngModel]="selectedCourseId()"
+          (ngModelChange)="onCourseChange($event)"
+          [disabled]="loading()">
+          <option value="">-- اختر المقرر --</option>
+          @for (c of courses(); track c.id) {
+            <option [value]="c.id">
+              {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' · ' + c.gradeName : '' }}{{ c.academyName ? ' · ' + c.academyName : '' }}
+            </option>
+          }
+        </select>
+      }
+    </div>
 
-    <div class="setup-field">
-      <label>المقرر</label>
-      <div *ngIf="lockedCourseId()" class="course-locked-label">
-        <i class="fas fa-lock"></i>
-        <span class="locked-name">{{ selectedCourse()?.nameAr || selectedCourse()?.nameEn || lockedCourseId() }}</span>
-        <span *ngIf="selectedCourse()?.gradeName" class="grade-tag">{{ selectedCourse()!.gradeName }}</span>
-        <span *ngIf="selectedCourse()?.academyName" class="academy-inline-tag">
-          <i class="fas fa-university"></i>
-          {{ selectedCourse()!.academyName }}
-        </span>
+    <!-- Exam -->
+    @if (selectedCourseId()) {
+      <div class="field-group">
+        <div class="label-row">
+          <label class="field-label">
+            <i class="fas fa-file-alt"></i> التقييم · Evaluation
+          </label>
+          <button class="add-exam-trigger" (click)="showAddExamForm.set(true)">
+            <i class="fas fa-plus"></i> تقييم جديد
+          </button>
+        </div>
+        <select class="field-input"
+          [ngModel]="selectedExamId()"
+          (ngModelChange)="onExamChange($event)"
+          [disabled]="loading()">
+          <option value="">-- اختر التقييم --</option>
+          @for (e of exams(); track e.id) {
+            <option [value]="e.id">
+              {{ e.examName }}{{ e.groupName ? ' (' + e.groupName + ')' : '' }}
+            </option>
+          }
+        </select>
       </div>
-      <select *ngIf="!lockedCourseId()" [ngModel]="selectedCourseId()" (ngModelChange)="onCourseChange($event)" [disabled]="loading()">
-        <option value="">— اختر مقرراً —</option>
-        <option *ngFor="let c of courses()" [value]="c.id">
-          {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' · ' + c.gradeName : '' }}{{ c.academyName ? ' · ' + c.academyName : '' }}
-        </option>
-      </select>
-    </div>
+    }
 
-    <div class="setup-field" *ngIf="selectedCourseId()">
-      <div class="label-row">
-        <label>الامتحان</label>
-        <button class="link-btn" (click)="showAddExamForm.set(!showAddExamForm())">
-          <i class="fas" [class.fa-plus]="!showAddExamForm()" [class.fa-times]="showAddExamForm()"></i>
-          {{ showAddExamForm() ? 'إلغاء' : 'امتحان جديد' }}
-        </button>
+    <!-- Group -->
+    @if (selectedCourseId() && groups().length > 0) {
+      <div class="field-group">
+        <label class="field-label">
+          <i class="fas fa-users"></i> المجموعة · Group <span class="opt-tag">اختياري</span>
+        </label>
+        <select class="field-input"
+          [ngModel]="selectedGroupId()"
+          (ngModelChange)="onGroupChange($event)"
+          [disabled]="loading()">
+          <option value="">الكل</option>
+          @for (g of groups(); track g.id) {
+            <option [value]="g.id">{{ g.name }}</option>
+          }
+        </select>
       </div>
-      <select [ngModel]="selectedExamId()" (ngModelChange)="onExamChange($event)" [disabled]="loading()">
-        <option value="">— اختر امتحاناً —</option>
-        <option *ngFor="let e of exams()" [value]="e.id">
-          {{ e.examName }}{{ e.groupName ? ' (' + e.groupName + ')' : '' }}{{ e.academyName ? ' · ' + e.academyName : '' }}
-        </option>
-      </select>
-      <div class="exam-academy-info" *ngIf="selectedExam()?.academyName">
-        <i class="fas fa-university"></i>
-        {{ selectedExam().academyName }}
+    }
+
+    <!-- Max Grade -->
+    @if (selectedExamId()) {
+      <div class="field-group field-group--sm">
+        <label class="field-label">
+          <i class="fas fa-hashtag"></i> الدرجة العظمى
+        </label>
+        <input class="field-input" type="number" min="1"
+               [ngModel]="globalMaxGrade()"
+               (ngModelChange)="globalMaxGrade.set($event)"
+               placeholder="100" />
       </div>
-    </div>
-
-    <div class="setup-field setup-field--sm"
-         *ngIf="selectedCourseId() && groups().length > 0">
-      <label>المجموعة <span class="opt-tag">اختياري</span></label>
-      <select [ngModel]="selectedGroupId()" (ngModelChange)="onGroupChange($event)" [disabled]="loading()">
-        <option value="">الكل</option>
-        <option *ngFor="let g of groups()" [value]="g.id">{{ g.name }}</option>
-      </select>
-    </div>
-
-    <div class="setup-field setup-field--xs" *ngIf="selectedExamId()">
-      <label>الدرجة العظمى</label>
-      <input type="number" min="1"
-             [ngModel]="globalMaxGrade()"
-             (ngModelChange)="globalMaxGrade.set($event)"
-             placeholder="100" />
-    </div>
-
+    }
   </div>
 
-  <!-- Add exam inline form -->
-  <div class="add-exam-form" *ngIf="showAddExamForm() && selectedCourseId()">
-    <div class="form-header">
-      <i class="fas fa-file-plus form-icon"></i>
-      <div class="form-title">
-        <strong>إضافة امتحان جديد</strong>
-        <span *ngIf="selectedCourse()?.academyName" class="academy-context">
-          <i class="fas fa-university me-1"></i>
-          {{ selectedCourse().academyName }}
-        </span>
+  <!-- Add Exam Modal -->
+  @if (showAddExamForm() && selectedCourseId()) {
+    <div class="modal-overlay" (click)="showAddExamForm.set(false)">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-header-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="modal-header-text">
+            <h2>إضافة تقييم جديد</h2>
+            <p>Add New Evaluation</p>
+          </div>
+          <button class="modal-close" (click)="showAddExamForm.set(false)">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          @if (selectedCourse()?.academyName) {
+            <div class="modal-academy-info">
+              <i class="fas fa-university"></i>
+              {{ selectedCourse()!.academyName }} · {{ selectedCourse()!.nameAr || selectedCourse()!.nameEn }}
+            </div>
+          }
+
+          <div class="field-group">
+            <label class="field-label">
+              <i class="fas fa-pen"></i> اسم التقييم <span class="req">*</span>
+            </label>
+            <input class="field-input" type="text"
+                   [ngModel]="newExamName()"
+                   (ngModelChange)="newExamName.set($event)"
+                   placeholder="مثال: واجب منزلي / تقييم حصة / اختبار شهري"
+                   [disabled]="addingExam()"
+                   (keyup.enter)="addExam()" />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-modal-save" (click)="addExam()"
+                  [disabled]="addingExam() || !newExamName().trim()">
+            @if (addingExam()) {
+              <div class="spinner-btn"></div>
+              <span>جاري الحفظ...</span>
+            } @else {
+              <i class="fas fa-save"></i>
+              <span>إنشاء التقييم</span>
+            }
+          </button>
+          <button class="btn-modal-cancel" (click)="showAddExamForm.set(false)">إلغاء</button>
+        </div>
       </div>
     </div>
-    <div class="form-body">
-      <input type="text"
-             [ngModel]="newExamName()" (ngModelChange)="newExamName.set($event)"
-             placeholder="اسم الامتحان (مثال: الاختبار الشهري الأول)"
-             [disabled]="addingExam()"
-             (keyup.enter)="addExam()" />
-      <button class="btn-create" (click)="addExam()"
-              [disabled]="addingExam() || !newExamName().trim()">
-        <span class="btn-spinner-sm" *ngIf="addingExam()"></span>
-        <i class="fas fa-save" *ngIf="!addingExam()"></i>
-        {{ addingExam() ? 'جاري الحفظ…' : 'حفظ' }}
-      </button>
-    </div>
-    <div class="form-info" *ngIf="selectedCourse()">
-      <i class="fas fa-info-circle"></i>
-      سيتم ربط هذا الامتحان بـ:
-      <strong>{{ selectedCourse().nameAr || selectedCourse().nameEn }}</strong>
-      <span *ngIf="selectedCourse().academyName">
-        في أكاديمية <strong>{{ selectedCourse().academyName }}</strong>
-      </span>
-    </div>
-  </div>
+  }
 
   <!-- Loading -->
-  <div class="state-box" *ngIf="loading()">
-    <div class="spinner"></div>
-    <span>جاري التحميل…</span>
-  </div>
+  @if (loading()) {
+    <div class="loading-area">
+      <div class="spinner"></div>
+      <span>جاري التحميل...</span>
+    </div>
+  }
 
   <!-- Empty states -->
-  <div class="state-box" *ngIf="!selectedCourseId() && !loading()">
-    <i class="fas fa-book-open"></i>
-    <p>اختر مقرراً للبدء</p>
-  </div>
+  @if (!selectedCourseId() && !loading()) {
+    <div class="empty-state">
+      <i class="fas fa-book-open"></i>
+      <p>اختر مقرراً للبدء</p>
+      <small>Select a course to get started</small>
+    </div>
+  }
 
-  <div class="state-box" *ngIf="selectedCourseId() && !selectedExamId() && !loading()">
-    <i class="fas fa-file-alt"></i>
-    <p>اختر امتحاناً لعرض الطلاب</p>
-  </div>
+  @if (selectedCourseId() && !selectedExamId() && !loading()) {
+    <div class="empty-state">
+      <i class="fas fa-file-alt"></i>
+      <p>اختر تقييماً لعرض الطلاب</p>
+      <small>Select an evaluation to view students</small>
+    </div>
+  }
 
-  <div class="state-box state-warn"
-       *ngIf="selectedExamId() && students().length === 0 && !loading()">
-    <i class="fas fa-user-slash"></i>
-    <p>لا يوجد طلاب مسجلون في هذا المقرر</p>
-  </div>
+  @if (selectedExamId() && students().length === 0 && !loading()) {
+    <div class="empty-state empty-state--warning">
+      <i class="fas fa-user-slash"></i>
+      <p>لا يوجد طلاب مسجلون في هذا المقرر</p>
+      <small>No students enrolled</small>
+    </div>
+  }
 
   <!-- Students section -->
-  <div *ngIf="students().length > 0 && !loading()">
+  @if (students().length > 0 && !loading()) {
 
-    <!-- Top bar -->
-    <div class="top-bar">
-      <div class="pills">
-        <span class="pill pill-done">
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stats-chips">
+        <span class="stat-chip chip-done">
           <i class="fas fa-check-circle"></i> {{ gradedCount() }} مدخلة
         </span>
-        <span class="pill pill-pending">{{ ungradedCount() }} متبقية</span>
-        <span class="pill pill-total">{{ totalCount() }} طالب</span>
-        <span class="exam-tag" *ngIf="selectedExamName()">
-          <i class="fas fa-file-alt"></i> {{ selectedExamName() }}
-        </span>
+        <span class="stat-chip chip-pending">{{ ungradedCount() }} متبقية</span>
+        <span class="stat-chip chip-total">{{ totalCount() }} طالب</span>
       </div>
-      <div class="top-actions">
-        <button class="btn-report" *ngIf="gradedCount() > 0" (click)="viewReport()">
-          <i class="fas fa-chart-bar"></i> تقرير
-        </button>
+      <div class="stats-actions">
+        @if (gradedCount() > 0) {
+          <button class="btn-report" (click)="viewReport()">
+            <i class="fas fa-chart-bar"></i> تقرير
+          </button>
+        }
         <button class="btn-save-all" (click)="saveAll()" [disabled]="saving()">
-          <span class="btn-spinner-sm" *ngIf="saving()"></span>
-          <i class="fas fa-save" *ngIf="!saving()"></i>
-          {{ saving() ? 'جاري الحفظ…' : 'حفظ الكل' }}
+          @if (saving()) {
+            <div class="spinner-btn"></div>
+          } @else {
+            <i class="fas fa-save"></i>
+          }
+          <span>{{ saving() ? 'جاري...' : 'حفظ الكل' }}</span>
         </button>
       </div>
     </div>
 
     <!-- Message -->
-    <div class="msg-bar" *ngIf="message()"
-         [class.success]="messageType() === 'success'"
-         [class.error]="messageType() === 'error'">
-      <i class="fas"
-         [class.fa-check-circle]="messageType() === 'success'"
-         [class.fa-times-circle]="messageType() === 'error'"></i>
-      {{ message() }}
-    </div>
+    @if (message()) {
+      <div class="message-bar"
+        [class.message-bar--success]="messageType() === 'success'"
+        [class.message-bar--error]="messageType() === 'error'">
+        <i class="fas"
+          [class.fa-check-circle]="messageType() === 'success'"
+          [class.fa-times-circle]="messageType() === 'error'"></i>
+        {{ message() }}
+      </div>
+    }
 
     <!-- Grade list -->
     <div class="grade-list">
-      <div *ngFor="let s of students(); let i = index; trackBy: trackByStudentId"
-           class="grade-row"
-           [class.row-saved]="s.savedGrade !== null"
-           [class.row-error]="!!s.rowError"
-           [class.row-flash]="s.rowSuccess">
+      @for (s of students(); track s.studentId; let i = $index) {
+        <div class="grade-row"
+          [class.row-saved]="s.savedGrade !== null"
+          [class.row-error]="!!s.rowError"
+          [class.row-flash]="s.rowSuccess">
 
-        <span class="row-num">{{ i + 1 }}</span>
+          <div class="row-avatar" [class.avatar-saved]="s.savedGrade !== null">
+            {{ s.studentName.charAt(0) }}
+          </div>
 
-        <div class="row-avatar" [class.avatar-saved]="s.savedGrade !== null">
-          {{ s.studentName.charAt(0) }}
+          <div class="row-name">
+            <span class="name-text">{{ s.studentName }}</span>
+            <span class="code-text">{{ s.studentCode }}</span>
+            @if (s.savedGrade !== null) {
+              <div class="row-badge">
+                <span class="saved-val">{{ s.savedGrade }}<span class="max-val">/{{ s.savedMaxGrade }}</span></span>
+                <span class="pct-badge" [ngClass]="'pct-' + gradeClass(gradePct(s))">{{ gradePct(s) }}%</span>
+              </div>
+            }
+          </div>
+
+          <input class="grade-input"
+                 type="number" min="0" [max]="globalMaxGrade()"
+                 [ngModel]="s.inputGrade"
+                 (ngModelChange)="updateGradeInput(i, $event)"
+                 [placeholder]="'/' + globalMaxGrade()"
+                 [disabled]="s.saving || saving()" />
+
+          <button class="btn-row-save"
+                  [class.btn-row-saved]="s.rowSuccess"
+                  (click)="saveGrade(i)"
+                  [disabled]="s.saving || saving() || s.inputGrade === ''">
+            @if (s.saving) {
+              <div class="spinner-btn"></div>
+            } @else if (s.rowSuccess) {
+              <i class="fas fa-check"></i>
+            } @else {
+              <i class="fas fa-save"></i>
+            }
+          </button>
+
+          @if (s.rowError) {
+            <div class="row-err">{{ s.rowError }}</div>
+          }
         </div>
-
-        <div class="row-name">
-          <span class="name-text">{{ s.studentName }}</span>
-          <span class="code-text">{{ s.studentCode }}</span>
-        </div>
-
-        <div class="row-badge" *ngIf="s.savedGrade !== null">
-          <span class="saved-val">
-            {{ s.savedGrade }}<span class="max-val">/{{ s.savedMaxGrade }}</span>
-          </span>
-          <span class="pct-badge" [ngClass]="'pct-' + gradeClass(gradePct(s))">
-            {{ gradePct(s) }}%
-          </span>
-        </div>
-
-        <input class="grade-input"
-               type="number" min="0" [max]="globalMaxGrade()"
-               [ngModel]="s.inputGrade"
-               (ngModelChange)="updateGradeInput(i, $event)"
-               [placeholder]="'/' + globalMaxGrade()"
-               [disabled]="s.saving || saving()" />
-
-        <button class="btn-row-save"
-                [class.btn-row-saved]="s.rowSuccess"
-                (click)="saveGrade(i)"
-                [disabled]="s.saving || saving() || s.inputGrade === ''">
-          <span class="btn-spinner-sm" *ngIf="s.saving"></span>
-          <i class="fas fa-check" *ngIf="s.rowSuccess && !s.saving"></i>
-          <i class="fas fa-save"  *ngIf="!s.saving && !s.rowSuccess"></i>
-        </button>
-
-        <div class="row-err" *ngIf="s.rowError">{{ s.rowError }}</div>
-
-      </div>
+      }
     </div>
 
-  </div>
+  }
 
 </div>

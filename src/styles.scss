@@ -939,3 +939,16 @@ input:focus-visible {
     }
   }
 }
+
+// ─────────────────────────────────────────────────────────────
+// BACK BUTTON: hide on mobile (use OS/WebView back gesture),
+// show on desktop/web where there's no native back gesture
+// ─────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .back-btn,
+  .btn-back,
+  .top-back-btn,
+  .back-btn-large {
+    display: none !important;
+  }
+}

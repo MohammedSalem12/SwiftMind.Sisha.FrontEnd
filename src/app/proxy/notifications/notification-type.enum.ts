@@ -15,6 +15,14 @@ export enum NotificationType {
   AcademyJoinRequestPending = 11,
   AcademyJoinRequestApproved = 12,
   AcademyJoinRequestRejected = 13,
+  SessionStarted = 14,
+  SessionMessage = 15,
+  PasswordResetRequested = 16,
+  PasswordResetCompleted = 17,
+  AcademyCourseTeacherAssigned = 18,
+  AcademyCourseTeacherRequestPending = 19,
+  AcademyCourseTeacherApproved = 20,
+  AcademyCourseTeacherRejected = 21,
 }
 
 export const notificationTypeOptions = mapEnumToOptions(NotificationType);
