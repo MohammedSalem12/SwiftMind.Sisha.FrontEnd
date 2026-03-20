@@ -10,6 +10,8 @@ import { RealtimeNotificationService } from './shared/services/realtime-notifica
 import { PushNotificationService } from './shared/services/push-notification.service';
 import { SidebarNotificationDirective } from './shared/sidebar-notification.directive';
 import { TopBarComponent } from './shared/top-bar.component';
+import { ServerOfflineOverlayComponent } from './shared/components/server-offline-overlay.component';
+import { ServerOfflineService } from './shared/services/server-offline.service';
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profile'];
 
@@ -24,6 +26,9 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     <app-bottom-nav />
     <abp-internet-status />
     <app-toasts />
+    @if (serverOffline.isOffline()) {
+      <app-server-offline-overlay />
+    }
   `,
   styles: [`
     /* Reserve space for fixed top bar on mobile */
@@ -52,6 +57,7 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     BottomNavComponent,
     TopBarComponent,
     SidebarNotificationDirective,
+    ServerOfflineOverlayComponent,
   ],
 })
 export class AppComponent implements OnInit {
@@ -59,6 +65,7 @@ export class AppComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly realtimeNotificationService = inject(RealtimeNotificationService);
   private readonly pushNotificationService = inject(PushNotificationService);
+  readonly serverOffline = inject(ServerOfflineService);
 
   ngOnInit(): void {
     // Add/remove auth-page class on body for CSS sidebar hiding
