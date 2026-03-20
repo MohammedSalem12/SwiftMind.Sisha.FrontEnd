@@ -546,7 +546,9 @@ export class AcademyProfileComponent implements OnInit {
   }
 
   enrollInCourse(c: AcademyCourseDto): void {
-    this.router.navigate(['/student/enroll', c.courseId]);
+    this.router.navigate(['/student/enroll', c.courseId], {
+      queryParams: { academyId: this.academyId }
+    });
   }
 
   async removeCourse(c: AcademyCourseDto): Promise<void> {

@@ -10,6 +10,7 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { TeacherService } from '@proxy/teachers';
 import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
+import { AcademyService } from '@proxy/academies';
 import { lastValueFrom } from 'rxjs';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
 
@@ -27,7 +28,7 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
         </button>
         <div class="header-text">
           <span class="header-title">التسجيل في مقرر</span>
-          <span class="header-sub">اختر المعلم ثم المجموعة</span>
+          <span class="header-sub">{{ academyId() ? 'معلمو الأكاديمية فقط · Academy teachers only' : 'اختر المعلم ثم المجموعة' }}</span>
         </div>
       </div>
 
@@ -542,12 +543,15 @@ export class CourseEnrollmentComponent implements OnInit {
   private readonly enrollmentRequestSvc   = inject(EnrollmentRequestService);
   private readonly currentUserInfoService = inject(CurrentUserInfoService);
   private readonly teacherService         = inject(TeacherService);
+  private readonly academyService         = inject(AcademyService);
   private readonly restSvc                = inject(RestService);
 
   readonly governorates = EGYPT_GOVERNORATES_LIST;
   readonly districts    = computed(() => getDistricts(this.filterGovernment()));
 
   courseId          = signal<string>('');
+  academyId         = signal<string | null>(null);
+  academyMemberIds  = signal<Set<string>>(new Set());
   teachers          = signal<TeacherAutocompleteDto[]>([]);
   groups            = signal<GroupWithSchedulesDto[]>([]);
   selectedTeacher   = signal<TeacherAutocompleteDto | null>(null);
@@ -578,19 +582,43 @@ export class CourseEnrollmentComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
+    const aId = this.route.snapshot.queryParamMap.get('academyId');
     if (id) {
       this.courseId.set(id);
+      if (aId) this.academyId.set(aId);
       this.loadTeachers();
     }
   }
 
-  loadTeachers(): void {
+  async loadTeachers(): Promise<void> {
     this.loading.set(true);
     this.errorMessage.set('');
-    this.teacherService.getTeachersByCourse(this.courseId(), undefined, 100).subscribe({
-      next: teachers => { this.teachers.set(teachers); this.loading.set(false); },
-      error: () => { this.errorMessage.set('حدث خطأ أثناء تحميل المعلمين'); this.loading.set(false); }
-    });
+    try {
+      const teachers = await lastValueFrom(
+        this.teacherService.getTeachersByCourse(this.courseId(), undefined, 100)
+      );
+
+      // If academy context, filter to only academy members
+      if (this.academyId()) {
+        try {
+          const members = await lastValueFrom(
+            this.academyService.getMembers(this.academyId()!, { skipHandleError: true })
+          );
+          const memberIds = new Set((members || []).map(m => m.teacherId));
+          this.academyMemberIds.set(memberIds);
+          this.teachers.set((teachers || []).filter(t => memberIds.has(t.id!)));
+        } catch {
+          // Fallback: show all teachers if member lookup fails
+          this.teachers.set(teachers || []);
+        }
+      } else {
+        this.teachers.set(teachers || []);
+      }
+    } catch {
+      this.errorMessage.set('حدث خطأ أثناء تحميل المعلمين');
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   async onLocationFilterChange(): Promise<void> {

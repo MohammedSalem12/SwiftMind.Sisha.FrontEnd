@@ -93,7 +93,10 @@ import { TeacherService } from '@proxy/teachers';
                     @if (!c.isActive) {
                       <span class="inactive-pill">مخفي</span>
                     }
-                    @if (!isCourseAssigned(c)) {
+                    @if (!isCourseAssigned(c) && isCoursePending(c)) {
+                      <span class="chip chip-pending">طلب معلق · Pending</span>
+                    }
+                    @if (!isCourseAssigned(c) && !isCoursePending(c)) {
                       <span class="chip chip-locked">غير معيّن · Not Assigned</span>
                     }
                   </div>
@@ -130,6 +133,45 @@ import { TeacherService } from '@proxy/teachers';
                         <i [class]="c.isActive ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                       }
                       {{ c.isActive ? 'إخفاء' : 'إظهار' }}
+                    </button>
+                  }
+                </div>
+              }
+
+              <!-- Supervisor self-assign: for unassigned courses -->
+              @if (!isCourseAssigned(c) && isSupervisor()) {
+                <div class="action-row">
+                  <button class="action-btn assign-self-btn"
+                          [disabled]="requestingCourseId() === c.courseId"
+                          (click)="assignSelf(c)">
+                    @if (requestingCourseId() === c.courseId) {
+                      <span class="spinner-sm"></span>
+                    } @else {
+                      <i class="fas fa-user-plus"></i>
+                    }
+                    تعيين لنفسي · Assign to me
+                  </button>
+                </div>
+              }
+
+              <!-- Request to teach: for non-assigned, non-supervisor members -->
+              @if (!isCourseAssigned(c) && !isSupervisor()) {
+                <div class="action-row">
+                  @if (isCoursePending(c)) {
+                    <div class="action-btn pending-btn">
+                      <i class="fas fa-hourglass-half"></i>
+                      تم إرسال الطلب · Request Sent
+                    </div>
+                  } @else {
+                    <button class="action-btn request-teach-btn"
+                            [disabled]="requestingCourseId() === c.courseId"
+                            (click)="requestToTeach(c)">
+                      @if (requestingCourseId() === c.courseId) {
+                        <span class="spinner-sm"></span>
+                      } @else {
+                        <i class="fas fa-hand-paper"></i>
+                      }
+                      طلب التدريس · Request to Teach
                     </button>
                   }
                 </div>
@@ -285,6 +327,21 @@ import { TeacherService } from '@proxy/teachers';
     .course-row--locked:active { background:transparent; }
     .course-icon--locked { background:linear-gradient(135deg,#9ca3af,#6b7280) !important; }
     .chip-locked { background:rgba(239,68,68,.1); color:#dc2626; }
+    .chip-pending { background:rgba(245,158,11,.1); color:#d97706; }
+    .request-teach-btn {
+      color:#10b981 !important; font-weight:700 !important;
+      flex:1 !important; justify-content:center;
+    }
+    .request-teach-btn:active { background:rgba(16,185,129,.08); }
+    .pending-btn {
+      color:#d97706 !important; cursor:default !important;
+      flex:1 !important; justify-content:center;
+    }
+    .assign-self-btn {
+      color:#667eea !important; font-weight:700 !important;
+      flex:1 !important; justify-content:center;
+    }
+    .assign-self-btn:active { background:rgba(102,126,234,.08); }
     .inactive-pill {
       font-size:.6rem; font-weight:700; padding:.1rem .4rem; border-radius:20px;
       background:rgba(239,68,68,.1); color:#dc2626; margin-top:.2rem; display:inline-block;
@@ -312,6 +369,8 @@ export class TeacherAcademyCoursesComponent implements OnInit {
   isSupervisor = signal(false);
   togglingCourseId = signal<string | null>(null);
   assignedCourseIds = signal<Set<string>>(new Set());
+  pendingRequestCourseIds = signal<Set<string>>(new Set());
+  requestingCourseId = signal<string | null>(null);
 
   private academyId: string | null = null;
 
@@ -358,25 +417,71 @@ export class TeacherAcademyCoursesComponent implements OnInit {
 
   private async loadAssignments(): Promise<void> {
     if (!this.academyId) return;
-    // Supervisor has access to all courses
-    if (this.isSupervisor()) {
-      const ids = new Set<string>();
-      this.courses().forEach(c => { if (c.courseId) ids.add(c.courseId); });
-      this.assignedCourseIds.set(ids);
-      return;
-    }
     try {
+      // Load assigned courses (works for both supervisor and member)
       const assignments = await lastValueFrom(
         this.academySvc.getMyAcademyCourseAssignments(this.academyId, { skipHandleError: true })
       );
       const ids = new Set<string>();
       (assignments || []).forEach((a: any) => { if (a.courseId) ids.add(a.courseId); });
       this.assignedCourseIds.set(ids);
+
+      // For non-supervisors: load pending requests
+      if (!this.isSupervisor()) {
+        const pending = await lastValueFrom(
+          this.academySvc.getPendingCourseTeacherRequests(this.academyId, { skipHandleError: true })
+        ).catch(() => []);
+        const userInfo = await lastValueFrom(this.userSvc.getCurrentUserActorInfo());
+        const myId = userInfo?.actorId;
+        const pendingIds = new Set<string>();
+        (pending || []).filter((p: any) => p.teacherId === myId).forEach((p: any) => {
+          if (p.courseId) pendingIds.add(p.courseId);
+        });
+        this.pendingRequestCourseIds.set(pendingIds);
+      }
     } catch { /* silent */ }
   }
 
   isCourseAssigned(c: AcademyCourseDto): boolean {
     return !!c.courseId && this.assignedCourseIds().has(c.courseId);
+  }
+
+  isCoursePending(c: AcademyCourseDto): boolean {
+    return !!c.courseId && this.pendingRequestCourseIds().has(c.courseId);
+  }
+
+  async assignSelf(c: AcademyCourseDto): Promise<void> {
+    if (!this.academyId || !c.courseId) return;
+    this.requestingCourseId.set(c.courseId);
+    try {
+      // Get current teacher ID
+      const userInfo = await lastValueFrom(this.userSvc.getCurrentUserActorInfo());
+      const teacherId = userInfo?.actorId;
+      if (!teacherId) return;
+      await lastValueFrom(
+        this.academySvc.assignTeacherToCourse(this.academyId, c.courseId, teacherId)
+      );
+      this.assignedCourseIds.update(s => { const ns = new Set(s); ns.add(c.courseId!); return ns; });
+    } catch (err: any) {
+      console.error('Self-assign error:', err);
+    } finally {
+      this.requestingCourseId.set(null);
+    }
+  }
+
+  async requestToTeach(c: AcademyCourseDto): Promise<void> {
+    if (!this.academyId || !c.courseId) return;
+    this.requestingCourseId.set(c.courseId);
+    try {
+      await lastValueFrom(
+        this.academySvc.requestToTeachCourse(this.academyId, c.courseId)
+      );
+      this.pendingRequestCourseIds.update(s => { const ns = new Set(s); ns.add(c.courseId!); return ns; });
+    } catch (err: any) {
+      console.error('Request to teach error:', err);
+    } finally {
+      this.requestingCourseId.set(null);
+    }
   }
 
   goToCourse(c: AcademyCourseDto): void {

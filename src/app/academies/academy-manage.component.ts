@@ -61,6 +61,15 @@ import type { AcademyCourseDto } from '@proxy/academies/models';
             <div class="stat-label">المقررات</div>
           </div>
         </div>
+        <div class="stat-card" *ngIf="pendingTeachRequests().length > 0">
+          <div class="stat-icon requests">
+            <i class="fas fa-hand-paper"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ pendingTeachRequests().length }}</div>
+            <div class="stat-label">طلبات تدريس</div>
+          </div>
+        </div>
       </div>
 
       <!-- Modern Tabs -->
@@ -174,6 +183,32 @@ import type { AcademyCourseDto } from '@proxy/academies/models';
             <div class="section-count">{{ academyCourses().length }} مقرر</div>
           </div>
           
+          <!-- Pending Course-Teacher Requests -->
+          <div class="courses-section" *ngIf="pendingTeachRequests().length > 0">
+            <h3 class="subsection-title">
+              <i class="fas fa-hand-paper me-2" style="color:#d97706"></i>
+              طلبات تدريس معلقة · Pending Teach Requests
+              <span class="subsection-count">{{ pendingTeachRequests().length }}</span>
+            </h3>
+            <div class="teach-requests-list">
+              <div class="teach-request-card" *ngFor="let req of pendingTeachRequests()">
+                <div class="tr-avatar">{{ req.teacherName?.charAt(0) || '?' }}</div>
+                <div class="tr-info">
+                  <span class="tr-teacher">{{ req.teacherName }}</span>
+                  <span class="tr-course">{{ req.courseNameAr || req.courseNameEn }} <span class="tr-code" *ngIf="req.courseCode">{{ req.courseCode }}</span></span>
+                </div>
+                <div class="tr-actions">
+                  <button class="tr-btn tr-approve" (click)="approveCourseTeacher(req)" [disabled]="courseTeacherActionLoading()">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="tr-btn tr-reject" (click)="rejectCourseTeacher(req)" [disabled]="courseTeacherActionLoading()">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Current Courses -->
           <div class="courses-section">
             <h3 class="subsection-title">
@@ -1032,6 +1067,52 @@ import type { AcademyCourseDto } from '@proxy/academies/models';
       }
     }
 
+    // ─── Teach Request Cards ─────────────────────────────────────────
+    .subsection-count {
+      background: rgba(245,158,11,.12); color: #d97706;
+      font-size: .65rem; font-weight: 700;
+      padding: .1rem .4rem; border-radius: 8px; margin-right: .4rem;
+    }
+    .teach-requests-list {
+      display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1rem;
+    }
+    .teach-request-card {
+      display: flex; align-items: center; gap: .65rem;
+      padding: .7rem .85rem; background: #fffbeb;
+      border: 1.5px solid #fcd34d; border-radius: 12px;
+    }
+    .tr-avatar {
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white; font-weight: 700; font-size: .95rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tr-info {
+      flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .1rem;
+    }
+    .tr-teacher { font-size: .85rem; font-weight: 700; color: #1a1a2e; }
+    .tr-course { font-size: .72rem; color: #6b7280; }
+    .tr-code {
+      background: rgba(102,126,234,.1); color: #667eea;
+      font-size: .62rem; padding: .05rem .3rem; border-radius: 4px;
+      font-family: monospace; margin-right: .2rem;
+    }
+    .tr-actions { display: flex; gap: .35rem; flex-shrink: 0; }
+    .tr-btn {
+      width: 38px; height: 38px; border-radius: 10px; border: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; cursor: pointer; transition: all .15s;
+      &:disabled { opacity: .5; cursor: not-allowed; }
+    }
+    .tr-approve {
+      background: #dcfce7; color: #16a34a;
+      &:active { background: #bbf7d0; }
+    }
+    .tr-reject {
+      background: #fee2e2; color: #dc2626;
+      &:active { background: #fecaca; }
+    }
+
     // ─── Responsive Design ─────────────────────────────────────────────
     @media (max-width: 768px) {
       .requests-grid,
@@ -1072,6 +1153,8 @@ export class AcademyManageComponent implements OnInit {
   members = signal<AcademyMemberDto[]>([]);
   academyCourses = signal<AcademyCourseDto[]>([]);
   availableCourses = signal<CourseDto[]>([]);
+  pendingTeachRequests = signal<any[]>([]);
+  courseTeacherActionLoading = signal(false);
 
   selectedCourseId = '';
   courseFilter = '';
@@ -1102,6 +1185,14 @@ export class AcademyManageComponent implements OnInit {
       const academyCourseIds = new Set((courses || []).map((c: CourseDto) => c.id));
       const all = allCourses?.items || [];
       this.availableCourses.set(all.filter((c: CourseDto) => !academyCourseIds.has(c.id)));
+
+      // Load pending course-teacher requests
+      try {
+        const teachReqs = await lastValueFrom(
+          this.academyService.getPendingCourseTeacherRequests(this.academyId, { skipHandleError: true })
+        );
+        this.pendingTeachRequests.set(teachReqs || []);
+      } catch { /* silent */ }
     } catch (err) {
       console.error('Error loading manage page:', err);
     } finally {
@@ -1133,6 +1224,34 @@ export class AcademyManageComponent implements OnInit {
       console.error('Reject error:', err);
     } finally {
       this.actionLoading.set(false);
+    }
+  }
+
+  async approveCourseTeacher(req: any): Promise<void> {
+    this.courseTeacherActionLoading.set(true);
+    try {
+      await lastValueFrom(
+        this.academyService.approveCourseTeacher(this.academyId, req.courseId, req.teacherId)
+      );
+      this.pendingTeachRequests.update(list => list.filter(r => !(r.courseId === req.courseId && r.teacherId === req.teacherId)));
+    } catch (err: any) {
+      console.error('Approve course teacher error:', err);
+    } finally {
+      this.courseTeacherActionLoading.set(false);
+    }
+  }
+
+  async rejectCourseTeacher(req: any): Promise<void> {
+    this.courseTeacherActionLoading.set(true);
+    try {
+      await lastValueFrom(
+        this.academyService.rejectCourseTeacher(this.academyId, req.courseId, req.teacherId)
+      );
+      this.pendingTeachRequests.update(list => list.filter(r => !(r.courseId === req.courseId && r.teacherId === req.teacherId)));
+    } catch (err: any) {
+      console.error('Reject course teacher error:', err);
+    } finally {
+      this.courseTeacherActionLoading.set(false);
     }
   }
 

@@ -162,13 +162,6 @@ export class TeacherHomeComponent implements OnInit {
       // Load course-teacher assignments to know which courses this teacher can act on
       const assignedIds = new Set<string>();
       for (const academy of myAcademies) {
-        // Supervisor can act on ALL courses
-        if (academy.supervisorTeacherId === tId) {
-          const acCourses = groups.find(g => g.academy.id === academy.id)?.courses || [];
-          acCourses.forEach(c => assignedIds.add(c.courseId ?? c.id));
-          continue;
-        }
-        // Member: only assigned courses
         try {
           const assignments = await lastValueFrom(
             this.academyService.getMyAcademyCourseAssignments(academy.id!, { skipHandleError: true })
