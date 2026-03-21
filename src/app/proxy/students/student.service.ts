@@ -1,4 +1,4 @@
-import type { CreateUpdateStudentDto, StudentDto } from './models';
+import type { CreateGroupChangeRequestDto, CreatePromotionRequestDto, CreateUpdateStudentDto, GroupChangeRequestDto, PromotionRequestDto, StudentDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -9,6 +9,22 @@ import type { ParentStudentDto } from '../parents/models';
 })
 export class StudentService {
   apiName = 'Default';
+  
+
+  approveGroupChangeRequest = (requestId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/student/approve-group-change-request/${requestId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  approvePromotionRequest = (requestId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/student/approve-promotion-request/${requestId}`,
+    },
+    { apiName: this.apiName,...config });
   
 
   confirmParentStudentLink = (parentId: string, studentId: string, config?: Partial<Rest.Config>) =>
@@ -88,10 +104,27 @@ export class StudentService {
     { apiName: this.apiName,...config });
   
 
+  getPendingGroupChangeRequests = (courseId?: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, GroupChangeRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/student/pending-group-change-requests',
+      params: { courseId },
+    },
+    { apiName: this.apiName,...config });
+  
+
   getPendingLinksForCurrentStudent = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, ParentStudentDto[]>({
       method: 'GET',
       url: '/api/app/student/pending-links-for-current-student',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPendingPromotionRequests = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PromotionRequestDto[]>({
+      method: 'GET',
+      url: '/api/app/student/pending-promotion-requests',
     },
     { apiName: this.apiName,...config });
   
@@ -104,11 +137,47 @@ export class StudentService {
     { apiName: this.apiName,...config });
   
 
+  rejectGroupChangeRequest = (requestId: string, reason?: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/student/reject-group-change-request/${requestId}`,
+      params: { reason },
+    },
+    { apiName: this.apiName,...config });
+  
+
   rejectParentStudentLink = (parentId: string, studentId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/student/reject-parent-student-link',
       params: { parentId, studentId },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  rejectPromotionRequest = (requestId: string, reason?: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/student/reject-promotion-request/${requestId}`,
+      params: { reason },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  requestGroupChange = (input: CreateGroupChangeRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, GroupChangeRequestDto>({
+      method: 'POST',
+      url: '/api/app/student/request-group-change',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  requestPromotion = (input: CreatePromotionRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PromotionRequestDto>({
+      method: 'POST',
+      url: '/api/app/student/request-promotion',
+      body: input,
     },
     { apiName: this.apiName,...config });
   

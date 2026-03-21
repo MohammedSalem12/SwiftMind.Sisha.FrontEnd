@@ -476,7 +476,11 @@ export class AcademiesListComponent implements OnInit {
       const roles = userInfo?.userRoles || [];
       this.isStudent.set(roles.includes('STUDENT'));
       this.isTeacherOrAdmin.set(roles.includes('TEACHER') || roles.includes('ADMIN'));
-      this.academies.set(list || []);
+      // Students/Parents only see active academies
+      const filtered = (this.isStudent() || roles.includes('PARENT'))
+        ? (list || []).filter((a: any) => a.isActive !== false)
+        : (list || []);
+      this.academies.set(filtered);
 
       // For students: determine which academies they're enrolled in
       if (this.isStudent()) {

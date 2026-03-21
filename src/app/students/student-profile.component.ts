@@ -77,7 +77,20 @@ import { ParentStudentDto } from '@proxy/parents/models';
               <div class="action-icon" style="background:rgba(118,75,162,.12);color:#764ba2"><i class="fas fa-qrcode"></i></div>
               <span class="al">رمز QR</span><span class="ae">My QR</span>
             </a>
+            <button class="action-btn" (click)="requestPromotion()" [disabled]="promotionLoading()">
+              <div class="action-icon" style="background:rgba(34,197,94,.12);color:#16a34a">
+                @if (promotionLoading()) { <span class="spinner-xs"></span> }
+                @else { <i class="fas fa-arrow-up"></i> }
+              </div>
+              <span class="al">ترقية الصف</span><span class="ae">Promote</span>
+            </button>
           </div>
+          @if (promotionMsg()) {
+            <div class="promo-msg" [class.promo-msg--success]="promotionSuccess()" [class.promo-msg--error]="!promotionSuccess()">
+              <i [class]="promotionSuccess() ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+              {{ promotionMsg() }}
+            </div>
+          }
         </div>
 
         <!-- Linked parents -->
@@ -237,6 +250,20 @@ import { ParentStudentDto } from '@proxy/parents/models';
     .empty-box p { font-size:.9rem; font-weight:600; color:#555; margin:0 0 .25rem; }
     .empty-box span { font-size:.75rem; color:#9090aa; }
 
+    .promo-msg {
+      display:flex; align-items:center; gap:.5rem;
+      padding:.6rem .85rem; border-radius:10px; margin-top:.5rem;
+      font-size:.82rem; font-weight:600;
+    }
+    .promo-msg--success { background:rgba(34,197,94,.1); color:#16a34a; border:1px solid rgba(34,197,94,.2); }
+    .promo-msg--error { background:rgba(239,68,68,.08); color:#dc2626; border:1px solid rgba(239,68,68,.15); }
+    .spinner-xs {
+      width:14px; height:14px; border:2px solid currentColor;
+      border-top-color:transparent; border-radius:50%;
+      animation:spin .7s linear infinite; display:inline-block;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
   `],
 })
 export class StudentProfileComponent implements OnInit {
@@ -247,6 +274,9 @@ export class StudentProfileComponent implements OnInit {
   userInfo = signal<CurrentUserActorDto | null>(null);
   student  = signal<StudentDto | null>(null);
   parents  = signal<ParentStudentDto[]>([]);
+  promotionLoading = signal(false);
+  promotionMsg = signal<string | null>(null);
+  promotionSuccess = signal(false);
 
   readonly gradeNames: Record<number, string> = {
     1:'الأول الابتدائي',2:'الثاني الابتدائي',3:'الثالث الابتدائي',
@@ -278,6 +308,35 @@ export class StudentProfileComponent implements OnInit {
       this.parents.set(parents ?? []);
     } catch (e) { console.error(e); }
     finally { this.loading.set(false); }
+  }
+
+  async requestPromotion(): Promise<void> {
+    const s = this.student();
+    if (!s?.id) return;
+    if ((s.currentGrade ?? 0) >= 12) {
+      this.promotionMsg.set('أنت في أعلى صف دراسي · Already at highest grade');
+      this.promotionSuccess.set(false);
+      return;
+    }
+    this.promotionLoading.set(true);
+    this.promotionMsg.set(null);
+    try {
+      const result = await lastValueFrom(
+        this.studentSvc.requestPromotion({ studentId: s.id } as any)
+      );
+      if (result.status === 1) { // Approved (parent/admin auto-approve)
+        this.promotionMsg.set(`تمت الترقية إلى الصف ${result.toGrade} · Promoted to grade ${result.toGrade}`);
+        this.promotionSuccess.set(true);
+      } else {
+        this.promotionMsg.set('تم إرسال طلب الترقية لولي الأمر · Promotion request sent to parent');
+        this.promotionSuccess.set(true);
+      }
+    } catch (e: any) {
+      this.promotionMsg.set(e?.error?.error?.message || 'حدث خطأ · An error occurred');
+      this.promotionSuccess.set(false);
+    } finally {
+      this.promotionLoading.set(false);
+    }
   }
 
   logout(): void { this.authService.logout(); }

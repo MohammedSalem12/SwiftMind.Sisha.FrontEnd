@@ -12470,6 +12470,149 @@
                   }
                 },
                 {
+                  "name": "RequestPromotionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Students.CreatePromotionRequestDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                      "typeSimple": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.PromotionRequestDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.PromotionRequestDto"
+                  }
+                },
+                {
+                  "name": "GetPendingPromotionRequestsAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Students.PromotionRequestDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Students.PromotionRequestDto]"
+                  }
+                },
+                {
+                  "name": "ApprovePromotionRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "requestId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RejectPromotionRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "requestId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "reason",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RequestGroupChangeAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                      "typeSimple": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.GroupChangeRequestDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.GroupChangeRequestDto"
+                  }
+                },
+                {
+                  "name": "GetPendingGroupChangeRequestsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "courseId",
+                      "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Guid?",
+                      "typeSimple": "string?",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Students.GroupChangeRequestDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Students.GroupChangeRequestDto]"
+                  }
+                },
+                {
+                  "name": "ApproveGroupChangeRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "requestId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RejectGroupChangeRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "requestId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "reason",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
                   "name": "GetAsync",
                   "parametersOnMethod": [
                     {
@@ -12832,6 +12975,320 @@
               "returnValue": {
                 "type": "SwiftMind.Sesha.Students.StudentDto",
                 "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "RequestPromotionAsyncByInput": {
+              "uniqueName": "RequestPromotionAsyncByInput",
+              "name": "RequestPromotionAsync",
+              "httpMethod": "POST",
+              "url": "api/app/student/request-promotion",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Students.CreatePromotionRequestDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.PromotionRequestDto",
+                "typeSimple": "SwiftMind.Sesha.Students.PromotionRequestDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "GetPendingPromotionRequestsAsync": {
+              "uniqueName": "GetPendingPromotionRequestsAsync",
+              "name": "GetPendingPromotionRequestsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/student/pending-promotion-requests",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Students.PromotionRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.Students.PromotionRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "ApprovePromotionRequestAsyncByRequestId": {
+              "uniqueName": "ApprovePromotionRequestAsyncByRequestId",
+              "name": "ApprovePromotionRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/app/student/approve-promotion-request/{requestId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "requestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "requestId",
+                  "name": "requestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "RejectPromotionRequestAsyncByRequestIdAndReason": {
+              "uniqueName": "RejectPromotionRequestAsyncByRequestIdAndReason",
+              "name": "RejectPromotionRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/app/student/reject-promotion-request/{requestId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "requestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "reason",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "requestId",
+                  "name": "requestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "reason",
+                  "name": "reason",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "RequestGroupChangeAsyncByInput": {
+              "uniqueName": "RequestGroupChangeAsyncByInput",
+              "name": "RequestGroupChangeAsync",
+              "httpMethod": "POST",
+              "url": "api/app/student/request-group-change",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.GroupChangeRequestDto",
+                "typeSimple": "SwiftMind.Sesha.Students.GroupChangeRequestDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "GetPendingGroupChangeRequestsAsyncByCourseId": {
+              "uniqueName": "GetPendingGroupChangeRequestsAsyncByCourseId",
+              "name": "GetPendingGroupChangeRequestsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/student/pending-group-change-requests",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "courseId",
+                  "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "courseId",
+                  "name": "courseId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Students.GroupChangeRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.Students.GroupChangeRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "ApproveGroupChangeRequestAsyncByRequestId": {
+              "uniqueName": "ApproveGroupChangeRequestAsyncByRequestId",
+              "name": "ApproveGroupChangeRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/app/student/approve-group-change-request/{requestId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "requestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "requestId",
+                  "name": "requestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "RejectGroupChangeRequestAsyncByRequestIdAndReason": {
+              "uniqueName": "RejectGroupChangeRequestAsyncByRequestIdAndReason",
+              "name": "RejectGroupChangeRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/app/student/reject-group-change-request/{requestId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "requestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "reason",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "requestId",
+                  "name": "requestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "reason",
+                  "name": "reason",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
@@ -18972,6 +19429,149 @@
                   }
                 },
                 {
+                  "name": "RequestPromotionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Students.CreatePromotionRequestDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                      "typeSimple": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.PromotionRequestDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.PromotionRequestDto"
+                  }
+                },
+                {
+                  "name": "GetPendingPromotionRequestsAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Students.PromotionRequestDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Students.PromotionRequestDto]"
+                  }
+                },
+                {
+                  "name": "ApprovePromotionRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "requestId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RejectPromotionRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "requestId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "reason",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RequestGroupChangeAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                      "typeSimple": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.GroupChangeRequestDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.GroupChangeRequestDto"
+                  }
+                },
+                {
+                  "name": "GetPendingGroupChangeRequestsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "courseId",
+                      "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Guid?",
+                      "typeSimple": "string?",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Students.GroupChangeRequestDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Students.GroupChangeRequestDto]"
+                  }
+                },
+                {
+                  "name": "ApproveGroupChangeRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "requestId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RejectGroupChangeRequestAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "requestId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "reason",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
                   "name": "GetAsync",
                   "parametersOnMethod": [
                     {
@@ -19566,6 +20166,320 @@
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "RequestPromotionAsyncByInput": {
+              "uniqueName": "RequestPromotionAsyncByInput",
+              "name": "RequestPromotionAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/students/promotion-requests",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Students.CreatePromotionRequestDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreatePromotionRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.PromotionRequestDto",
+                "typeSimple": "SwiftMind.Sesha.Students.PromotionRequestDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "GetPendingPromotionRequestsAsync": {
+              "uniqueName": "GetPendingPromotionRequestsAsync",
+              "name": "GetPendingPromotionRequestsAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/students/promotion-requests/pending",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Students.PromotionRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.Students.PromotionRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "ApprovePromotionRequestAsyncByRequestId": {
+              "uniqueName": "ApprovePromotionRequestAsyncByRequestId",
+              "name": "ApprovePromotionRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/students/promotion-requests/{requestId}/approve",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "requestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "requestId",
+                  "name": "requestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "RejectPromotionRequestAsyncByRequestIdAndReason": {
+              "uniqueName": "RejectPromotionRequestAsyncByRequestIdAndReason",
+              "name": "RejectPromotionRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/students/promotion-requests/{requestId}/reject",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "requestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "reason",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "requestId",
+                  "name": "requestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "reason",
+                  "name": "reason",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "RequestGroupChangeAsyncByInput": {
+              "uniqueName": "RequestGroupChangeAsyncByInput",
+              "name": "RequestGroupChangeAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/students/group-change-requests",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.GroupChangeRequestDto",
+                "typeSimple": "SwiftMind.Sesha.Students.GroupChangeRequestDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "GetPendingGroupChangeRequestsAsyncByCourseId": {
+              "uniqueName": "GetPendingGroupChangeRequestsAsyncByCourseId",
+              "name": "GetPendingGroupChangeRequestsAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/students/group-change-requests/pending",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "courseId",
+                  "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "courseId",
+                  "name": "courseId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Students.GroupChangeRequestDto>",
+                "typeSimple": "[SwiftMind.Sesha.Students.GroupChangeRequestDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "ApproveGroupChangeRequestAsyncByRequestId": {
+              "uniqueName": "ApproveGroupChangeRequestAsyncByRequestId",
+              "name": "ApproveGroupChangeRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/students/group-change-requests/{requestId}/approve",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "requestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "requestId",
+                  "name": "requestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "RejectGroupChangeRequestAsyncByRequestIdAndReason": {
+              "uniqueName": "RejectGroupChangeRequestAsyncByRequestIdAndReason",
+              "name": "RejectGroupChangeRequestAsync",
+              "httpMethod": "POST",
+              "url": "api/sesha/students/group-change-requests/{requestId}/reject",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "requestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "reason",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "requestId",
+                  "name": "requestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "reason",
+                  "name": "reason",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
             }
           }
         },
@@ -20004,8 +20918,8 @@
             "GetListAsyncByInput": {
               "uniqueName": "GetListAsyncByInput",
               "name": "GetListAsync",
-              "httpMethod": null,
-              "url": "api/sesha/teachers",
+              "httpMethod": "GET",
+              "url": "api/sesha/teachers/all",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -20020,15 +20934,39 @@
               "parameters": [
                 {
                   "nameOnMethod": "input",
-                  "name": "input",
+                  "name": "Sorting",
                   "jsonName": null,
-                  "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
-                  "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
                 }
               ],
               "returnValue": {
@@ -27236,7 +28174,13 @@
         "AcademyCourseTeacherAssigned",
         "AcademyCourseTeacherRequestPending",
         "AcademyCourseTeacherApproved",
-        "AcademyCourseTeacherRejected"
+        "AcademyCourseTeacherRejected",
+        "PromotionRequestPending",
+        "PromotionRequestApproved",
+        "PromotionRequestRejected",
+        "GroupChangeRequestPending",
+        "GroupChangeRequestApproved",
+        "GroupChangeRequestRejected"
       ],
       "enumValues": [
         0,
@@ -27260,7 +28204,13 @@
         18,
         19,
         20,
-        21
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
       ],
       "genericArguments": null,
       "properties": null
@@ -29123,6 +30073,96 @@
         }
       ]
     },
+    "SwiftMind.Sesha.Students.CreateGroupChangeRequestDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "StudentId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CourseId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EnrollmentId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ToGroupId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Reason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Students.CreatePromotionRequestDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "StudentId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "SwiftMind.Sesha.Students.CreateUpdateStudentDto": {
       "baseType": null,
       "isEnum": false,
@@ -29215,6 +30255,332 @@
           "regex": null
         }
       ]
+    },
+    "SwiftMind.Sesha.Students.GroupChangeRequestDto": {
+      "baseType": "Volo.Abp.Application.Dtos.FullAuditedEntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "StudentId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StudentName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CourseId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CourseName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FromGroupId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FromGroupName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ToGroupId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ToGroupName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ToTeacherId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ToTeacherName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "SwiftMind.Sesha.Students.GroupChangeRequestStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Reason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "InitiatorType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RejectionReason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Students.GroupChangeRequestStatus": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Pending",
+        "Approved",
+        "Rejected"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "SwiftMind.Sesha.Students.PromotionRequestDto": {
+      "baseType": "Volo.Abp.Application.Dtos.FullAuditedEntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "StudentId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StudentName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StudentCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FromGrade",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ToGrade",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FromGradeName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ToGradeName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "SwiftMind.Sesha.Students.PromotionRequestStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "InitiatorType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Students.PromotionRequestStatus": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Pending",
+        "Approved",
+        "Rejected"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2
+      ],
+      "genericArguments": null,
+      "properties": null
     },
     "SwiftMind.Sesha.Students.StudentDto": {
       "baseType": "Volo.Abp.Application.Dtos.ExtensibleAuditedEntityDto<System.Guid>",

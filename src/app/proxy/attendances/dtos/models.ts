@@ -1,5 +1,6 @@
 import type { ExtensibleAuditedEntityDto, ExtensibleEntityDto, PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 
+
 export interface AttendanceDto extends ExtensibleAuditedEntityDto<string> {
   enrollmentId?: string;
   date?: string;
