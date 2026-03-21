@@ -52,28 +52,36 @@
   </div>
 
   <!-- Quick Actions -->
-  <div class="quick-actions">
-    <button class="quick-action-btn" (click)="goToRequests()">
-      <div class="qa-icon">
-        <i class="fas fa-clipboard-list"></i>
-        @if (pendingRequestsCount() > 0) {
-          <span class="qa-badge">{{ pendingRequestsCount() }}</span>
-        }
+  <app-did-you-know [role]="'PARENT'" />
+
+  <!-- Pending Promotion Requests -->
+  @if (pendingPromotions().length > 0) {
+    <div class="promo-section">
+      <div class="promo-header">
+        <i class="fas fa-arrow-up"></i>
+        <span>طلبات ترقية · Promotion Requests</span>
+        <span class="promo-count">{{ pendingPromotions().length }}</span>
       </div>
-      <span class="qa-label">طلباتي</span>
-      <span class="qa-sub">My Requests</span>
-    </button>
-    <button class="quick-action-btn" (click)="goToNotifications()">
-      <div class="qa-icon qa-icon--amber">
-        <i class="fas fa-bell"></i>
-        @if (recentNotifications().length > 0) {
-          <span class="qa-badge">{{ recentNotifications().length }}</span>
-        }
-      </div>
-      <span class="qa-label">الإشعارات</span>
-      <span class="qa-sub">Notifications</span>
-    </button>
-  </div>
+      @for (req of pendingPromotions(); track req.id) {
+        <div class="promo-card">
+          <div class="promo-info">
+            <span class="promo-student">{{ req.studentName }}</span>
+            <span class="promo-detail">
+              الصف {{ req.fromGrade }} → الصف {{ req.toGrade }}
+            </span>
+          </div>
+          <div class="promo-actions">
+            <button class="promo-btn promo-approve" [disabled]="promotionActionLoading()" (click)="approvePromotion(req)">
+              <i class="fas fa-check"></i>
+            </button>
+            <button class="promo-btn promo-reject" [disabled]="promotionActionLoading()" (click)="rejectPromotion(req)">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
 
   <!-- Loading Skeleton -->
   @if (loading()) {

@@ -8,11 +8,12 @@ import type { SecretaryTeacherDto } from '@proxy/teachers';
 import { CurrentUserInfoService } from '@proxy/common';
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
+import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 
 @Component({
   selector: 'app-secretary-home',
   standalone: true,
-  imports: [CommonModule, OfflineBannerComponent],
+  imports: [CommonModule, OfflineBannerComponent, DidYouKnowComponent],
   template: `
     <div class="secretary-home" dir="rtl">
 
@@ -36,6 +37,8 @@ import { OfflineBannerComponent } from '../shared/components/offline-banner.comp
           <i class="fas fa-user-tie"></i>
         </div>
       </div>
+
+      <app-did-you-know [role]="'SECRETARY'" />
 
       <!-- Shimmer skeleton while loading -->
       @if (loading()) {

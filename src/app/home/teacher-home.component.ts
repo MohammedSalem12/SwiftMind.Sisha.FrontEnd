@@ -12,6 +12,7 @@ import type { NextSessionDto } from '@proxy/groups/dtos/models';
 import { SessionTimerComponent } from '../shared/components/session-timer.component';
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
+import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 
 interface AcademyCourseGroup {
   academy: AcademyDto;
@@ -21,7 +22,7 @@ interface AcademyCourseGroup {
 @Component({
   selector: 'app-teacher-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent],
+  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent],
   templateUrl: './teacher-home.component.html',
   styleUrls: ['./teacher-home.component.scss'],
 })

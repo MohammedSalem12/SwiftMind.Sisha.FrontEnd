@@ -79,6 +79,12 @@ export const appRoutes: Routes = [
     data: { roles: ['STUDENT'] }
   },
   {
+    path: 'student/change-teacher/:courseId',
+    loadComponent: () => import('./home/student-change-teacher.component').then(m => m.StudentChangeTeacherComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT', 'PARENT'] }
+  },
+  {
     path: 'student/today-sessions',
     loadComponent: () => import('./home/today-sessions.component').then(m => m.TodaySessionsComponent),
     canActivate: [roleGuard],

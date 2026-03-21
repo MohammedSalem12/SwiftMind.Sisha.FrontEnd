@@ -11,13 +11,16 @@ import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status.enum';
+import { StudentService } from '@proxy/students';
+import type { PromotionRequestDto } from '@proxy/students/models';
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
+import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 
 @Component({
   selector: 'app-parent-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, OfflineBannerComponent],
+  imports: [CommonModule, RouterModule, OfflineBannerComponent, DidYouKnowComponent],
   templateUrl: './parent-home.component.html',
   styleUrls: ['./parent-home.component.scss'],
 })
@@ -27,6 +30,7 @@ export class ParentHomeComponent implements OnInit {
   private readonly parentService = inject(ParentService);
   private readonly notificationService = inject(NotificationService);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
+  private readonly studentService = inject(StudentService);
   private readonly cache = inject(OfflineCacheService);
 
   parentName = signal('');
@@ -38,6 +42,8 @@ export class ParentHomeComponent implements OnInit {
   currentParent = signal<ParentDto | null>(null);
   offline = signal(false);
   offlineLastUpdated = signal('');
+  pendingPromotions = signal<PromotionRequestDto[]>([]);
+  promotionActionLoading = signal(false);
 
   // Collapse/expand state
   childrenExpanded = signal(true);
@@ -49,7 +55,8 @@ export class ParentHomeComponent implements OnInit {
     await Promise.all([
       this.loadParentChildren(),
       this.loadRecentNotifications(),
-      this.loadPendingRequestsCount()
+      this.loadPendingRequestsCount(),
+      this.loadPendingPromotions(),
     ]);
     if (!this.offline()) {
       this.cache.set(this.CACHE_KEY, {
@@ -182,6 +189,39 @@ export class ParentHomeComponent implements OnInit {
 
   goToProfile(): void {
     this.router.navigate(['/account/manage']);
+  }
+
+  private async loadPendingPromotions(): Promise<void> {
+    try {
+      const promotions = await lastValueFrom(
+        this.studentService.getPendingPromotionRequests({ skipHandleError: true })
+      );
+      this.pendingPromotions.set(promotions || []);
+    } catch { /* silent */ }
+  }
+
+  async approvePromotion(req: PromotionRequestDto): Promise<void> {
+    this.promotionActionLoading.set(true);
+    try {
+      await lastValueFrom(this.studentService.approvePromotionRequest(req.id!));
+      this.pendingPromotions.update(list => list.filter(r => r.id !== req.id));
+    } catch (e: any) {
+      console.error('Approve promotion error:', e);
+    } finally {
+      this.promotionActionLoading.set(false);
+    }
+  }
+
+  async rejectPromotion(req: PromotionRequestDto): Promise<void> {
+    this.promotionActionLoading.set(true);
+    try {
+      await lastValueFrom(this.studentService.rejectPromotionRequest(req.id!));
+      this.pendingPromotions.update(list => list.filter(r => r.id !== req.id));
+    } catch (e: any) {
+      console.error('Reject promotion error:', e);
+    } finally {
+      this.promotionActionLoading.set(false);
+    }
   }
 
   trackById = (_: number, item: ParentStudentDto) => item.studentId;

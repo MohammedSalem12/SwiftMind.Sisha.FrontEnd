@@ -13,6 +13,7 @@ import { environment } from '../../environments/environment';
 import { SessionTimerComponent } from '../shared/components/session-timer.component';
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
+import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 
 const GRADE_NAMES: Record<number, string> = {
   [-1]: 'رياض أطفال 1',
@@ -34,7 +35,7 @@ const GRADE_NAMES: Record<number, string> = {
 @Component({
   selector: 'app-student-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent],
+  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent],
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.scss'],
 })
