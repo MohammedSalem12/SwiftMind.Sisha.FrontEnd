@@ -4,8 +4,8 @@
     <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
   }
 
-  <!-- Hero Header (compact) -->
-  <div class="hero hero--compact">
+  <!-- Hero Header (hidden on mobile - info in top bar) -->
+  <div class="hero hero--compact hide-on-mobile">
     <div class="hero-blob hero-blob-1"></div>
     <div class="hero-blob hero-blob-2"></div>
     <div class="hero-content">
@@ -18,6 +18,7 @@
   </div>
 
   <app-did-you-know [role]="'TEACHER'" />
+  <app-promo-ads-bar [audience]="3" />
 
   <!-- Next Session Timer -->
   @if (nextSession()) {

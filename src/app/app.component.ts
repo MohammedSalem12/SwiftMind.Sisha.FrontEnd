@@ -92,7 +92,10 @@ export class AppComponent implements OnInit {
       // If the refresh token itself has expired or any auth error occurs,
       // redirect to Angular /login instead of letting the OAuth library
       // initiate a full code flow that lands on the backend's /Account/Login.
-      if (event.type === 'token_refresh_error' || event.type === 'session_terminated' || event.type === 'session_error') {
+      if (event.type === 'token_refresh_error' || event.type === 'session_terminated'
+          || event.type === 'session_error' || event.type === 'discovery_document_validation_error') {
+        // Clear tokens to prevent OAuth from redirecting to backend authorize URL
+        this.oauthService.logOut(true);
         this.router.navigate(['/login']);
       }
     });

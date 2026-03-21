@@ -1,50 +1,74 @@
-import { Component, input, signal, OnInit } from '@angular/core';
+import { Component, input, signal, OnInit, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { lastValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
-interface Tip {
-  ar: string;
-  en: string;
+interface KnowledgeCard {
+  titleAr: string;
+  titleEn: string;
+  contentAr: string;
+  contentEn: string;
+  topic: string;
+  cardType: string;
 }
 
-const TIPS: Record<string, Tip[]> = {
+const TOPIC_ICONS: Record<string, string> = {
+  science: 'fa-flask',
+  geography: 'fa-globe-africa',
+  islam: 'fa-mosque',
+  technology: 'fa-microchip',
+};
+
+const TOPIC_COLORS: Record<string, string> = {
+  science: '#059669',
+  geography: '#d97706',
+  islam: '#667eea',
+  technology: '#dc2626',
+};
+
+// Fallback tips if API fails
+const FALLBACK: Record<string, { ar: string; en: string }[]> = {
   STUDENT: [
     { ar: 'يمكنك متابعة درجاتك وحضورك مباشرة من التطبيق', en: 'Track your grades and attendance directly from the app' },
-    { ar: 'استخدم رمز QR الخاص بك لربط حساب ولي أمرك', en: 'Use your QR code to link your parent\'s account' },
-    { ar: 'يمكنك التسجيل في مقررات جديدة من صفحة المقررات', en: 'Enroll in new courses from the Courses page' },
-    { ar: 'تابع جلساتك القادمة ومواعيدها من الصفحة الرئيسية', en: 'Check your upcoming sessions and schedules from home' },
-    { ar: 'يمكنك طلب ترقية صفك الدراسي من صفحة الملف الشخصي', en: 'Request grade promotion from your profile page' },
+    { ar: 'استخدم رمز QR الخاص بك لربط حساب ولي أمرك', en: 'Use your QR code to link your parent account' },
   ],
   TEACHER: [
     { ar: 'يمكنك إنشاء مجموعات وجداول حصص لكل مقرر', en: 'Create groups and class schedules for each course' },
     { ar: 'استخدم رموز QR لتسهيل تسجيل حضور الطلاب', en: 'Use QR codes to simplify student attendance' },
-    { ar: 'يمكنك إدارة أكاديميتك ودعوة معلمين آخرين', en: 'Manage your academy and invite other teachers' },
-    { ar: 'أدخل درجات الطلاب مباشرة من صفحة إدخال الدرجات', en: 'Enter student grades directly from the marks entry page' },
-    { ar: 'تابع تقارير الغياب لطلابك من التقارير', en: 'Monitor absence reports for your students' },
   ],
   PARENT: [
-    { ar: 'يمكنك متابعة حضور وغياب أبنائك ودرجاتهم مباشرة', en: 'Track your children\'s attendance and grades directly' },
-    { ar: 'اربط حساب طفلك باستخدام كود الطالب أو رمز QR', en: 'Link your child\'s account using student code or QR' },
-    { ar: 'يمكنك تسجيل أبنائك في مقررات جديدة', en: 'Enroll your children in new courses' },
-    { ar: 'تابع الإشعارات لمعرفة آخر التحديثات عن أبنائك', en: 'Follow notifications for the latest updates about your children' },
-    { ar: 'يمكنك الموافقة على طلبات ترقية الصف لأبنائك', en: 'Approve grade promotion requests for your children' },
+    { ar: 'يمكنك متابعة حضور وغياب أبنائك ودرجاتهم', en: 'Track your children attendance and grades' },
+    { ar: 'اربط حساب طفلك باستخدام كود الطالب أو رمز QR', en: 'Link your child account using student code or QR' },
   ],
   SECRETARY: [
     { ar: 'يمكنك ربط حسابك بمعلمين لإدارة مقرراتهم', en: 'Link your account with teachers to manage their courses' },
-    { ar: 'تابع طلبات الربط ومعالجتها من صفحة الطلبات', en: 'Track and process link requests from the requests page' },
-    { ar: 'يمكنك إدارة حضور وغياب الطلاب نيابة عن المعلم', en: 'Manage student attendance on behalf of the teacher' },
-    { ar: 'استخدم تقارير الغياب لمتابعة انتظام الطلاب', en: 'Use absence reports to monitor student regularity' },
   ],
 };
 
 @Component({
   selector: 'app-did-you-know',
   standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="tip-card" dir="rtl">
-      <div class="tip-icon"><i class="fas fa-lightbulb"></i></div>
+      <div class="tip-icon" [style.background]="iconBg()">
+        <i class="fas" [class]="iconClass()"></i>
+      </div>
       <div class="tip-content">
-        <span class="tip-label">هل تعلم؟ · Did you know?</span>
-        <span class="tip-text">{{ currentTip().ar }}</span>
-        <span class="tip-text-en">{{ currentTip().en }}</span>
+        @if (card()) {
+          <div class="tip-header">
+            <span class="tip-label">{{ card()!.cardType === 'did_you_know' ? 'هل تعلم؟' : 'معلومة' }}</span>
+            <span class="tip-topic">{{ getTopicLabel(card()!.topic) }}</span>
+          </div>
+          <span class="tip-title">{{ card()!.titleAr }}</span>
+          <span class="tip-text">{{ card()!.contentAr }}</span>
+          <span class="tip-text-en">{{ card()!.contentEn }}</span>
+        } @else {
+          <span class="tip-label">هل تعلم؟ · Did you know?</span>
+          <span class="tip-text">{{ fallbackTip().ar }}</span>
+          <span class="tip-text-en">{{ fallbackTip().en }}</span>
+        }
       </div>
     </div>
   `,
@@ -60,28 +84,80 @@ const TIPS: Record<string, Tip[]> = {
       border-radius: 14px;
     }
     .tip-icon {
-      width: 34px; height: 34px; border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       background: linear-gradient(135deg, #667eea, #764ba2);
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      i { font-size: .85rem; color: #fbbf24; }
+      i { font-size: .85rem; color: white; }
     }
     .tip-content {
-      flex: 1; display: flex; flex-direction: column; gap: .1rem;
+      flex: 1; display: flex; flex-direction: column; gap: .15rem;
     }
-    .tip-label { font-size: .68rem; font-weight: 700; color: #667eea; }
-    .tip-text { font-size: .78rem; font-weight: 600; color: #1a1a2e; line-height: 1.4; }
-    .tip-text-en { font-size: .68rem; color: #9090aa; }
+    .tip-header {
+      display: flex; align-items: center; gap: .4rem; margin-bottom: .1rem;
+    }
+    .tip-label {
+      font-size: .65rem; font-weight: 700; color: #667eea;
+    }
+    .tip-topic {
+      font-size: .58rem; font-weight: 600;
+      background: rgba(102,126,234,.1); color: #764ba2;
+      padding: .05rem .35rem; border-radius: 6px;
+    }
+    .tip-title {
+      font-size: .82rem; font-weight: 800; color: #1a1a2e; line-height: 1.3;
+    }
+    .tip-text {
+      font-size: .75rem; font-weight: 500; color: #4a4a6a; line-height: 1.5;
+    }
+    .tip-text-en {
+      font-size: .65rem; color: #9090aa; line-height: 1.4; margin-top: .1rem;
+    }
   `],
 })
 export class DidYouKnowComponent implements OnInit {
+  private readonly http = inject(HttpClient);
   role = input<string>('STUDENT');
-  currentTip = signal<Tip>({ ar: '', en: '' });
+  grade = input<number | null>(null);
 
-  ngOnInit(): void {
-    const tips = TIPS[this.role().toUpperCase()] || TIPS['STUDENT'];
-    // Pick a random tip based on the day (changes daily)
-    const dayIndex = new Date().getDate() % tips.length;
-    this.currentTip.set(tips[dayIndex]);
+  card = signal<KnowledgeCard | null>(null);
+  fallbackTip = signal<{ ar: string; en: string }>({ ar: '', en: '' });
+
+  iconClass = signal('fas fa-lightbulb');
+  iconBg = signal('linear-gradient(135deg, #667eea, #764ba2)');
+
+  private readonly apiBase = (environment as any).apis?.default?.url || '';
+
+  async ngOnInit(): Promise<void> {
+    // Set fallback first
+    const tips = FALLBACK[this.role().toUpperCase()] || FALLBACK['STUDENT'];
+    this.fallbackTip.set(tips[new Date().getDate() % tips.length]);
+
+    // Try to fetch from API
+    try {
+      const gradeParam = this.grade() ? `&grade=${this.grade()}` : '';
+      const result = await lastValueFrom(
+        this.http.get<KnowledgeCard>(`${this.apiBase}/api/knowledge-cards/random?${gradeParam}`)
+      );
+      if (result) {
+        this.card.set(result);
+        const icon = TOPIC_ICONS[result.topic] || 'fa-lightbulb';
+        this.iconClass.set('fas ' + icon);
+        const color = TOPIC_COLORS[result.topic] || '#667eea';
+        this.iconBg.set(`linear-gradient(135deg, ${color}, ${color}dd)`);
+      }
+    } catch {
+      // Use fallback — already set
+    }
+  }
+
+  getTopicLabel(topic: string): string {
+    const labels: Record<string, string> = {
+      science: 'علوم',
+      geography: 'جغرافيا',
+      islam: 'إسلام',
+      technology: 'تقنية',
+    };
+    return labels[topic] || topic;
   }
 }

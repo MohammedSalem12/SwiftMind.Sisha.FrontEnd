@@ -13,6 +13,7 @@ import { SessionTimerComponent } from '../shared/components/session-timer.compon
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
+import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
 
 interface AcademyCourseGroup {
   academy: AcademyDto;
@@ -22,7 +23,7 @@ interface AcademyCourseGroup {
 @Component({
   selector: 'app-teacher-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent],
+  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent],
   templateUrl: './teacher-home.component.html',
   styleUrls: ['./teacher-home.component.scss'],
 })

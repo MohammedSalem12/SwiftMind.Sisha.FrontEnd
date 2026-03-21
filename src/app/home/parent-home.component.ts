@@ -16,11 +16,12 @@ import type { PromotionRequestDto } from '@proxy/students/models';
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
+import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
 
 @Component({
   selector: 'app-parent-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, OfflineBannerComponent, DidYouKnowComponent],
+  imports: [CommonModule, RouterModule, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent],
   templateUrl: './parent-home.component.html',
   styleUrls: ['./parent-home.component.scss'],
 })

@@ -1,47 +1,50 @@
-<div class="home-landing">
+<div class="home-landing" dir="rtl">
 
   @if (offline()) {
     <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
   }
 
   <!-- Content for unauthenticated users -->
-  <div *ngIf="!hasLoggedIn" class="guest-welcome">
-    <div class="welcome-card">
-      <div class="card-body text-center">
-        <div class="logo large">
-          <img src="assets/images/logo/logo-light.png" alt="KAI" />
-        </div>
-        <h1 class="welcome-title">مرحباً بكم في KAI</h1>
-        <p class="welcome-description">نظام المتابعة الذكية للتعلم · Smart Learning Follow-up System</p>
-        <div class="welcome-actions">
-          <button class="btn btn-primary" routerLink="/login">تسجيل الدخول</button>
-          <button class="btn btn-outline" routerLink="/register">إنشاء حساب جديد</button>
+  <div *ngIf="!hasLoggedIn" class="guest-page">
+    <div class="guest-hero">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="guest-hero-content">
+        <img src="assets/images/logo/logo-light.png" alt="KAI" class="guest-logo" />
+        <h1>مرحباً بكم في KAI</h1>
+        <p>نظام المتابعة الذكية للتعلم · Smart Learning Follow-up System</p>
+        <div class="guest-actions">
+          <a class="guest-btn guest-btn--primary" routerLink="/login">
+            <i class="fas fa-sign-in-alt"></i> تسجيل الدخول · Login
+          </a>
+          <a class="guest-btn guest-btn--outline" routerLink="/register">
+            <i class="fas fa-user-plus"></i> إنشاء حساب · Register
+          </a>
         </div>
       </div>
     </div>
-    
-    <div class="features-preview">
-      <h3>ميزات النظام</h3>
+
+    <div class="features-section">
       <div class="features-grid">
-        <div class="feature-item">
-          <div class="feature-icon">🎓</div>
-          <h4>إدارة الطلاب</h4>
-          <p>نظام شامل لإدارة بيانات الطلاب والدرجات</p>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(102,126,234,.12);color:#667eea"><i class="fas fa-graduation-cap"></i></div>
+          <span class="feature-title">إدارة الطلاب</span>
+          <span class="feature-sub">Student Management</span>
         </div>
-        <div class="feature-item">
-          <div class="feature-icon">👨‍🏫</div>
-          <h4>إدارة المعلمين</h4>
-          <p>متابعة أداء المعلمين وجدولة المواد</p>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(16,185,129,.12);color:#059669"><i class="fas fa-chalkboard-teacher"></i></div>
+          <span class="feature-title">إدارة المعلمين</span>
+          <span class="feature-sub">Teacher Management</span>
         </div>
-        <div class="feature-item">
-          <div class="feature-icon">👨‍👩‍👧‍👦</div>
-          <h4>تواصل أولياء الأمور</h4>
-          <p>منصة تواصل مباشرة مع أولياء الأمور</p>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(245,158,11,.12);color:#d97706"><i class="fas fa-user-friends"></i></div>
+          <span class="feature-title">متابعة أولياء الأمور</span>
+          <span class="feature-sub">Parent Follow-up</span>
         </div>
-        <div class="feature-item">
-          <div class="feature-icon">📚</div>
-          <h4>إدارة المقررات</h4>
-          <p>تنظيم المناهج والمواد التعليمية</p>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(118,75,162,.12);color:#764ba2"><i class="fas fa-book-open"></i></div>
+          <span class="feature-title">إدارة المقررات</span>
+          <span class="feature-sub">Course Management</span>
         </div>
       </div>
     </div>
@@ -55,82 +58,150 @@
     </div>
   </div>
 
-  <!-- Content for authenticated users (only show if not redirecting) -->
-  <div *ngIf="hasLoggedIn && !redirecting()" class="landing-grid">
-    <div class="left-col">
-      <div class="hero card mb-3">
-        <div class="card-body text-center">
-          <div class="logo small">
-            <img src="assets/images/logo/logo-light.png" alt="KAI" />
-          </div>
-          <div class="app-title">KAI</div>
-          <div class="company">نظام المتابعة الذكية للتعلم</div>
-        </div>
-      </div>
+  <!-- Admin Dashboard -->
+  <div *ngIf="hasLoggedIn && !redirecting()" class="admin-dashboard">
 
-      <div class="stats card mb-3">
-        <div class="card-body stats-grid">
-          <div class="stat">
-            <div class="stat-value">{{ studentsCount() === null ? '-' : studentsCount() }}</div>
-            <div class="stat-label">All Students</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value">{{ teachersCount() === null ? '-' : teachersCount() }}</div>
-            <div class="stat-label">All Teachers</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value">{{ parentsCount() === null ? '-' : parentsCount() }}</div>
-            <div class="stat-label">All Parents</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="services card">
-        <div class="card-body">
-          <h4>Services</h4>
-          <div class="services-grid tight">
-            <a class="service-box" routerLink="/students"><span class="icon">🎓</span> Students</a>
-            <a class="service-box" routerLink="/teachers"><span class="icon">🧑‍🏫</span> Teachers</a>
-            <a class="service-box" routerLink="/parents"><span class="icon">�‍👩‍👧‍👦</span> Parents</a>
-            <a class="service-box" routerLink="/courses"><span class="icon">📚</span> Courses</a>
-            <!-- <a class="service-box" routerLink="/attendance"><span class="icon">📋</span> Attendance</a> -->
-            <a class="service-box" routerLink="/feeds"><span class="icon">📢</span> Feeds</a>
-            <a class="service-box" routerLink="/exam-grade"><span class="icon">📝</span> Exam Grades</a>
-            <a class="service-box" routerLink="/register"><span class="icon">📝</span> Register</a>
-            <a class="service-box" routerLink="/admin/password-resets"><span class="icon">🔑</span> Password Resets</a>
-            <a class="service-box" routerLink="/ads/advertisers"><span class="icon">📣</span> Advertisers</a>
-          </div>
+    <!-- Hero (hidden on mobile - top bar has user info) -->
+    <div class="admin-hero hide-on-mobile">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="admin-hero-content">
+        <img src="assets/images/logo/logo-light-thumbnail2.png" alt="KAI" class="admin-logo" />
+        <div>
+          <h1>لوحة التحكم</h1>
+          <p>Admin Dashboard</p>
         </div>
       </div>
     </div>
 
-    <div class="right-col">
-      <div class="ads card mb-3">
-        <div class="card-body">
-          <h5>Ads</h5>
-          <div *ngFor="let a of ads()" class="ad">
-            <div class="ad-title">{{ a.title }}</div>
-            <div class="ad-text">{{ a.text }}</div>
-            <a class="ad-action" [routerLink]="a.action">Learn more</a>
-          </div>
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card stat-card--purple">
+        <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ studentsCount() === null ? '-' : studentsCount() }}</span>
+          <span class="stat-label">طلاب · Students</span>
         </div>
       </div>
-
-      <div class="suggested card">
-        <div class="card-body">
-          <h5>Suggested for teachers</h5>
-          <ul class="suggested-list">
-            <li *ngFor="let s of suggestedForTeachers()">
-              <div class="s-title">{{ s.title }}</div>
-              <div class="s-text">{{ s.text }}</div>
-              <a [routerLink]="s.action">Open</a>
-            </li>
-          </ul>
+      <div class="stat-card stat-card--green">
+        <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ teachersCount() === null ? '-' : teachersCount() }}</span>
+          <span class="stat-label">معلمون · Teachers</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card--amber">
+        <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ parentsCount() === null ? '-' : parentsCount() }}</span>
+          <span class="stat-label">أولياء أمور · Parents</span>
         </div>
       </div>
     </div>
+
+    <!-- Did You Know -->
+    <app-did-you-know [role]="'ADMIN'" />
+    <app-promo-ads-bar [audience]="0" />
+
+    <!-- Quick Actions -->
+    <div class="section-title"><i class="fas fa-bolt"></i> إجراءات سريعة · Quick Actions</div>
+    <div class="quick-grid">
+      <a class="quick-card" routerLink="/students">
+        <div class="qc-icon" style="background:linear-gradient(135deg,#667eea,#764ba2)"><i class="fas fa-users"></i></div>
+        <span class="qc-label">الطلاب</span>
+        <span class="qc-en">Students</span>
+      </a>
+      <a class="quick-card" routerLink="/teachers">
+        <div class="qc-icon" style="background:linear-gradient(135deg,#059669,#10b981)"><i class="fas fa-chalkboard-teacher"></i></div>
+        <span class="qc-label">المعلمون</span>
+        <span class="qc-en">Teachers</span>
+      </a>
+      <a class="quick-card" routerLink="/parents">
+        <div class="qc-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b)"><i class="fas fa-user-friends"></i></div>
+        <span class="qc-label">أولياء الأمور</span>
+        <span class="qc-en">Parents</span>
+      </a>
+      <a class="quick-card" routerLink="/courses">
+        <div class="qc-icon" style="background:linear-gradient(135deg,#764ba2,#9333ea)"><i class="fas fa-book-open"></i></div>
+        <span class="qc-label">المقررات</span>
+        <span class="qc-en">Courses</span>
+      </a>
+      <a class="quick-card" routerLink="/add-student">
+        <div class="qc-icon" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)"><i class="fas fa-user-plus"></i></div>
+        <span class="qc-label">إضافة طالب</span>
+        <span class="qc-en">Add Student</span>
+      </a>
+      <a class="quick-card" routerLink="/add-teacher">
+        <div class="qc-icon" style="background:linear-gradient(135deg,#22c55e,#4ade80)"><i class="fas fa-user-plus"></i></div>
+        <span class="qc-label">إضافة معلم</span>
+        <span class="qc-en">Add Teacher</span>
+      </a>
+      <a class="quick-card" routerLink="/register">
+        <div class="qc-icon" style="background:linear-gradient(135deg,#f43f5e,#fb7185)"><i class="fas fa-user-edit"></i></div>
+        <span class="qc-label">تسجيل مستخدم</span>
+        <span class="qc-en">Register User</span>
+      </a>
+      <a class="quick-card" routerLink="/academies">
+        <div class="qc-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa)"><i class="fas fa-university"></i></div>
+        <span class="qc-label">الأكاديميات</span>
+        <span class="qc-en">Academies</span>
+      </a>
+    </div>
+
+    <!-- Management Section -->
+    <div class="section-title"><i class="fas fa-cog"></i> إدارة النظام · System Management</div>
+    <div class="mgmt-list">
+      <a class="mgmt-item" routerLink="/admin/password-resets">
+        <div class="mgmt-icon" style="color:#dc2626"><i class="fas fa-key"></i></div>
+        <div class="mgmt-text">
+          <span>طلبات إعادة كلمة المرور</span>
+          <small>Password Reset Requests</small>
+        </div>
+        <i class="fas fa-chevron-left mgmt-arrow"></i>
+      </a>
+      <a class="mgmt-item" routerLink="/ads/admin">
+        <div class="mgmt-icon" style="color:#d97706"><i class="fas fa-bullhorn"></i></div>
+        <div class="mgmt-text">
+          <span>إدارة الإعلانات</span>
+          <small>Ad Management</small>
+        </div>
+        <i class="fas fa-chevron-left mgmt-arrow"></i>
+      </a>
+      <a class="mgmt-item" routerLink="/ads/advertisers">
+        <div class="mgmt-icon" style="color:#059669"><i class="fas fa-store"></i></div>
+        <div class="mgmt-text">
+          <span>إدارة المعلنين</span>
+          <small>Advertiser Management</small>
+        </div>
+        <i class="fas fa-chevron-left mgmt-arrow"></i>
+      </a>
+      <a class="mgmt-item" routerLink="/secretary-assignments">
+        <div class="mgmt-icon" style="color:#667eea"><i class="fas fa-user-tie"></i></div>
+        <div class="mgmt-text">
+          <span>تعيينات السكرتارية</span>
+          <small>Secretary Assignments</small>
+        </div>
+        <i class="fas fa-chevron-left mgmt-arrow"></i>
+      </a>
+      <a class="mgmt-item" routerLink="/notifications">
+        <div class="mgmt-icon" style="color:#764ba2"><i class="fas fa-bell"></i></div>
+        <div class="mgmt-text">
+          <span>الإشعارات</span>
+          <small>Notifications</small>
+        </div>
+        <i class="fas fa-chevron-left mgmt-arrow"></i>
+      </a>
+      <a class="mgmt-item" routerLink="/settings">
+        <div class="mgmt-icon" style="color:#6b7280"><i class="fas fa-cog"></i></div>
+        <div class="mgmt-text">
+          <span>الإعدادات</span>
+          <small>Settings</small>
+        </div>
+        <i class="fas fa-chevron-left mgmt-arrow"></i>
+      </a>
+    </div>
+
+    <div style="height:calc(80px + env(safe-area-inset-bottom,0px))"></div>
   </div>
-  <!-- End of authenticated user content -->
 
 </div>
-

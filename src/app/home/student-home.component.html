@@ -4,8 +4,8 @@
     <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
   }
 
-  <!-- Hero (simplified) -->
-  <div class="hero">
+  <!-- Hero (hidden on mobile - info moved to top bar) -->
+  <div class="hero hide-on-mobile">
     <div class="hero-blob hero-blob-1"></div>
     <div class="hero-blob hero-blob-2"></div>
 
@@ -24,39 +24,6 @@
   </div>
 
   <app-did-you-know [role]="'STUDENT'" />
-
-  <!-- Promo Ads — two side-by-side boxes -->
-  @if (promoAds().length > 0) {
-    <div class="promo-grid">
-      @for (ad of promoAds().slice(0, 2); track ad.id; let i = $index) {
-        <button class="promo-box" [class]="'promo-box promo-box--v' + (i % 2)" (click)="trackAdClick(ad)">
-          <div class="promo-box-shimmer"></div>
-          @if (ad.isFeatured) {
-            <span class="promo-box-badge"><i class="fas fa-star"></i></span>
-          }
-          <div class="promo-box-icon">
-            <i class="fas" [class.fa-chalkboard-teacher]="ad.adType === 0"
-                           [class.fa-book]="ad.adType === 1"
-                           [class.fa-handshake]="ad.adType === 2"></i>
-          </div>
-          <span class="promo-box-title">{{ ad.title }}</span>
-          @if (ad.description) {
-            <span class="promo-box-desc">{{ ad.description }}</span>
-          }
-        </button>
-      }
-    </div>
-    @if (promoAds().length > 2) {
-      <div class="promo-see-all-row">
-        <button class="promo-see-all-btn" (click)="goToAllAds()">
-          <i class="fas fa-th-large"></i>
-          <span>عرض جميع العروض</span>
-          <span class="promo-see-all-en">View All</span>
-          <i class="fas fa-chevron-left"></i>
-        </button>
-      </div>
-    }
-  }
 
   <!-- Next Session Timer -->
   @if (nextSession()) {
@@ -137,6 +104,8 @@
   }
 
   <!-- Empty / Welcome State -->
+  <app-promo-ads-bar [audience]="1" />
+
   @if (!loading() && courses().length === 0) {
     <div class="empty-state">
       <i class="fas fa-book-open"></i>

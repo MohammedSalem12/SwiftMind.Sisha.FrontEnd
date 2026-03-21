@@ -62,6 +62,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     { path: '/add-teacher',          label: 'إضافة معلم',          labelEn: 'Add Teacher',        icon: 'fas fa-user-plus' },
     { path: '/add-student',          label: 'إضافة طالب',          labelEn: 'Add Student',        icon: 'fas fa-user-plus' },
     { path: '/ads/admin',            label: 'إدارة الإعلانات',     labelEn: 'Ads Management',     icon: 'fas fa-bullhorn' },
+    { path: '/ads/advertisers',      label: 'إدارة المعلنين',      labelEn: 'Advertisers',        icon: 'fas fa-store' },
   ];
   return [];
 }
@@ -154,6 +155,13 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
               </div>
             </a>
           }
+          <a class="more-item" routerLink="/ads/my-coupons" (click)="showMore.set(false)">
+            <div class="more-item-icon more-icon-green"><i class="fas fa-ticket-alt"></i></div>
+            <div class="more-item-text">
+              <span>كوبوناتي</span>
+              <span class="more-item-en">My Coupons</span>
+            </div>
+          </a>
           <a class="more-item" routerLink="/settings" (click)="showMore.set(false)">
             <div class="more-item-icon more-icon-gray"><i class="fas fa-cog"></i></div>
             <div class="more-item-text">
@@ -843,7 +851,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     const exact = ['/', '/student', '/teacher', '/parent', '/secretary', '/secretary-assignments',
                    '/profile', '/secretary/profile', '/student/profile', '/teacher/profile', '/parent/profile',
                    '/academies', '/teacher/academies', '/feeds', '/notifications', '/settings', '/ads',
-                   '/ads/my', '/ads/create', '/ads/redeem', '/ads/settlement'];
+                   '/ads/my', '/ads/create', '/ads/redeem', '/ads/settlement', '/ads/my-coupons'];
     if (exact.includes(path)) return cur === path;
     return cur.startsWith(path);
   }

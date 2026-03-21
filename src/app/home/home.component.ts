@@ -9,13 +9,15 @@ import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import { lastValueFrom, filter, take } from 'rxjs';
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
+import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
+import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
 
 @Component({
   standalone: true,
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  imports: [CommonModule, RouterModule, OfflineBannerComponent]
+  imports: [CommonModule, RouterModule, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent]
 })
 export class HomeComponent implements OnInit {
   private authService = inject(AuthService);

@@ -2,7 +2,11 @@ import { CommonModule, Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { lastValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { CurrentUserInfoService } from '@proxy/common';
+import { TeacherService } from '@proxy/teachers';
+import { AdvertiserService } from '@proxy/advertisements';
 
 @Component({
   selector: 'app-ads-create',
@@ -30,21 +34,66 @@ import { environment } from '../../environments/environment';
         <div class="field-group">
           <label class="field-label">نوع الإعلان · Ad Type</label>
           <div class="type-selector">
-            <button class="type-btn" [class.type-btn--active]="model.adType === 0" (click)="model.adType = 0">
-              <i class="fas fa-chalkboard-teacher"></i>
-              <span>خدمة تعليمية</span>
-              <small>Service</small>
-            </button>
-            <button class="type-btn" [class.type-btn--active]="model.adType === 1" (click)="model.adType = 1">
-              <i class="fas fa-book"></i>
-              <span>كتب / منتجات</span>
-              <small>Products</small>
-            </button>
+            @if (!isTeacherRole()) {
+              <button class="type-btn" [class.type-btn--active]="model.adType === 0" (click)="model.adType = 0">
+                <i class="fas fa-store"></i>
+                <span>خدمات</span>
+                <small>Services</small>
+              </button>
+              <button class="type-btn" [class.type-btn--active]="model.adType === 1" (click)="model.adType = 1">
+                <i class="fas fa-box-open"></i>
+                <span>منتجات</span>
+                <small>Products</small>
+              </button>
+            }
             <button class="type-btn" [class.type-btn--active]="model.adType === 2" (click)="model.adType = 2">
               <i class="fas fa-handshake"></i>
               <span>عرض مشترك</span>
               <small>Deal</small>
             </button>
+          </div>
+
+          <!-- Type description -->
+          <div class="type-info">
+            @if (model.adType === 0) {
+              <div class="type-info-card type-info--service">
+                <div class="type-info-icon"><i class="fas fa-store"></i></div>
+                <div class="type-info-text">
+                  <strong>خدمات · Services</strong>
+                  <p>للمعلنين الذين يقدمون خدمات متنوعة مثل الكافيهات والأزياء ومراكز الدورات والمطاعم وغيرها. اعرض خدماتك مع السعر ومعلومات التواصل. متاح للمعلنين فقط.</p>
+                  <p class="type-info-en">For advertisers offering various services like cafes, fashion, training centers, restaurants, etc. Display your services with price and contact info. Advertisers only.</p>
+                </div>
+              </div>
+            }
+            @if (model.adType === 1) {
+              <div class="type-info-card type-info--product">
+                <div class="type-info-icon"><i class="fas fa-box-open"></i></div>
+                <div class="type-info-text">
+                  <strong>منتجات · Products</strong>
+                  <p>للمعلنين الذين يبيعون منتجات مثل الكتب والأدوات المدرسية والأجهزة الإلكترونية والمستلزمات التعليمية. اعرض منتجاتك مع السعر والوصف. متاح للمعلنين فقط.</p>
+                  <p class="type-info-en">For advertisers selling products like books, school supplies, electronics, and educational materials. Display your products with price and description. Advertisers only.</p>
+                </div>
+              </div>
+            }
+            @if (model.adType === 2) {
+              <div class="type-info-card type-info--deal">
+                <div class="type-info-icon"><i class="fas fa-handshake"></i></div>
+                <div class="type-info-text">
+                  <strong>عرض مشترك · Partnership Deal</strong>
+                  <p>شراكة بين معلم ومعلن (مكتبة / مركز). يحصل طلاب المعلم على كوبون خصم تلقائيا عند التسجيل. عند استخدام الكوبون يحصل المعلم على عمولة والمنصة على رسوم.</p>
+                  <p class="type-info-en">A partnership between teacher and advertiser (library/center). Teacher students automatically receive a discount coupon on enrollment. When redeemed, the teacher earns commission and the platform earns a fee.</p>
+                  <div class="type-info-flow">
+                    <span class="flow-step"><i class="fas fa-plus-circle"></i> المعلم ينشئ العرض</span>
+                    <i class="fas fa-arrow-left flow-arrow"></i>
+                    <span class="flow-step"><i class="fas fa-check-circle"></i> المدير يوافق</span>
+                    <i class="fas fa-arrow-left flow-arrow"></i>
+                    <span class="flow-step"><i class="fas fa-ticket-alt"></i> كوبونات للطلاب</span>
+                    <i class="fas fa-arrow-left flow-arrow"></i>
+                    <span class="flow-step"><i class="fas fa-store"></i> الاستبدال عند الشريك</span>
+                  </div>
+                </div>
+              </div>
+            }
           </div>
         </div>
 
@@ -86,11 +135,79 @@ import { environment } from '../../environments/environment';
           </div>
         </div>
 
-        <!-- Deal Partner (only for Deal type) -->
+        <!-- Deal fields (only for Deal type) -->
         @if (model.adType === 2) {
+          <!-- Teacher search (for advertisers creating deals) -->
+          @if (!isTeacherRole()) {
+            <div class="field-group">
+              <label class="field-label"><i class="fas fa-chalkboard-teacher" style="color:#667eea;margin-left:.3rem"></i> البحث عن معلم · Search Teacher</label>
+              <div class="search-row">
+                <input class="field-input" [(ngModel)]="teacherCodeSearch" placeholder="أدخل كود المعلم · Enter teacher code (T-XXXXXXX)" dir="ltr" />
+                <button class="search-btn" (click)="searchTeacher()" [disabled]="searchingTeacher()">
+                  @if (searchingTeacher()) { <i class="fas fa-spinner fa-spin"></i> }
+                  @else { <i class="fas fa-search"></i> }
+                </button>
+              </div>
+              @if (foundTeacher()) {
+                <div class="found-teacher">
+                  <i class="fas fa-check-circle" style="color:#059669"></i>
+                  <span>{{ foundTeacher()!.displayName }}</span>
+                  <span class="found-code">{{ foundTeacher()!.teacherCode }}</span>
+                </div>
+              }
+              @if (teacherSearchError()) {
+                <div class="search-error"><i class="fas fa-times-circle"></i> {{ teacherSearchError() }}</div>
+              }
+            </div>
+          }
+
+          <!-- Linked Course -->
           <div class="field-group">
-            <label class="field-label">شريك العرض · Deal Partner</label>
-            <input class="field-input" [(ngModel)]="model.dealPartnerName" placeholder="اسم المكتبة أو المعلم الشريك" />
+            <label class="field-label"><i class="fas fa-book" style="color:#667eea;margin-left:.3rem"></i> ربط بمقرر · Link to Course</label>
+            <select class="field-select" [(ngModel)]="model.linkedCourseId">
+              <option [ngValue]="null">جميع المقررات · All Courses</option>
+              @for (c of teacherCourses(); track c.id) {
+                <option [ngValue]="c.id">{{ c.nameAr || c.nameEn }} ({{ c.code }})</option>
+              }
+            </select>
+            @if (teacherCourses().length === 0 && !isTeacherRole()) {
+              <span class="field-hint">ابحث عن المعلم أولاً لعرض مقرراته · Search for a teacher first to see their courses</span>
+            }
+          </div>
+
+          <!-- Deal Partner (Advertiser) — for teachers -->
+          @if (isTeacherRole()) {
+            <div class="field-group">
+              <label class="field-label"><i class="fas fa-store" style="color:#d97706;margin-left:.3rem"></i> شريك العرض · Deal Partner</label>
+              @if (advertisers().length > 0) {
+                <select class="field-select" [(ngModel)]="model.dealPartnerId" (ngModelChange)="onAdvertiserChange($event)">
+                  <option [ngValue]="null">-- اختر المعلن · Select Advertiser --</option>
+                  @for (a of advertisers(); track a.id) {
+                    <option [ngValue]="a.id">{{ a.name }} {{ a.nameEn ? '(' + a.nameEn + ')' : '' }}</option>
+                  }
+                </select>
+              }
+              <input class="field-input" [(ngModel)]="model.dealPartnerName" placeholder="أو اكتب اسم الشريك يدويا · Or type partner name" style="margin-top:.35rem" />
+            </div>
+          }
+
+          <!-- Commission -->
+          <div class="field-group">
+            <label class="field-label"><i class="fas fa-percentage" style="color:#059669;margin-left:.3rem"></i> نسب العرض · Deal Percentages</label>
+            <div class="commission-row">
+              <div class="commission-field">
+                <label class="date-label">خصم الطالب %</label>
+                <input class="field-input" type="number" [(ngModel)]="model.discountPercent" placeholder="20" min="0" max="100" dir="ltr" />
+              </div>
+              <div class="commission-field">
+                <label class="date-label">عمولة المعلم %</label>
+                <input class="field-input" type="number" [(ngModel)]="model.teacherCommissionPercent" placeholder="5" min="0" max="50" dir="ltr" />
+              </div>
+              <div class="commission-field">
+                <label class="date-label">رسوم المنصة %</label>
+                <input class="field-input" type="number" [(ngModel)]="model.platformFeePercent" placeholder="3" min="0" max="20" dir="ltr" />
+              </div>
+            </div>
           </div>
         }
 
@@ -196,6 +313,38 @@ import { environment } from '../../environments/environment';
     .type-btn i { font-size:1.2rem; color:#9090aa; }
     .type-btn span { font-size:.72rem; font-weight:700; color:#1a1a2e; }
     .type-btn small { font-size:.6rem; color:#9090aa; }
+    .type-info { margin-top:.5rem; }
+    .type-info-card {
+      display:flex; gap:.65rem; padding:.75rem .85rem;
+      border-radius:12px; border:1.5px solid; animation:fadeIn .25s ease;
+    }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+    .type-info--service { background:rgba(102,126,234,.05); border-color:rgba(102,126,234,.2); }
+    .type-info--product { background:rgba(245,158,11,.05); border-color:rgba(245,158,11,.2); }
+    .type-info--deal { background:rgba(16,185,129,.05); border-color:rgba(16,185,129,.2); }
+    .type-info-icon {
+      width:32px; height:32px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; font-size:.85rem;
+    }
+    .type-info--service .type-info-icon { background:rgba(102,126,234,.15); color:#667eea; }
+    .type-info--product .type-info-icon { background:rgba(245,158,11,.15); color:#d97706; }
+    .type-info--deal .type-info-icon { background:rgba(16,185,129,.15); color:#059669; }
+    .type-info-text { flex:1; min-width:0; }
+    .type-info-text strong { font-size:.78rem; color:#1a1a2e; display:block; margin-bottom:.25rem; }
+    .type-info-text p { font-size:.72rem; color:#4a4a6a; line-height:1.5; margin:0 0 .15rem; }
+    .type-info-en { font-size:.65rem !important; color:#9090aa !important; }
+    .type-info-flow {
+      display:flex; align-items:center; flex-wrap:wrap; gap:.3rem;
+      margin-top:.5rem; padding-top:.5rem; border-top:1px solid rgba(16,185,129,.15);
+    }
+    .flow-step {
+      font-size:.6rem; font-weight:600; color:#059669;
+      background:rgba(16,185,129,.1); padding:.2rem .45rem; border-radius:6px;
+      display:flex; align-items:center; gap:.2rem; white-space:nowrap;
+    }
+    .flow-step i { font-size:.55rem; }
+    .flow-arrow { font-size:.5rem; color:#10b981; }
+
     .type-btn--active {
       border-color:#667eea; background:rgba(102,126,234,.06);
     }
@@ -216,6 +365,24 @@ import { environment } from '../../environments/environment';
     .price-input { flex:1; }
     .currency-select { width:80px; flex-shrink:0; }
 
+    .search-row { display:flex; gap:.4rem; }
+    .search-row .field-input { flex:1; }
+    .search-btn {
+      width:44px; height:44px; border-radius:12px; border:none; flex-shrink:0;
+      background:linear-gradient(135deg,#667eea,#764ba2); color:#fff;
+      font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      &:disabled { opacity:.5; }
+    }
+    .found-teacher {
+      display:flex; align-items:center; gap:.4rem; margin-top:.35rem;
+      font-size:.82rem; font-weight:600; color:#059669;
+    }
+    .found-code { font-size:.7rem; color:#9090aa; font-family:monospace; }
+    .search-error { font-size:.78rem; color:#dc2626; margin-top:.25rem; display:flex; align-items:center; gap:.3rem; }
+    .field-hint { font-size:.68rem; color:#9090aa; margin-top:.2rem; }
+
+    .commission-row { display:flex; gap:.5rem; }
+    .commission-field { flex:1; display:flex; flex-direction:column; gap:.25rem; }
     .date-row { display:flex; gap:.5rem; }
     .date-field { flex:1; display:flex; flex-direction:column; gap:.25rem; }
     .date-label { font-size:.7rem; color:#9090aa; }
@@ -244,14 +411,24 @@ import { environment } from '../../environments/environment';
     .btn-submit:disabled { opacity:.5; cursor:not-allowed; }
   `],
 })
-export class AdsCreateComponent {
+export class AdsCreateComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly location = inject(Location);
+  private readonly currentUserSvc = inject(CurrentUserInfoService);
+  private readonly teacherSvc = inject(TeacherService);
+  private readonly advertiserSvc = inject(AdvertiserService);
   private readonly apiBase = environment.apis?.default?.url || '';
 
   saving = signal(false);
   error = signal('');
   success = signal('');
+  teacherCourses = signal<any[]>([]);
+  advertisers = signal<any[]>([]);
+  searchingTeacher = signal(false);
+  foundTeacher = signal<any>(null);
+  teacherSearchError = signal('');
+  teacherCodeSearch = '';
+  private userRole = '';
 
   model: any = {
     title: '',
@@ -267,10 +444,82 @@ export class AdsCreateComponent {
     contactInfo: '',
     externalUrl: '',
     dealPartnerName: '',
+    dealPartnerId: null,
+    linkedCourseId: null,
+    discountPercent: null,
+    teacherCommissionPercent: null,
+    platformFeePercent: null,
     startDate: '',
     endDate: '',
     submitForReview: false,
   };
+
+  async ngOnInit(): Promise<void> {
+    try {
+      const userInfo = await lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo());
+      this.userRole = (userInfo?.userRoles?.[0] || '').toUpperCase();
+
+      // Teachers can only create Deals — set default
+      if (this.isTeacherRole()) {
+        this.model.adType = 2;
+      }
+
+      // Teachers: load their own courses
+      if (this.isTeacherRole() && userInfo?.actorId) {
+        const courses = await lastValueFrom(
+          this.teacherSvc.getTeacherCourses(userInfo.actorId, { skipHandleError: true })
+        );
+        this.teacherCourses.set(courses || []);
+      }
+
+      // Load advertisers (for teachers to pick partner)
+      const advList = await lastValueFrom(
+        this.advertiserSvc.getList({ skipHandleError: true } as any)
+      ).catch(() => ({ items: [] }));
+      this.advertisers.set((advList as any)?.items || advList || []);
+    } catch { /* silent */ }
+  }
+
+  isTeacherRole(): boolean {
+    return this.userRole === 'TEACHER';
+  }
+
+  async searchTeacher(): Promise<void> {
+    const code = this.teacherCodeSearch.trim();
+    if (!code) return;
+    this.searchingTeacher.set(true);
+    this.teacherSearchError.set('');
+    this.foundTeacher.set(null);
+    this.teacherCourses.set([]);
+    try {
+      // Search by code
+      const results = await lastValueFrom(
+        this.teacherSvc.getTeachersBySearch(code, 1, { skipHandleError: true })
+      );
+      if (results?.length > 0) {
+        const teacher = results[0];
+        this.foundTeacher.set(teacher);
+        // Load this teacher courses
+        const courses = await lastValueFrom(
+          this.teacherSvc.getTeacherCourses(teacher.id!, { skipHandleError: true })
+        );
+        this.teacherCourses.set(courses || []);
+      } else {
+        this.teacherSearchError.set('لم يتم العثور على معلم بهذا الكود · Teacher not found');
+      }
+    } catch {
+      this.teacherSearchError.set('حدث خطأ في البحث · Search error');
+    } finally {
+      this.searchingTeacher.set(false);
+    }
+  }
+
+  onAdvertiserChange(id: string): void {
+    const adv = this.advertisers().find((a: any) => a.id === id);
+    if (adv) {
+      this.model.dealPartnerName = adv.name || adv.nameEn || '';
+    }
+  }
 
   async save(submit: boolean): Promise<void> {
     this.saving.set(true);
@@ -291,6 +540,11 @@ export class AdsCreateComponent {
         contactInfo: this.model.contactInfo || undefined,
         externalUrl: this.model.externalUrl || undefined,
         dealPartnerName: this.model.dealPartnerName || undefined,
+        dealPartnerId: this.model.dealPartnerId || undefined,
+        linkedCourseId: this.model.linkedCourseId || undefined,
+        discountPercent: this.model.discountPercent || undefined,
+        teacherCommissionPercent: this.model.teacherCommissionPercent || undefined,
+        platformFeePercent: this.model.platformFeePercent || undefined,
         startDate: this.model.startDate || undefined,
         endDate: this.model.endDate || undefined,
         submitForReview: submit,

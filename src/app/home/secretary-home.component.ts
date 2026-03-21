@@ -21,8 +21,8 @@ import { DidYouKnowComponent } from '../shared/components/did-you-know.component
         <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
       }
 
-      <!-- Hero -->
-      <div class="hero">
+      <!-- Hero (hidden on mobile - info in top bar) -->
+      <div class="hero hide-on-mobile">
         <div class="hero-blob hero-blob-1"></div>
         <div class="hero-blob hero-blob-2"></div>
         <div class="hero-content">

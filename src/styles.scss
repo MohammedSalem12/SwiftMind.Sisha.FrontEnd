@@ -951,4 +951,9 @@ input:focus-visible {
   .back-btn-large {
     display: none !important;
   }
+
+  // Hide hero sections on home pages — user info moved to top bar
+  .hide-on-mobile {
+    display: none !important;
+  }
 }
