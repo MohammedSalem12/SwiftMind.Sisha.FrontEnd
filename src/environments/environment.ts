@@ -6,7 +6,7 @@ export const environment = {
   production: false,
   application: {
     baseUrl,
-    name: 'Sesha',
+    name: 'KAI',
     logoUrl: '',
   },
   oAuthConfig: {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
@@ -45,6 +45,15 @@ export class TeacherHomeComponent implements OnInit {
   offlineLastUpdated = signal('');
   // Set of courseIds this teacher is assigned to within academies
   assignedAcademyCourseIds = signal<Set<string>>(new Set());
+
+  // Courses that are NOT in any academy group (personal/direct courses)
+  personalCourses = computed(() => {
+    const academyCourseIds = new Set<string>();
+    this.academyGroups().forEach(g =>
+      g.courses.forEach(c => academyCourseIds.add(c.courseId ?? c.id))
+    );
+    return this.courses().filter(c => !academyCourseIds.has(c.id!));
+  });
 
   // Collapse/expand state
   coursesExpanded    = signal(true);

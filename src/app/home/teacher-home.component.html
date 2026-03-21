@@ -29,7 +29,7 @@
     </div>
   }
 
-  <!-- Empty State -->
+  <!-- Empty State (only if NO courses at all) -->
   @if (!loading() && courses().length === 0) {
     <div class="empty-state">
       <i class="fas fa-book-open"></i>
@@ -38,18 +38,18 @@
     </div>
   }
 
-  <!-- My Courses Grid -->
-  @if (!loading() && courses().length > 0) {
+  <!-- My Courses Grid (non-academy) -->
+  @if (!loading() && personalCourses().length > 0) {
     <button class="section-label section-label--toggle" (click)="toggleCourses()">
       <i class="fas fa-layer-group"></i>
       <span>مقرراتي · My Courses</span>
-      <span class="count-pill">{{ courses().length }}</span>
+      <span class="count-pill">{{ personalCourses().length }}</span>
       <i class="fas toggle-chevron" [class.fa-chevron-down]="!coursesExpanded()" [class.fa-chevron-up]="coursesExpanded()"></i>
     </button>
 
     @if (coursesExpanded()) {
       <div class="courses-grid collapsible-content">
-        @for (course of courses(); track course.id) {
+        @for (course of personalCourses(); track course.id) {
           <button class="course-card" (click)="selectCourse(course)">
             <div class="course-card-icon">
               <i class="fas fa-book"></i>

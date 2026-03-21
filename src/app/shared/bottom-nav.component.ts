@@ -145,7 +145,8 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
                 <span class="more-item-en">Ads</span>
               </div>
             </a>
-            <a class="more-item" routerLink="/feeds" (click)="showMore.set(false)">
+            <!-- Feeds hidden — kept in codebase for future use -->
+            <a class="more-item" routerLink="/feeds" (click)="showMore.set(false)" style="display:none">
               <div class="more-item-icon more-icon-blue"><i class="fas fa-rss"></i></div>
               <div class="more-item-text">
                 <span>النشرات</span>
@@ -802,14 +803,14 @@ export class BottomNavComponent implements OnInit, OnDestroy {
           this.coreNav.set([
             { path: homePath,         label: 'الرئيسية',    labelEn: 'Home',          icon: 'fas fa-home' },
             { path: requestsPath,     label: 'طلباتي',      labelEn: 'Requests',      icon: 'fas fa-clipboard-list', badge: 'requests' },
-            // Students & Teachers get Academies in core nav; other roles get Feeds
+            // Students & Teachers get Academies in core nav
             ...(isStudent
               ? [{ path: '/academies',         label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
               : isTeacher
               ? [{ path: '/teacher/academies', label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
-              : [{ path: '/feeds',             label: 'النشرات',     labelEn: 'Feeds',     icon: 'fas fa-rss' }]
+              : []
             ),
-            { path: '/notifications', label: 'إشعارات',  labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' },
+            { path: '/notifications', label: 'إشعارات',  labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' as const },
           ]);
         }
 

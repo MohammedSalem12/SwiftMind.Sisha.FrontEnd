@@ -10,7 +10,7 @@ export const environment = {
   production: true,
   application: {
     baseUrl,
-    name: 'Sesha',
+    name: 'KAI',
     logoUrl: '',
   },
   oAuthConfig: {
