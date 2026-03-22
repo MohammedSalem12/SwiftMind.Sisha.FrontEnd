@@ -66,6 +66,6 @@ export class RegisterPromptComponent {
   titleAr = input('سجّل الآن للاستفادة من جميع الميزات');
   titleEn = input('Register now to access all features');
 
-  register(): void { this.authRedirect.redirectToRegister(); }
+  register(): void { this.authRedirect.promptRegister(); }
   login(): void { this.authRedirect.redirectToLogin(); }
 }

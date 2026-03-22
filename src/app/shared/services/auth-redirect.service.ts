@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '@abp/ng.core';
+import { RegisterModalService } from './register-modal.service';
 
 const REDIRECT_KEY = 'kai_auth_redirect';
 
@@ -8,10 +9,18 @@ const REDIRECT_KEY = 'kai_auth_redirect';
 export class AuthRedirectService {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly registerModal = inject(RegisterModalService);
 
   /** Check if user is authenticated */
   get isLoggedIn(): boolean {
     return this.authService.isAuthenticated;
+  }
+
+  /** Show fancy modal instead of direct redirect */
+  promptRegister(intendedUrl?: string): void {
+    const url = intendedUrl || this.router.url;
+    localStorage.setItem(REDIRECT_KEY, url);
+    this.registerModal.show();
   }
 
   /** Save current URL and redirect to register */

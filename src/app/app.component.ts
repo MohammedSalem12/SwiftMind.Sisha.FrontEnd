@@ -12,6 +12,8 @@ import { SidebarNotificationDirective } from './shared/sidebar-notification.dire
 import { TopBarComponent } from './shared/top-bar.component';
 import { ServerOfflineOverlayComponent } from './shared/components/server-offline-overlay.component';
 import { ServerOfflineService } from './shared/services/server-offline.service';
+import { RegisterModalComponent } from './shared/components/register-modal.component';
+import { RegisterModalService } from './shared/services/register-modal.service';
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profile'];
 
@@ -28,6 +30,9 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     <app-toasts />
     @if (serverOffline.isOffline()) {
       <app-server-offline-overlay />
+    }
+    @if (registerModal.isOpen()) {
+      <app-register-modal />
     }
   `,
   styles: [`
@@ -58,6 +63,7 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     TopBarComponent,
     SidebarNotificationDirective,
     ServerOfflineOverlayComponent,
+    RegisterModalComponent,
   ],
 })
 export class AppComponent implements OnInit {
@@ -66,6 +72,7 @@ export class AppComponent implements OnInit {
   private readonly realtimeNotificationService = inject(RealtimeNotificationService);
   private readonly pushNotificationService = inject(PushNotificationService);
   readonly serverOffline = inject(ServerOfflineService);
+  readonly registerModal = inject(RegisterModalService);
 
   ngOnInit(): void {
     // Add/remove auth-page class on body for CSS sidebar hiding
