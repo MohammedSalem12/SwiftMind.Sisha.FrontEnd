@@ -24,7 +24,45 @@
       </div>
     </div>
 
-    <div class="features-section">
+    <!-- Did You Know (for guest engagement) -->
+    <app-did-you-know [role]="'STUDENT'" />
+
+    <!-- Browse section -->
+    <div class="browse-section" dir="rtl">
+      <div class="browse-title">
+        <i class="fas fa-compass"></i>
+        <span>استكشف · Explore</span>
+      </div>
+      <div class="browse-grid">
+        <a class="browse-card" routerLink="/academies">
+          <div class="browse-icon" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+            <i class="fas fa-university"></i>
+          </div>
+          <div class="browse-text">
+            <span class="browse-label">الأكاديميات</span>
+            <span class="browse-sub">Browse Academies</span>
+          </div>
+          <i class="fas fa-chevron-left browse-arrow"></i>
+        </a>
+        <a class="browse-card" routerLink="/ads">
+          <div class="browse-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+            <i class="fas fa-bullhorn"></i>
+          </div>
+          <div class="browse-text">
+            <span class="browse-label">العروض والإعلانات</span>
+            <span class="browse-sub">Browse Offers & Ads</span>
+          </div>
+          <i class="fas fa-chevron-left browse-arrow"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div class="features-section" dir="rtl">
+      <div class="browse-title">
+        <i class="fas fa-star"></i>
+        <span>مميزات KAI · Features</span>
+      </div>
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon" style="background:rgba(102,126,234,.12);color:#667eea"><i class="fas fa-graduation-cap"></i></div>
@@ -48,6 +86,8 @@
         </div>
       </div>
     </div>
+
+    <div style="height:2rem"></div>
   </div>
 
   <!-- Loading state during redirect -->
