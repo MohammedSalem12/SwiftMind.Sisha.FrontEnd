@@ -89,30 +89,49 @@ interface AdDto {
         <div class="ads-list">
           @for (ad of ads(); track ad.id) {
             <div class="ad-card">
-              <div class="ad-card-header">
-                <div class="ad-type" [class]="getTypeClass(ad.adType)">
-                  {{ getTypeLabel(ad.adType) }}
+              <!-- Clickable area -->
+              <a class="ad-card-link" [routerLink]="['/ads/detail', ad.id]">
+                <div class="ad-card-header">
+                  <div class="ad-type" [class]="getTypeClass(ad.adType)">
+                    {{ getTypeLabel(ad.adType) }}
+                  </div>
+                  <div class="ad-status" [class]="getStatusClass(ad.status)">
+                    {{ getStatusLabel(ad.status) }}
+                  </div>
                 </div>
-                <div class="ad-status" [class]="getStatusClass(ad.status)">
-                  {{ getStatusLabel(ad.status) }}
+                <h3 class="ad-title">
+                  @if (ad.isFeatured) { <i class="fas fa-star" style="color:#f59e0b;font-size:.8rem"></i> }
+                  {{ ad.title }}
+                </h3>
+                <p class="ad-desc">{{ ad.description | slice:0:100 }}</p>
+                @if (ad.reviewNotes) {
+                  <div class="review-note">
+                    <i class="fas fa-comment-alt"></i> {{ ad.reviewNotes }}
+                  </div>
+                }
+                <div class="ad-footer">
+                  <div class="ad-stats">
+                    <span><i class="fas fa-eye"></i> {{ ad.viewCount }}</span>
+                    <span><i class="fas fa-mouse-pointer"></i> {{ ad.clickCount }}</span>
+                  </div>
+                  <span class="ad-date">{{ formatDate(ad.creationTime) }}</span>
                 </div>
-              </div>
-              <h3 class="ad-title">
-                @if (ad.isFeatured) { <i class="fas fa-star" style="color:#f59e0b;font-size:.8rem"></i> }
-                {{ ad.title }}
-              </h3>
-              <p class="ad-desc">{{ ad.description | slice:0:100 }}</p>
-              @if (ad.reviewNotes) {
-                <div class="review-note">
-                  <i class="fas fa-comment-alt"></i> {{ ad.reviewNotes }}
-                </div>
-              }
-              <div class="ad-footer">
-                <div class="ad-stats">
-                  <span><i class="fas fa-eye"></i> {{ ad.viewCount }}</span>
-                  <span><i class="fas fa-mouse-pointer"></i> {{ ad.clickCount }}</span>
-                </div>
-                <span class="ad-date">{{ formatDate(ad.creationTime) }}</span>
+              </a>
+              <!-- Action buttons -->
+              <div class="ad-actions">
+                @if (ad.status === 2) {
+                  <button class="action-btn action-stop" (click)="toggleAd(ad, false)" [disabled]="actionLoading()">
+                    <i class="fas fa-pause-circle"></i> إيقاف · Stop
+                  </button>
+                }
+                @if (ad.status === 5) {
+                  <button class="action-btn action-enable" (click)="toggleAd(ad, true)" [disabled]="actionLoading()">
+                    <i class="fas fa-play-circle"></i> تفعيل · Enable
+                  </button>
+                }
+                <a class="action-btn action-detail" [routerLink]="['/ads/detail', ad.id]">
+                  <i class="fas fa-info-circle"></i> تفاصيل · Details
+                </a>
               </div>
             </div>
           }
@@ -207,6 +226,24 @@ interface AdDto {
     .ad-stats { display:flex; gap:.75rem; font-size:.7rem; color:#9090aa; }
     .ad-stats span { display:flex; align-items:center; gap:.2rem; }
     .ad-date { font-size:.7rem; color:#9090aa; }
+
+    .ad-card-link { text-decoration:none; display:block; color:inherit; }
+    .ad-actions {
+      display:flex; gap:.35rem; padding-top:.5rem; border-top:1px solid #f4f5fb;
+    }
+    .action-btn {
+      flex:1; display:flex; align-items:center; justify-content:center; gap:.25rem;
+      padding:.5rem; border-radius:10px; border:none;
+      font-size:.72rem; font-weight:700; cursor:pointer; min-height:38px;
+      text-decoration:none; -webkit-tap-highlight-color:transparent;
+      &:disabled { opacity:.5; cursor:not-allowed; }
+    }
+    .action-stop { background:rgba(239,68,68,.08); color:#dc2626; }
+    .action-stop:active { background:rgba(239,68,68,.15); }
+    .action-enable { background:rgba(16,185,129,.08); color:#059669; }
+    .action-enable:active { background:rgba(16,185,129,.15); }
+    .action-detail { background:rgba(102,126,234,.08); color:#667eea; }
+    .action-detail:active { background:rgba(102,126,234,.15); }
   `],
 })
 export class AdsMyComponent implements OnInit {
@@ -214,6 +251,7 @@ export class AdsMyComponent implements OnInit {
   private readonly apiBase = environment.apis?.default?.url || '';
 
   loading = signal(true);
+  actionLoading = signal(false);
   ads = signal<AdDto[]>([]);
 
   activeCount = () => this.ads().filter(a => a.status === 2).length;
@@ -225,6 +263,18 @@ export class AdsMyComponent implements OnInit {
       this.ads.set(res ?? []);
     } catch (e) { console.error(e); }
     finally { this.loading.set(false); }
+  }
+
+  async toggleAd(ad: AdDto, enable: boolean): Promise<void> {
+    this.actionLoading.set(true);
+    try {
+      const endpoint = enable ? 'enable' : 'disable';
+      await this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/${endpoint}`, {}).toPromise();
+      this.ads.update(list => list.map(a =>
+        a.id === ad.id ? { ...a, status: enable ? 2 : 5 } : a
+      ));
+    } catch (e) { console.error('Toggle error:', e); }
+    finally { this.actionLoading.set(false); }
   }
 
   getTypeClass(type: number): string {
