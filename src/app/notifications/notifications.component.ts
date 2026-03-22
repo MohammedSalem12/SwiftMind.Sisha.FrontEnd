@@ -602,7 +602,6 @@ export class NotificationsComponent implements OnInit {
       // ── Grades ──
       case NotificationType.ExamGradePosted:
         if (role === 'STUDENT') return { path: ['/student/grades'] };
-        if (role === 'PARENT' && ref) return { path: ['/parent/child', ref] };
         if (role === 'PARENT') return { path: ['/parent'] };
         return null;
 
@@ -610,7 +609,6 @@ export class NotificationsComponent implements OnInit {
       case NotificationType.AttendanceMarkedAbsent:
       case NotificationType.AttendanceMarkedPresent:
         if (role === 'STUDENT') return { path: ['/student/attendance'] };
-        if (role === 'PARENT' && ref) return { path: ['/parent/child', ref] };
         if (role === 'PARENT') return { path: ['/parent'] };
         return null;
 
