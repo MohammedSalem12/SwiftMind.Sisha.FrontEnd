@@ -57,9 +57,17 @@ interface CreateAdvertiserForm {
       <div class="action-bar">
         <button class="btn-create" (click)="showForm.set(!showForm())">
           <i class="fas" [class.fa-plus]="!showForm()" [class.fa-times]="showForm()"></i>
-          {{ showForm() ? 'الغاء' : 'اضافة معلن' }}
+          {{ showForm() ? 'الغاء · Cancel' : 'اضافة معلن · Add' }}
         </button>
-        <span class="total-count" *ngIf="totalCount() > 0">{{ totalCount() }} معلن</span>
+        <span class="total-count" *ngIf="totalCount() > 0">{{ totalCount() }} معلن · advertisers</span>
+      </div>
+
+      <!-- Search -->
+      <div class="search-bar">
+        <i class="fas fa-search search-icon"></i>
+        <input class="search-input" type="text" placeholder="بحث بالاسم أو البريد · Search..."
+               [(ngModel)]="searchQuery"
+               (ngModelChange)="filterAdvertisers()" />
       </div>
 
       <!-- Create Form -->
@@ -170,48 +178,43 @@ interface CreateAdvertiserForm {
         }
 
         <div class="cards-list">
-          @for (adv of advertisers(); track adv.id) {
-            <div class="adv-card">
-              <div class="adv-card-header">
-                <div class="adv-type-chip" [class]="getTypeClass(adv.type)">
-                  {{ getTypeLabel(adv.type) }}
+          @for (adv of filteredList(); track adv.id) {
+            <div class="adv-card" [class.adv-card--pending]="!adv.isApproved">
+              <div class="adv-card-main">
+                <div class="adv-avatar" [class]="getTypeClass(adv.type)">
+                  {{ adv.name?.charAt(0) || '?' }}
                 </div>
-                <div class="status-chip" [class]="adv.isApproved ? 'status-approved' : 'status-pending'">
-                  {{ adv.isApproved ? 'معتمد · Approved' : 'بانتظار الموافقة · Pending' }}
+                <div class="adv-info">
+                  <div class="adv-name-row">
+                    <h3 class="adv-name">{{ adv.name }}</h3>
+                    <div class="status-dot" [class.status-dot--approved]="adv.isApproved" [class.status-dot--pending]="!adv.isApproved"></div>
+                  </div>
+                  @if (adv.nameEn) { <span class="adv-name-en">{{ adv.nameEn }}</span> }
+                  <div class="adv-chips">
+                    <span class="adv-type-chip" [class]="getTypeClass(adv.type)">{{ getTypeLabel(adv.type) }}</span>
+                    @if (adv.userId) {
+                      <span class="chip-linked"><i class="fas fa-link"></i></span>
+                    }
+                  </div>
                 </div>
               </div>
-
-              <h3 class="adv-name">{{ adv.name }}</h3>
-              @if (adv.nameEn) {
-                <span class="adv-name-en">{{ adv.nameEn }}</span>
-              }
 
               <div class="adv-meta">
-                <span><i class="fas fa-phone"></i> {{ adv.contactPhone }}</span>
-                <span><i class="fas fa-envelope"></i> {{ adv.contactEmail }}</span>
-                @if (adv.userId) {
-                  <span class="user-linked"><i class="fas fa-user-check"></i> حساب مرتبط</span>
-                } @else {
-                  <span class="user-not-linked"><i class="fas fa-user-slash"></i> بدون حساب</span>
-                }
+                @if (adv.contactPhone) { <span><i class="fas fa-phone"></i> {{ adv.contactPhone }}</span> }
+                @if (adv.contactEmail) { <span><i class="fas fa-envelope"></i> {{ adv.contactEmail }}</span> }
               </div>
-
-              @if (adv.description) {
-                <p class="adv-desc">{{ adv.description | slice:0:120 }}{{ adv.description.length > 120 ? '...' : '' }}</p>
-              }
 
               <div class="adv-actions">
                 @if (!adv.isApproved) {
-                  <button class="btn-approve" (click)="approveAdvertiser(adv.id)" [disabled]="actionLoading()">
+                  <button class="btn-action btn-approve" (click)="approveAdvertiser(adv.id)" [disabled]="actionLoading()">
                     <i class="fas fa-check"></i> موافقة
                   </button>
-                }
-                @if (adv.isApproved) {
-                  <button class="btn-reject-sm" (click)="rejectAdvertiser(adv.id)" [disabled]="actionLoading()">
-                    <i class="fas fa-ban"></i> رفض
+                } @else {
+                  <button class="btn-action btn-reject-sm" (click)="rejectAdvertiser(adv.id)" [disabled]="actionLoading()">
+                    <i class="fas fa-ban"></i> إيقاف
                   </button>
                 }
-                <button class="btn-delete" (click)="confirmDelete(adv)" [disabled]="actionLoading()">
+                <button class="btn-action btn-delete" (click)="confirmDelete(adv)" [disabled]="actionLoading()">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -300,7 +303,7 @@ interface CreateAdvertiserForm {
 
     .page-header {
       background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 1.5rem;
+      padding:calc(env(safe-area-inset-top,0px) + .75rem) 1.25rem 1rem;
       position:relative; overflow:hidden;
     }
     .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
@@ -335,7 +338,20 @@ interface CreateAdvertiserForm {
       display:flex; align-items:center; gap:.35rem; min-height:44px;
       -webkit-tap-highlight-color:transparent;
     }
-    .total-count { font-size:.8rem; color:#9090aa; font-weight:600; }
+    .total-count { font-size:.72rem; color:#9090aa; font-weight:600; }
+
+    .search-bar {
+      display:flex; align-items:center; gap:.5rem;
+      margin:0 1rem .5rem; padding:0 .75rem;
+      background:#fff; border-radius:12px; border:1.5px solid #e5e7eb;
+      min-height:44px;
+    }
+    .search-icon { color:#9090aa; font-size:.8rem; flex-shrink:0; }
+    .search-input {
+      flex:1; border:none; outline:none; background:transparent;
+      font-size:16px; font-family:inherit; color:#1a1a2e; min-height:44px;
+      &::placeholder { color:#b0b0c0; font-size:.82rem; }
+    }
 
     /* Form */
     .form-card {
@@ -429,10 +445,26 @@ interface CreateAdvertiserForm {
 
     .adv-card {
       background:#fff; border-radius:14px; border:1.5px solid #f0f0f0;
-      padding:.875rem; box-shadow:0 2px 8px rgba(0,0,0,.04);
+      padding:.75rem; box-shadow:0 2px 8px rgba(0,0,0,.04);
     }
-    .adv-card-header {
-      display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;
+    .adv-card--pending { border-color:rgba(245,158,11,.2); }
+    .adv-card-main {
+      display:flex; align-items:center; gap:.65rem; margin-bottom:.4rem;
+    }
+    .adv-avatar {
+      width:42px; height:42px; border-radius:12px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-size:1.1rem; font-weight:800;
+    }
+    .adv-info { flex:1; min-width:0; }
+    .adv-name-row { display:flex; align-items:center; gap:.35rem; }
+    .status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .status-dot--approved { background:#22c55e; }
+    .status-dot--pending { background:#f59e0b; }
+    .adv-chips { display:flex; gap:.25rem; margin-top:.2rem; }
+    .chip-linked {
+      font-size:.55rem; background:rgba(102,126,234,.1); color:#667eea;
+      padding:.1rem .3rem; border-radius:4px;
     }
     .adv-type-chip {
       font-size:.65rem; font-weight:700; padding:.15rem .5rem; border-radius:8px;
@@ -447,20 +479,26 @@ interface CreateAdvertiserForm {
     .status-approved { background:rgba(16,185,129,.1); color:#059669; }
     .status-pending { background:rgba(245,158,11,.1); color:#d97706; }
 
-    .adv-name { margin:0 0 .15rem; font-size:.95rem; font-weight:700; color:#1a1a2e; }
-    .adv-name-en { font-size:.75rem; color:#9090aa; display:block; margin-bottom:.4rem; }
+    .adv-name { margin:0; font-size:.88rem; font-weight:700; color:#1a1a2e; }
+    .adv-name-en { font-size:.68rem; color:#9090aa; display:block; }
 
     .adv-meta {
-      display:flex; flex-wrap:wrap; gap:.6rem; margin:.5rem 0;
-      font-size:.72rem; color:#9090aa;
+      display:flex; flex-wrap:wrap; gap:.5rem;
+      font-size:.68rem; color:#9090aa;
+      padding:.35rem 0; border-top:1px solid #f4f5fb;
     }
-    .adv-meta span { display:flex; align-items:center; gap:.25rem; }
-    .user-linked { color:#059669; }
-    .user-not-linked { color:#d97706; }
+    .adv-meta span { display:flex; align-items:center; gap:.2rem; }
 
-    .adv-desc { margin:0 0 .5rem; font-size:.78rem; color:#666; line-height:1.45; }
-
-    .adv-actions { display:flex; gap:.5rem; margin-top:.5rem; }
+    .adv-actions {
+      display:flex; gap:.35rem; padding-top:.35rem; border-top:1px solid #f4f5fb;
+    }
+    .btn-action {
+      flex:1; padding:.45rem; border-radius:10px; border:none;
+      font-size:.72rem; font-weight:700; cursor:pointer;
+      min-height:38px; display:flex; align-items:center; justify-content:center; gap:.25rem;
+      -webkit-tap-highlight-color:transparent;
+      &:disabled { opacity:.5; cursor:not-allowed; }
+    }
     .btn-approve {
       flex:1; padding:.5rem; border-radius:10px; border:none;
       background:rgba(16,185,129,.1); color:#059669;
@@ -579,6 +617,20 @@ export class AdvertiserAdminComponent implements OnInit {
   showForm = signal(false);
   formError = signal<string | null>(null);
   advertisers = signal<AdvertiserDto[]>([]);
+  searchQuery = '';
+
+  filteredList(): AdvertiserDto[] {
+    const q = this.searchQuery.toLowerCase().trim();
+    if (!q) return this.advertisers();
+    return this.advertisers().filter(a =>
+      (a.name || '').toLowerCase().includes(q) ||
+      (a.nameEn || '').toLowerCase().includes(q) ||
+      (a.contactEmail || '').toLowerCase().includes(q) ||
+      (a.contactPhone || '').includes(q)
+    );
+  }
+
+  filterAdvertisers(): void { /* trigger change detection via searchQuery binding */ }
   totalCount = signal(0);
   currentPage = signal(0);
   deleteTarget = signal<AdvertiserDto | null>(null);
