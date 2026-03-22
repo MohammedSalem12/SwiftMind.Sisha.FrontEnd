@@ -7,7 +7,7 @@ export const appRoutes: Routes = [
     path: '',
     pathMatch: 'full',
     loadChildren: () => import('./home/home.routes').then(m => m.homeRoutes),
-    canActivate: [authGuard],
+    // Open for guests — home.component handles auth/guest views internally
   },
   {
     path: 'student',
