@@ -78,7 +78,10 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.authService.isAuthenticated) {
+    // Check both ABP auth state and OAuth token — on page reload after login,
+    // ABP config may not be loaded yet but the token is already in storage
+    const hasToken = !!localStorage.getItem('access_token') || this.authService.isAuthenticated;
+    if (hasToken) {
       this.checkUserRoleAndRedirect();
     } else {
       this.loadGuestTeachers();
