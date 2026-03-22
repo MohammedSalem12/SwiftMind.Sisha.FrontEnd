@@ -4,6 +4,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { CurrentUserInfoService } from '@proxy/common';
 
 @Component({
   selector: 'app-ad-detail',
@@ -101,6 +102,31 @@ import { environment } from '../../environments/environment';
               </a>
             }
           </div>
+
+          <!-- Student Coupon -->
+          @if (coupon()) {
+            <div class="coupon-card">
+              <div class="coupon-header">
+                <i class="fas fa-ticket-alt"></i>
+                <span>كوبون الخصم · Your Coupon</span>
+              </div>
+              <div class="coupon-body">
+                <div class="coupon-discount">{{ coupon()!.discountPercent }}%</div>
+                <div class="coupon-code">{{ coupon()!.couponCode }}</div>
+                <button class="coupon-copy" (click)="copyCoupon()">
+                  <i class="fas fa-copy"></i> نسخ · Copy
+                </button>
+              </div>
+              <div class="coupon-meta">
+                @if (coupon()!.expiryDate) {
+                  <span><i class="fas fa-calendar"></i> صالح حتى {{ coupon()!.expiryDate | date:'yyyy-MM-dd' }}</span>
+                }
+                <span class="coupon-status" [class.coupon-active]="coupon()!.status === 0" [class.coupon-redeemed]="coupon()!.status === 1">
+                  {{ coupon()!.status === 0 ? 'نشط · Active' : coupon()!.status === 1 ? 'مستخدم · Redeemed' : 'منتهي · Expired' }}
+                </span>
+              </div>
+            </div>
+          }
         </div>
       }
 
@@ -192,6 +218,41 @@ import { environment } from '../../environments/environment';
       color:#fff; font-size:.82rem; font-weight:700;
       text-decoration:none; min-height:44px;
     }
+
+    .coupon-card {
+      margin:1rem; background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+      border:2px solid #86efac; border-radius:16px; padding:1rem;
+    }
+    .coupon-header {
+      display:flex; align-items:center; gap:.4rem;
+      font-size:.82rem; font-weight:700; color:#16a34a; margin-bottom:.6rem;
+    }
+    .coupon-body {
+      display:flex; align-items:center; gap:.75rem;
+    }
+    .coupon-discount {
+      width:50px; height:50px; border-radius:50%;
+      background:linear-gradient(135deg,#22c55e,#16a34a);
+      color:#fff; font-size:1.1rem; font-weight:800;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .coupon-code {
+      flex:1; font-family:monospace; font-size:1rem; font-weight:800;
+      color:#1a1a2e; letter-spacing:1px; direction:ltr;
+    }
+    .coupon-copy {
+      padding:.4rem .75rem; border-radius:8px; border:none;
+      background:rgba(22,163,106,.15); color:#16a34a;
+      font-size:.72rem; font-weight:700; cursor:pointer; min-height:36px;
+      display:flex; align-items:center; gap:.25rem;
+    }
+    .coupon-meta {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top:.5rem; font-size:.7rem; color:#6b7280;
+    }
+    .coupon-status { font-weight:700; padding:.1rem .4rem; border-radius:6px; }
+    .coupon-active { background:rgba(22,163,106,.1); color:#16a34a; }
+    .coupon-redeemed { background:rgba(156,163,175,.1); color:#6b7280; }
   `],
 })
 export class AdDetailComponent implements OnInit {
@@ -200,7 +261,10 @@ export class AdDetailComponent implements OnInit {
   private readonly location = inject(Location);
   private readonly apiBase = environment.apis?.default?.url || '';
 
+  private readonly currentUserSvc = inject(CurrentUserInfoService);
+
   ad = signal<any>(null);
+  coupon = signal<any>(null);
   loading = signal(true);
   error = signal('');
 
@@ -216,11 +280,29 @@ export class AdDetailComponent implements OnInit {
         this.http.get(`${this.apiBase}/api/app/advertisement/${id}`)
       );
       this.ad.set(data);
+
+      // Load student coupon for this ad (if deal type)
+      if ((data as any)?.adType === 2) {
+        try {
+          const coupons = await lastValueFrom(
+            this.http.get<any[]>(`${this.apiBase}/api/app/deal-coupon/my-active-coupons`)
+          );
+          const match = (coupons || []).find((c: any) => c.advertisementId === id);
+          if (match) this.coupon.set(match);
+        } catch { /* not a student or no coupons */ }
+      }
     } catch (e: any) {
       this.error.set('تعذر تحميل الإعلان · Could not load ad');
       console.error('[AdDetail]', e);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  copyCoupon(): void {
+    const code = this.coupon()?.couponCode;
+    if (code) {
+      navigator.clipboard.writeText(code).catch(() => {});
     }
   }
 
