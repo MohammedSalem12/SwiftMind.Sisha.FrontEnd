@@ -8,6 +8,7 @@ import type { UserRegStudentDto, UserRegTeacherDto, UserRegParentDto, UserRegSec
 import { GradeService } from '@proxy/grades';
 import { AuthService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
+import { AuthRedirectService } from '../shared/services/auth-redirect.service';
 
 @Component({
   standalone: true,

@@ -8,11 +8,13 @@ import { AcademyService } from '@proxy/academies';
 import { AcademyDto } from '@proxy/academies/models';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
+import { AuthService } from '@abp/ng.core';
+import { RegisterPromptComponent } from '../shared/components/register-prompt.component';
 
 @Component({
   selector: 'app-academies-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, RegisterPromptComponent],
   template: `
     <div class="page" dir="rtl">
 
@@ -46,6 +48,13 @@ import { CourseService } from '@proxy/courses';
                  (ngModelChange)="searchQuery.set($event)" />
         </div>
       </div>
+
+      <!-- ── Guest register prompt ── -->
+      @if (isGuest()) {
+        <app-register-prompt
+          [titleAr]="'سجّل الآن للانضمام للأكاديميات والتسجيل في المقررات'"
+          [titleEn]="'Register to join academies and enroll in courses'" />
+      }
 
       <!-- ── Join by code (student) ── -->
       @if (isStudent()) {
@@ -427,6 +436,9 @@ export class AcademiesListComponent implements OnInit {
   private readonly academySvc  = inject(AcademyService);
   private readonly userSvc     = inject(CurrentUserInfoService);
   private readonly courseSvc   = inject(CourseService);
+  private readonly authService = inject(AuthService);
+
+  isGuest = signal(false);
 
   loading     = signal(true);
   academies   = signal<AcademyDto[]>([]);
@@ -469,10 +481,16 @@ export class AcademiesListComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     try {
-      const [userInfo, list] = await Promise.all([
-        lastValueFrom(this.userSvc.getCurrentUserActorInfo()),
-        lastValueFrom(this.academySvc.getList()),
-      ]);
+      const isAuth = this.authService.isAuthenticated;
+      this.isGuest.set(!isAuth);
+
+      let userInfo: any = null;
+      const list = await lastValueFrom(this.academySvc.getList()).catch(() => []);
+
+      if (isAuth) {
+        userInfo = await lastValueFrom(this.userSvc.getCurrentUserActorInfo()).catch(() => null);
+      }
+
       const roles = userInfo?.userRoles || [];
       this.isStudent.set(roles.includes('STUDENT'));
       this.isTeacherOrAdmin.set(roles.includes('TEACHER') || roles.includes('ADMIN'));

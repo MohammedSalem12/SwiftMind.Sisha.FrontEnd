@@ -8,6 +8,7 @@ import { AuthService, ConfigStateService } from '@abp/ng.core';
 import { environment } from '../../environments/environment';
 import { BiometricService } from '../shared/services/biometric.service';
 import { Capacitor } from '@capacitor/core';
+import { AuthRedirectService } from '../shared/services/auth-redirect.service';
 
 interface LoginModel {
   userNameOrEmailAddress?: string;
@@ -28,6 +29,7 @@ export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly configService = inject(ConfigStateService);
   private readonly biometricSvc = inject(BiometricService);
+  private readonly authRedirectSvc = inject(AuthRedirectService);
 
   model = signal<LoginModel>({ userNameOrEmailAddress: '', password: '', rememberMe: false });
   loading = signal(false);
@@ -300,12 +302,13 @@ export class LoginComponent implements OnInit {
       }
       this.loading.set(false);
       this.biometricLoading.set(false);
-      // On web: full reload to refresh ABP state (navigateByUrl causes flash before reload)
-      // On native: just navigate (reload crashes Capacitor WebView)
+      // Check for pending redirect (from open browse → register → login flow)
+      const redirectUrl = this.authRedirectSvc.consumeRedirectUrl();
+      const targetUrl = redirectUrl || '/';
       if (!Capacitor.isNativePlatform()) {
-        window.location.href = '/';
+        window.location.href = targetUrl;
       } else {
-        await this.router.navigateByUrl('/');
+        await this.router.navigateByUrl(targetUrl);
       }
       return;
     }

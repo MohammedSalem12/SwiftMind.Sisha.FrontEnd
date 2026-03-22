@@ -364,7 +364,7 @@ export const appRoutes: Routes = [
   {
     path: 'academies',
     loadChildren: () => import('./academies/academies.routes').then(m => m.academiesRoutes),
-    canActivate: [authGuard],
+    // Open for browsing — components handle auth prompts internally
   },
   {
     path: 'teacher/academy',
@@ -399,7 +399,7 @@ export const appRoutes: Routes = [
   {
     path: 'ads',
     loadChildren: () => import('./ads/ads.routes').then(m => m.adsRoutes),
-    canActivate: [authGuard],
+    // Open for browsing — auth-required actions prompt registration internally
   },
   {
     path: 'settings',
