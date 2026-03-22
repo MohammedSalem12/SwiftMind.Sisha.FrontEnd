@@ -6,7 +6,7 @@ export const academiesRoutes: Routes = [
   {
     path: '',
     loadComponent: () => import('./academies-list.component').then(m => m.AcademiesListComponent),
-    canActivate: [authGuard],
+    // Open for guests
   },
   {
     path: 'create',
@@ -23,7 +23,7 @@ export const academiesRoutes: Routes = [
   {
     path: ':id/profile',
     loadComponent: () => import('./academy-profile.component').then(m => m.AcademyProfileComponent),
-    canActivate: [authGuard],
+    // Open for guests
   },
   {
     path: ':id/manage',

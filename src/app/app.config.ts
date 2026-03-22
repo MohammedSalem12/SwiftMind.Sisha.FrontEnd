@@ -56,7 +56,7 @@ function patchAuthServiceLogout(
     (authService as any).logout = async () => {
       await pushNotificationSvc.unregisterCurrentToken(); // while token still valid
       oauthService.logOut(true); // noRedirectToWellKnownEndSession = true
-      await router.navigate(['/login']);
+      await router.navigate(['/']);
     };
   };
 }

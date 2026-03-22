@@ -554,6 +554,26 @@ $quick-h:      62px;
   &:hover { color: $grad-end; }
 }
 
+.visitor-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  margin-top: .75rem;
+  padding: .6rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(102, 126, 234, .15);
+  background: rgba(102, 126, 234, .04);
+  color: $grad-start;
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active { background: rgba(102, 126, 234, .1); }
+}
+
 // ─── Fixed Quick Links Bar ──────────────────────────────────────
 .quick-links {
   position: fixed;

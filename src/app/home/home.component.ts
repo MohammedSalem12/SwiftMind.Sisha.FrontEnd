@@ -11,6 +11,8 @@ import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Component({
   standalone: true,
@@ -28,6 +30,8 @@ export class HomeComponent implements OnInit {
   private teacherSvc = inject(TeacherService);
   private enrollmentSvc = inject(StudentEnrollmentService);
   private cache = inject(OfflineCacheService);
+  private http = inject(HttpClient);
+  private readonly apiBase = (environment as any).apis?.default?.url || '';
 
   // Observable for current user info
   readonly user$ = this.userProfileService.user$;
@@ -42,6 +46,7 @@ export class HomeComponent implements OnInit {
 
   // Track if we're redirecting (to prevent flash of dashboard)
   redirecting = signal(false);
+  guestTeachers = signal<any[]>([]);
 
   private readonly CACHE_KEY = 'admin_home';
 
@@ -76,7 +81,7 @@ export class HomeComponent implements OnInit {
     if (this.authService.isAuthenticated) {
       this.checkUserRoleAndRedirect();
     } else {
-      void this.loadCounts();
+      this.loadGuestTeachers();
     }
   }
 
@@ -170,5 +175,20 @@ export class HomeComponent implements OnInit {
     } finally {
       this.loadingCounts.set(false);
     }
+  }
+
+  private async loadGuestTeachers(): Promise<void> {
+    try {
+      const res: any = await lastValueFrom(
+        this.http.get(`${this.apiBase}/api/sesha/teachers/search`, {
+          params: { searchPrefix: '', maxResults: '6' }
+        })
+      );
+      this.guestTeachers.set(res || []);
+    } catch { /* silent — API may require auth */ }
+  }
+
+  goRegisterToSeeTeachers(): void {
+    this.router.navigate(['/register']);
   }
 }

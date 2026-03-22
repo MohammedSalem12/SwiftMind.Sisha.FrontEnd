@@ -27,19 +27,29 @@
     <!-- Did You Know (for guest engagement) -->
     <app-did-you-know [role]="'STUDENT'" />
 
-    <!-- Browse section -->
+    <!-- Quick actions for guests -->
     <div class="browse-section" dir="rtl">
       <div class="browse-title">
-        <i class="fas fa-compass"></i>
-        <span>استكشف · Explore</span>
+        <i class="fas fa-bolt"></i>
+        <span>ابدأ الآن · Get Started</span>
       </div>
       <div class="browse-grid">
+        <a class="browse-card" routerLink="/login">
+          <div class="browse-icon" style="background:linear-gradient(135deg,#dc2626,#f43f5e)">
+            <i class="fas fa-calendar-times"></i>
+          </div>
+          <div class="browse-text">
+            <span class="browse-label">متابعة غياب أبنائي</span>
+            <span class="browse-sub">Review My Child Absence</span>
+          </div>
+          <i class="fas fa-chevron-left browse-arrow"></i>
+        </a>
         <a class="browse-card" routerLink="/academies">
           <div class="browse-icon" style="background:linear-gradient(135deg,#667eea,#764ba2)">
             <i class="fas fa-university"></i>
           </div>
           <div class="browse-text">
-            <span class="browse-label">الأكاديميات</span>
+            <span class="browse-label">استعراض الأكاديميات</span>
             <span class="browse-sub">Browse Academies</span>
           </div>
           <i class="fas fa-chevron-left browse-arrow"></i>
@@ -55,6 +65,29 @@
           <i class="fas fa-chevron-left browse-arrow"></i>
         </a>
       </div>
+    </div>
+
+    <!-- Teachers showcase -->
+    <div class="browse-section" dir="rtl">
+      <div class="browse-title">
+        <i class="fas fa-chalkboard-teacher"></i>
+        <span>معلمون على المنصة · Teachers on KAI</span>
+      </div>
+      @if (guestTeachers().length > 0) {
+        <div class="teachers-scroll">
+          @for (t of guestTeachers(); track t.id) {
+            <div class="teacher-mini">
+              <div class="tm-avatar">{{ (t.displayName || t.firstName || '?').charAt(0) }}</div>
+              <span class="tm-name">{{ t.displayName || t.firstName }}</span>
+            </div>
+          }
+        </div>
+      }
+      <button class="show-more-btn" (click)="goRegisterToSeeTeachers()">
+        <i class="fas fa-users"></i>
+        عرض المزيد من المعلمين · Show More Teachers
+        <i class="fas fa-chevron-left"></i>
+      </button>
     </div>
 
     <!-- Features -->
