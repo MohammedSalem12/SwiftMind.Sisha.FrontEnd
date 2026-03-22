@@ -18,7 +18,6 @@
   </div>
 
   <app-did-you-know [role]="'TEACHER'" />
-  <app-promo-ads-bar [audience]="3" />
 
   <!-- Next Session Timer (hidden on mobile - counter in top bar) -->
   @if (nextSession()) {
@@ -152,6 +151,8 @@
       }
     }
   }
+
+  <app-promo-ads-bar [audience]="3" />
 
   <!-- Quick Actions -->
   <div class="quick-actions">

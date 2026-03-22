@@ -324,6 +324,7 @@ export class StudentMyAttendanceComponent implements OnInit {
       const result = await lastValueFrom(
         this.attendanceSvc.getStudentAttendanceReport({
           studentId: info.actorId,
+          date: new Date().toISOString(),
           skipCount: 0,
           maxResultCount: 100,
         })

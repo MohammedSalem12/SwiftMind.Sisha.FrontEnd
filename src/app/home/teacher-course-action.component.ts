@@ -95,7 +95,7 @@ export class TeacherCourseActionComponent implements OnInit {
   }
 
   goToStudents(): void {
-    this.router.navigate(['/teacher/students'], {
+    this.router.navigate(['/students'], {
       queryParams: { courseId: this.courseId(), ...this.extraParams() }
     });
   }
