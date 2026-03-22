@@ -25,9 +25,11 @@
 
   <app-did-you-know [role]="'STUDENT'" />
 
-  <!-- Next Session Timer -->
+  <!-- Next Session Timer (hidden on mobile - counter in top bar) -->
   @if (nextSession()) {
-    <app-session-timer [session]="nextSession()" (todaySessionsClicked)="goTodaySessions()"></app-session-timer>
+    <div class="hide-on-mobile">
+      <app-session-timer [session]="nextSession()" (todaySessionsClicked)="goTodaySessions()"></app-session-timer>
+    </div>
   }
 
   <!-- Loading Skeleton -->

@@ -20,9 +20,11 @@
   <app-did-you-know [role]="'TEACHER'" />
   <app-promo-ads-bar [audience]="3" />
 
-  <!-- Next Session Timer -->
+  <!-- Next Session Timer (hidden on mobile - counter in top bar) -->
   @if (nextSession()) {
-    <app-session-timer [session]="nextSession()" [canSendMessage]="true" (todaySessionsClicked)="goTodaySessions()"></app-session-timer>
+    <div class="hide-on-mobile">
+      <app-session-timer [session]="nextSession()" [canSendMessage]="true" (todaySessionsClicked)="goTodaySessions()"></app-session-timer>
+    </div>
   }
 
   <!-- Loading -->

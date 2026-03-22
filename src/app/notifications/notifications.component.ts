@@ -510,10 +510,8 @@ export class NotificationsComponent implements OnInit {
 
   // Grade-based theming
   currentGrade = signal<number | null>(null);
-  currentTheme = computed(() => {
-    const grade = this.currentGrade();
-    return grade ? this.gradeThemeService.getThemeForGrade(grade) : this.getDefaultTheme();
-  });
+  // Always use purple theme (KAI brand color)
+  currentTheme = computed(() => this.getDefaultTheme());
 
   constructor() {
     // Append real-time notifications at the top as they arrive

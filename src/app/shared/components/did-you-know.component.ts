@@ -1,4 +1,4 @@
-import { Component, input, signal, OnInit, inject } from '@angular/core';
+import { Component, input, signal, OnInit, inject, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
@@ -62,14 +62,21 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
             <span class="tip-topic">{{ getTopicLabel(card()!.topic) }}</span>
           </div>
           <span class="tip-title">{{ card()!.titleAr }}</span>
-          <span class="tip-text">{{ card()!.contentAr }}</span>
-          <span class="tip-text-en">{{ card()!.contentEn }}</span>
+          @if (expanded()) {
+            <span class="tip-text">{{ card()!.contentAr }}</span>
+            <span class="tip-text-en">{{ card()!.contentEn }}</span>
+          }
         } @else {
           <span class="tip-label">هل تعلم؟ · Did you know?</span>
-          <span class="tip-text">{{ fallbackTip().ar }}</span>
-          <span class="tip-text-en">{{ fallbackTip().en }}</span>
+          @if (expanded()) {
+            <span class="tip-text">{{ fallbackTip().ar }}</span>
+            <span class="tip-text-en">{{ fallbackTip().en }}</span>
+          }
         }
       </div>
+      <button class="tip-toggle" (click)="expanded.set(!expanded()); $event.stopPropagation()">
+        <i class="fas" [class]="expanded() ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      </button>
     </div>
   `,
   styles: [`
@@ -113,6 +120,15 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
     .tip-text-en {
       font-size: .65rem; color: #9090aa; line-height: 1.4; margin-top: .1rem;
     }
+    .tip-toggle {
+      border: none; background: none; color: #667eea;
+      font-size: .65rem; cursor: pointer; flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s;
+      &:active { background: rgba(102,126,234,.1); }
+    }
   `],
 })
 export class DidYouKnowComponent implements OnInit {
@@ -122,6 +138,7 @@ export class DidYouKnowComponent implements OnInit {
 
   card = signal<KnowledgeCard | null>(null);
   fallbackTip = signal<{ ar: string; en: string }>({ ar: '', en: '' });
+  expanded = signal(false);
 
   iconClass = signal('fas fa-lightbulb');
   iconBg = signal('linear-gradient(135deg, #667eea, #764ba2)');

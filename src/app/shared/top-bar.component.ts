@@ -31,10 +31,10 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
           </button>
         }
 
-        <!-- Center: logo or session timer -->
+        <!-- Center: session timer always shown if available, otherwise logo -->
         <div class="tb-center">
-          @if (scrolled() && nextSession()) {
-            <div class="tb-session">
+          @if (nextSession()) {
+            <div class="tb-session" (click)="goToSessions()">
               <i class="fas fa-clock"></i>
               <span class="tb-session-name">{{ nextSession()!.courseName }}</span>
               <span class="tb-session-time">{{ formatCountdown() }}</span>
@@ -310,6 +310,14 @@ export class TopBarComponent implements OnInit, OnDestroy {
       ADMIN: '/profile',
     };
     this.router.navigate([profileMap[this.userRole] || '/profile']);
+  }
+
+  goToSessions(): void {
+    const profileMap: Record<string, string> = {
+      STUDENT: '/student/today-sessions',
+      TEACHER: '/teacher/today-sessions',
+    };
+    this.router.navigate([profileMap[this.userRole] || '/']);
   }
 
   goBack(): void {

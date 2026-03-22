@@ -75,6 +75,15 @@ export class AppComponent implements OnInit {
       this.scrollToTop();
     });
 
+    // Prevent OAuth from redirecting to backend /Account/Login
+    // Override initCodeFlow to redirect to our /login instead
+    (this.oauthService as any).initCodeFlow = () => {
+      this.router.navigate(['/login']);
+    };
+    (this.oauthService as any).initImplicitFlow = () => {
+      this.router.navigate(['/login']);
+    };
+
     // Connect real-time services when user is already logged in (page refresh)
     if (this.oauthService.hasValidAccessToken()) {
       this.initRealtime();
