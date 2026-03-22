@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { CourseService } from '@proxy/courses';
 import type { CourseDto } from '@proxy/courses/dtos/models';
-import { EnrollmentRequestService } from '@proxy/student-enrollments';
+import { EnrollmentRequestService, StudentEnrollmentService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { GroupService } from '@proxy/groups';
@@ -19,7 +19,7 @@ import { StudentService } from '@proxy/students';
 @Component({
   selector: 'app-student-course-profile',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="profile-page" dir="rtl">
 
@@ -98,6 +98,17 @@ import { StudentService } from '@proxy/students';
                     <span class="info-value">{{ enrollment()!.groupName }}</span>
                   </div>
                 }
+              </div>
+              <!-- Actions: change teacher / unenroll -->
+              <div class="enrollment-actions">
+                <a class="enroll-action-btn action-change" [routerLink]="['/student/change-teacher', courseId()]">
+                  <i class="fas fa-exchange-alt"></i> تغيير المعلم · Change Teacher
+                </a>
+                <button class="enroll-action-btn action-unenroll" (click)="unenroll()" [disabled]="unenrolling()">
+                  @if (unenrolling()) { <i class="fas fa-spinner fa-spin"></i> }
+                  @else { <i class="fas fa-sign-out-alt"></i> }
+                  إلغاء التسجيل · Unenroll
+                </button>
               </div>
             }
           </div>
@@ -354,6 +365,19 @@ import { StudentService } from '@proxy/students';
       box-shadow: 0 4px 12px rgba(102,126,234,0.3);
     }
     .enrollment-info { display: flex; flex-direction: column; gap: 0.6rem; }
+    .enrollment-actions {
+      display: flex; gap: .35rem; margin-top: .6rem; padding-top: .6rem;
+      border-top: 1px solid #f0f0f5;
+    }
+    .enroll-action-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: .25rem;
+      padding: .5rem; border-radius: 10px; border: none;
+      font-size: .7rem; font-weight: 700; cursor: pointer; min-height: 38px;
+      text-decoration: none; -webkit-tap-highlight-color: transparent;
+      &:disabled { opacity: .5; cursor: not-allowed; }
+    }
+    .action-change { background: rgba(102,126,234,.08); color: #667eea; }
+    .action-unenroll { background: rgba(239,68,68,.08); color: #dc2626; }
     .info-row {
       display: flex; align-items: center; gap: 0.75rem;
       font-size: 0.88rem;
@@ -513,6 +537,7 @@ export class StudentCourseProfileComponent implements OnInit {
   private readonly attendanceService = inject(AttendanceService);
   private readonly examGradeService = inject(ExamGradeService);
   private readonly studentService = inject(StudentService);
+  private readonly studentEnrollmentService = inject(StudentEnrollmentService);
 
   courseId = signal<string>('');
   course = signal<CourseDto | null>(null);
@@ -522,6 +547,7 @@ export class StudentCourseProfileComponent implements OnInit {
   grades = signal<ExamGradeDto[]>([]);
 
   loading = signal(false);
+  unenrolling = signal(false);
   loadingAttendance = signal(false);
   loadingGrades = signal(false);
   error = signal<string | null>(null);
@@ -686,4 +712,21 @@ export class StudentCourseProfileComponent implements OnInit {
 
   goBack(): void { this.router.navigate(['/student/courses']); }
   goToEnroll(): void { this.router.navigate(['/student/enroll', this.courseId()]); }
+
+  async unenroll(): Promise<void> {
+    if (!confirm('هل أنت متأكد من إلغاء تسجيلك في هذا المقرر؟\nAre you sure you want to unenroll from this course?')) return;
+    const enroll = this.enrollment();
+    if (!enroll?.id) return;
+    this.unenrolling.set(true);
+    try {
+      await lastValueFrom(this.studentEnrollmentService.delete(enroll.id));
+      this.enrollment.set(null);
+      this.router.navigate(['/student/courses']);
+    } catch (e: any) {
+      console.error('Unenroll error:', e);
+      alert(e?.error?.error?.message || 'حدث خطأ · Error occurred');
+    } finally {
+      this.unenrolling.set(false);
+    }
+  }
 }
