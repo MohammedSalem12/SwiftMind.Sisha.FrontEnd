@@ -1,6 +1,5 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { SessionService } from '@proxy/groups';
 import { CurrentUserInfoService } from '@proxy/common';
 import type { NextSessionDto } from '@proxy/groups/dtos/models';
@@ -12,22 +11,6 @@ import { lastValueFrom } from 'rxjs';
   imports: [CommonModule],
   template: `
     <div class="ts-page" dir="rtl">
-
-      <!-- Hero -->
-      <div class="hero">
-        <div class="hero-blob b1"></div>
-        <div class="hero-blob b2"></div>
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="hero-text">
-          <h1>حصص اليوم</h1>
-          <p>Today's Sessions · جدول الحصص القادمة</p>
-        </div>
-        <div class="hero-icon">
-          <i class="fas fa-calendar-day"></i>
-        </div>
-      </div>
 
       <!-- Loading -->
       @if (loading()) {
@@ -107,19 +90,6 @@ import { lastValueFrom } from 'rxjs';
   styles: [`
     .ts-page { direction: rtl; min-height: 100vh; background: #f4f5fb; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 
-    /* Hero */
-    .hero { background: linear-gradient(145deg, #667eea 0%, #764ba2 100%); padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 1.5rem; position: relative; overflow: hidden; display: flex; align-items: center; gap: 0.875rem; }
-    .hero-blob { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.07); pointer-events: none; }
-    .b1 { width: 200px; height: 200px; top: -70px; right: -50px; }
-    .b2 { width: 130px; height: 130px; bottom: -50px; left: -25px; }
-    .back-btn { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.25); color: #fff; font-size: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1; transition: background 0.15s; }
-    .back-btn:active { background: rgba(255,255,255,0.28); }
-    .hero-text { flex: 1; z-index: 1; min-width: 0; }
-    .hero-text h1 { font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0 0 0.15rem; }
-    .hero-text p { font-size: 0.72rem; color: rgba(255,255,255,0.65); margin: 0; }
-    .hero-icon { z-index: 1; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .hero-icon i { font-size: 1.3rem; color: #fff; }
-
     /* Loading / Empty */
     .loading-area { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; padding: 3rem 1rem; font-size: 0.88rem; color: #6b7280; }
     .spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #667eea; border-radius: 50%; animation: spin 0.7s linear infinite; }
@@ -198,8 +168,6 @@ import { lastValueFrom } from 'rxjs';
 export class TodaySessionsComponent implements OnInit {
   private readonly sessionService = inject(SessionService);
   private readonly currentUserService = inject(CurrentUserInfoService);
-  private readonly location = inject(Location);
-  private readonly router = inject(Router);
 
   loading = signal(true);
   sessions = signal<NextSessionDto[]>([]);
@@ -252,7 +220,4 @@ export class TodaySessionsComponent implements OnInit {
     return !s.isNow && s.secondsUntilStart < 0;
   }
 
-  goBack(): void {
-    this.location.back();
-  }
 }
