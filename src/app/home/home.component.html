@@ -1,5 +1,7 @@
 <div class="home-landing" dir="rtl">
 
+  <app-active-semester />
+
   @if (offline()) {
     <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
   }
@@ -54,13 +56,13 @@
           </div>
           <i class="fas fa-chevron-left browse-arrow"></i>
         </a>
-        <a class="browse-card" routerLink="/ads">
+        <a class="browse-card" routerLink="/ads" [queryParams]="{type: 'deal'}">
           <div class="browse-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
-            <i class="fas fa-bullhorn"></i>
+            <i class="fas fa-tags"></i>
           </div>
           <div class="browse-text">
-            <span class="browse-label">العروض والإعلانات</span>
-            <span class="browse-sub">Browse Offers & Ads</span>
+            <span class="browse-label">العروض والخصومات</span>
+            <span class="browse-sub">Browse Deals & Offers</span>
           </div>
           <i class="fas fa-chevron-left browse-arrow"></i>
         </a>
@@ -172,9 +174,62 @@
       </div>
     </div>
 
+    <!-- Pending Registration Requests Alert -->
+    @if (pendingRegistrationCount() !== null && pendingRegistrationCount()! > 0) {
+      <a class="pending-alert" routerLink="/registration-requests">
+        <div class="pending-alert-icon">
+          <i class="fas fa-user-clock"></i>
+          <span class="pending-alert-badge">{{ pendingRegistrationCount() }}</span>
+        </div>
+        <div class="pending-alert-text">
+          <span class="pending-alert-title">طلبات تسجيل معلقة</span>
+          <span class="pending-alert-sub">{{ pendingRegistrationCount() }} Pending Registration Requests</span>
+        </div>
+        <i class="fas fa-chevron-left pending-alert-arrow"></i>
+      </a>
+    }
+
     <!-- Did You Know -->
     <app-did-you-know [role]="'ADMIN'" />
     <app-promo-ads-bar [audience]="0" />
+
+    <!-- Priority Actions -->
+    <div class="section-title"><i class="fas fa-exclamation-circle"></i> إجراءات عاجلة · Priority Actions</div>
+    <div class="priority-actions">
+      <a class="priority-card" routerLink="/registration-requests">
+        <div class="priority-icon" style="background:linear-gradient(135deg,#f43f5e,#e11d48)">
+          <i class="fas fa-user-plus"></i>
+        </div>
+        <div class="priority-info">
+          <span class="priority-label">طلبات التسجيل</span>
+          <span class="priority-en">Registration Requests</span>
+        </div>
+        @if (pendingRegistrationCount() !== null && pendingRegistrationCount()! > 0) {
+          <span class="priority-badge">{{ pendingRegistrationCount() }}</span>
+        }
+        <i class="fas fa-chevron-left priority-arrow"></i>
+      </a>
+      <a class="priority-card" routerLink="/academic-terms">
+        <div class="priority-icon" style="background:linear-gradient(135deg,#0ea5e9,#0284c7)">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="priority-info">
+          <span class="priority-label">الفصول الدراسية</span>
+          <span class="priority-en">Semesters</span>
+        </div>
+        <i class="fas fa-chevron-left priority-arrow"></i>
+      </a>
+      <a class="priority-card" routerLink="/admin/password-resets">
+        <div class="priority-icon" style="background:linear-gradient(135deg,#dc2626,#b91c1c)">
+          <i class="fas fa-key"></i>
+        </div>
+        <div class="priority-info">
+          <span class="priority-label">إعادة تعيين كلمات المرور</span>
+          <span class="priority-en">Password Resets</span>
+        </div>
+        <i class="fas fa-chevron-left priority-arrow"></i>
+      </a>
+    </div>
 
     <!-- Quick Actions -->
     <div class="section-title"><i class="fas fa-bolt"></i> إجراءات سريعة · Quick Actions</div>

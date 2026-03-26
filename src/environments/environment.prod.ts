@@ -24,6 +24,11 @@ export const environment = {
     automaticSilentRefresh: true,
     useSilentRefresh: false,
     timeoutFactor: 0.75,
+    // Override endpoints — discovery returns localhost URLs which don't work from Firebase
+    tokenEndpoint: `${backendUrl}/connect/token`,
+    userinfoEndpoint: `${backendUrl}/connect/userinfo`,
+    skipIssuerCheck: true,
+    strictDiscoveryDocumentValidation: false,
   },
   apis: {
     default: {

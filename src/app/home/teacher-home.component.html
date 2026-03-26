@@ -1,5 +1,7 @@
 <div class="teacher-home" dir="rtl">
 
+  <app-active-semester />
+
   @if (offline()) {
     <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
   }

@@ -11,6 +11,7 @@ import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
+import { ActiveSemesterComponent } from '../shared/components/active-semester.component';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
@@ -19,7 +20,7 @@ import { environment } from '../../environments/environment';
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  imports: [CommonModule, RouterModule, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent]
+  imports: [CommonModule, RouterModule, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent]
 })
 export class HomeComponent implements OnInit {
   private authService = inject(AuthService);
@@ -40,6 +41,7 @@ export class HomeComponent implements OnInit {
   studentsCount = signal<number | null>(null);
   teachersCount = signal<number | null>(null);
   parentsCount = signal<number | null>(null);
+  pendingRegistrationCount = signal<number | null>(null);
   loadingCounts = signal(false);
   offline = signal(false);
   offlineLastUpdated = signal('');
@@ -119,10 +121,23 @@ export class HomeComponent implements OnInit {
             return;
           }
 
-          // Social-login user with no role yet → complete their profile
+          // User with no role → check if pending registration or needs profile completion
           if (!hasKnown) {
             this.redirecting.set(true);
-            this.router.navigate(['/complete-profile']);
+            // Check if they have a pending registration request
+            this.http.get<any>(`${this.apiBase}/api/app/registration-request/my-request-status`)
+              .subscribe({
+                next: (req) => {
+                  if (req && req.status === 0) {
+                    // Pending approval — show waiting page
+                    this.router.navigate(['/pending-approval']);
+                  } else {
+                    // No pending request — needs to complete profile
+                    this.router.navigate(['/complete-profile']);
+                  }
+                },
+                error: () => this.router.navigate(['/complete-profile'])
+              });
             return;
           }
 
@@ -155,10 +170,22 @@ export class HomeComponent implements OnInit {
       const enrolls = enrollResp?.items ?? [];
       const parentIds = new Set(enrolls.filter((e: any) => e.parentId).map((e: any) => e.parentId));
       this.parentsCount.set(parentIds.size);
+
+      // Load pending registration requests count
+      try {
+        const pending = await lastValueFrom(
+          this.http.get<any[]>(`${this.apiBase}/api/app/registration-request/pending-requests`)
+        );
+        this.pendingRegistrationCount.set(pending?.length ?? 0);
+      } catch {
+        this.pendingRegistrationCount.set(null);
+      }
+
       this.cache.set(this.CACHE_KEY, {
         studentsCount: this.studentsCount(),
         teachersCount: this.teachersCount(),
         parentsCount: this.parentsCount(),
+        pendingRegistrationCount: this.pendingRegistrationCount(),
       });
       this.offline.set(false);
     } catch (e) {
@@ -168,12 +195,14 @@ export class HomeComponent implements OnInit {
         this.studentsCount.set(cached.studentsCount ?? null);
         this.teachersCount.set(cached.teachersCount ?? null);
         this.parentsCount.set(cached.parentsCount ?? null);
+        this.pendingRegistrationCount.set(cached.pendingRegistrationCount ?? null);
         this.offline.set(true);
         this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
       } else {
         this.studentsCount.set(null);
         this.teachersCount.set(null);
         this.parentsCount.set(null);
+        this.pendingRegistrationCount.set(null);
       }
     } finally {
       this.loadingCounts.set(false);

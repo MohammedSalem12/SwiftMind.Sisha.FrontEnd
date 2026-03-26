@@ -42,9 +42,27 @@
       <div class="info-card">
         <div class="card-label">
           <i class="fas fa-at"></i>
-          اسم المستخدم
+          اسم المستخدم · Username
         </div>
         <div class="card-value">{{ info.userName }}</div>
+      </div>
+
+      <!-- Email card -->
+      <div class="info-card" *ngIf="info.email">
+        <div class="card-label">
+          <i class="fas fa-envelope"></i>
+          البريد الإلكتروني · Email
+        </div>
+        <div class="card-value" dir="ltr" style="text-align:right">{{ info.email }}</div>
+      </div>
+
+      <!-- Admin role info -->
+      <div class="info-card" *ngIf="getPrimaryRole() === 'ADMIN'">
+        <div class="card-label">
+          <i class="fas fa-shield-alt"></i>
+          الصلاحية · Role
+        </div>
+        <div class="card-value">مدير النظام · System Administrator</div>
       </div>
 
       <!-- Student grade -->

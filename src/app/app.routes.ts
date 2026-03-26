@@ -31,6 +31,12 @@ export const appRoutes: Routes = [
     data: { roles: ['TEACHER'] }
   },
   {
+    path: 'parent-dashboard',
+    loadComponent: () => import('./parents/parent-dashboard.component').then(m => m.ParentDashboardComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
     path: 'parent/child/:studentId',
     loadComponent: () => import('./home/parent-child-detail.component').then(m => m.ParentChildDetailComponent),
     canActivate: [roleGuard],
@@ -127,6 +133,11 @@ export const appRoutes: Routes = [
     canActivate: [authGuard],
     data: { layout: 'empty' },
   },
+  {
+    path: 'pending-approval',
+    loadComponent: () => import('./pending-approval/pending-approval.component').then(m => m.PendingApprovalComponent),
+    canActivate: [authGuard],
+  },
   // Redirect ABP's default account/login to our custom login page
   { path: 'account/login', redirectTo: '/login', pathMatch: 'full' },
   {
@@ -198,6 +209,12 @@ export const appRoutes: Routes = [
   {
     path: 'admin/password-resets',
     loadComponent: () => import('./admin/password-reset-requests.component').then(m => m.PasswordResetRequestsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'registration-requests',
+    loadComponent: () => import('./registration-requests/registration-requests.component').then(m => m.RegistrationRequestsComponent),
     canActivate: [roleGuard],
     data: { roles: ['ADMIN'] }
   },
@@ -400,6 +417,12 @@ export const appRoutes: Routes = [
     path: 'ads',
     loadChildren: () => import('./ads/ads.routes').then(m => m.adsRoutes),
     // Open for browsing — auth-required actions prompt registration internally
+  },
+  {
+    path: 'academic-terms',
+    loadChildren: () => import('./academic-terms/academic-terms.routes').then(m => m.academicTermRoutes),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
   },
   {
     path: 'settings',

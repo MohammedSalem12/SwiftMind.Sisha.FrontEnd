@@ -43,7 +43,7 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       }
     }
 
-    /* Reserve space for fixed bottom nav — always visible */
+    /* Reserve space for fixed bottom nav — only when nav is visible */
     .app-content {
       padding-bottom: 70px;
     }
@@ -52,6 +52,11 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       .app-content {
         padding-bottom: calc(70px + env(safe-area-inset-bottom));
       }
+    }
+
+    /* Remove bottom padding when nav is hidden (visitor/auth pages) */
+    :host-context(body.nav-hidden) .app-content {
+      padding-bottom: 0 !important;
     }
   `],
   imports: [

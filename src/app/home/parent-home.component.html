@@ -1,5 +1,7 @@
 <div class="parent-home" dir="rtl">
 
+  <app-active-semester />
+
   @if (offline()) {
     <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
   }
@@ -53,6 +55,18 @@
 
   <!-- Quick Actions -->
   <app-did-you-know [role]="'PARENT'" />
+
+  <!-- Dashboard Link -->
+  <div class="dashboard-link-card" (click)="goToDashboard()">
+    <div class="dashboard-link-icon">
+      <i class="fas fa-chart-pie"></i>
+    </div>
+    <div class="dashboard-link-body">
+      <span class="dashboard-link-title">لوحة المتابعة</span>
+      <span class="dashboard-link-sub">تابع حضور ودرجات أبنائك · Children Dashboard</span>
+    </div>
+    <i class="fas fa-chevron-left dashboard-link-arrow"></i>
+  </div>
 
   <!-- Pending Promotion Requests -->
   @if (pendingPromotions().length > 0) {

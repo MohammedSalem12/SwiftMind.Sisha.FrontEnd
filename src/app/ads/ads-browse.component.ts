@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 import { CurrentUserInfoService } from '@proxy/common';
@@ -338,6 +338,7 @@ interface AdDto {
 export class AdsBrowseComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly apiBase = environment.apis?.default?.url || '';
 
@@ -354,6 +355,12 @@ export class AdsBrowseComponent implements OnInit {
   private readonly pageSize = 20;
 
   async ngOnInit(): Promise<void> {
+    // Read initial filter from query param (e.g. /ads?type=deal)
+    const typeParam = this.route.snapshot.queryParamMap.get('type');
+    if (typeParam && ['service', 'product', 'deal'].includes(typeParam)) {
+      this.activeFilter.set(typeParam);
+    }
+
     try {
       const info = await this.currentUserSvc.getCurrentUserActorInfo().toPromise();
       const roles = (info?.userRoles || []).map((r: string) => r.toUpperCase());

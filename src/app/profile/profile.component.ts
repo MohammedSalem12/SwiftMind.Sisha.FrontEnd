@@ -31,11 +31,12 @@ export class ProfileComponent implements OnInit {
   biometricError = signal<string | null>(null);
 
   readonly roleConfig: Record<string, { label: string; color: string; bg: string; icon: string }> = {
-    STUDENT:   { label: 'طالب',     color: '#22c55e', bg: '#f0fdf4', icon: 'fa-graduation-cap' },
-    TEACHER:   { label: 'معلم',     color: '#3366ff', bg: '#f5f3ff', icon: 'fa-chalkboard-teacher' },
-    PARENT:    { label: 'ولي أمر', color: '#f59e0b', bg: '#fffbeb', icon: 'fa-user-friends' },
-    SECRETARY: { label: 'سكرتير',  color: '#0ea5e9', bg: '#f0f9ff', icon: 'fa-user-tie' },
-    ADMIN:     { label: 'مدير',    color: '#8b5cf6', bg: '#faf5ff', icon: 'fa-shield-alt' },
+    STUDENT:    { label: 'طالب',     color: '#22c55e', bg: '#f0fdf4', icon: 'fa-graduation-cap' },
+    TEACHER:    { label: 'معلم',     color: '#3366ff', bg: '#f5f3ff', icon: 'fa-chalkboard-teacher' },
+    PARENT:     { label: 'ولي أمر', color: '#f59e0b', bg: '#fffbeb', icon: 'fa-user-friends' },
+    SECRETARY:  { label: 'سكرتير',  color: '#0ea5e9', bg: '#f0f9ff', icon: 'fa-user-tie' },
+    ADMIN:      { label: 'مدير',    color: '#8b5cf6', bg: '#faf5ff', icon: 'fa-shield-alt' },
+    ADVERTISER: { label: 'معلن',    color: '#d97706', bg: '#fffbeb', icon: 'fa-bullhorn' },
   };
 
   readonly gradeNames: Record<number, string> = {
@@ -123,7 +124,7 @@ export class ProfileComponent implements OnInit {
 
   getPrimaryRole(): string {
     const roles = this.userInfo()?.userRoles ?? [];
-    const priority = ['ADMIN', 'SECRETARY', 'TEACHER', 'PARENT', 'STUDENT'];
+    const priority = ['ADMIN', 'SECRETARY', 'TEACHER', 'PARENT', 'STUDENT', 'ADVERTISER'];
     return priority.find(r => roles.includes(r)) ?? roles[0] ?? 'STUDENT';
   }
 

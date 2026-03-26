@@ -18,6 +18,14 @@ const TOPIC_ICONS: Record<string, string> = {
   geography: 'fa-globe-africa',
   islam: 'fa-mosque',
   technology: 'fa-microchip',
+  cybersecurity: 'fa-shield-alt',
+  data_protection: 'fa-lock',
+  internet_safety: 'fa-user-shield',
+  digital_literacy: 'fa-laptop-code',
+  cyber_ethics: 'fa-balance-scale',
+  social_media_safety: 'fa-users-cog',
+  device_security: 'fa-mobile-alt',
+  online_privacy: 'fa-eye-slash',
 };
 
 const TOPIC_COLORS: Record<string, string> = {
@@ -25,6 +33,14 @@ const TOPIC_COLORS: Record<string, string> = {
   geography: '#d97706',
   islam: '#667eea',
   technology: '#dc2626',
+  cybersecurity: '#0891b2',
+  data_protection: '#7c3aed',
+  internet_safety: '#ea580c',
+  digital_literacy: '#2563eb',
+  cyber_ethics: '#b45309',
+  social_media_safety: '#e11d48',
+  device_security: '#0d9488',
+  online_privacy: '#6d28d9',
 };
 
 // Fallback tips if API fails
@@ -174,6 +190,14 @@ export class DidYouKnowComponent implements OnInit {
       geography: 'جغرافيا',
       islam: 'إسلام',
       technology: 'تقنية',
+      cybersecurity: 'أمن سيبراني',
+      data_protection: 'حماية البيانات',
+      internet_safety: 'أمان الإنترنت',
+      digital_literacy: 'محو أمية رقمية',
+      cyber_ethics: 'أخلاقيات رقمية',
+      social_media_safety: 'أمان التواصل',
+      device_security: 'أمان الأجهزة',
+      online_privacy: 'الخصوصية الرقمية',
     };
     return labels[topic] || topic;
   }

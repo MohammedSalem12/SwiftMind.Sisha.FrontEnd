@@ -1,41 +1,60 @@
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
-import { ConfigStateService } from '@abp/ng.core';
+import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
-import { ParentService } from '@proxy/parents';
-import type { ParentStudentDto } from '@proxy/parents/models';
-import { AttendanceService } from '@proxy/attendances';
-import type { StudentAttendanceReportDto } from '@proxy/attendances/dtos/models';
-import { ExamGradeService } from '@proxy/exam-grades';
-import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
+// ── DTOs matching GET /api/app/parent/dashboard ──
 
-interface ChildSummary {
-  link: ParentStudentDto;
-  attendance: StudentAttendanceReportDto[];
-  grades: ExamGradeDto[];
-  avgAttendance: number;
-  lastGrade: ExamGradeDto | null;
+interface ParentDashboardDto {
+  parentName: string;
+  totalChildren: number;
+  children: ChildDashboardDto[];
+}
+
+interface ChildDashboardDto {
+  studentName: string;
+  studentCode: string;
+  currentGrade: number;
+  gradeName: string;
+  attendedDays: number;
+  absentDays: number;
+  totalSchoolDays: number;
+  attendancePercentage: number;
+  totalCourses: number;
+  courses: ChildCourseDto[];
+  recentActivities: ChildActivityDto[];
+}
+
+interface ChildCourseDto {
+  courseNameAr: string;
+  teacherName: string;
+  latestGradePercentage: number;
+  absentDaysInCourse: number;
+}
+
+interface ChildActivityDto {
+  type: string;
+  messageAr: string;
+  date: string;
 }
 
 @Component({
   selector: 'app-parent-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './parent-dashboard.component.html',
   styleUrls: ['./parent-dashboard.component.scss'],
 })
 export class ParentDashboardComponent implements OnInit {
   private readonly router = inject(Router);
-  private readonly configStateService = inject(ConfigStateService);
-  private readonly parentService = inject(ParentService);
-  private readonly attendanceSvc = inject(AttendanceService);
-  private readonly examGradeSvc = inject(ExamGradeService);
+  private readonly http = inject(HttpClient);
+  private readonly apiBase = (environment as any).apis?.default?.url || '';
 
   loading = signal(true);
   error = signal<string | null>(null);
-  children = signal<ChildSummary[]>([]);
+  dashboard = signal<ParentDashboardDto | null>(null);
 
   async ngOnInit(): Promise<void> {
     await this.loadDashboard();
@@ -45,54 +64,10 @@ export class ParentDashboardComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const currentUserId = this.configStateService.getOne('currentUser')?.id;
-      if (!currentUserId) {
-        this.error.set('لم يتم التعرف على المستخدم');
-        return;
-      }
-
-      const parent = await lastValueFrom(this.parentService.getByUserId(currentUserId));
-      if (!parent?.id) {
-        this.error.set('لم يتم العثور على ملف ولي الأمر');
-        return;
-      }
-
-      const links = await lastValueFrom(this.parentService.getLinkedStudentsByParentId(parent.id));
-      if (!links?.length) {
-        this.children.set([]);
-        return;
-      }
-
-      const now = new Date();
-      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-
-      const summaries = await Promise.all(
-        links.map(async (link): Promise<ChildSummary> => {
-          const studentId = link.studentId!;
-          const [attendanceResult, gradesResult] = await Promise.all([
-            lastValueFrom(this.attendanceSvc.getStudentAttendanceReport({
-              studentId,
-              date: dateStr,
-              skipCount: 0,
-              maxResultCount: 100,
-            })).catch(() => null),
-            lastValueFrom(this.examGradeSvc.getLastTwoByStudent(studentId)).catch(() => null),
-          ]);
-
-          const attendance = attendanceResult?.items ?? [];
-          const gradesList = gradesResult ?? [];
-
-          const avgAttendance = attendance.length
-            ? Math.round(attendance.reduce((s, r) => s + r.attendancePercentage, 0) / attendance.length)
-            : 100;
-
-          const lastGrade = gradesList[0] ?? null;
-
-          return { link, attendance, grades: gradesList, avgAttendance, lastGrade };
-        })
+      const result = await lastValueFrom(
+        this.http.get<ParentDashboardDto>(`${this.apiBase}/api/app/parent/dashboard`)
       );
-
-      this.children.set(summaries);
+      this.dashboard.set(result ?? null);
     } catch (err: any) {
       console.error('Error loading parent dashboard:', err);
       this.error.set(err?.error?.error?.message || 'حدث خطأ أثناء تحميل البيانات');
@@ -101,82 +76,97 @@ export class ParentDashboardComponent implements OnInit {
     }
   }
 
-  gradePercent(g: ExamGradeDto): number {
-    return g.maxGrade > 0 ? Math.round((g.grade / g.maxGrade) * 100) : 0;
+  // Attendance ring color
+  attendanceColor(pct: number): string {
+    if (pct >= 90) return '#38a169';
+    if (pct >= 70) return '#d69e2e';
+    return '#e53e3e';
   }
 
-  overallAttendance(): number {
-    const list = this.children();
-    if (!list.length) return 0;
-    return Math.round(list.reduce((s, c) => s + c.avgAttendance, 0) / list.length);
+  attendanceLabel(pct: number): string {
+    if (pct >= 90) return 'ممتاز';
+    if (pct >= 70) return 'جيد';
+    return 'ضعيف';
   }
 
-  totalGrades(): number {
-    const list = this.children();
-    return list.reduce((total, child) => total + child.grades.length, 0);
+  // Grade color
+  gradeColor(pct: number): string {
+    if (pct >= 80) return '#38a169';
+    if (pct >= 60) return '#d69e2e';
+    return '#e53e3e';
   }
 
-  lowAttendanceCount(): number {
-    const list = this.children();
-    return list.filter(child => child.avgAttendance < 75).length;
-  }
-
-  recentActivities(): number {
-    const list = this.children();
-    return list.reduce((total, child) => {
-      return total + child.attendance.length + child.grades.length;
-    }, 0);
-  }
-
-  getChildColor(studentId: string): string {
-    const colors = [
-      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
-    ];
-    const index = studentId.charCodeAt(0) % colors.length;
-    return colors[index];
-  }
-
-  scrollToSection(sectionId: string): void {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Activity icon
+  activityIcon(type: string): string {
+    switch (type?.toLowerCase()) {
+      case 'attendance': return 'fa-calendar-check';
+      case 'grade': return 'fa-star';
+      case 'enrollment': return 'fa-book';
+      case 'absence': return 'fa-exclamation-triangle';
+      default: return 'fa-bell';
     }
   }
 
-  toggleChildMenu(studentId: string): void {
-    // Implementation for child menu toggle
-    console.log('Toggle menu for student:', studentId);
+  activityColor(type: string): string {
+    switch (type?.toLowerCase()) {
+      case 'attendance': return '#38a169';
+      case 'grade': return '#667eea';
+      case 'enrollment': return '#4facfe';
+      case 'absence': return '#e53e3e';
+      default: return '#718096';
+    }
   }
 
-  goToAttendance(): void {
-    this.router.navigate(['/attendance']);
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'الآن';
+    if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
+    const diffHrs = Math.floor(diffMins / 60);
+    if (diffHrs < 24) return `منذ ${diffHrs} ساعة`;
+    const diffDays = Math.floor(diffHrs / 24);
+    if (diffDays < 7) return `منذ ${diffDays} يوم`;
+    return d.toLocaleDateString('ar-SA');
   }
 
-  goToGrades(): void {
-    this.router.navigate(['/grades']);
+  // Conic gradient for attendance ring
+  attendanceGradient(pct: number): string {
+    const color = this.attendanceColor(pct);
+    return `conic-gradient(${color} ${pct * 3.6}deg, #e2e8f0 ${pct * 3.6}deg)`;
   }
 
-  goToReports(): void {
-    this.router.navigate(['/reports']);
+  getInitials(name: string): string {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0]?.[0]?.toUpperCase() || '?';
   }
 
-  contactTeacher(studentId: string): void {
-    // Implementation for contacting teacher
-    console.log('Contact teacher for student:', studentId);
+  getTotalCourses(): number {
+    const d = this.dashboard();
+    if (!d) return 0;
+    return d.children.reduce((sum, c) => sum + (c.totalCourses || 0), 0);
   }
 
-  viewChild(studentId?: string): void {
-    if (studentId) this.router.navigate(['/parent/child', studentId]);
+  getOverallAttendance(): number {
+    const d = this.dashboard();
+    if (!d || !d.children.length) return 0;
+    const total = d.children.reduce((sum, c) => sum + (c.attendancePercentage || 0), 0);
+    return Math.round(total / d.children.length);
+  }
+
+  goToLinkChild(): void {
+    this.router.navigate(['/parent/link-child']);
   }
 
   goBack(): void {
     this.router.navigate(['/parent']);
   }
 
-  trackByStudentId = (_: number, c: ChildSummary) => c.link.studentId;
+  trackByIndex = (i: number) => i;
 }

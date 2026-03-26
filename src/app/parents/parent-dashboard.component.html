@@ -1,261 +1,245 @@
 <div class="parent-dashboard" dir="rtl">
 
-  <!-- Modern Hero Header -->
+  <!-- Hero Header -->
   <div class="hero-header">
-    <div class="hero-shapes">
-      <div class="shape shape-1"></div>
-      <div class="shape shape-2"></div>
-      <div class="shape shape-3"></div>
+    <button class="back-btn" (click)="goBack()" aria-label="رجوع">
+      <i class="fas fa-arrow-right"></i>
+    </button>
+    <div class="hero-text">
+      @if (dashboard()) {
+        <h1>مرحباً {{ dashboard()!.parentName }}</h1>
+        <p>لوحة متابعة الأبناء · Children Dashboard</p>
+      } @else {
+        <h1>لوحة متابعة الأبناء</h1>
+        <p>Children Dashboard</p>
+      }
     </div>
-    <div class="hero-content">
-      <div class="hero-text">
-        <h1><i class="eva eva-people-outline me-2"></i>لوحة متابعة الأبناء</h1>
-        <p>تابع التقدم الأكاديمي وسجل الحضور والدرجات</p>
+    @if (dashboard(); as d) {
+      <div class="children-count-badge">
+        <i class="fas fa-child"></i>
+        <span>{{ d.totalChildren }}</span>
       </div>
-      <div class="hero-avatar">
-        <i class="eva eva-person-outline"></i>
-      </div>
-    </div>
+    }
+    <button class="refresh-btn" (click)="loadDashboard()" [disabled]="loading()" aria-label="تحديث">
+      <i class="fas fa-sync-alt" [class.fa-spin]="loading()"></i>
+    </button>
   </div>
 
   <!-- Loading Skeleton -->
-  <div class="dashboard-body" *ngIf="loading()">
-    <div class="stats-grid">
-      <div class="stat-card skeleton" *ngFor="let i of [1,2,3,4,5]"></div>
+  @if (loading()) {
+    <div class="skeleton-area">
+      <div class="skeleton-stats">
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+      </div>
+      @for (_ of [1, 2]; track $index) {
+        <div class="skeleton-card">
+          <div class="skeleton-line skeleton-line-lg"></div>
+          <div class="skeleton-line skeleton-line-md"></div>
+          <div class="skeleton-circle"></div>
+          <div class="skeleton-line skeleton-line-sm"></div>
+          <div class="skeleton-line skeleton-line-sm"></div>
+        </div>
+      }
     </div>
-    <div class="loading-text">
-      <div class="spinner-inline"></div>
-      جاري تحميل البيانات...
-    </div>
-  </div>
+  }
 
   <!-- Error State -->
-  <div *ngIf="error() && !loading()" class="error-state">
-    <div class="error-content">
-      <div class="error-icon">
-        <i class="eva eva-alert-triangle-outline"></i>
+  @if (error() && !loading()) {
+    <div class="state-card error-state">
+      <div class="state-icon error-icon">
+        <i class="fas fa-exclamation-circle"></i>
       </div>
       <h3>حدث خطأ</h3>
       <p>{{ error() }}</p>
-      <button class="btn-retry" (click)="loadDashboard()">
-        <i class="eva eva-refresh-outline"></i>
-        إعادة المحاولة
+      <button class="btn-action" (click)="loadDashboard()">
+        <i class="fas fa-redo"></i>
+        إعادة المحاولة · Retry
       </button>
     </div>
-  </div>
+  }
 
   <!-- Empty State -->
-  <div *ngIf="!loading() && !error() && children().length === 0" class="empty-state">
-    <div class="empty-content">
-      <div class="empty-icon">
-        <i class="eva eva-person-done-outline"></i>
+  @if (!loading() && !error() && dashboard() && dashboard()!.children.length === 0) {
+    <div class="state-card empty-state">
+      <div class="state-icon empty-icon">
+        <i class="fas fa-user-friends"></i>
       </div>
       <h3>لا يوجد أبناء مرتبطون</h3>
-      <p>قم بربط أبنائك بحسابك لمتابعة تقدمهم</p>
-      <button class="btn-primary" (click)="goBack()">
-        <i class="eva eva-person-add-outline"></i>
-        ربط ابن/ابنة
+      <p>قم بربط أبنائك لمتابعة تقدمهم الدراسي</p>
+      <p class="state-text-en">No children linked yet. Link your children to track their progress.</p>
+      <button class="btn-action" (click)="goToLinkChild()">
+        <i class="fas fa-user-plus"></i>
+        ربط طالب الآن · Link Student
       </button>
     </div>
-  </div>
+  }
 
-  <!-- Main Dashboard Content -->
-  <div class="dashboard-body" *ngIf="!loading() && !error() && children().length > 0">
+  <!-- Dashboard Content -->
+  @if (!loading() && !error() && dashboard() && dashboard()!.children.length > 0) {
+    <div class="dashboard-content">
 
-    <!-- Stats Row -->
-    <div class="stats-grid">
-      <div class="stat-card stat-purple" (click)="scrollToSection('children')">
-        <div class="stat-icon">
-          <i class="eva eva-people-outline"></i>
+      <!-- Summary Stats Bar -->
+      <div class="summary-bar">
+        <div class="summary-item">
+          <div class="summary-icon">
+            <i class="fas fa-child"></i>
+          </div>
+          <div class="summary-text">
+            <span class="summary-value">{{ dashboard()!.totalChildren }}</span>
+            <span class="summary-label">الأبناء</span>
+          </div>
         </div>
-        <div class="stat-info">
-          <div class="stat-num">{{ children().length }}</div>
-          <div class="stat-label">الأبناء</div>
+        <div class="summary-divider"></div>
+        <div class="summary-item">
+          <div class="summary-icon icon-courses">
+            <i class="fas fa-book"></i>
+          </div>
+          <div class="summary-text">
+            <span class="summary-value">{{ getTotalCourses() }}</span>
+            <span class="summary-label">المقررات</span>
+          </div>
         </div>
-      </div>
-      
-      <div class="stat-card stat-blue" (click)="scrollToSection('children')">
-        <div class="stat-icon">
-          <i class="eva eva-calendar-outline"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-num">{{ overallAttendance() }}%</div>
-          <div class="stat-label">معدل الحضور</div>
-        </div>
-      </div>
-
-      <div class="stat-card stat-green" (click)="scrollToSection('grades')">
-        <div class="stat-icon">
-          <i class="eva eva-trending-up-outline"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-num">{{ totalGrades() }}</div>
-          <div class="stat-label">آخر الدرجات</div>
-        </div>
-      </div>
-
-      <div class="stat-card stat-orange" [class.stat-alert]="lowAttendanceCount() > 0">
-        <div class="stat-icon">
-          <i class="eva eva-alert-circle-outline"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-num">{{ lowAttendanceCount() }}</div>
-          <div class="stat-label">حضور منخفض</div>
+        <div class="summary-divider"></div>
+        <div class="summary-item">
+          <div class="summary-icon icon-attendance">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <div class="summary-text">
+            <span class="summary-value">{{ getOverallAttendance() }}%</span>
+            <span class="summary-label">الحضور</span>
+          </div>
         </div>
       </div>
 
-      <div class="stat-card stat-pink" (click)="scrollToSection('activities')">
-        <div class="stat-icon">
-          <i class="eva eva-activity-outline"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-num">{{ recentActivities() }}</div>
-          <div class="stat-label">الأنشطة الحديثة</div>
-        </div>
-      </div>
-    </div>
+      <!-- Children Cards -->
+      @for (child of dashboard()!.children; track trackByIndex($index)) {
+        <div class="child-card">
 
-    <!-- Quick Actions -->
-    <div class="quick-actions-section" id="activities">
-      <div class="section-header">
-        <h3><i class="eva eva-flash-outline me-2"></i>إجراءات سريعة</h3>
-      </div>
-      <div class="quick-actions-grid">
-        <button class="qa-btn qa-attendance" (click)="goToAttendance()">
-          <i class="eva eva-calendar-outline"></i>
-          <span>سجل الحضور</span>
-        </button>
-        <button class="qa-btn qa-grades" (click)="goToGrades()">
-          <i class="eva eva-bar-chart-outline"></i>
-          <span>الدرجات</span>
-        </button>
-        <button class="qa-btn qa-reports" (click)="goToReports()">
-          <i class="eva eva-file-text-outline"></i>
-          <span>التقارير</span>
-        </button>
-        <button class="qa-btn qa-add-child" (click)="goBack()">
-          <i class="eva eva-person-add-outline"></i>
-          <span>إضافة ابن</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Children Cards Section -->
-    <div class="children-section" id="children">
-      <div class="section-header">
-        <h3><i class="eva eva-people-outline me-2"></i>الأبناء</h3>
-        <span class="section-count">{{ children().length }} طالب</span>
-      </div>
-      
-      <div class="children-grid">
-        <div *ngFor="let c of children(); trackBy: trackByStudentId" class="child-card">
-          
           <!-- Child Header -->
           <div class="child-header">
-            <div class="child-avatar" [style.background]="getChildColor(c.link.studentId!)">
-              <i class="eva eva-person-outline"></i>
+            <div class="child-avatar">
+              <span>{{ getInitials(child.studentName) }}</span>
             </div>
-            <div class="child-meta">
-              <h4 class="child-name">{{ c.link.studentName }}</h4>
+            <div class="child-info">
+              <h3 class="child-name">{{ child.studentName }}</h3>
               <div class="child-badges">
-                <span class="badge-code">{{ c.link.studentCode }}</span>
-                <span *ngIf="c.link.gradeName" class="badge-grade">{{ c.link.gradeName }}</span>
-                <span class="badge-relation">{{ c.link.relationshipType }}</span>
-              </div>
-            </div>
-            <div class="child-menu">
-              <button class="menu-btn" (click)="toggleChildMenu(c.link.studentId!)">
-                <i class="eva eva-more-vertical-outline"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Performance Metrics -->
-          <div class="performance-grid">
-            <div class="metric-card">
-              <div class="metric-icon attendance">
-                <i class="eva eva-calendar-check-outline"></i>
-              </div>
-              <div class="metric-info">
-                <span class="metric-value"
-                      [class.val-good]="c.avgAttendance >= 90"
-                      [class.val-mid]="c.avgAttendance >= 75 && c.avgAttendance < 90"
-                      [class.val-bad]="c.avgAttendance < 75">
-                  {{ c.avgAttendance }}%
+                <span class="badge badge-code">
+                  <i class="fas fa-id-card"></i>
+                  {{ child.studentCode }}
                 </span>
-                <span class="metric-label">الحضور</span>
-              </div>
-            </div>
-
-            <div class="metric-card" *ngIf="c.lastGrade">
-              <div class="metric-icon grades">
-                <i class="eva eva-award-outline"></i>
-              </div>
-              <div class="metric-info">
-                <span class="metric-value grade-val">
-                  {{ c.lastGrade.grade }}/{{ c.lastGrade.maxGrade }}
-                </span>
-                <span class="metric-label">آخر درجة</span>
-              </div>
-            </div>
-
-            <div class="metric-card" *ngIf="!c.lastGrade">
-              <div class="metric-icon no-grades">
-                <i class="eva eva-bar-chart-outline"></i>
-              </div>
-              <div class="metric-info">
-                <span class="metric-value">--</span>
-                <span class="metric-label">لا توجد درجات</span>
+                @if (child.gradeName) {
+                  <span class="badge badge-grade">
+                    <i class="fas fa-graduation-cap"></i>
+                    {{ child.gradeName }}
+                  </span>
+                }
               </div>
             </div>
           </div>
 
-          <!-- Attendance Progress -->
+          <!-- Attendance Ring -->
           <div class="attendance-section">
-            <div class="attendance-header">
-              <span><i class="eva eva-calendar-outline me-1"></i>الحضور هذا الشهر</span>
-              <span class="attendance-percentage"
-                    [class.val-good]="c.avgAttendance >= 90"
-                    [class.val-mid]="c.avgAttendance >= 75 && c.avgAttendance < 90"
-                    [class.val-bad]="c.avgAttendance < 75">
-                {{ c.avgAttendance }}%
+            <div class="attendance-ring-container">
+              <div class="attendance-ring"
+                   [style.background]="attendanceGradient(child.attendancePercentage)">
+                <div class="attendance-ring-inner">
+                  <span class="ring-value" [style.color]="attendanceColor(child.attendancePercentage)">
+                    {{ child.attendancePercentage }}%
+                  </span>
+                  <span class="ring-label">حضور</span>
+                </div>
+              </div>
+              <span class="ring-status" [style.color]="attendanceColor(child.attendancePercentage)">
+                {{ attendanceLabel(child.attendancePercentage) }}
               </span>
             </div>
-            <div class="progress-bar-wrap">
-              <div class="progress-fill"
-                   [style.width.%]="c.avgAttendance"
-                   [class.fill-good]="c.avgAttendance >= 90"
-                   [class.fill-mid]="c.avgAttendance >= 75 && c.avgAttendance < 90"
-                   [class.fill-bad]="c.avgAttendance < 75">
+            <div class="attendance-details">
+              <div class="att-detail-row">
+                <i class="fas fa-check-circle" style="color: #38a169"></i>
+                <span>حضور: {{ child.attendedDays }} يوم</span>
+                <span class="att-detail-en">Attended</span>
               </div>
-            </div>
-            <div class="absence-detail" *ngIf="c.attendance.length > 0">
-              <div class="absence-list">
-                <span *ngFor="let a of c.attendance.slice(0, 3)" class="course-absence">
-                  <i class="eva eva-alert-circle-outline me-1"></i>
-                  {{ a.courseNameAr || a.courseCode }}: {{ a.absentDays }} غياب
-                </span>
+              <div class="att-detail-row">
+                <i class="fas fa-times-circle" style="color: #e53e3e"></i>
+                <span>غياب: {{ child.absentDays }} يوم</span>
+                <span class="att-detail-en">Absent</span>
               </div>
-              <span *ngIf="c.attendance.length > 3" class="more-absences">
-                +{{ c.attendance.length - 3 }} مواد أخرى
-              </span>
+              <div class="att-detail-row">
+                <i class="fas fa-calendar" style="color: #718096"></i>
+                <span>إجمالي: {{ child.totalSchoolDays }} يوم</span>
+                <span class="att-detail-en">Total</span>
+              </div>
             </div>
           </div>
 
-          <!-- Action Buttons -->
-          <div class="action-buttons">
-            <button class="btn-primary" (click)="viewChild(c.link.studentId!)">
-              <i class="eva eva-eye-outline me-1"></i>
-              عرض التفاصيل
-            </button>
-            <button class="btn-secondary" (click)="contactTeacher(c.link.studentId!)">
-              <i class="eva eva-message-circle-outline me-1"></i>
-              التواصل مع المعلم
-            </button>
-          </div>
+          <!-- Courses Section -->
+          @if (child.courses && child.courses.length > 0) {
+            <div class="courses-section">
+              <div class="section-title">
+                <i class="fas fa-book-open"></i>
+                <span>المقررات · Courses</span>
+                <span class="section-count">{{ child.totalCourses }}</span>
+              </div>
+              <div class="courses-list">
+                @for (course of child.courses; track trackByIndex($index)) {
+                  <div class="course-item">
+                    <div class="course-main">
+                      <span class="course-name">{{ course.courseNameAr }}</span>
+                      <span class="course-teacher">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        {{ course.teacherName }}
+                      </span>
+                    </div>
+                    <div class="course-metrics">
+                      @if (course.latestGradePercentage >= 0) {
+                        <span class="grade-badge" [style.background]="gradeColor(course.latestGradePercentage) + '18'"
+                              [style.color]="gradeColor(course.latestGradePercentage)">
+                          <i class="fas fa-star"></i>
+                          {{ course.latestGradePercentage }}%
+                        </span>
+                      }
+                      @if (course.absentDaysInCourse > 0) {
+                        <span class="absence-badge">
+                          <i class="fas fa-exclamation-triangle"></i>
+                          {{ course.absentDaysInCourse }} غياب
+                        </span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Recent Activity -->
+          @if (child.recentActivities && child.recentActivities.length > 0) {
+            <div class="activity-section">
+              <div class="section-title">
+                <i class="fas fa-clock"></i>
+                <span>آخر الأنشطة · Recent Activity</span>
+              </div>
+              <div class="activity-list">
+                @for (activity of child.recentActivities.slice(0, 5); track trackByIndex($index)) {
+                  <div class="activity-item">
+                    <div class="activity-icon" [style.background]="activityColor(activity.type) + '18'"
+                         [style.color]="activityColor(activity.type)">
+                      <i class="fas" [class]="activityIcon(activity.type)"></i>
+                    </div>
+                    <div class="activity-body">
+                      <span class="activity-msg">{{ activity.messageAr }}</span>
+                      <span class="activity-time">{{ formatDate(activity.date) }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
         </div>
-      </div>
-    </div>
+      }
 
-  </div>
+    </div>
+  }
+
 </div>

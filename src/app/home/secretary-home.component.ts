@@ -9,13 +9,16 @@ import { CurrentUserInfoService } from '@proxy/common';
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
+import { ActiveSemesterComponent } from '../shared/components/active-semester.component';
 
 @Component({
   selector: 'app-secretary-home',
   standalone: true,
-  imports: [CommonModule, OfflineBannerComponent, DidYouKnowComponent],
+  imports: [CommonModule, OfflineBannerComponent, DidYouKnowComponent, ActiveSemesterComponent],
   template: `
     <div class="secretary-home" dir="rtl">
+
+      <app-active-semester />
 
       @if (offline()) {
         <app-offline-banner [lastUpdated]="offlineLastUpdated()" />

@@ -17,11 +17,12 @@ import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
+import { ActiveSemesterComponent } from '../shared/components/active-semester.component';
 
 @Component({
   selector: 'app-parent-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent],
+  imports: [CommonModule, RouterModule, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
   templateUrl: './parent-home.component.html',
   styleUrls: ['./parent-home.component.scss'],
 })
@@ -182,6 +183,10 @@ export class ParentHomeComponent implements OnInit {
 
   goToLinkChild(): void {
     this.router.navigate(['/parent/link-child']);
+  }
+
+  goToDashboard(): void {
+    this.router.navigate(['/parent-dashboard']);
   }
 
   goToFeeds(): void {

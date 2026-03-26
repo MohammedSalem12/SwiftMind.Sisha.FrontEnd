@@ -58,11 +58,10 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     { path: '/teachers',             label: 'المعلمون',             labelEn: 'Teachers',           icon: 'fas fa-chalkboard-teacher' },
     { path: '/parents',              label: 'أولياء الأمور',       labelEn: 'Parents',            icon: 'fas fa-users-cog' },
     { path: '/courses',              label: 'المقررات',             labelEn: 'Courses',            icon: 'fas fa-book' },
-    { path: '/attendance',           label: 'الحضور',               labelEn: 'Attendance',         icon: 'fas fa-user-check' },
-    { path: '/add-teacher',          label: 'إضافة معلم',          labelEn: 'Add Teacher',        icon: 'fas fa-user-plus' },
-    { path: '/add-student',          label: 'إضافة طالب',          labelEn: 'Add Student',        icon: 'fas fa-user-plus' },
     { path: '/ads/admin',            label: 'إدارة الإعلانات',     labelEn: 'Ads Management',     icon: 'fas fa-bullhorn' },
     { path: '/ads/advertisers',      label: 'إدارة المعلنين',      labelEn: 'Advertisers',        icon: 'fas fa-store' },
+    { path: '/academic-terms',       label: 'الفصول الدراسية',     labelEn: 'Semesters',          icon: 'fas fa-calendar-alt' },
+    { path: '/registration-requests', label: 'طلبات التسجيل',       labelEn: 'Registration',       icon: 'fas fa-user-plus' },
   ];
   return [];
 }
@@ -723,6 +722,11 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     if (notif && this.isTeacher) this.loadPendingCount();
   });
 
+  // Toggle body class so app-content padding can respond to nav visibility
+  private navHiddenEffect = effect(() => {
+    document.body.classList.toggle('nav-hidden', this.navHidden());
+  });
+
   // ── State ──────────────────────────────────────────────────────────────────
   readonly unreadCount     = this.realtimeSvc.unreadCount;
   pendingRequestsCount     = signal(0);
@@ -737,8 +741,11 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   showMore         = signal(false);
   isAdvertiserRole = signal(false);
 
-  private readonly NAV_HIDDEN_PATHS = ['/complete-profile', '/login', '/register'];
-  navHidden = computed(() => this.NAV_HIDDEN_PATHS.some(p => this.currentPath().startsWith(p)));
+  private readonly NAV_HIDDEN_PATHS = ['/complete-profile', '/login', '/register', '/pending-approval'];
+  isAuthenticated = signal(false);
+  navHidden = computed(() =>
+    !this.isAuthenticated() || this.NAV_HIDDEN_PATHS.some(p => this.currentPath().startsWith(p))
+  );
 
   private isTeacher = false;
 
@@ -752,12 +759,14 @@ export class BottomNavComponent implements OnInit, OnDestroy {
       .subscribe((e: NavigationEnd) => {
         this.currentPath.set(e.urlAfterRedirects);
         this.showMore.set(false);
+        window.scrollTo(0, 0);
       });
   }
 
   ngOnDestroy(): void {
     this.routerSub?.unsubscribe();
     this.notifEffect.destroy();
+    this.navHiddenEffect.destroy();
   }
 
   // ── Setup ──────────────────────────────────────────────────────────────────
@@ -771,6 +780,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
         take(1)
       )
       .subscribe((cu: any) => {
+        this.isAuthenticated.set(true);
         const roles: string[] = (cu?.roles || cu?.roleNames || cu?.userRoles || [])
           .map((r: any) => (typeof r === 'string' ? r.toUpperCase() : ''))
           .filter(Boolean);

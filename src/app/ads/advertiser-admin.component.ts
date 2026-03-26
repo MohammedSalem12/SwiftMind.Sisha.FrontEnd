@@ -92,7 +92,17 @@ interface CreateAdvertiserForm {
               <option [ngValue]="1">مكتبة · Library</option>
               <option [ngValue]="2">قرطاسية · Bookstore</option>
               <option [ngValue]="3">مركز تعليمي · Educational Center</option>
-              <option [ngValue]="4">اخرى · Other</option>
+              <option [ngValue]="5">ملابس · Clothes</option>
+              <option [ngValue]="6">مقهى · Coffee Shop</option>
+              <option [ngValue]="7">مطعم · Restaurant</option>
+              <option [ngValue]="8">عصائر · Juices</option>
+              <option [ngValue]="9">صالة رياضية · Gym</option>
+              <option [ngValue]="10">أدوات مدرسية · School Supplies</option>
+              <option [ngValue]="11">تكنولوجيا · Technology</option>
+              <option [ngValue]="12">صحة · Health</option>
+              <option [ngValue]="13">تعليم · Education</option>
+              <option [ngValue]="14">ترفيه · Entertainment</option>
+              <option [ngValue]="4">أخرى · Other</option>
             </select>
           </div>
 
@@ -474,6 +484,16 @@ interface CreateAdvertiserForm {
     .type-bookstore { background:rgba(245,158,11,.1); color:#d97706; }
     .type-educational { background:rgba(139,92,246,.1); color:#7c3aed; }
     .type-other { background:rgba(156,163,175,.1); color:#6b7280; }
+    .type-clothes { background:rgba(236,72,153,.1); color:#db2777; }
+    .type-coffee { background:rgba(120,53,15,.1); color:#92400e; }
+    .type-restaurant { background:rgba(239,68,68,.1); color:#dc2626; }
+    .type-juices { background:rgba(249,115,22,.1); color:#ea580c; }
+    .type-gym { background:rgba(14,165,233,.1); color:#0284c7; }
+    .type-supplies { background:rgba(99,102,241,.1); color:#4f46e5; }
+    .type-tech { background:rgba(59,130,246,.1); color:#2563eb; }
+    .type-health { background:rgba(34,197,94,.1); color:#16a34a; }
+    .type-education { background:rgba(168,85,247,.1); color:#9333ea; }
+    .type-entertainment { background:rgba(244,63,94,.1); color:#e11d48; }
 
     .status-chip { font-size:.62rem; font-weight:700; padding:.15rem .5rem; border-radius:8px; }
     .status-approved { background:rgba(16,185,129,.1); color:#059669; }
@@ -833,6 +853,16 @@ export class AdvertiserAdminComponent implements OnInit {
       2: 'adv-type-chip type-bookstore',
       3: 'adv-type-chip type-educational',
       4: 'adv-type-chip type-other',
+      5: 'adv-type-chip type-clothes',
+      6: 'adv-type-chip type-coffee',
+      7: 'adv-type-chip type-restaurant',
+      8: 'adv-type-chip type-juices',
+      9: 'adv-type-chip type-gym',
+      10: 'adv-type-chip type-supplies',
+      11: 'adv-type-chip type-tech',
+      12: 'adv-type-chip type-health',
+      13: 'adv-type-chip type-education',
+      14: 'adv-type-chip type-entertainment',
     };
     return map[type] ?? 'adv-type-chip type-other';
   }
@@ -843,9 +873,19 @@ export class AdvertiserAdminComponent implements OnInit {
       1: 'مكتبة · Library',
       2: 'قرطاسية · Bookstore',
       3: 'مركز تعليمي · Edu Center',
-      4: 'اخرى · Other',
+      4: 'أخرى · Other',
+      5: 'ملابس · Clothes',
+      6: 'مقهى · Coffee Shop',
+      7: 'مطعم · Restaurant',
+      8: 'عصائر · Juices',
+      9: 'صالة رياضية · Gym',
+      10: 'أدوات مدرسية · Supplies',
+      11: 'تكنولوجيا · Tech',
+      12: 'صحة · Health',
+      13: 'تعليم · Education',
+      14: 'ترفيه · Entertainment',
     };
-    return map[type] ?? 'اخرى';
+    return map[type] ?? 'أخرى';
   }
 
   private getEmptyForm(): CreateAdvertiserForm {

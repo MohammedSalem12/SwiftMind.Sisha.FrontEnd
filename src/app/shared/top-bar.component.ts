@@ -271,7 +271,8 @@ export class TopBarComponent implements OnInit, OnDestroy {
 
   private updateVisibility(url: string): void {
     const hidden = HIDE_PATHS.some(p => url.startsWith(p));
-    this.visible.set(!hidden);
+    // Also hide for unauthenticated users (guest visitors)
+    this.visible.set(!hidden && this.authService.isAuthenticated);
     const path = url.split('?')[0];
     const homePaths = ['/', '/student', '/teacher', '/parent', '/secretary'];
     this.isHomePage.set(homePaths.includes(path));
