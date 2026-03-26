@@ -29,6 +29,9 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
           <button class="tb-btn tb-back" (click)="goBack()" [class.tb-btn--hidden]="!canGoBack()">
             <i class="fas fa-arrow-right"></i>
           </button>
+          @if (pageTitle()) {
+            <span class="tb-page-title">{{ pageTitle() }}</span>
+          }
         }
 
         <!-- Center: session timer always shown if available, otherwise logo -->
@@ -39,8 +42,6 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
               <span class="tb-session-name">{{ nextSession()!.courseName }}</span>
               <span class="tb-session-time">{{ formatCountdown() }}</span>
             </div>
-          } @else if (!isHomePage()) {
-            <img src="/assets/images/logo/logo-light-thumbnail2.png" alt="KAI" class="tb-logo" />
           }
         </div>
 
@@ -180,6 +181,16 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     .tb-btn:active { background: rgba(255,255,255,.25); }
     .tb-btn--hidden { visibility: hidden; pointer-events: none; }
 
+    .tb-page-title {
+      font-size: .78rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 140px;
+    }
+
     .tb-btn-label {
       font-size: .7rem;
       font-weight: 700;
@@ -216,6 +227,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   visible = signal(true);
   canGoBack = signal(false);
   isHomePage = signal(false);
+  pageTitle = signal('');
   lang = signal('AR');
   scrolled = signal(false);
   nextSession = signal<NextSessionDto | null>(null);
@@ -269,6 +281,49 @@ export class TopBarComponent implements OnInit, OnDestroy {
     return `${m}:${sec.toString().padStart(2, '0')}`;
   }
 
+  private static readonly PAGE_TITLES: Record<string, string> = {
+    '/teacher/qr-codes': 'رموز QR',
+    '/teacher/today-sessions': 'حصص اليوم',
+    '/teacher/profile': 'ملفي الشخصي',
+    '/teacher/my-requests': 'طلباتي',
+    '/teacher/academies': 'الأكاديميات',
+    '/student/courses': 'مقرراتي',
+    '/student/requests': 'طلباتي',
+    '/student/grades': 'درجاتي',
+    '/student/attendance': 'حضوري',
+    '/student/qr': 'رمز QR',
+    '/student/profile': 'ملفي الشخصي',
+    '/student/today-sessions': 'حصص اليوم',
+    '/parent/profile': 'ملفي الشخصي',
+    '/parent/requests': 'طلباتي',
+    '/parent/link-child': 'ربط طالب',
+    '/parent/dashboard': 'لوحة المتابعة',
+    '/secretary/profile': 'ملفي الشخصي',
+    '/secretary/requests': 'طلباتي',
+    '/attendance': 'الحضور',
+    '/marks-entry': 'تسجيل الدرجات',
+    '/students': 'الطلاب',
+    '/teachers': 'المعلمون',
+    '/parents': 'أولياء الأمور',
+    '/courses': 'المقررات',
+    '/students-grades': 'درجات الطلاب',
+    '/enrollment-requests': 'طلبات التسجيل',
+    '/exam-grade': 'درجات الاختبار',
+    '/notifications': 'الإشعارات',
+    '/feeds': 'النشرات',
+    '/settings': 'الإعدادات',
+    '/about': 'عن التطبيق',
+    '/support': 'الدعم الفني',
+    '/profile': 'ملفي الشخصي',
+    '/academies': 'الأكاديميات',
+    '/ads': 'إعلانات',
+    '/ads/my-coupons': 'كوبوناتي',
+    '/academic-terms': 'الفصول الدراسية',
+    '/registration-requests': 'طلبات التسجيل',
+    '/admin/password-resets': 'إعادة تعيين كلمات المرور',
+    '/secretary-assignments': 'تعيينات السكرتارية',
+  };
+
   private updateVisibility(url: string): void {
     const hidden = HIDE_PATHS.some(p => url.startsWith(p));
     // Also hide for unauthenticated users (guest visitors)
@@ -278,6 +333,12 @@ export class TopBarComponent implements OnInit, OnDestroy {
     this.isHomePage.set(homePaths.includes(path));
     const rootPaths = [...homePaths, '/home', '/student/home', '/teacher/home', '/parent/home', '/secretary/home'];
     this.canGoBack.set(!rootPaths.includes(path));
+
+    // Resolve page title — try exact match first, then prefix match
+    const title = TopBarComponent.PAGE_TITLES[path]
+      || Object.entries(TopBarComponent.PAGE_TITLES).find(([k]) => path.startsWith(k + '/'))?.[1]
+      || '';
+    this.pageTitle.set(title);
   }
 
   private async loadUserInfo(): Promise<void> {
