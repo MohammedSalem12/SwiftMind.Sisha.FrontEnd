@@ -1,4 +1,4 @@
-import { Component, input, signal, OnInit, inject, computed } from '@angular/core';
+import { Component, input, signal, OnInit, OnDestroy, inject, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
@@ -90,17 +90,25 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
           }
         }
         @if (expanded()) {
-          <button class="tip-next" [disabled]="loading()" (click)="showNext(); $event.stopPropagation()">
-            @if (loading()) {
-              <i class="fas fa-spinner fa-spin"></i>
-            } @else {
-              <i class="fas fa-arrow-left"></i>
-            }
-            التالي · Next
-            @if (cards().length > 1) {
-              <span class="next-counter">{{ currentIndex() + 1 }}/{{ cards().length }}</span>
-            }
-          </button>
+          <div class="tip-footer">
+            <button class="tip-next" [disabled]="loading()" (click)="showNext(); resetTimer(); $event.stopPropagation()">
+              @if (loading()) {
+                <i class="fas fa-spinner fa-spin"></i>
+              } @else {
+                <i class="fas fa-arrow-left"></i>
+              }
+              التالي · Next
+            </button>
+            <div class="countdown-ring" (click)="showNext(); resetTimer(); $event.stopPropagation()">
+              <svg viewBox="0 0 36 36" class="ring-svg">
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(102,126,234,.15)" stroke-width="2.5"/>
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="#667eea" stroke-width="2.5"
+                  stroke-dasharray="97.4" [attr.stroke-dashoffset]="ringOffset()"
+                  stroke-linecap="round" class="ring-progress"/>
+              </svg>
+              <span class="ring-text">{{ countdown() }}</span>
+            </div>
+          </div>
         }
       </div>
       <button class="tip-toggle" (click)="expanded.set(!expanded()); $event.stopPropagation()">
@@ -149,24 +157,38 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
     .tip-text-en {
       font-size: .65rem; color: #9090aa; line-height: 1.4; margin-top: .1rem;
     }
+    .tip-footer {
+      display: flex; align-items: center; gap: .5rem; margin-top: .4rem;
+    }
     .tip-next {
       display: flex; align-items: center; justify-content: center; gap: .35rem;
-      margin-top: .4rem; padding: .4rem .75rem;
+      flex: 1; padding: .4rem .75rem;
       border-radius: 10px; border: 1.5px solid rgba(102,126,234,.2);
       background: rgba(102,126,234,.06); color: #667eea;
       font-size: .72rem; font-weight: 700; cursor: pointer;
-      min-height: 36px; width: 100%;
+      min-height: 36px;
       -webkit-tap-highlight-color: transparent;
       transition: background .15s;
       &:active { background: rgba(102,126,234,.15); }
       &:disabled { opacity: .5; cursor: default; }
       i { font-size: .6rem; }
     }
-    .next-counter {
-      font-size: .55rem; font-weight: 600;
-      background: rgba(102,126,234,.15); color: #667eea;
-      padding: .1rem .35rem; border-radius: 6px;
-      margin-right: .15rem;
+    .countdown-ring {
+      position: relative; width: 36px; height: 36px;
+      flex-shrink: 0; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ring-svg {
+      width: 36px; height: 36px;
+      transform: rotate(-90deg);
+    }
+    .ring-progress {
+      transition: stroke-dashoffset 1s linear;
+    }
+    .ring-text {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .6rem; font-weight: 800; color: #667eea;
     }
     .tip-toggle {
       border: none; background: none; color: #667eea;
@@ -179,7 +201,7 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
     }
   `],
 })
-export class DidYouKnowComponent implements OnInit {
+export class DidYouKnowComponent implements OnInit, OnDestroy {
   private readonly http = inject(HttpClient);
   role = input<string>('STUDENT');
   grade = input<number | null>(null);
@@ -189,6 +211,14 @@ export class DidYouKnowComponent implements OnInit {
   card = computed(() => this.cards().length > 0 ? this.cards()[this.currentIndex()] : null);
   fallbackTip = signal<{ ar: string; en: string }>({ ar: '', en: '' });
   expanded = signal(window.innerWidth < 768);
+
+  private static readonly DURATION = 10;
+  countdown = signal(DidYouKnowComponent.DURATION);
+  ringOffset = computed(() => {
+    const pct = this.countdown() / DidYouKnowComponent.DURATION;
+    return 97.4 * pct; // circumference = 2*PI*15.5 ≈ 97.4
+  });
+  private timerInterval: any = null;
 
   iconClass = computed(() => {
     const c = this.card();
@@ -218,6 +248,7 @@ export class DidYouKnowComponent implements OnInit {
       if (result?.length) {
         this.cards.set(result);
         this.currentIndex.set(0);
+        this.startTimer();
       }
     } catch {
       // Try single card fallback
@@ -226,10 +257,43 @@ export class DidYouKnowComponent implements OnInit {
         const single = await lastValueFrom(
           this.http.get<KnowledgeCard>(`${this.apiBase}/api/knowledge-cards/random?${gradeParam}`)
         );
-        if (single) this.cards.set([single]);
+        if (single) {
+          this.cards.set([single]);
+          this.startTimer();
+        }
       } catch {
         // Use fallback — already set
       }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.clearTimer();
+  }
+
+  private startTimer(): void {
+    this.clearTimer();
+    this.countdown.set(DidYouKnowComponent.DURATION);
+    this.timerInterval = setInterval(() => {
+      const val = this.countdown() - 1;
+      if (val <= 0) {
+        this.countdown.set(0);
+        this.clearTimer();
+        this.showNext().then(() => this.startTimer());
+      } else {
+        this.countdown.set(val);
+      }
+    }, 1000);
+  }
+
+  resetTimer(): void {
+    this.startTimer();
+  }
+
+  private clearTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
     }
   }
 
