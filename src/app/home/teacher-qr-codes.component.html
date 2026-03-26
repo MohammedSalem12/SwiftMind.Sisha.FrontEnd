@@ -1,13 +1,12 @@
 <div class="qr-page" dir="rtl">
 
-  <!-- Hero Header -->
+  <!-- Compact Header -->
   <div class="hero-header">
     <button class="back-btn" (click)="goBack()">
       <i class="fas fa-arrow-right"></i>
     </button>
     <div class="hero-text">
-      <h1><i class="fas fa-qrcode me-2"></i>رموز QR للمقررات</h1>
-      <p>شارك هذه الرموز مع الطلاب للتسجيل السريع</p>
+      <h1><i class="fas fa-qrcode"></i> رموز QR · QR Codes</h1>
     </div>
     <button class="refresh-btn" (click)="loadQRCodes()" [disabled]="loading()">
       <i class="fas fa-sync-alt" [class.fa-spin]="loading()"></i>
