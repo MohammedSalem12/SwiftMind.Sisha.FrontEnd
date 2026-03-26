@@ -28,7 +28,7 @@ function getRoleHomePath(roles: string[]): string {
   if (roles.includes(ROLES.TEACHER))    return '/teacher';
   if (roles.includes(ROLES.PARENT))     return '/parent';
   if (roles.includes(ROLES.SECRETARY))  return '/secretary';
-  if (roles.includes(ROLES.ADMIN))      return '/secretary-assignments';
+  if (roles.includes(ROLES.ADMIN))      return '/';
   if (roles.includes(ROLES.ADVERTISER)) return '/ads/my';
   return '/';
 }
