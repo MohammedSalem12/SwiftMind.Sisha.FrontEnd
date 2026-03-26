@@ -89,6 +89,19 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
             <span class="tip-text-en">{{ fallbackTip().en }}</span>
           }
         }
+        @if (expanded()) {
+          <button class="tip-next" [disabled]="loading()" (click)="showNext(); $event.stopPropagation()">
+            @if (loading()) {
+              <i class="fas fa-spinner fa-spin"></i>
+            } @else {
+              <i class="fas fa-arrow-left"></i>
+            }
+            التالي · Next
+            @if (cards().length > 1) {
+              <span class="next-counter">{{ currentIndex() + 1 }}/{{ cards().length }}</span>
+            }
+          </button>
+        }
       </div>
       <button class="tip-toggle" (click)="expanded.set(!expanded()); $event.stopPropagation()">
         <i class="fas" [class]="expanded() ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
@@ -136,6 +149,25 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
     .tip-text-en {
       font-size: .65rem; color: #9090aa; line-height: 1.4; margin-top: .1rem;
     }
+    .tip-next {
+      display: flex; align-items: center; justify-content: center; gap: .35rem;
+      margin-top: .4rem; padding: .4rem .75rem;
+      border-radius: 10px; border: 1.5px solid rgba(102,126,234,.2);
+      background: rgba(102,126,234,.06); color: #667eea;
+      font-size: .72rem; font-weight: 700; cursor: pointer;
+      min-height: 36px; width: 100%;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s;
+      &:active { background: rgba(102,126,234,.15); }
+      &:disabled { opacity: .5; cursor: default; }
+      i { font-size: .6rem; }
+    }
+    .next-counter {
+      font-size: .55rem; font-weight: 600;
+      background: rgba(102,126,234,.15); color: #667eea;
+      padding: .1rem .35rem; border-radius: 6px;
+      margin-right: .15rem;
+    }
     .tip-toggle {
       border: none; background: none; color: #667eea;
       font-size: .65rem; cursor: pointer; flex-shrink: 0;
@@ -152,12 +184,23 @@ export class DidYouKnowComponent implements OnInit {
   role = input<string>('STUDENT');
   grade = input<number | null>(null);
 
-  card = signal<KnowledgeCard | null>(null);
+  cards = signal<KnowledgeCard[]>([]);
+  currentIndex = signal(0);
+  card = computed(() => this.cards().length > 0 ? this.cards()[this.currentIndex()] : null);
   fallbackTip = signal<{ ar: string; en: string }>({ ar: '', en: '' });
-  expanded = signal(false);
+  expanded = signal(window.innerWidth < 768);
 
-  iconClass = signal('fas fa-lightbulb');
-  iconBg = signal('linear-gradient(135deg, #667eea, #764ba2)');
+  iconClass = computed(() => {
+    const c = this.card();
+    if (!c) return 'fas fa-lightbulb';
+    return 'fas ' + (TOPIC_ICONS[c.topic] || 'fa-lightbulb');
+  });
+  iconBg = computed(() => {
+    const c = this.card();
+    if (!c) return 'linear-gradient(135deg, #667eea, #764ba2)';
+    const color = TOPIC_COLORS[c.topic] || '#667eea';
+    return `linear-gradient(135deg, ${color}, ${color}dd)`;
+  });
 
   private readonly apiBase = (environment as any).apis?.default?.url || '';
 
@@ -166,21 +209,64 @@ export class DidYouKnowComponent implements OnInit {
     const tips = FALLBACK[this.role().toUpperCase()] || FALLBACK['STUDENT'];
     this.fallbackTip.set(tips[new Date().getDate() % tips.length]);
 
-    // Try to fetch from API
+    // Try to fetch batch from API
+    try {
+      const gradeParam = this.grade() ? `&grade=${this.grade()}` : '';
+      const result = await lastValueFrom(
+        this.http.get<KnowledgeCard[]>(`${this.apiBase}/api/knowledge-cards/random-batch?count=5${gradeParam}`)
+      );
+      if (result?.length) {
+        this.cards.set(result);
+        this.currentIndex.set(0);
+      }
+    } catch {
+      // Try single card fallback
+      try {
+        const gradeParam = this.grade() ? `&grade=${this.grade()}` : '';
+        const single = await lastValueFrom(
+          this.http.get<KnowledgeCard>(`${this.apiBase}/api/knowledge-cards/random?${gradeParam}`)
+        );
+        if (single) this.cards.set([single]);
+      } catch {
+        // Use fallback — already set
+      }
+    }
+  }
+
+  loading = signal(false);
+
+  async showNext(): Promise<void> {
+    const total = this.cards().length;
+    const nextIdx = this.currentIndex() + 1;
+
+    // If there are more pre-fetched cards, cycle to next
+    if (nextIdx < total) {
+      this.currentIndex.set(nextIdx);
+      return;
+    }
+
+    // If we've seen all pre-fetched cards (max 5), loop back
+    if (total >= 5) {
+      this.currentIndex.set(0);
+      return;
+    }
+
+    // Otherwise fetch a fresh one
+    this.loading.set(true);
     try {
       const gradeParam = this.grade() ? `&grade=${this.grade()}` : '';
       const result = await lastValueFrom(
         this.http.get<KnowledgeCard>(`${this.apiBase}/api/knowledge-cards/random?${gradeParam}`)
       );
       if (result) {
-        this.card.set(result);
-        const icon = TOPIC_ICONS[result.topic] || 'fa-lightbulb';
-        this.iconClass.set('fas ' + icon);
-        const color = TOPIC_COLORS[result.topic] || '#667eea';
-        this.iconBg.set(`linear-gradient(135deg, ${color}, ${color}dd)`);
+        this.cards.update(arr => [...arr, result]);
+        this.currentIndex.set(this.cards().length - 1);
       }
     } catch {
-      // Use fallback — already set
+      // Loop back to start if fetch fails
+      if (total > 0) this.currentIndex.set(0);
+    } finally {
+      this.loading.set(false);
     }
   }
 

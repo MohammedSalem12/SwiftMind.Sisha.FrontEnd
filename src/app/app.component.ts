@@ -54,8 +54,9 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       }
     }
 
-    /* Remove bottom padding when nav is hidden (visitor/auth pages) */
+    /* Remove padding when nav is hidden (visitor/auth pages) */
     :host-context(body.nav-hidden) .app-content {
+      padding-top: 0 !important;
       padding-bottom: 0 !important;
     }
   `],

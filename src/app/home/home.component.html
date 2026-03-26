@@ -36,7 +36,17 @@
         <span>ابدأ الآن · Get Started</span>
       </div>
       <div class="browse-grid">
-        <a class="browse-card" routerLink="/login">
+        <a class="browse-card" (click)="showRegisterPrompt()">
+          <div class="browse-icon" style="background:linear-gradient(135deg,#059669,#10b981)">
+            <i class="fas fa-home"></i>
+          </div>
+          <div class="browse-text">
+            <span class="browse-label">الرئيسية</span>
+            <span class="browse-sub">Home</span>
+          </div>
+          <i class="fas fa-chevron-left browse-arrow"></i>
+        </a>
+        <a class="browse-card" (click)="showRegisterPrompt()">
           <div class="browse-icon" style="background:linear-gradient(135deg,#dc2626,#f43f5e)">
             <i class="fas fa-calendar-times"></i>
           </div>
@@ -46,7 +56,7 @@
           </div>
           <i class="fas fa-chevron-left browse-arrow"></i>
         </a>
-        <a class="browse-card" routerLink="/academies">
+        <a class="browse-card" (click)="showRegisterPrompt()">
           <div class="browse-icon" style="background:linear-gradient(135deg,#667eea,#764ba2)">
             <i class="fas fa-university"></i>
           </div>
@@ -56,7 +66,7 @@
           </div>
           <i class="fas fa-chevron-left browse-arrow"></i>
         </a>
-        <a class="browse-card" routerLink="/ads" [queryParams]="{type: 'deal'}">
+        <a class="browse-card" (click)="showRegisterPrompt()">
           <div class="browse-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
             <i class="fas fa-tags"></i>
           </div>
@@ -99,22 +109,22 @@
         <span>مميزات KAI · Features</span>
       </div>
       <div class="features-grid">
-        <div class="feature-card">
+        <div class="feature-card" (click)="showRegisterPrompt()">
           <div class="feature-icon" style="background:rgba(102,126,234,.12);color:#667eea"><i class="fas fa-graduation-cap"></i></div>
           <span class="feature-title">إدارة الطلاب</span>
           <span class="feature-sub">Student Management</span>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" (click)="showRegisterPrompt()">
           <div class="feature-icon" style="background:rgba(16,185,129,.12);color:#059669"><i class="fas fa-chalkboard-teacher"></i></div>
           <span class="feature-title">إدارة المعلمين</span>
           <span class="feature-sub">Teacher Management</span>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" (click)="showRegisterPrompt()">
           <div class="feature-icon" style="background:rgba(245,158,11,.12);color:#d97706"><i class="fas fa-user-friends"></i></div>
           <span class="feature-title">متابعة أولياء الأمور</span>
           <span class="feature-sub">Parent Follow-up</span>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" (click)="showRegisterPrompt()">
           <div class="feature-icon" style="background:rgba(118,75,162,.12);color:#764ba2"><i class="fas fa-book-open"></i></div>
           <span class="feature-title">إدارة المقررات</span>
           <span class="feature-sub">Course Management</span>

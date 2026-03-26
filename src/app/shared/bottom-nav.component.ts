@@ -872,6 +872,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
 
   async logout(): Promise<void> {
     this.showMore.set(false);
+    this.isAuthenticated.set(false);
     await this.authService.logout();
   }
 }

@@ -1,6 +1,7 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { Capacitor } from '@capacitor/core';
 import { CurrentUserInfoService } from '@proxy/common';
@@ -9,7 +10,7 @@ import { BiometricService } from './services/biometric.service';
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="page" dir="rtl">
 
@@ -84,24 +85,39 @@ import { BiometricService } from './services/biometric.service';
       </div>
       }
 
-      <!-- App Info -->
+      <!-- App Info & Links -->
       <div class="section">
-        <div class="section-title"><i class="fas fa-info-circle"></i> عن التطبيق · About</div>
-        <div class="info-card">
-          <div class="info-row">
-            <span class="info-key">اسم التطبيق · App Name</span>
-            <span class="info-val">KAI</span>
-          </div>
-          <div class="info-row">
-            <span class="info-key">الإصدار · Version</span>
-            <span class="info-val">1.0.0</span>
-          </div>
-          <div class="info-row">
-            <span class="info-key">المطور · Developer</span>
-            <span class="info-val">SwiftMind</span>
-          </div>
+        <div class="section-title"><i class="fas fa-ellipsis-h"></i> المزيد · More</div>
+        <div class="links-card">
+          <a class="link-row" routerLink="/about">
+            <div class="link-icon link-icon--purple"><i class="fas fa-info-circle"></i></div>
+            <div class="link-text">
+              <span class="link-label">عن التطبيق</span>
+              <span class="link-sub">About KAI</span>
+            </div>
+            <i class="fas fa-chevron-left link-arrow"></i>
+          </a>
+          <a class="link-row" routerLink="/support">
+            <div class="link-icon link-icon--green"><i class="fas fa-headset"></i></div>
+            <div class="link-text">
+              <span class="link-label">الدعم الفني</span>
+              <span class="link-sub">Support</span>
+            </div>
+            <i class="fas fa-chevron-left link-arrow"></i>
+          </a>
+          <a class="link-row" routerLink="/privacy-policy">
+            <div class="link-icon link-icon--blue"><i class="fas fa-shield-alt"></i></div>
+            <div class="link-text">
+              <span class="link-label">سياسة الخصوصية</span>
+              <span class="link-sub">Privacy Policy</span>
+            </div>
+            <i class="fas fa-chevron-left link-arrow"></i>
+          </a>
         </div>
       </div>
+
+      <!-- App version footer -->
+      <p class="version-footer">KAI v1.0.0 &middot; SwiftMind</p>
 
       <div style="height:calc(80px + env(safe-area-inset-bottom,0px))"></div>
     </div>
@@ -214,18 +230,36 @@ import { BiometricService } from './services/biometric.service';
     }
     .bio-msg--error { color:#dc2626; background:rgba(239,68,68,.08); }
 
-    /* ── Info card ── */
-    .info-card {
+    /* ── Links card ── */
+    .links-card {
       background:#fff; border-radius:16px; border:1.5px solid #f0f0f0;
       overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.04);
     }
-    .info-row {
-      display:flex; justify-content:space-between; align-items:center;
+    .link-row {
+      display:flex; align-items:center; gap:.65rem;
       padding:.75rem .875rem; border-bottom:1px solid #f8f8fc;
+      text-decoration:none; cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+      transition:background .15s;
     }
-    .info-row:last-child { border-bottom:none; }
-    .info-key { font-size:.82rem; color:#555; }
-    .info-val { font-size:.85rem; font-weight:700; color:#1a1a2e; }
+    .link-row:last-child { border-bottom:none; }
+    .link-row:active { background:#f9fafb; }
+    .link-icon {
+      width:38px; height:38px; border-radius:10px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; font-size:.95rem;
+    }
+    .link-icon--purple { background:rgba(102,126,234,.12); color:#667eea; }
+    .link-icon--green { background:rgba(16,185,129,.12); color:#059669; }
+    .link-icon--blue { background:rgba(14,165,233,.12); color:#0ea5e9; }
+    .link-text { flex:1; display:flex; flex-direction:column; }
+    .link-label { font-size:.85rem; font-weight:700; color:#1a1a2e; }
+    .link-sub { font-size:.65rem; color:#9090aa; }
+    .link-arrow { color:#c4c4d4; font-size:.75rem; flex-shrink:0; }
+
+    .version-footer {
+      text-align:center; font-size:.68rem; color:#9090aa;
+      padding:1rem 1rem 0;
+    }
   `],
 })
 export class AppSettingsComponent implements OnInit {

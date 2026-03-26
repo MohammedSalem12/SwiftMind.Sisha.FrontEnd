@@ -430,6 +430,14 @@ export const appRoutes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'about',
+    loadComponent: () => import('./about/about.component').then(m => m.AboutComponent),
+  },
+  {
+    path: 'support',
+    loadComponent: () => import('./support/support.component').then(m => m.SupportComponent),
+  },
+  {
     path: 'privacy-policy',
     loadComponent: () => import('./privacy-policy/privacy-policy.component').then(m => m.PrivacyPolicyComponent),
   },

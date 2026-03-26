@@ -12,6 +12,7 @@ import { OfflineBannerComponent } from '../shared/components/offline-banner.comp
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
 import { ActiveSemesterComponent } from '../shared/components/active-semester.component';
+import { RegisterModalService } from '../shared/services/register-modal.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
@@ -33,6 +34,7 @@ export class HomeComponent implements OnInit {
   private cache = inject(OfflineCacheService);
   private http = inject(HttpClient);
   private readonly apiBase = (environment as any).apis?.default?.url || '';
+  readonly registerModal = inject(RegisterModalService);
 
   // Observable for current user info
   readonly user$ = this.userProfileService.user$;
@@ -221,6 +223,10 @@ export class HomeComponent implements OnInit {
   }
 
   goRegisterToSeeTeachers(): void {
-    this.router.navigate(['/register']);
+    this.registerModal.show();
+  }
+
+  showRegisterPrompt(): void {
+    this.registerModal.show();
   }
 }

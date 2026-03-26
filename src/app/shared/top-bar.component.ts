@@ -332,6 +332,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
+    this.visible.set(false);
     this.authService.logout();
   }
 }
