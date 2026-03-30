@@ -1,10 +1,17 @@
-import type { CreationAuditedEntityDto, EntityDto, ExtensibleAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
+import type { CreationAuditedEntityDto, EntityDto, ExtensibleAuditedEntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { SecretaryTeacherRequestStatus } from './secretary-teacher-request-status.enum';
 import type { UnenrollRequestStatus } from './unenroll-request-status.enum';
+import type { TeacherPromotionStatus } from './teacher-promotion-status.enum';
 
 export interface CreateSecretaryTeacherDto {
   secretaryUserId?: string;
   teacherId?: string;
+}
+
+export interface CreateTeacherPromotionDto {
+  durationMonths: number;
+  government?: string;
+  town?: string;
 }
 
 export interface CreateUpdateTeacherDto {
@@ -16,6 +23,13 @@ export interface CreateUpdateTeacherDto {
   password?: string;
   government?: string;
   town?: string;
+}
+
+export interface PromotionPricingDto {
+  durationMonths: number;
+  amountEGP: number;
+  discountPercent: number;
+  pricePerMonth: number;
 }
 
 export interface SecretaryInfoDto {
@@ -56,6 +70,7 @@ export interface TeacherAutocompleteDto {
   nameEnglish?: string;
   nameArabic?: string;
   displayName?: string;
+  isPromoted: boolean;
 }
 
 export interface TeacherDashboardAbsentDto {
@@ -93,6 +108,8 @@ export interface TeacherDto extends ExtensibleAuditedEntityDto<string> {
   teacherCode?: string;
   government?: string;
   town?: string;
+  sameArea: boolean;
+  isPromoted: boolean;
 }
 
 export interface TeacherEnrolledCourseDto {
@@ -118,6 +135,23 @@ export interface TeacherFilterDto extends PagedAndSortedResultRequestDto {
   government?: string;
   town?: string;
   nameOrCode?: string;
+  studentGovernment?: string;
+  studentTown?: string;
+}
+
+export interface TeacherPromotionDto extends FullAuditedEntityDto<string> {
+  teacherId?: string;
+  teacherName?: string;
+  teacherCode?: string;
+  durationMonths: number;
+  amountEGP: number;
+  government?: string;
+  town?: string;
+  status?: TeacherPromotionStatus;
+  isPaid: boolean;
+  startDate?: string;
+  endDate?: string;
+  rejectionReason?: string;
 }
 
 export interface TeacherUnenrollRequestDto extends EntityDto<string> {

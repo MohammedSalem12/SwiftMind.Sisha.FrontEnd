@@ -198,6 +198,15 @@
 }
 
 /* ─── Form Fields ─── */
+.field-hint {
+  font-size: .72rem;
+  color: #667eea;
+  margin: .15rem 0 .4rem;
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+}
+
 .field-group {
   margin-bottom: 1rem;
 

@@ -13,6 +13,7 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { TeacherService } from '@proxy/teachers';
 import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
+import { TeacherInfoModalService } from '../shared/services/teacher-info-modal.service';
 import { StudentService } from '@proxy/students';
 import type { StudentDto } from '@proxy/students/models';
 import { lastValueFrom } from 'rxjs';
@@ -166,6 +167,9 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
                 <span class="chip code-chip">{{ teacher.code }}</span>
               </div>
             </div>
+            <button class="info-btn-sm" (click)="teacherInfoModal.open(teacher.id!); $event.stopPropagation()" title="معلومات المعلم">
+              <i class="fas fa-info-circle"></i>
+            </button>
             <div class="card-arrow"><i class="fas fa-chevron-left"></i></div>
           </div>
         </div>
@@ -451,6 +455,14 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
       }
 
       .card-arrow i { color: #cbd5e0; font-size: 0.85rem; }
+
+      .info-btn-sm {
+        width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+        background: rgba(102,126,234,.08); border: none; color: #667eea;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; font-size: .8rem;
+      }
+      .info-btn-sm:active { background: rgba(102,126,234,.18); }
     }
 
     /* Chips shared */
@@ -567,6 +579,7 @@ export class ParentEnrollChildComponent implements OnInit {
   private readonly courseService = inject(CourseService);
   private readonly groupService = inject(GroupService);
   private readonly teacherService = inject(TeacherService);
+  private readonly teacherInfoModal = inject(TeacherInfoModalService);
   private readonly studentService = inject(StudentService);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
   private readonly restSvc = inject(RestService);

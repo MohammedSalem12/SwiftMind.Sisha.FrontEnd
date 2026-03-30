@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -9,6 +9,7 @@ import { GradeService } from '@proxy/grades';
 import { AuthService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 import { AuthRedirectService } from '../shared/services/auth-redirect.service';
+import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
 
 @Component({
   standalone: true,
@@ -82,7 +83,14 @@ export class RegisterComponent implements OnInit {
     password: '',
     confirmPassword: '',
     grade: '',
+    referralCode: '',
+    government: '',
+    town: '',
   };
+
+  readonly governorates = EGYPT_GOVERNORATES_LIST;
+  private readonly govSignal = signal('');
+  readonly districts = computed(() => getDistricts(this.govSignal()));
 
   showPassword = signal(false);
   showConfirmPassword = signal(false);
@@ -123,6 +131,12 @@ export class RegisterComponent implements OnInit {
         { value: '12', label: 'الصف الثالث الثانوي' },
       ]);
     }
+  }
+
+  onGovernorateChange(gov: string): void {
+    this.form.government = gov;
+    this.form.town = '';
+    this.govSignal.set(gov);
   }
 
   selectRole(type: UserRegistrationType): void {
@@ -178,7 +192,7 @@ export class RegisterComponent implements OnInit {
       switch (this.form.userType!) {
         case UserRegistrationType.Student:
           result = await lastValueFrom(this.userRegSvc.registerStudent(
-            { ...base, grade: Number(this.form.grade) } as UserRegStudentDto,
+            { ...base, grade: Number(this.form.grade), referralCode: this.form.referralCode.trim() || undefined, government: this.form.government || undefined, town: this.form.town || undefined } as UserRegStudentDto,
             { skipHandleError: true }
           ));
           break;

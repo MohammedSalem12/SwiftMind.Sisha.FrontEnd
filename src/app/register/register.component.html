@@ -173,6 +173,56 @@
           </div>
         </div>
 
+        <!-- Location (Student only) -->
+        <div class="field-group" *ngIf="form.userType === UserRegistrationType.Student">
+          <label>
+            <i class="fas fa-map-marker-alt"></i>
+            موقعك · Your Location
+          </label>
+          <p class="field-hint">حدد موقعك لنعرض لك أقرب المعلمين · Set your location to find nearby teachers</p>
+          <div class="select-wrap">
+            <select
+              name="government"
+              class="field-input field-select"
+              [(ngModel)]="form.government"
+              (ngModelChange)="onGovernorateChange($event)">
+              <option value="">-- المحافظة · Governorate --</option>
+              <option *ngFor="let g of governorates" [value]="g">{{ g }}</option>
+            </select>
+            <i class="fas fa-chevron-down select-chevron"></i>
+          </div>
+          <div class="select-wrap" style="margin-top:.4rem;">
+            <select
+              name="town"
+              class="field-input field-select"
+              [(ngModel)]="form.town"
+              [disabled]="!form.government">
+              <option value="">{{ form.government ? '-- المركز / الحي · District --' : '-- اختر المحافظة أولاً --' }}</option>
+              <option *ngFor="let d of districts()" [value]="d">{{ d }}</option>
+            </select>
+            <i class="fas fa-chevron-down select-chevron"></i>
+          </div>
+        </div>
+
+        <!-- Referral Code (Student only) -->
+        <div class="field-group" *ngIf="form.userType === UserRegistrationType.Student">
+          <label for="referralCode">
+            <i class="fas fa-gift"></i>
+            كود الدعوة (اختياري) · Referral Code
+          </label>
+          <input
+            id="referralCode"
+            name="referralCode"
+            type="text"
+            class="field-input"
+            [(ngModel)]="form.referralCode"
+            placeholder="REF-XXXXXXXX"
+            maxlength="16"
+            dir="ltr"
+            style="text-align:center; letter-spacing:.1em; font-family:monospace;"
+          />
+        </div>
+
         <!-- Error message -->
         <div class="error-bar" *ngIf="error()">
           <i class="fas fa-exclamation-circle"></i>

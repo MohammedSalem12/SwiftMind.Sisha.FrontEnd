@@ -9,6 +9,7 @@ import { GroupService } from '@proxy/groups';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { TeacherService } from '@proxy/teachers';
+import { TeacherInfoModalService } from '../shared/services/teacher-info-modal.service';
 import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
 import { AcademyService } from '@proxy/academies';
 import { lastValueFrom } from 'rxjs';
@@ -124,7 +125,13 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
 
           <div class="teachers-grid">
             @for (t of filteredTeachers(); track t.id) {
-              <div class="teacher-card" (click)="selectTeacher(t)">
+              <div class="teacher-card" [class.teacher-promoted]="t.isPromoted" (click)="selectTeacher(t)">
+                @if (t.isPromoted) {
+                  <div class="promoted-badge"><i class="fas fa-crown"></i> مميز</div>
+                }
+                <button class="info-btn" (click)="openTeacherInfo(t.id!); $event.stopPropagation()" title="معلومات المعلم">
+                  <i class="fas fa-info-circle"></i>
+                </button>
                 <div class="teacher-avatar">{{ getInitials(t.displayName) }}</div>
                 <div class="teacher-name">{{ t.displayName }}</div>
                 <button class="select-btn">
@@ -405,6 +412,7 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       border: 1.5px solid #e9e6ff;
       cursor: pointer;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
       text-align: center;
       &:active { transform: scale(0.97); }
     }
@@ -420,6 +428,26 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       font-size: 0.85rem; font-weight: 600; color: #1a202c;
       line-height: 1.3;
     }
+    .teacher-promoted {
+      border-color: #f59e0b;
+      box-shadow: 0 2px 12px rgba(245,158,11,.2);
+    }
+    .promoted-badge {
+      position: absolute; top: -1px; right: -1px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff; font-size: .6rem; font-weight: 700;
+      padding: .15rem .45rem; border-radius: 0 13px 0 10px;
+      display: flex; align-items: center; gap: .2rem;
+    }
+    .promoted-badge i { font-size: .55rem; }
+    .info-btn {
+      position: absolute; top: .4rem; left: .4rem;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(102,126,234,.08); border: none; color: #667eea;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: .75rem; z-index: 1;
+    }
+    .info-btn:active { background: rgba(102,126,234,.18); }
     .select-btn {
       background: $pg; color: #fff;
       border: none; border-radius: 8px;
@@ -545,6 +573,7 @@ export class CourseEnrollmentComponent implements OnInit {
   private readonly teacherService         = inject(TeacherService);
   private readonly academyService         = inject(AcademyService);
   private readonly restSvc                = inject(RestService);
+  private readonly teacherInfoModal       = inject(TeacherInfoModalService);
 
   readonly governorates = EGYPT_GOVERNORATES_LIST;
   readonly districts    = computed(() => getDistricts(this.filterGovernment()));
@@ -594,8 +623,26 @@ export class CourseEnrollmentComponent implements OnInit {
     this.loading.set(true);
     this.errorMessage.set('');
     try {
+      // Get student location for promoted teacher sorting
+      let studentGov: string | undefined;
+      let studentTown: string | undefined;
+      try {
+        const userInfo: any = await lastValueFrom(this.currentUserInfoService.getCurrentUserActorInfo());
+        if (userInfo?.actorType === 'Student' && userInfo.actorId) {
+          const student = await lastValueFrom(
+            this.restSvc.request<void, any>({ method: 'GET', url: `/api/app/student/current-student` })
+          );
+          studentGov = student?.government || undefined;
+          studentTown = student?.town || undefined;
+        }
+      } catch { /* ignore - location is optional */ }
+
       const teachers = await lastValueFrom(
-        this.teacherService.getTeachersByCourse(this.courseId(), undefined, 100)
+        this.restSvc.request<void, TeacherAutocompleteDto[]>({
+          method: 'GET',
+          url: `/api/app/teacher/teachers-by-course/${this.courseId()}`,
+          params: { maxResults: 100, studentGovernment: studentGov, studentTown: studentTown },
+        })
       );
 
       // If academy context, filter to only academy members
@@ -693,6 +740,10 @@ export class CourseEnrollmentComponent implements OnInit {
 
   goBack(): void { this.router.navigate(['/student']); }
   goToRequests(): void { this.router.navigate(['/student/requests']); }
+
+  openTeacherInfo(teacherId: string): void {
+    this.teacherInfoModal.open(teacherId);
+  }
 
   getInitials(name?: string | null): string {
     if (!name) return '?';

@@ -29,6 +29,9 @@ export enum NotificationType {
   GroupChangeRequestPending = 25,
   GroupChangeRequestApproved = 26,
   GroupChangeRequestRejected = 27,
+  RegistrationRequestPending = 28,
+  RegistrationRequestApproved = 29,
+  RegistrationRequestRejected = 30,
 }
 
 export const notificationTypeOptions = mapEnumToOptions(NotificationType);

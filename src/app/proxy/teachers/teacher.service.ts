@@ -82,7 +82,7 @@ export class TeacherService {
     this.restService.request<any, PagedResultDto<TeacherDto>>({
       method: 'GET',
       url: '/api/app/teacher/filtered',
-      params: { government: input.government, town: input.town, nameOrCode: input.nameOrCode, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { government: input.government, town: input.town, nameOrCode: input.nameOrCode, studentGovernment: input.studentGovernment, studentTown: input.studentTown, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
@@ -103,11 +103,11 @@ export class TeacherService {
     { apiName: this.apiName,...config });
   
 
-  getTeachersByCourse = (courseId: string, searchPrefix?: string, maxResults: number = 10, config?: Partial<Rest.Config>) =>
+  getTeachersByCourse = (courseId: string, searchPrefix?: string, maxResults: number = 10, studentGovernment?: string, studentTown?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TeacherAutocompleteDto[]>({
       method: 'GET',
       url: `/api/app/teacher/teachers-by-course/${courseId}`,
-      params: { searchPrefix, maxResults },
+      params: { searchPrefix, maxResults, studentGovernment, studentTown },
     },
     { apiName: this.apiName,...config });
   

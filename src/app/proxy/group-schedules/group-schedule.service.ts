@@ -10,10 +10,11 @@ export class GroupScheduleService {
   apiName = 'Default';
   
 
-  getList = (config?: Partial<Rest.Config>) =>
+  getList = (groupId?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ListResultDto<GroupScheduleDto>>({
       method: 'GET',
       url: '/api/app/group-schedule',
+      params: { groupId },
     },
     { apiName: this.apiName,...config });
 

@@ -1,6 +1,30 @@
 import type { EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { ParentStudentLinkStatus } from '../enums/parent-student-link-status.enum';
 
+export interface ChildCourseDto {
+  courseId?: string;
+  courseNameAr?: string;
+  courseNameEn?: string;
+  teacherName?: string;
+  latestGradePercentage?: number;
+  absentDaysInCourse: number;
+}
+
+export interface ChildSummaryDto {
+  studentId?: string;
+  studentName?: string;
+  studentCode?: string;
+  currentGrade: number;
+  gradeName?: string;
+  attendedDays: number;
+  absentDays: number;
+  totalSchoolDays: number;
+  attendancePercentage: number;
+  totalCourses: number;
+  courses: ChildCourseDto[];
+  recentActivities: RecentActivityDto[];
+}
+
 export interface CreateParentDto {
   userId?: string;
   firstName: string;
@@ -29,6 +53,12 @@ export interface GetParentsInput extends PagedAndSortedResultRequestDto {
   email?: string;
   phoneNumber?: string;
   studentId?: string;
+}
+
+export interface ParentDashboardDto {
+  parentName?: string;
+  totalChildren: number;
+  children: ChildSummaryDto[];
 }
 
 export interface ParentDto extends FullAuditedEntityDto<string> {
@@ -74,6 +104,13 @@ export interface ParentStudentDto extends FullAuditedEntityDto {
   studentCode?: string;
   gradeName?: string;
   linkStatus?: ParentStudentLinkStatus;
+}
+
+export interface RecentActivityDto {
+  type?: string;
+  messageAr?: string;
+  messageEn?: string;
+  date?: string;
 }
 
 export interface RegisterParentDto {

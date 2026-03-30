@@ -1,4 +1,4 @@
-import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, UpdateParentDto, UpdateParentStudentDto } from './models';
+import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDashboardDto, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, UpdateParentDto, UpdateParentStudentDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -75,6 +75,14 @@ export class ParentService {
     this.restService.request<any, ParentDto>({
       method: 'GET',
       url: `/api/app/parent/by-user-id/${userId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getDashboard = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ParentDashboardDto>({
+      method: 'GET',
+      url: '/api/app/parent/dashboard',
     },
     { apiName: this.apiName,...config });
   

@@ -13,6 +13,7 @@ import { TopBarComponent } from './shared/top-bar.component';
 import { ServerOfflineOverlayComponent } from './shared/components/server-offline-overlay.component';
 import { ServerOfflineService } from './shared/services/server-offline.service';
 import { RegisterModalComponent } from './shared/components/register-modal.component';
+import { TeacherInfoModalComponent } from './shared/components/teacher-info-modal.component';
 import { RegisterModalService } from './shared/services/register-modal.service';
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profile'];
@@ -34,6 +35,7 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     @if (registerModal.isOpen()) {
       <app-register-modal />
     }
+    <app-teacher-info-modal />
   `,
   styles: [`
     /* Reserve space for fixed top bar on mobile */
@@ -70,6 +72,7 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     SidebarNotificationDirective,
     ServerOfflineOverlayComponent,
     RegisterModalComponent,
+    TeacherInfoModalComponent,
   ],
 })
 export class AppComponent implements OnInit {

@@ -213,6 +213,12 @@ export const appRoutes: Routes = [
     data: { roles: ['ADMIN'] }
   },
   {
+    path: 'admin/promotions',
+    loadComponent: () => import('./admin/promotion-requests.component').then(m => m.PromotionRequestsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
     path: 'registration-requests',
     loadComponent: () => import('./registration-requests/registration-requests.component').then(m => m.RegistrationRequestsComponent),
     canActivate: [roleGuard],
@@ -288,6 +294,18 @@ export const appRoutes: Routes = [
   {
     path: 'teacher/profile',
     loadComponent: () => import('./home/teacher-profile.component').then(m => m.TeacherProfileComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER'] },
+  },
+  {
+    path: 'student/points',
+    loadComponent: () => import('./home/student-points.component').then(m => m.StudentPointsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] },
+  },
+  {
+    path: 'teacher/promotion',
+    loadComponent: () => import('./home/teacher-promotion.component').then(m => m.TeacherPromotionComponent),
     canActivate: [roleGuard],
     data: { roles: ['TEACHER'] },
   },

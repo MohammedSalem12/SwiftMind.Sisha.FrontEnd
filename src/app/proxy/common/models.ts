@@ -52,6 +52,7 @@ export interface UserRegSecretaryDto extends UserRegBaseDto {
 
 export interface UserRegStudentDto extends UserRegBaseDto {
   grade: number;
+  referralCode?: string;
 }
 
 export interface UserRegTeacherDto extends UserRegBaseDto {
@@ -67,6 +68,7 @@ export interface UserRegistrationResultDto {
   userProfile: object;
   fullName?: string;
   assignedRoles: string[];
+  isPendingApproval: boolean;
 }
 
 export interface UserRegistrationTypeDto {

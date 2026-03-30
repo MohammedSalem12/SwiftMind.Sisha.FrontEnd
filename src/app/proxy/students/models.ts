@@ -22,6 +22,8 @@ export interface CreateUpdateStudentDto {
   currentGrade: number;
   schoolName?: string;
   teacherStudentCode?: string;
+  government?: string;
+  town?: string;
 }
 
 export interface GroupChangeRequestDto extends FullAuditedEntityDto<string> {
@@ -62,4 +64,7 @@ export interface StudentDto extends ExtensibleAuditedEntityDto<string> {
   schoolName?: string;
   studentCode?: string;
   teacherStudentCode?: string;
+  government?: string;
+  town?: string;
+  referralCode?: string;
 }

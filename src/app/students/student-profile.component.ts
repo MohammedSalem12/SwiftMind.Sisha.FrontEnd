@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
@@ -8,11 +9,12 @@ import { CurrentUserActorDto } from '@proxy/common/models';
 import { StudentService } from '@proxy/students';
 import { StudentDto } from '@proxy/students/models';
 import { ParentStudentDto } from '@proxy/parents/models';
+import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
 
 @Component({
   selector: 'app-student-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   template: `
     <div class="page" dir="rtl">
 
@@ -77,6 +79,10 @@ import { ParentStudentDto } from '@proxy/parents/models';
               <div class="action-icon" style="background:rgba(118,75,162,.12);color:#764ba2"><i class="fas fa-qrcode"></i></div>
               <span class="al">رمز QR</span><span class="ae">My QR</span>
             </a>
+            <a class="action-btn" routerLink="/student/points">
+              <div class="action-icon" style="background:rgba(245,158,11,.12);color:#f59e0b"><i class="fas fa-trophy"></i></div>
+              <span class="al">نقاطي</span><span class="ae">Points</span>
+            </a>
             <button class="action-btn" (click)="requestPromotion()" [disabled]="promotionLoading()">
               <div class="action-icon" style="background:rgba(34,197,94,.12);color:#16a34a">
                 @if (promotionLoading()) { <span class="spinner-xs"></span> }
@@ -89,6 +95,56 @@ import { ParentStudentDto } from '@proxy/parents/models';
             <div class="promo-msg" [class.promo-msg--success]="promotionSuccess()" [class.promo-msg--error]="!promotionSuccess()">
               <i [class]="promotionSuccess() ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
               {{ promotionMsg() }}
+            </div>
+          }
+        </div>
+
+        <!-- Location section -->
+        <div class="section">
+          <div class="section-title">
+            <i class="fas fa-map-marker-alt"></i> الموقع الجغرافي · Location
+            <button class="edit-loc-btn" (click)="editingLocation.set(!editingLocation())">
+              <i [class]="editingLocation() ? 'fas fa-times' : 'fas fa-pen'"></i>
+              {{ editingLocation() ? 'إلغاء' : 'تعديل' }}
+            </button>
+          </div>
+          @if (editingLocation()) {
+            <div class="loc-edit-card">
+              <label>المحافظة · Governorate</label>
+              <select [ngModel]="locGov()" (ngModelChange)="onGovernorateChange($event)" class="loc-input">
+                <option value="">-- اختر المحافظة --</option>
+                @for (g of governorates; track g) {
+                  <option [value]="g">{{ g }}</option>
+                }
+              </select>
+              <label>المركز / الحي · District</label>
+              @if (locGov()) {
+                <select [ngModel]="locTown()" (ngModelChange)="locTown.set($event)" class="loc-input">
+                  <option value="">-- اختر المركز / الحي --</option>
+                  @for (d of districts(); track d) {
+                    <option [value]="d">{{ d }}</option>
+                  }
+                </select>
+              } @else {
+                <select class="loc-input" disabled>
+                  <option>-- اختر المحافظة أولاً --</option>
+                </select>
+              }
+              @if (locSaveError()) { <p class="loc-error">{{ locSaveError() }}</p> }
+              <button class="loc-save-btn" [disabled]="locSaving()" (click)="saveLocation()">
+                @if (locSaving()) { <span class="spinner-xs"></span> } @else { <i class="fas fa-check"></i> }
+                حفظ الموقع · Save Location
+              </button>
+            </div>
+          } @else {
+            <div class="loc-display">
+              @if (locGov() || locTown()) {
+                <span class="loc-item"><i class="fas fa-map-marker-alt"></i>
+                  {{ [locGov(), locTown()].filter(Boolean).join(' — ') }}
+                </span>
+              } @else {
+                <span class="loc-empty">لم يتم تحديد الموقع بعد · Location not set</span>
+              }
             </div>
           }
         </div>
@@ -250,6 +306,38 @@ import { ParentStudentDto } from '@proxy/parents/models';
     .empty-box p { font-size:.9rem; font-weight:600; color:#555; margin:0 0 .25rem; }
     .empty-box span { font-size:.75rem; color:#9090aa; }
 
+    .edit-loc-btn {
+      margin-right:auto; background:none; border:1.5px solid #667eea;
+      color:#667eea; border-radius:8px; padding:.2rem .6rem;
+      font-size:.72rem; font-weight:600; cursor:pointer;
+      display:flex; align-items:center; gap:.25rem;
+    }
+    .loc-display {
+      background:white; border-radius:12px; padding:.85rem 1rem;
+      border:1.5px solid #e0e0f0;
+    }
+    .loc-item { display:flex; align-items:center; gap:.4rem; font-size:.88rem; color:#374151; font-weight:600; }
+    .loc-item i { color:#667eea; }
+    .loc-empty { font-size:.82rem; color:#9090aa; }
+    .loc-edit-card {
+      background:white; border-radius:12px; border:1.5px solid #e0e0f0;
+      padding:1rem; display:flex; flex-direction:column; gap:.4rem;
+    }
+    .loc-edit-card label { font-size:.72rem; font-weight:600; color:#667eea; }
+    .loc-input {
+      padding:.55rem .75rem; border:1.5px solid #e0e0f0; border-radius:10px;
+      font-size:.88rem; font-family:inherit; background:white; width:100%; box-sizing:border-box;
+    }
+    .loc-input:focus { outline:none; border-color:#667eea; }
+    .loc-error { color:#dc2626; font-size:.75rem; margin:0; }
+    .loc-save-btn {
+      display:flex; align-items:center; justify-content:center; gap:.4rem;
+      padding:.7rem; border:none; border-radius:10px; margin-top:.25rem;
+      background:linear-gradient(135deg,#667eea,#764ba2); color:white;
+      font-size:.88rem; font-weight:700; cursor:pointer; min-height:44px;
+    }
+    .loc-save-btn:disabled { opacity:.6; cursor:not-allowed; }
+
     .promo-msg {
       display:flex; align-items:center; gap:.5rem;
       padding:.6rem .85rem; border-radius:10px; margin-top:.5rem;
@@ -277,6 +365,15 @@ export class StudentProfileComponent implements OnInit {
   promotionLoading = signal(false);
   promotionMsg = signal<string | null>(null);
   promotionSuccess = signal(false);
+
+  // Location editing
+  editingLocation = signal(false);
+  locSaving = signal(false);
+  locSaveError = signal<string | null>(null);
+  locGov = signal('');
+  locTown = signal('');
+  readonly governorates = EGYPT_GOVERNORATES_LIST;
+  readonly districts = computed(() => getDistricts(this.locGov()));
 
   readonly gradeNames: Record<number, string> = {
     1:'الأول الابتدائي',2:'الثاني الابتدائي',3:'الثالث الابتدائي',
@@ -306,6 +403,10 @@ export class StudentProfileComponent implements OnInit {
       this.userInfo.set(info);
       this.student.set(student);
       this.parents.set(parents ?? []);
+      if (student) {
+        this.locGov.set(student.government || '');
+        this.locTown.set(student.town || '');
+      }
     } catch (e) { console.error(e); }
     finally { this.loading.set(false); }
   }
@@ -336,6 +437,43 @@ export class StudentProfileComponent implements OnInit {
       this.promotionSuccess.set(false);
     } finally {
       this.promotionLoading.set(false);
+    }
+  }
+
+  onGovernorateChange(gov: string): void {
+    this.locGov.set(gov);
+    this.locTown.set('');
+  }
+
+  async saveLocation(): Promise<void> {
+    const s = this.student();
+    if (!s?.id) return;
+    this.locSaving.set(true);
+    this.locSaveError.set(null);
+    try {
+      const body: any = {
+        firstName: s.firstName || '',
+        middleName: s.middleName || '',
+        lastName: s.lastName || '',
+        address: s.address || '',
+        currentGrade: s.currentGrade || 1,
+        schoolName: s.schoolName || '',
+        teacherStudentCode: s.teacherStudentCode || '',
+        government: this.locGov() || '',
+        town: this.locTown() || '',
+      };
+      await lastValueFrom(this.studentSvc.update(s.id, body));
+      const refreshed = await lastValueFrom(this.studentSvc.getCurrentStudent());
+      if (refreshed) {
+        this.student.set(refreshed);
+        this.locGov.set(refreshed.government || '');
+        this.locTown.set(refreshed.town || '');
+      }
+      this.editingLocation.set(false);
+    } catch (err: any) {
+      this.locSaveError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ · Error saving location');
+    } finally {
+      this.locSaving.set(false);
     }
   }
 
