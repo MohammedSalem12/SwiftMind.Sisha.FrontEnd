@@ -189,6 +189,38 @@
     }
   }
 
+  <!-- Quick Actions -->
+  <div class="quick-actions-section">
+    <button class="qa-btn qa-message" (click)="goToMessageTeacher()">
+      <i class="fas fa-envelope"></i>
+      <div class="qa-text"><span>رسالة للمعلم</span><span class="qa-en">Message Teacher</span></div>
+    </button>
+    <button class="qa-btn qa-excuse" (click)="goToAbsenceExcuse()">
+      <i class="fas fa-file-medical"></i>
+      <div class="qa-text"><span>عذر غياب</span><span class="qa-en">Absence Excuse</span></div>
+    </button>
+  </div>
+
+  <!-- Referral Card -->
+  @if (referralCode()) {
+    <div class="referral-section">
+      <div class="section-title"><i class="fas fa-user-plus"></i> دعوة أولياء أمور · Invite Parents</div>
+      <div class="referral-card">
+        <p class="ref-hint">شارك كود الدعوة مع أولياء أمور آخرين!</p>
+        <p class="ref-hint-en">Share your referral code with other parents!</p>
+        <div class="ref-code-box">
+          <span class="ref-code">{{ referralCode() }}</span>
+          <button class="copy-btn" (click)="copyReferral()">
+            <i class="fas fa-copy"></i> {{ copied() ? 'تم!' : 'نسخ' }}
+          </button>
+        </div>
+        <button class="share-ref-btn" (click)="shareReferral()">
+          <i class="fas fa-share-alt"></i> مشاركة · Share
+        </button>
+      </div>
+    </div>
+  }
+
   <!-- Fixed Bottom Bar -->
   <div class="bottom-bar">
     <button class="link-child-btn" (click)="goToLinkChild()">

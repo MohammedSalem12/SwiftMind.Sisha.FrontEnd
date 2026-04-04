@@ -14,7 +14,10 @@ import { ServerOfflineOverlayComponent } from './shared/components/server-offlin
 import { ServerOfflineService } from './shared/services/server-offline.service';
 import { RegisterModalComponent } from './shared/components/register-modal.component';
 import { TeacherInfoModalComponent } from './shared/components/teacher-info-modal.component';
+import { BiometricLockComponent } from './shared/components/biometric-lock.component';
 import { RegisterModalService } from './shared/services/register-modal.service';
+import { BiometricService } from './shared/services/biometric.service';
+import { Capacitor } from '@capacitor/core';
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profile'];
 
@@ -36,6 +39,9 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       <app-register-modal />
     }
     <app-teacher-info-modal />
+    @if (biometricService.isLocked()) {
+      <app-biometric-lock />
+    }
   `,
   styles: [`
     /* Reserve space for fixed top bar on mobile */
@@ -73,6 +79,7 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     ServerOfflineOverlayComponent,
     RegisterModalComponent,
     TeacherInfoModalComponent,
+    BiometricLockComponent,
   ],
 })
 export class AppComponent implements OnInit {
@@ -82,6 +89,7 @@ export class AppComponent implements OnInit {
   private readonly pushNotificationService = inject(PushNotificationService);
   readonly serverOffline = inject(ServerOfflineService);
   readonly registerModal = inject(RegisterModalService);
+  readonly biometricService = inject(BiometricService);
 
   ngOnInit(): void {
     // Add/remove auth-page class on body for CSS sidebar hiding
@@ -103,6 +111,30 @@ export class AppComponent implements OnInit {
     // Connect real-time services when user is already logged in (page refresh)
     if (this.oauthService.hasValidAccessToken()) {
       this.initRealtime();
+    }
+
+    // Biometric lock on app resume (native only)
+    if (Capacitor.isNativePlatform()) {
+      import('@capacitor/app').then(({ App }) => {
+        App.addListener('appStateChange', async ({ isActive }) => {
+          if (isActive && this.oauthService.hasValidAccessToken()) {
+            const enabled = await this.biometricService.isEnabled();
+            if (enabled) {
+              this.biometricService.lock();
+            }
+          }
+        });
+
+        // Deep link handler: kai://register?ref=REF-XXXX or https://sesha-9999.web.app/register?ref=REF-XXXX
+        App.addListener('appUrlOpen', ({ url }) => {
+          const isRegister = /(?:kai:\/\/register|\/register)/.test(url);
+          if (isRegister) {
+            const refMatch = url.match(/[?&]ref=(REF-[0-9A-Fa-f]{8})/i);
+            const queryParams = refMatch ? { ref: refMatch[1] } : {};
+            this.router.navigate(['/register'], { queryParams });
+          }
+        });
+      });
     }
 
     this.oauthService.events.subscribe(event => {

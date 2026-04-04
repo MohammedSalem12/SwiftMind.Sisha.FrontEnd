@@ -39,6 +39,8 @@ export class TeacherHomeComponent implements OnInit {
   loading          = signal(false);
   teacherName      = signal<string>('');
   teacherId        = signal<string | null>(null);
+  referralCode     = signal<string>('');
+  copied           = signal(false);
   courses          = signal<CourseDto[]>([]);
   academyGroups    = signal<AcademyCourseGroup[]>([]);
   myAcademy        = signal<AcademyDto | null>(null);
@@ -68,7 +70,7 @@ export class TeacherHomeComponent implements OnInit {
     // Load courses first — academy section filters by teacher's courses
     await this.loadCourses();
     if (this.offline()) return; // loadCourses failed and restored cache
-    await Promise.all([this.loadAcademies(), this.loadNextSession()]);
+    await Promise.all([this.loadAcademies(), this.loadNextSession(), this.loadReferralCode()]);
     // Cache successful data
     this.cache.set(this.CACHE_KEY, {
       teacherName: this.teacherName(),
@@ -261,4 +263,35 @@ export class TeacherHomeComponent implements OnInit {
 
   trackById = (_: number, item: any) => item.id;
   trackByAcademy = (_: number, item: AcademyCourseGroup) => item.academy.id;
+
+  private async loadReferralCode(): Promise<void> {
+    try {
+      const info = await lastValueFrom(this.teacherService.getMyReferralInfo({ skipHandleError: true }));
+      this.referralCode.set(info?.referralCode ?? '');
+    } catch { /* ignore */ }
+  }
+
+  async shareReferral(): Promise<void> {
+    const code = this.referralCode();
+    if (!code) return;
+    const link = `https://sesha-9999.web.app/register?ref=${code}`;
+    const text = `انضم لتطبيق KAI التعليمي! سجّل باستخدام كود الدعوة: ${code}\nJoin KAI educational app! Register with referral code: ${code}\n${link}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'KAI - دعوة', text, url: link });
+      } else {
+        await navigator.clipboard?.writeText(text);
+        this.copied.set(true);
+        setTimeout(() => this.copied.set(false), 2000);
+      }
+    } catch { /* user cancelled */ }
+  }
+
+  copyReferral(): void {
+    const code = this.referralCode();
+    if (!code) return;
+    navigator.clipboard?.writeText(code);
+    this.copied.set(true);
+    setTimeout(() => this.copied.set(false), 2000);
+  }
 }

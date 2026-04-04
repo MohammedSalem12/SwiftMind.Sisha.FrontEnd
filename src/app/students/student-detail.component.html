@@ -83,7 +83,7 @@
     <div class="content-area">
 
       <!-- ─── Promote Card ─── -->
-      @if ((student()?.currentGrade ?? 0) < 12) {
+      @if (canPromote() && (student()?.currentGrade ?? 0) < 12) {
         <div class="promote-card">
           <div class="promote-card-left">
             <div class="promote-icon">

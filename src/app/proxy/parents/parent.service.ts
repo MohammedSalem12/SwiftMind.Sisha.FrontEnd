@@ -1,7 +1,8 @@
-import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDashboardDto, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, UpdateParentDto, UpdateParentStudentDto } from './models';
+import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDashboardDto, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, SendMessageToTeacherDto, SubmitAbsenceExcuseDto, UpdateParentDto, UpdateParentStudentDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
+import type { ReferralInfoDto } from '../common/models';
 
 @Injectable({
   providedIn: 'root',
@@ -112,6 +113,14 @@ export class ParentService {
     { apiName: this.apiName,...config });
   
 
+  getMyReferralInfo = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ReferralInfoDto>({
+      method: 'GET',
+      url: '/api/app/parent/my-referral-info',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getParentLookups = (input: GetParentsInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<ParentLookupDto>>({
       method: 'GET',
@@ -160,6 +169,24 @@ export class ParentService {
       method: 'DELETE',
       url: '/api/app/parent/student-from-parent',
       params: { parentId, studentId },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  sendMessageToTeacher = (input: SendMessageToTeacherDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/parent/send-message-to-teacher',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  submitAbsenceExcuse = (input: SubmitAbsenceExcuseDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/parent/submit-absence-excuse',
+      body: input,
     },
     { apiName: this.apiName,...config });
   

@@ -13,6 +13,12 @@ export interface EnrolledStudentDto {
   studentName?: string;
   studentCode?: string;
   enrolledAt?: string;
+  currentGrade: number;
+  gradeName?: string;
+  parentName?: string;
+  absentDays: number;
+  totalDays: number;
+  attendancePercentage: number;
 }
 
 export interface EnrollmentDto extends ExtensibleAuditedEntityDto<string> {

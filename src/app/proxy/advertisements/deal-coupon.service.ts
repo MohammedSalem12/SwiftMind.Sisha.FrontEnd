@@ -1,4 +1,4 @@
-import type { DealCouponDto, DealRedemptionDto, DealSettlementDto, RedeemCouponDto } from './models';
+import type { DealCouponDto, DealRedemptionDto, DealSettlementDto, MonthlySettlementDto, RedeemCouponDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -18,6 +18,15 @@ export class DealCouponService {
     { apiName: this.apiName,...config });
   
 
+  getMonthlySettlement = (year: number, month: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, MonthlySettlementDto[]>({
+      method: 'GET',
+      url: '/api/app/deal-coupon/monthly-settlement',
+      params: { year, month },
+    },
+    { apiName: this.apiName,...config });
+  
+
   getMyActiveCoupons = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, DealCouponDto[]>({
       method: 'GET',
@@ -31,6 +40,14 @@ export class DealCouponService {
       method: 'GET',
       url: '/api/app/deal-coupon/my-redemptions',
       params: { skipCount, maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPartnerPendingVouchers = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, DealCouponDto[]>({
+      method: 'GET',
+      url: '/api/app/deal-coupon/partner-pending-vouchers',
     },
     { apiName: this.apiName,...config });
   

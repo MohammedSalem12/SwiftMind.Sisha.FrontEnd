@@ -233,6 +233,14 @@ $grad-end: #764ba2;
 .pending-alert-sub { font-size: .68rem; color: #9090aa; }
 .pending-alert-arrow { color: #e11d48; font-size: .75rem; flex-shrink: 0; }
 
+.pending-alert--promo {
+  background: linear-gradient(135deg, rgba(245,158,11,.08), rgba(217,119,6,.05));
+  border: 1px solid rgba(245,158,11,.2);
+  .pending-alert-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .pending-alert-title { color: #d97706; }
+  .pending-alert-arrow { color: #d97706; }
+}
+
 // ── Priority Actions ──
 .priority-actions {
   display: flex; flex-direction: column; gap: .4rem;

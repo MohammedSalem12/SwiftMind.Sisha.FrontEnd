@@ -98,6 +98,10 @@
                 <div class="group-name">{{ g.name }}</div>
                 <div class="group-chips">
                   <span class="chip chip-code">{{ g.groupCode }}</span>
+                  <span class="chip" [class]="g.groupType === 1 ? 'chip-online' : 'chip-offline'">
+                    <i class="fas" [class]="g.groupType === 1 ? 'fa-video' : 'fa-map-marker-alt'"></i>
+                    {{ g.groupType === 1 ? 'أونلاين' : 'حضوري' }}
+                  </span>
                   @if (g.courseName) {
                     <span class="chip chip-course">
                       <i class="fas fa-book"></i>{{ g.courseName }}

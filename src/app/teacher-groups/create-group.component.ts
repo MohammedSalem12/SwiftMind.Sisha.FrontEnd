@@ -92,6 +92,41 @@ import { CurrentUserInfoService } from '@proxy/common';
             </div>
           }
 
+          <!-- Group Type: Online / Offline -->
+          <div class="field-group">
+            <label class="field-label">
+              <i class="fas fa-signal"></i> نوع المجموعة · Group Type
+            </label>
+            <div class="type-toggle">
+              <button type="button" class="type-btn" [class.active]="groupType === 0" (click)="groupType = 0">
+                <i class="fas fa-map-marker-alt"></i> حضوري · Offline
+              </button>
+              <button type="button" class="type-btn" [class.active]="groupType === 1" (click)="groupType = 1">
+                <i class="fas fa-video"></i> أونلاين · Online
+              </button>
+            </div>
+          </div>
+
+          @if (groupType === 1) {
+            <div class="field-group">
+              <label class="field-label">
+                <i class="fas fa-link"></i> رابط الاجتماع · Meeting Link
+              </label>
+              <input class="field-input" name="meetingLink" [(ngModel)]="meetingLink"
+                     placeholder="https://zoom.us/j/... أو https://meet.google.com/..." />
+            </div>
+          }
+
+          @if (groupType === 0) {
+            <div class="field-group">
+              <label class="field-label">
+                <i class="fas fa-map-pin"></i> العنوان · Location
+              </label>
+              <input class="field-input" name="location" [(ngModel)]="locationAddr"
+                     placeholder="مثال: مكتبة النور، شارع التحرير" />
+            </div>
+          }
+
           <!-- Error -->
           @if (errorMsg()) {
             <div class="error-banner">
@@ -188,6 +223,16 @@ import { CurrentUserInfoService } from '@proxy/common';
     .btn-submit { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: linear-gradient(145deg, #667eea, #764ba2); color: #fff; border: none; padding: 0.875rem; border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; min-height: 50px; box-shadow: 0 4px 14px rgba(102,126,234,0.35); transition: opacity 0.15s; }
     .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
     .btn-cancel { padding: 0.875rem 1.25rem; border-radius: 12px; border: 1.5px solid #e5e7eb; background: #fff; color: #6b7280; font-size: 0.9rem; font-weight: 600; cursor: pointer; min-height: 50px; }
+    .type-toggle { display: flex; gap: 8px; }
+    .type-btn {
+      flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 12px;
+      background: white; color: #6b7280; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+      min-height: 48px; transition: all 0.2s;
+    }
+    .type-btn.active {
+      border-color: #667eea; background: rgba(102,126,234,0.06); color: #667eea;
+    }
 
     .spinner { width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
     .spinner-sm { width: 14px; height: 14px; border: 2px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
@@ -210,6 +255,9 @@ export class CreateGroupComponent implements OnInit {
   name = '';
   courseId = '';
   lockedCourseId = '';
+  groupType = 0; // 0 = Offline, 1 = Online
+  meetingLink = '';
+  locationAddr = '';
 
   async ngOnInit() {
     const params = this.route.snapshot.queryParamMap;
@@ -276,7 +324,10 @@ export class CreateGroupComponent implements OnInit {
         name: this.name,
         teacherId: this.teacherId,
         courseId: this.courseId,
-      }));
+        groupType: this.groupType,
+        meetingLink: this.meetingLink || undefined,
+        location: this.locationAddr || undefined,
+      } as any));
       this.navigateBack();
     } catch (err: any) {
       console.error('Error creating group:', err);

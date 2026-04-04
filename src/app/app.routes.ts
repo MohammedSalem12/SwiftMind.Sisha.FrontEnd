@@ -17,8 +17,25 @@ export const appRoutes: Routes = [
     data: { roles: ['STUDENT'] }
   },
   {
+    path: 'partners',
+    loadComponent: () => import('./partners/partners-directory.component').then(m => m.PartnersDirectoryComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'partner/dashboard',
+    loadComponent: () => import('./partner/partner-dashboard.component').then(m => m.PartnerDashboardComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARTNER'] }
+  },
+  {
     path: 'parent',
     pathMatch: 'full',
+    loadComponent: () => import('./parents/parent-landing.component').then(m => m.ParentLandingComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
+    path: 'parent/home',
     loadComponent: () => import('./home/parent-home.component').then(m => m.ParentHomeComponent),
     canActivate: [roleGuard],
     data: { roles: ['PARENT'] }
@@ -33,6 +50,18 @@ export const appRoutes: Routes = [
   {
     path: 'parent-dashboard',
     loadComponent: () => import('./parents/parent-dashboard.component').then(m => m.ParentDashboardComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
+    path: 'parent/today-sessions',
+    loadComponent: () => import('./parents/parent-today-sessions.component').then(m => m.ParentTodaySessionsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
+    path: 'parent/child-overview/:studentId',
+    loadComponent: () => import('./parents/parent-child-overview.component').then(m => m.ParentChildOverviewComponent),
     canActivate: [roleGuard],
     data: { roles: ['PARENT'] }
   },
@@ -304,6 +333,12 @@ export const appRoutes: Routes = [
     data: { roles: ['STUDENT'] },
   },
   {
+    path: 'student/invite-friends',
+    loadComponent: () => import('./home/invite-friends.component').then(m => m.InviteFriendsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] },
+  },
+  {
     path: 'teacher/promotion',
     loadComponent: () => import('./home/teacher-promotion.component').then(m => m.TeacherPromotionComponent),
     canActivate: [roleGuard],
@@ -324,6 +359,24 @@ export const appRoutes: Routes = [
   {
     path: 'secretary/requests',
     loadComponent: () => import('./secretary/secretary-requests.component').then(m => m.SecretaryRequestsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['SECRETARY'] }
+  },
+  {
+    path: 'secretary/announce',
+    loadComponent: () => import('./secretary/secretary-announce.component').then(m => m.SecretaryAnnounceComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['SECRETARY'] }
+  },
+  {
+    path: 'secretary/schedule-overview',
+    loadComponent: () => import('./secretary/secretary-schedule-overview.component').then(m => m.SecretaryScheduleOverviewComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['SECRETARY'] }
+  },
+  {
+    path: 'secretary/bulk-attendance',
+    loadComponent: () => import('./secretary/secretary-bulk-attendance.component').then(m => m.SecretaryBulkAttendanceComponent),
     canActivate: [roleGuard],
     data: { roles: ['SECRETARY'] }
   },
@@ -349,6 +402,24 @@ export const appRoutes: Routes = [
     path: 'parent/enroll-child/:studentId',
     loadComponent: () => import('./parent-enroll-child/parent-enroll-child.component')
       .then(m => m.ParentEnrollChildComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
+    path: 'parent/message-teacher',
+    loadComponent: () => import('./parents/parent-message-teacher.component').then(m => m.ParentMessageTeacherComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
+    path: 'parent/absence-excuse',
+    loadComponent: () => import('./parents/parent-absence-excuse.component').then(m => m.ParentAbsenceExcuseComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
+    path: 'parent/child-schedule/:studentId',
+    loadComponent: () => import('./parents/parent-child-schedule.component').then(m => m.ParentChildScheduleComponent),
     canActivate: [roleGuard],
     data: { roles: ['PARENT'] }
   },

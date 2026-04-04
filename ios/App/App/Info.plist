@@ -49,5 +49,18 @@
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
 	<string>نستخدم Face ID للدخول السريع والآمن إلى حسابك</string>
+	<key>NSContactsUsageDescription</key>
+	<string>يحتاج KAI للوصول إلى جهات الاتصال للعثور على أصدقائك المسجلين ودعوة الآخرين · KAI needs access to your contacts to find registered friends and invite others.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.swiftmind.sesha</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kai</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

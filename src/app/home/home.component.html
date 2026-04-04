@@ -199,6 +199,21 @@
       </a>
     }
 
+    <!-- Pending Promotion Requests Alert -->
+    @if (pendingPromotionCount() !== null && pendingPromotionCount()! > 0) {
+      <a class="pending-alert pending-alert--promo" routerLink="/admin/promotions">
+        <div class="pending-alert-icon">
+          <i class="fas fa-crown"></i>
+          <span class="pending-alert-badge">{{ pendingPromotionCount() }}</span>
+        </div>
+        <div class="pending-alert-text">
+          <span class="pending-alert-title">طلبات ترقية معلمين</span>
+          <span class="pending-alert-sub">{{ pendingPromotionCount() }} Pending Promotion Requests</span>
+        </div>
+        <i class="fas fa-chevron-left pending-alert-arrow"></i>
+      </a>
+    }
+
     <!-- Did You Know -->
     <app-did-you-know [role]="'ADMIN'" />
     <app-promo-ads-bar [audience]="0" />
@@ -237,6 +252,19 @@
           <span class="priority-label">إعادة تعيين كلمات المرور</span>
           <span class="priority-en">Password Resets</span>
         </div>
+        <i class="fas fa-chevron-left priority-arrow"></i>
+      </a>
+      <a class="priority-card" routerLink="/admin/promotions">
+        <div class="priority-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+          <i class="fas fa-crown"></i>
+        </div>
+        <div class="priority-info">
+          <span class="priority-label">طلبات ترقية المعلمين</span>
+          <span class="priority-en">Teacher Promotions</span>
+        </div>
+        @if (pendingPromotionCount() !== null && pendingPromotionCount()! > 0) {
+          <span class="priority-badge">{{ pendingPromotionCount() }}</span>
+        }
         <i class="fas fa-chevron-left priority-arrow"></i>
       </a>
     </div>
@@ -295,6 +323,17 @@
           <span>طلبات إعادة كلمة المرور</span>
           <small>Password Reset Requests</small>
         </div>
+        <i class="fas fa-chevron-left mgmt-arrow"></i>
+      </a>
+      <a class="mgmt-item" routerLink="/admin/promotions">
+        <div class="mgmt-icon" style="color:#d97706"><i class="fas fa-crown"></i></div>
+        <div class="mgmt-text">
+          <span>طلبات ترقية المعلمين</span>
+          <small>Teacher Promotion Requests</small>
+        </div>
+        @if (pendingPromotionCount() !== null && pendingPromotionCount()! > 0) {
+          <span class="priority-badge" style="margin-inline-start:auto;margin-inline-end:0.5rem">{{ pendingPromotionCount() }}</span>
+        }
         <i class="fas fa-chevron-left mgmt-arrow"></i>
       </a>
       <a class="mgmt-item" routerLink="/ads/admin">

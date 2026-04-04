@@ -4,12 +4,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { TeacherService } from '@proxy/teachers';
+import { GroupService } from '@proxy/groups';
+import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import type { CourseDto } from '@proxy/courses/dtos/models';
+import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-secretary-teacher-courses',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="page" dir="rtl">
 
@@ -92,15 +96,57 @@ import type { CourseDto } from '@proxy/courses/dtos/models';
               <div class="course-actions">
                 <button class="action-btn action-attendance" (click)="goToAttendance(course)">
                   <i class="fas fa-user-check"></i>
-                  <span>الحضور والغياب</span>
+                  <span>الحضور</span>
                   <span class="action-en">Attendance</span>
                 </button>
                 <button class="action-btn action-marks" (click)="goToMarks(course)">
                   <i class="fas fa-star-half-alt"></i>
-                  <span>إدخال الدرجات</span>
-                  <span class="action-en">Marks Entry</span>
+                  <span>الدرجات</span>
+                  <span class="action-en">Marks</span>
+                </button>
+                <button class="action-btn action-students" (click)="goToStudents(course)">
+                  <i class="fas fa-user-graduate"></i>
+                  <span>الطلاب</span>
+                  <span class="action-en">Students</span>
+                </button>
+                <button class="action-btn action-groups" (click)="toggleGroups(course)">
+                  <i class="fas fa-layer-group"></i>
+                  <span>المجموعات</span>
+                  <span class="action-en">Groups</span>
                 </button>
               </div>
+
+              <!-- Inline groups panel -->
+              @if (expandedCourseId() === course.id) {
+                <div class="groups-panel">
+                  @if (groupsLoading()) {
+                    <div class="groups-load"><div class="mini-spinner"></div></div>
+                  } @else {
+                    @if (courseGroups().length === 0) {
+                      <div class="groups-empty">لا توجد مجموعات · No groups</div>
+                    }
+                    @for (g of courseGroups(); track g.groupId) {
+                      <div class="group-item">
+                        <div class="gi-top">
+                          <span class="gi-name"><i class="fas fa-layer-group"></i> {{ g.name }}</span>
+                          @if (g.groupCode) { <span class="gi-code">{{ g.groupCode }}</span> }
+                        </div>
+                        @if (g.schedules?.length) {
+                          <div class="gi-scheds">
+                            @for (s of g.schedules; track s.dayOfWeek) {
+                              <span class="gi-sched">{{ dayName(s.dayOfWeek) }} {{ fmtTime(s.startTime) }}-{{ fmtTime(s.endTime) }}</span>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                    <!-- Add group button -->
+                    <button class="add-group-btn" (click)="createGroup(course)">
+                      <i class="fas fa-plus"></i> إضافة مجموعة · Add Group
+                    </button>
+                  }
+                </div>
+              }
             </div>
           }
         </div>
@@ -255,7 +301,7 @@ import type { CourseDto } from '@proxy/courses/dtos/models';
 
     /* ── Action buttons inside card ── */
     .course-actions {
-      display: grid; grid-template-columns: 1fr 1fr;
+      display: grid; grid-template-columns: repeat(4, 1fr);
       border-top: 1px solid #f0f0f5;
     }
 
@@ -277,18 +323,68 @@ import type { CourseDto } from '@proxy/courses/dtos/models';
 
     .action-marks { background: #fefce8; color: #ca8a04; }
     .action-marks:active { background: #fef9c3; }
+
+    .action-students { background: #f0fdf4; color: #16a34a; border-right: 1px solid #dcfce7; }
+    .action-students:active { background: #dcfce7; }
+
+    .action-groups { background: #faf5ff; color: #7c3aed; }
+    .action-groups:active { background: #f3e8ff; }
+
+    /* Groups panel */
+    .groups-panel {
+      padding: .75rem; border-top: 1px solid #f0f0f5;
+      background: #faf9ff; display: flex; flex-direction: column; gap: .5rem;
+    }
+    .groups-load { text-align: center; padding: .5rem; }
+    .mini-spinner {
+      width: 20px; height: 20px; border: 2px solid #e5e7eb;
+      border-top-color: #667eea; border-radius: 50%;
+      animation: shimmer-spin .7s linear infinite; display: inline-block;
+    }
+    @keyframes shimmer-spin { to { transform: rotate(360deg); } }
+    .groups-empty { font-size: .82rem; color: #9ca3af; text-align: center; padding: .5rem; }
+    .group-item {
+      background: #fff; border-radius: 10px; padding: .6rem .75rem;
+      border: 1px solid #e9e6ff;
+    }
+    .gi-top { display: flex; align-items: center; gap: .5rem; }
+    .gi-name {
+      font-size: .82rem; font-weight: 700; color: #1a1a2e; flex: 1;
+      display: flex; align-items: center; gap: .3rem;
+      i { font-size: .7rem; color: #667eea; }
+    }
+    .gi-code { font-size: .65rem; color: #9ca3af; }
+    .gi-scheds { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .35rem; }
+    .gi-sched {
+      font-size: .62rem; font-weight: 600; color: #4a4a6a;
+      background: #f0eeff; padding: .15rem .4rem; border-radius: 5px;
+    }
+    .add-group-btn {
+      width: 100%; padding: .6rem; border: 1.5px dashed #667eea; border-radius: 10px;
+      background: transparent; color: #667eea; font-size: .8rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .3rem;
+      min-height: 44px;
+    }
+    .add-group-btn:active { background: rgba(102,126,234,.05); }
   `],
 })
 export class SecretaryTeacherCoursesComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly teacherService = inject(TeacherService);
+  private readonly groupService = inject(GroupService);
+  private readonly enrollmentSvc = inject(StudentEnrollmentService);
 
   teacherName = signal<string>('');
   courses = signal<CourseDto[]>([]);
   loading = signal(false);
   error = signal<string | null>(null);
   private currentTeacherId: string | null = null;
+
+  // Groups panel
+  expandedCourseId = signal<string | null>(null);
+  courseGroups = signal<GroupWithSchedulesDto[]>([]);
+  groupsLoading = signal(false);
 
   async ngOnInit(): Promise<void> {
     const teacherId = this.route.snapshot.paramMap.get('teacherId');
@@ -328,6 +424,44 @@ export class SecretaryTeacherCoursesComponent implements OnInit {
     const qp: any = { courseId: course.id };
     if (this.currentTeacherId) qp['teacherId'] = this.currentTeacherId;
     this.router.navigate(['/marks-entry'], { queryParams: qp });
+  }
+
+  goToStudents(course: CourseDto): void {
+    this.router.navigate(['/students'], { queryParams: { courseId: course.id } });
+  }
+
+  async toggleGroups(course: CourseDto): Promise<void> {
+    if (this.expandedCourseId() === course.id) {
+      this.expandedCourseId.set(null);
+      return;
+    }
+    this.expandedCourseId.set(course.id!);
+    this.groupsLoading.set(true);
+    try {
+      const groups = await lastValueFrom(
+        this.groupService.getGroupsByCourseAndTeacher(course.id!, this.currentTeacherId!)
+      );
+      this.courseGroups.set(groups ?? []);
+    } catch { this.courseGroups.set([]); }
+    finally { this.groupsLoading.set(false); }
+  }
+
+  async createGroup(course: CourseDto): Promise<void> {
+    this.router.navigate(['/teacher-groups'], {
+      queryParams: { courseId: course.id, teacherId: this.currentTeacherId }
+    });
+  }
+
+  dayName(d: number): string {
+    return ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][d] ?? '';
+  }
+
+  fmtTime(t?: string): string {
+    if (!t) return '';
+    const [h, m] = t.split(':');
+    const hr = parseInt(h);
+    const d = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
+    return `${d}:${m}${hr >= 12 ? 'م' : 'ص'}`;
   }
 
   goBack(): void {

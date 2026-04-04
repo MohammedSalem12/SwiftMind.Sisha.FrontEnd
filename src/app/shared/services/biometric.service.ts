@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 import { BiometricAuth } from '@aparajita/capacitor-biometric-auth';
@@ -9,6 +9,18 @@ const KEY_ENABLED = 'biometric_enabled';
 
 @Injectable({ providedIn: 'root' })
 export class BiometricService {
+
+  /** Controls biometric lock overlay visibility */
+  readonly isLocked = signal(false);
+
+  lock(): void { this.isLocked.set(true); }
+  unlock(): void { this.isLocked.set(false); }
+
+  async isEnabled(): Promise<boolean> {
+    if (!Capacitor.isNativePlatform()) return false;
+    const { value } = await Preferences.get({ key: KEY_ENABLED });
+    return value === 'true';
+  }
 
   async isAvailable(): Promise<boolean> {
     if (!Capacitor.isNativePlatform()) return false;

@@ -2,6 +2,7 @@ import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherDashboardDt
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
+import type { ReferralInfoDto } from '../common/models';
 import type { CourseDto } from '../courses/dtos/models';
 
 @Injectable({
@@ -69,6 +70,14 @@ export class TeacherService {
     { apiName: this.apiName,...config });
   
 
+  getEnrolledCoursesForTeacher = (teacherId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherEnrolledCourseDto[]>({
+      method: 'GET',
+      url: `/api/app/teacher/enrolled-courses-for-teacher/${teacherId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<TeacherDto>>({
       method: 'GET',
@@ -83,6 +92,14 @@ export class TeacherService {
       method: 'GET',
       url: '/api/app/teacher/filtered',
       params: { government: input.government, town: input.town, nameOrCode: input.nameOrCode, studentGovernment: input.studentGovernment, studentTown: input.studentTown, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getMyReferralInfo = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ReferralInfoDto>({
+      method: 'GET',
+      url: '/api/app/teacher/my-referral-info',
     },
     { apiName: this.apiName,...config });
   

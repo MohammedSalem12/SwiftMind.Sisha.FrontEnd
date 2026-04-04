@@ -1,4 +1,5 @@
 import type { NextSessionDto, SendSessionMessageDto, SessionMessageDto } from './dtos/models';
+import type { CancelSessionDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -7,6 +8,15 @@ import { Injectable } from '@angular/core';
 })
 export class SessionService {
   apiName = 'Default';
+  
+
+  cancelTodaySession = (input: CancelSessionDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/session/cancel-today-session',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
   
 
   getNextSession = (config?: Partial<Rest.Config>) =>

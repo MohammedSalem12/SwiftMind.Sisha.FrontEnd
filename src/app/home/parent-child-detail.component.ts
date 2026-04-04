@@ -13,6 +13,8 @@ import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { CourseService } from '@proxy/courses';
+import { GroupService } from '@proxy/groups';
+import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 
 @Component({
   selector: 'app-parent-child-detail',
@@ -86,6 +88,16 @@ import { CourseService } from '@proxy/courses';
           @if (enrolledCourses().length > 0) {
             <span class="tab-count">{{ enrolledCourses().length }}</span>
           }
+        </button>
+      </div>
+
+      <!-- Export & Schedule buttons -->
+      <div class="action-row">
+        <button class="action-btn action-schedule" (click)="goToSchedule()">
+          <i class="fas fa-calendar-alt"></i> جدول الحصص · Schedule
+        </button>
+        <button class="action-btn action-export" (click)="exportCsv()">
+          <i class="fas fa-file-csv"></i> تصدير CSV · Export
         </button>
       </div>
 
@@ -245,24 +257,46 @@ import { CourseService } from '@proxy/courses';
           </div>
           <div class="cards-list">
             @for (req of enrolledCourses(); track req.id) {
-              <div class="course-enroll-card">
-                <div class="course-enroll-icon">
-                  <i class="fas fa-book"></i>
+              <div class="course-rich-card">
+                <!-- Header row -->
+                <div class="crc-header">
+                  <div class="crc-icon"><i class="fas fa-book-open"></i></div>
+                  <div class="crc-title">
+                    <div class="crc-name">{{ req.courseName }}</div>
+                    @if (req.teacherName) {
+                      <div class="crc-teacher"><i class="fas fa-chalkboard-teacher"></i> {{ req.teacherName }}</div>
+                    }
+                  </div>
                 </div>
-                <div class="course-enroll-body">
-                  <div class="course-enroll-name">{{ req.courseName }}</div>
-                  @if (req.teacherName) {
-                    <div class="course-enroll-meta"><i class="fas fa-chalkboard-teacher"></i> {{ req.teacherName }}</div>
+
+                <!-- Group & next session -->
+                @if (getGroupForEnrollment(req.id); as grp) {
+                  <div class="crc-group-bar">
+                    <span class="crc-group-name"><i class="fas fa-layer-group"></i> {{ grp.name }}</span>
+                    @if (getNextSession(grp)) {
+                      <span class="crc-next"><i class="fas fa-clock"></i> {{ getNextSession(grp) }}</span>
+                    }
+                  </div>
+
+                  <!-- Schedule chips -->
+                  @if (grp.schedules?.length) {
+                    <div class="crc-schedules">
+                      @for (s of grp.schedules; track s.dayOfWeek) {
+                        <span class="crc-sched-chip">
+                          <i class="fas fa-calendar-day"></i> {{ formatSchedule(s) }}
+                        </span>
+                      }
+                    </div>
                   }
-                  @if (req.groupName) {
-                    <div class="course-enroll-meta"><i class="fas fa-users"></i> {{ req.groupName }}</div>
+
+                  @if (grp.location) {
+                    <div class="crc-location"><i class="fas fa-map-marker-alt"></i> {{ grp.location }}</div>
                   }
-                </div>
-                <span class="enroll-status-chip"
-                  [class.chip--approved]="req.status === EnrollmentRequestStatus.Approved"
-                  [class.chip--pending]="req.status === EnrollmentRequestStatus.Pending">
-                  {{ req.status === EnrollmentRequestStatus.Approved ? 'مسجل' : 'قيد الانتظار' }}
-                </span>
+                } @else if (req.groupName) {
+                  <div class="crc-group-bar">
+                    <span class="crc-group-name"><i class="fas fa-layer-group"></i> {{ req.groupName }}</span>
+                  </div>
+                }
               </div>
             }
           </div>
@@ -538,30 +572,64 @@ import { CourseService } from '@proxy/courses';
       font-size: 0.62rem; font-weight: 700;
     }
 
-    /* ── Course Enrollment Cards ── */
-    .course-enroll-card {
-      display: flex; align-items: center; gap: 0.75rem;
-      background: #fff; border-radius: 14px; padding: 0.85rem;
-      border: 1.5px solid #e9e6ff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    /* ── Action Row ── */
+    .action-row {
+      display: flex; gap: 8px; padding: 0 1rem 0.75rem;
     }
-    .course-enroll-icon {
+    .action-btn {
+      flex: 1; padding: 8px; border: none; border-radius: 10px;
+      font-size: 12px; font-weight: 600; cursor: pointer; min-height: 40px;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .action-schedule { background: rgba(59,130,246,.1); color: #3b82f6; }
+    .action-export { background: rgba(16,185,129,.1); color: #059669; }
+
+    /* ── Course Rich Cards ── */
+    .course-rich-card {
+      background: #fff; border-radius: 16px; padding: 1rem;
+      border: 1.5px solid #e9e6ff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+    .crc-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
+    .crc-icon {
       width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
       background: $purple-grad;
       display: flex; align-items: center; justify-content: center;
       i { font-size: 1.1rem; color: #fff; }
+      box-shadow: 0 3px 10px rgba(102,126,234,0.25);
     }
-    .course-enroll-body { flex: 1; min-width: 0; }
-    .course-enroll-name { font-size: 0.9rem; font-weight: 700; color: #1a202c; margin-bottom: 0.2rem; }
-    .course-enroll-meta {
-      font-size: 0.72rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem;
+    .crc-title { flex: 1; min-width: 0; }
+    .crc-name { font-size: 0.95rem; font-weight: 700; color: #1a202c; }
+    .crc-teacher {
+      font-size: 0.75rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; margin-top: 0.15rem;
       i { font-size: 0.65rem; color: $purple; }
     }
-    .enroll-status-chip {
-      flex-shrink: 0; border-radius: 20px;
-      padding: 0.2rem 0.6rem; font-size: 0.7rem; font-weight: 700;
-      &.chip--approved { background: #dcfce7; color: #16a34a; }
-      &.chip--pending  { background: #fef3c7; color: #d97706; }
+    .crc-group-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+      background: rgba(102,126,234,0.06); border-radius: 10px; padding: 0.5rem 0.65rem;
+      margin-bottom: 0.5rem;
+    }
+    .crc-group-name {
+      font-size: 0.78rem; font-weight: 700; color: #4a4a6a;
+      display: flex; align-items: center; gap: 0.3rem;
+      i { font-size: 0.65rem; color: $purple; }
+    }
+    .crc-next {
+      font-size: 0.7rem; font-weight: 600; color: #059669;
+      background: rgba(16,185,129,0.1); padding: 0.2rem 0.5rem; border-radius: 8px;
+      display: flex; align-items: center; gap: 0.25rem;
+      i { font-size: 0.58rem; }
+    }
+    .crc-schedules { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.4rem; }
+    .crc-sched-chip {
+      font-size: 0.68rem; font-weight: 600; color: #4a4a6a;
+      background: #f5f3ff; padding: 0.2rem 0.5rem; border-radius: 6px;
+      display: flex; align-items: center; gap: 0.2rem;
+      i { font-size: 0.55rem; color: #764ba2; }
+    }
+    .crc-location {
+      font-size: 0.72rem; color: #9ca3af; display: flex; align-items: center; gap: 0.3rem;
+      i { font-size: 0.6rem; }
     }
 
     /* ── Bottom Bar ── */
@@ -592,6 +660,7 @@ export class ParentChildDetailComponent implements OnInit {
   private readonly examGradeService = inject(ExamGradeService);
   private readonly enrollmentRequestSvc = inject(EnrollmentRequestService);
   private readonly courseService = inject(CourseService);
+  private readonly groupService = inject(GroupService);
 
   readonly EnrollmentRequestStatus = EnrollmentRequestStatus;
 
@@ -604,6 +673,7 @@ export class ParentChildDetailComponent implements OnInit {
   gradesLoading = signal(false);
   coursesLoading = signal(false);
   activeTab = signal<'attendance' | 'grades' | 'courses'>('attendance');
+  courseGroups = signal<Map<string, GroupWithSchedulesDto>>(new Map());
 
   private studentId = '';
 
@@ -636,12 +706,32 @@ export class ParentChildDetailComponent implements OnInit {
           maxResultCount: 100,
         })
       );
-      this.attendanceReports.set(result.items || []);
+      // Recalculate attendance days based on schedule (default: Sat=6, Tue=2)
+      const recalculated = (result.items || []).map(r => this.recalcAttendance(r));
+      this.attendanceReports.set(recalculated);
     } catch (error) {
       console.error('Error loading attendance:', error);
     } finally {
       this.attendanceLoading.set(false);
     }
+  }
+
+  private recalcAttendance(report: StudentAttendanceReportDto): StudentAttendanceReportDto {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const today = now.getDate();
+    // Default schedule days: Saturday (6), Tuesday (2), Thursday (4)
+    const scheduleDays = [6, 2, 4];
+    let totalDays = 0;
+    for (let day = 1; day <= today; day++) {
+      const d = new Date(year, month, day);
+      if (scheduleDays.includes(d.getDay())) totalDays++;
+    }
+    const absentDays = report.absentDays;
+    const attendedDays = Math.max(0, totalDays - absentDays);
+    const pct = totalDays > 0 ? Math.round(attendedDays / totalDays * 100) : 0;
+    return { ...report, totalDaysInMonth: totalDays, attendedDays, attendancePercentage: pct };
   }
 
   private async loadGrades(): Promise<void> {
@@ -665,7 +755,10 @@ export class ParentChildDetailComponent implements OnInit {
     this.coursesLoading.set(true);
     try {
       const all = await lastValueFrom(this.enrollmentRequestSvc.getList({ skipHandleError: true } as any));
-      const forThisStudent = (all || []).filter(r => r.studentId === this.studentId);
+      // Filter: only this student's approved enrollments
+      const forThisStudent = (all || []).filter(
+        r => r.studentId === this.studentId && r.status === EnrollmentRequestStatus.Approved
+      );
 
       // If courseName is missing, fetch course details to fill them
       const missingCourseIds = forThisStudent
@@ -689,11 +782,82 @@ export class ParentChildDetailComponent implements OnInit {
       }
 
       this.enrolledCourses.set(forThisStudent);
+
+      // Load group details (schedules) for each enrollment
+      const groupMap = new Map<string, GroupWithSchedulesDto>();
+      await Promise.all(forThisStudent.map(async (req) => {
+        if (!req.teacherId || !req.courseId) return;
+        try {
+          const groups = await lastValueFrom(
+            this.groupService.getGroupsForTeacherAndCourse(req.teacherId, req.courseId)
+          );
+          const myGroup = req.groupId
+            ? groups?.find(g => g.groupId === req.groupId) ?? groups?.[0]
+            : groups?.[0];
+          if (myGroup && req.id) groupMap.set(req.id, myGroup);
+        } catch { /* silent */ }
+      }));
+      this.courseGroups.set(groupMap);
     } catch {
       // silent — courses tab will show empty state
     } finally {
       this.coursesLoading.set(false);
     }
+  }
+
+  getGroupForEnrollment(reqId?: string): GroupWithSchedulesDto | null {
+    if (!reqId) return null;
+    return this.courseGroups().get(reqId) ?? null;
+  }
+
+  getNextSession(group: GroupWithSchedulesDto | null): string {
+    if (!group?.schedules?.length) return '';
+    const now = new Date();
+    const today = now.getDay(); // 0=Sun..6=Sat
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+
+    // Find next upcoming session
+    const sorted = [...group.schedules].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+    for (const s of sorted) {
+      const sMins = this.timeToMins(s.startTime);
+      if (s.dayOfWeek > today || (s.dayOfWeek === today && sMins > nowMins)) {
+        return this.formatDayTime(s.dayOfWeek, s.startTime);
+      }
+    }
+    // Wrap to next week
+    return sorted[0] ? this.formatDayTime(sorted[0].dayOfWeek, sorted[0].startTime) : '';
+  }
+
+  private timeToMins(t?: string): number {
+    if (!t) return 0;
+    const [h, m] = t.split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  }
+
+  private formatDayTime(day: number, time?: string): string {
+    const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const dayName = days[day] ?? '';
+    if (!time) return dayName;
+    const [h, m] = time.split(':');
+    const hr = parseInt(h);
+    const disp = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
+    return `${dayName} ${disp}:${m} ${hr >= 12 ? 'م' : 'ص'}`;
+  }
+
+  formatSchedule(s: any): string {
+    const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const day = days[s.dayOfWeek] ?? '';
+    const start = this.formatTimeShort(s.startTime);
+    const end = this.formatTimeShort(s.endTime);
+    return `${day} ${start}-${end}`;
+  }
+
+  private formatTimeShort(t?: string): string {
+    if (!t) return '';
+    const [h, m] = t.split(':');
+    const hr = parseInt(h);
+    const disp = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
+    return `${disp}:${m}${hr >= 12 ? 'م' : 'ص'}`;
   }
 
   getStudentName(): string {
@@ -743,5 +907,50 @@ export class ParentChildDetailComponent implements OnInit {
     if (!g || g.length === 0) return 0;
     const sum = g.reduce((s, x) => s + this.getPercentage(x), 0);
     return Math.round(sum / g.length);
+  }
+
+  goToSchedule(): void {
+    const id = this.route.snapshot.paramMap.get('studentId');
+    if (id) this.router.navigate(['/parent/child-schedule', id]);
+  }
+
+  exportCsv(): void {
+    const student = this.student();
+    const name = student ? `${student.firstName} ${student.lastName}` : 'student';
+
+    // Attendance rows
+    const attHeaders = ['Course', 'Total Days', 'Attended', 'Absent', 'Attendance %'];
+    const attRows = this.attendanceReports().map((r: any) => [
+      r.courseNameAr || r.courseNameEn,
+      r.totalDaysInMonth,
+      r.attendedDays,
+      r.absentDays,
+      (r.attendancePercentage ?? 0).toFixed(1) + '%',
+    ]);
+
+    // Grade rows
+    const gradeHeaders = ['Exam', 'Course', 'Score', 'Max', 'Percentage'];
+    const gradeRows = this.grades().map((g: any) => [
+      g.examTitle || g.examNameAr || 'Exam',
+      g.courseNameAr || g.courseNameEn || '',
+      g.score,
+      g.maxScore,
+      this.getPercentage(g).toFixed(1) + '%',
+    ]);
+
+    let csv = '\uFEFF'; // BOM for Arabic
+    csv += `Student: ${name}\n\n`;
+    csv += `--- Attendance ---\n`;
+    csv += [attHeaders, ...attRows].map(r => r.map((c: any) => `"${c}"`).join(',')).join('\n');
+    csv += `\n\n--- Grades ---\n`;
+    csv += [gradeHeaders, ...gradeRows].map(r => r.map((c: any) => `"${c}"`).join(',')).join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}-report-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }

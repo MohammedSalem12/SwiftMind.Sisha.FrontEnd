@@ -53,6 +53,8 @@ export interface UserRegSecretaryDto extends UserRegBaseDto {
 export interface UserRegStudentDto extends UserRegBaseDto {
   grade: number;
   referralCode?: string;
+  government?: string;
+  town?: string;
 }
 
 export interface UserRegTeacherDto extends UserRegBaseDto {
@@ -76,4 +78,9 @@ export interface UserRegistrationTypeDto {
   name?: string;
   description?: string;
   requiredFields: string[];
+}
+
+export interface ReferralInfoDto {
+  referralCode?: string;
+  referrerName?: string;
 }

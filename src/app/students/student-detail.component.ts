@@ -15,6 +15,7 @@ import type { AttendanceDto } from '@proxy/attendances/dtos/models';
 import type { TeacherDto } from '@proxy/teachers/models';
 import type { StudentDto } from '@proxy/students/models';
 import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
+import { ConfigStateService } from '@abp/ng.core';
 
 @Component({
   selector: 'app-student-detail',
@@ -31,7 +32,9 @@ export class StudentDetailComponent implements OnInit {
   private readonly teacherSvc = inject(TeacherService);
   private readonly studentSvc = inject(StudentService);
   private readonly examGradeSvc = inject(ExamGradeService);
+  private readonly configSvc = inject(ConfigStateService);
 
+  canPromote = signal(false);
   loading = signal(false);
   studentId = signal<string | null>(null);
   enrollments = signal<EnrollmentDto[]>([]);
@@ -115,6 +118,14 @@ export class StudentDetailComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Only ADMIN, PARENT, STUDENT can promote
+    const cu = this.configSvc.getOne('currentUser') as any;
+    const roles: string[] = (cu?.roles || cu?.roleNames || cu?.userRoles || [])
+      .map((r: any) => typeof r === 'string' ? r.toUpperCase() : '');
+    this.canPromote.set(
+      roles.includes('ADMIN') || roles.includes('PARENT') || roles.includes('STUDENT')
+    );
+
     this.route.paramMap.subscribe(pm => {
       const id = pm.get('id');
       this.studentId.set(id);

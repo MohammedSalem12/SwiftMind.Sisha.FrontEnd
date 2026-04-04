@@ -80,8 +80,62 @@ import { lastValueFrom } from 'rxjs';
                 </div>
               }
 
+              <!-- Cancel button for teachers/secretaries -->
+              @if (canCancel() && !isPast(s)) {
+                <button class="cancel-btn" (click)="openCancelDialog(s)" [disabled]="cancelling()">
+                  @if (cancelling()) { <span class="spinner-xs"></span> }
+                  @else { <i class="fas fa-times-circle"></i> }
+                  إلغاء الحصة · Cancel Session
+                </button>
+              }
+
             </div>
           }
+        </div>
+      }
+
+      <!-- Cancel confirmation dialog -->
+      @if (showCancelDialog()) {
+        <div class="dialog-overlay" (click)="closeCancelDialog()">
+          <div class="dialog-card" (click)="$event.stopPropagation()">
+            <div class="dialog-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="dialog-title">إلغاء الحصة · Cancel Session</h3>
+            <p class="dialog-desc">
+              هل أنت متأكد من إلغاء حصة
+              <strong>{{ cancelTarget()?.courseName }}</strong>
+              ({{ cancelTarget()?.groupName }}) اليوم؟
+            </p>
+            <div class="dialog-field">
+              <label>سبب الإلغاء (اختياري) · Reason (optional)</label>
+              <textarea
+                class="dialog-textarea"
+                [value]="cancelReason()"
+                (input)="cancelReason.set($any($event.target).value)"
+                placeholder="اكتب السبب هنا..."
+                rows="3"
+              ></textarea>
+            </div>
+            <div class="dialog-actions">
+              <button class="dialog-btn dialog-btn--cancel" (click)="closeCancelDialog()">
+                تراجع · Back
+              </button>
+              <button class="dialog-btn dialog-btn--confirm" (click)="confirmCancel()" [disabled]="cancelling()">
+                @if (cancelling()) { <span class="spinner-xs"></span> }
+                @else { <i class="fas fa-times-circle"></i> }
+                تأكيد الإلغاء · Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Success toast -->
+      @if (showSuccess()) {
+        <div class="toast-success">
+          <i class="fas fa-check-circle"></i>
+          تم إلغاء الحصة وإرسال الإشعارات · Session cancelled
         </div>
       }
 
@@ -163,6 +217,92 @@ import { lastValueFrom } from 'rxjs';
       font-size: 0.75rem; font-weight: 600; color: #9ca3af;
     }
     .session-done i { font-size: 0.7rem; }
+    .cancel-btn {
+      width: 100%; margin-top: 0.5rem; padding: 0.5rem; border: none; border-radius: 8px;
+      background: rgba(239,68,68,0.08); color: #dc2626;
+      font-size: 0.78rem; font-weight: 700; cursor: pointer; min-height: 40px;
+      display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+    }
+    .cancel-btn:disabled { opacity: 0.5; }
+    .spinner-xs {
+      width: 14px; height: 14px; border: 2px solid rgba(220,38,38,0.2);
+      border-top-color: #dc2626; border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Dialog overlay */
+    .dialog-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000; padding: 1rem;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .dialog-card {
+      background: #fff; border-radius: 20px; padding: 1.5rem;
+      width: 100%; max-width: 360px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .dialog-icon {
+      text-align: center; margin-bottom: 0.75rem;
+    }
+    .dialog-icon i {
+      font-size: 2.5rem; color: #f59e0b;
+    }
+
+    .dialog-title {
+      text-align: center; font-size: 1.05rem; font-weight: 800; color: #1a202c; margin: 0 0 0.5rem;
+    }
+    .dialog-desc {
+      text-align: center; font-size: 0.85rem; color: #6b7280; margin: 0 0 1rem; line-height: 1.5;
+    }
+    .dialog-desc strong { color: #374151; }
+
+    .dialog-field { margin-bottom: 1rem; }
+    .dialog-field label {
+      display: block; font-size: 0.78rem; font-weight: 600; color: #374151; margin-bottom: 0.4rem;
+    }
+    .dialog-textarea {
+      width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px;
+      padding: 0.65rem 0.75rem; font-size: 0.85rem; font-family: inherit;
+      resize: none; outline: none; direction: rtl; box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .dialog-textarea:focus { border-color: #667eea; }
+
+    .dialog-actions {
+      display: flex; gap: 0.6rem;
+    }
+    .dialog-btn {
+      flex: 1; padding: 0.7rem; border: none; border-radius: 12px;
+      font-size: 0.82rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+      min-height: 46px; transition: opacity 0.2s;
+    }
+    .dialog-btn:active { opacity: 0.8; }
+    .dialog-btn--cancel {
+      background: #f3f4f6; color: #374151;
+    }
+    .dialog-btn--confirm {
+      background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff;
+    }
+    .dialog-btn--confirm:disabled { opacity: 0.5; }
+
+    /* Success toast */
+    .toast-success {
+      position: fixed; bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 12px);
+      left: 50%; transform: translateX(-50%);
+      background: #22c55e; color: #fff; padding: 0.7rem 1.2rem;
+      border-radius: 12px; font-size: 0.8rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.4rem;
+      box-shadow: 0 4px 20px rgba(34,197,94,0.4);
+      z-index: 10001; animation: slideUp 0.3s ease;
+      white-space: nowrap;
+    }
   `],
 })
 export class TodaySessionsComponent implements OnInit {
@@ -172,6 +312,12 @@ export class TodaySessionsComponent implements OnInit {
   loading = signal(true);
   sessions = signal<NextSessionDto[]>([]);
   actorType = signal('');
+  cancelling = signal(false);
+  canCancel = signal(false);
+  showCancelDialog = signal(false);
+  cancelTarget = signal<NextSessionDto | null>(null);
+  cancelReason = signal('');
+  showSuccess = signal(false);
 
   private readonly ARABIC_DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
@@ -179,6 +325,7 @@ export class TodaySessionsComponent implements OnInit {
     try {
       const userInfo = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
       this.actorType.set(userInfo?.actorType || '');
+      this.canCancel.set(userInfo?.actorType === 'Teacher' || userInfo?.actorType === 'Secretary');
       const all = await lastValueFrom(this.sessionService.getNextSessionsPerCourse());
       // Sort: live first, then by secondsUntilStart ascending
       const sorted = (all || []).sort((a, b) => {
@@ -220,4 +367,37 @@ export class TodaySessionsComponent implements OnInit {
     return !s.isNow && s.secondsUntilStart < 0;
   }
 
+  openCancelDialog(s: NextSessionDto): void {
+    this.cancelTarget.set(s);
+    this.cancelReason.set('');
+    this.showCancelDialog.set(true);
+  }
+
+  closeCancelDialog(): void {
+    this.showCancelDialog.set(false);
+    this.cancelTarget.set(null);
+  }
+
+  async confirmCancel(): Promise<void> {
+    const s = this.cancelTarget();
+    if (!s) return;
+
+    this.cancelling.set(true);
+    try {
+      await lastValueFrom(this.sessionService.cancelTodaySession({
+        groupScheduleId: s.groupScheduleId!,
+        reason: this.cancelReason() || undefined,
+      }));
+      this.closeCancelDialog();
+      this.sessions.update(list => list.filter(x => x.groupScheduleId !== s.groupScheduleId));
+      // Show success toast
+      this.showSuccess.set(true);
+      setTimeout(() => this.showSuccess.set(false), 3000);
+    } catch (e: any) {
+      this.closeCancelDialog();
+      alert(e?.error?.error?.message || 'حدث خطأ · Error occurred');
+    } finally {
+      this.cancelling.set(false);
+    }
+  }
 }

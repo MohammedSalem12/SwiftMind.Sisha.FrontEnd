@@ -1,8 +1,12 @@
+import type { GroupType } from '../group-type.enum';
 import type { ExtensibleAuditedEntityDto } from '@abp/ng.core';
 
 export interface EditGroupDto {
   name?: string;
   description?: string;
+  groupType?: GroupType;
+  meetingLink?: string;
+  location?: string;
 }
 
 export interface EditGroupScheduleDto {
@@ -28,6 +32,9 @@ export interface GroupWithSchedulesDto {
   courseId?: string;
   courseName?: string;
   gradeName?: string;
+  groupType?: GroupType;
+  meetingLink?: string;
+  location?: string;
   schedules: GroupScheduleDto[];
 }
 

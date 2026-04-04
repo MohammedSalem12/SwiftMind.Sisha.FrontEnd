@@ -105,45 +105,72 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
             <i class="fas fa-map-marker-alt"></i> الموقع الجغرافي · Location
             <button class="edit-loc-btn" (click)="editingLocation.set(!editingLocation())">
               <i [class]="editingLocation() ? 'fas fa-times' : 'fas fa-pen'"></i>
-              {{ editingLocation() ? 'إلغاء' : 'تعديل' }}
+              {{ editingLocation() ? 'إلغاء · Cancel' : 'تعديل · Edit' }}
             </button>
           </div>
           @if (editingLocation()) {
             <div class="loc-edit-card">
-              <label>المحافظة · Governorate</label>
-              <select [ngModel]="locGov()" (ngModelChange)="onGovernorateChange($event)" class="loc-input">
-                <option value="">-- اختر المحافظة --</option>
-                @for (g of governorates; track g) {
-                  <option [value]="g">{{ g }}</option>
-                }
-              </select>
-              <label>المركز / الحي · District</label>
-              @if (locGov()) {
-                <select [ngModel]="locTown()" (ngModelChange)="locTown.set($event)" class="loc-input">
-                  <option value="">-- اختر المركز / الحي --</option>
-                  @for (d of districts(); track d) {
-                    <option [value]="d">{{ d }}</option>
+              <div class="loc-field">
+                <div class="loc-field-icon"><i class="fas fa-city"></i></div>
+                <div class="loc-field-body">
+                  <label>المحافظة · Governorate</label>
+                  <select [ngModel]="locGov()" (ngModelChange)="onGovernorateChange($event)" class="loc-input">
+                    <option value="">-- اختر المحافظة --</option>
+                    @for (g of governorates; track g) {
+                      <option [value]="g">{{ g }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+              <div class="loc-field">
+                <div class="loc-field-icon"><i class="fas fa-map-pin"></i></div>
+                <div class="loc-field-body">
+                  <label>المركز / الحي · District</label>
+                  @if (locGov()) {
+                    <select [ngModel]="locTown()" (ngModelChange)="locTown.set($event)" class="loc-input">
+                      <option value="">-- اختر المركز / الحي --</option>
+                      @for (d of districts(); track d) {
+                        <option [value]="d">{{ d }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <select class="loc-input" disabled>
+                      <option>-- اختر المحافظة أولاً --</option>
+                    </select>
                   }
-                </select>
-              } @else {
-                <select class="loc-input" disabled>
-                  <option>-- اختر المحافظة أولاً --</option>
-                </select>
-              }
+                </div>
+              </div>
               @if (locSaveError()) { <p class="loc-error">{{ locSaveError() }}</p> }
               <button class="loc-save-btn" [disabled]="locSaving()" (click)="saveLocation()">
-                @if (locSaving()) { <span class="spinner-xs"></span> } @else { <i class="fas fa-check"></i> }
+                @if (locSaving()) { <span class="spinner-xs"></span> } @else { <i class="fas fa-check-circle"></i> }
                 حفظ الموقع · Save Location
               </button>
             </div>
           } @else {
-            <div class="loc-display">
+            <div class="loc-card">
+              <div class="loc-card-bg"></div>
               @if (locGov() || locTown()) {
-                <span class="loc-item"><i class="fas fa-map-marker-alt"></i>
-                  {{ [locGov(), locTown()].filter(Boolean).join(' — ') }}
-                </span>
+                <div class="loc-pin-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="loc-details">
+                  @if (locGov()) {
+                    <div class="loc-row">
+                      <span class="loc-label">المحافظة · Gov.</span>
+                      <span class="loc-value">{{ locGov() }}</span>
+                    </div>
+                  }
+                  @if (locTown()) {
+                    <div class="loc-row">
+                      <span class="loc-label">المركز · District</span>
+                      <span class="loc-value">{{ locTown() }}</span>
+                    </div>
+                  }
+                </div>
               } @else {
-                <span class="loc-empty">لم يتم تحديد الموقع بعد · Location not set</span>
+                <div class="loc-empty-state">
+                  <div class="loc-empty-icon"><i class="fas fa-map-marked-alt"></i></div>
+                  <p class="loc-empty-text">لم يتم تحديد الموقع بعد</p>
+                  <span class="loc-empty-sub">Location not set — tap edit to add</span>
+                </div>
               }
             </div>
           }
@@ -307,35 +334,84 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
     .empty-box span { font-size:.75rem; color:#9090aa; }
 
     .edit-loc-btn {
-      margin-right:auto; background:none; border:1.5px solid #667eea;
-      color:#667eea; border-radius:8px; padding:.2rem .6rem;
-      font-size:.72rem; font-weight:600; cursor:pointer;
-      display:flex; align-items:center; gap:.25rem;
+      margin-right:auto; background:rgba(102,126,234,.08); border:1.5px solid rgba(102,126,234,.2);
+      color:#667eea; border-radius:20px; padding:.3rem .75rem;
+      font-size:.72rem; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; gap:.3rem; transition:all .2s;
     }
-    .loc-display {
-      background:white; border-radius:12px; padding:.85rem 1rem;
-      border:1.5px solid #e0e0f0;
+    .edit-loc-btn:active { transform:scale(.95); background:rgba(102,126,234,.15); }
+
+    .loc-card {
+      position:relative; overflow:hidden;
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      border-radius:16px; padding:1.25rem;
+      display:flex; align-items:center; gap:1rem;
+      box-shadow:0 4px 20px rgba(102,126,234,.25);
     }
-    .loc-item { display:flex; align-items:center; gap:.4rem; font-size:.88rem; color:#374151; font-weight:600; }
-    .loc-item i { color:#667eea; }
-    .loc-empty { font-size:.82rem; color:#9090aa; }
+    .loc-card-bg {
+      position:absolute; top:-30px; left:-30px;
+      width:120px; height:120px; border-radius:50%;
+      background:rgba(255,255,255,.08); pointer-events:none;
+    }
+    .loc-pin-icon {
+      width:48px; height:48px; border-radius:14px; flex-shrink:0;
+      background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.25);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.2rem; color:#fff; position:relative; z-index:1;
+    }
+    .loc-details { flex:1; min-width:0; position:relative; z-index:1; }
+    .loc-row {
+      display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+      padding:.25rem 0;
+    }
+    .loc-row + .loc-row { border-top:1px solid rgba(255,255,255,.12); }
+    .loc-label { font-size:.7rem; font-weight:600; color:rgba(255,255,255,.65); }
+    .loc-value { font-size:.88rem; font-weight:700; color:#fff; text-align:left; }
+    .loc-empty-state {
+      width:100%; text-align:center; padding:.5rem 0; position:relative; z-index:1;
+    }
+    .loc-empty-icon {
+      width:48px; height:48px; border-radius:50%; margin:0 auto .6rem;
+      background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center;
+      font-size:1.3rem; color:rgba(255,255,255,.7);
+    }
+    .loc-empty-text { margin:0; font-size:.88rem; font-weight:700; color:rgba(255,255,255,.9); }
+    .loc-empty-sub { font-size:.72rem; color:rgba(255,255,255,.55); }
+
     .loc-edit-card {
-      background:white; border-radius:12px; border:1.5px solid #e0e0f0;
-      padding:1rem; display:flex; flex-direction:column; gap:.4rem;
+      background:#fff; border-radius:16px; border:1.5px solid #e0e0f0;
+      padding:1.125rem; display:flex; flex-direction:column; gap:.75rem;
+      box-shadow:0 2px 12px rgba(0,0,0,.06);
     }
-    .loc-edit-card label { font-size:.72rem; font-weight:600; color:#667eea; }
+    .loc-field {
+      display:flex; align-items:flex-start; gap:.75rem;
+    }
+    .loc-field-icon {
+      width:36px; height:36px; border-radius:10px; flex-shrink:0;
+      background:linear-gradient(135deg,rgba(102,126,234,.12),rgba(118,75,162,.12));
+      display:flex; align-items:center; justify-content:center;
+      color:#667eea; font-size:.9rem; margin-top:1.1rem;
+    }
+    .loc-field-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:.25rem; }
+    .loc-edit-card label { font-size:.72rem; font-weight:700; color:#667eea; letter-spacing:.02em; }
     .loc-input {
-      padding:.55rem .75rem; border:1.5px solid #e0e0f0; border-radius:10px;
-      font-size:.88rem; font-family:inherit; background:white; width:100%; box-sizing:border-box;
+      padding:.6rem .85rem; border:1.5px solid #e0e0f0; border-radius:12px;
+      font-size:.88rem; font-family:inherit; background:#fafaff; width:100%; box-sizing:border-box;
+      transition:border-color .2s, box-shadow .2s;
     }
-    .loc-input:focus { outline:none; border-color:#667eea; }
+    .loc-input:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 3px rgba(102,126,234,.1); background:#fff; }
+    .loc-input:disabled { background:#f0f0f5; color:#9090aa; }
     .loc-error { color:#dc2626; font-size:.75rem; margin:0; }
     .loc-save-btn {
-      display:flex; align-items:center; justify-content:center; gap:.4rem;
-      padding:.7rem; border:none; border-radius:10px; margin-top:.25rem;
+      display:flex; align-items:center; justify-content:center; gap:.5rem;
+      padding:.75rem; border:none; border-radius:12px; margin-top:.25rem;
       background:linear-gradient(135deg,#667eea,#764ba2); color:white;
-      font-size:.88rem; font-weight:700; cursor:pointer; min-height:44px;
+      font-size:.88rem; font-weight:700; cursor:pointer; min-height:48px;
+      box-shadow:0 4px 14px rgba(102,126,234,.3);
+      transition:transform .15s, box-shadow .15s;
+      -webkit-tap-highlight-color:transparent; touch-action:manipulation;
     }
+    .loc-save-btn:active { transform:scale(.97); box-shadow:0 2px 8px rgba(102,126,234,.2); }
     .loc-save-btn:disabled { opacity:.6; cursor:not-allowed; }
 
     .promo-msg {

@@ -79,6 +79,9 @@ import { StudentService } from '@proxy/students';
                 <button class="btn-enroll" (click)="goToEnroll()">
                   <i class="fas fa-plus"></i> سجّل الآن
                 </button>
+                <button class="btn-share-course" (click)="shareCourse()">
+                  <i class="fas fa-share-alt"></i> شارك هذا المقرر · Share Course
+                </button>
               </div>
             } @else {
               <div class="enrollment-info">
@@ -104,14 +107,65 @@ import { StudentService } from '@proxy/students';
                 <a class="enroll-action-btn action-change" [routerLink]="['/student/change-teacher', courseId()]">
                   <i class="fas fa-exchange-alt"></i> تغيير المعلم · Change Teacher
                 </a>
-                <button class="enroll-action-btn action-unenroll" (click)="unenroll()" [disabled]="unenrolling()">
+                <button class="enroll-action-btn action-unenroll" (click)="showUnenrollConfirm.set(true)" [disabled]="unenrolling()">
                   @if (unenrolling()) { <i class="fas fa-spinner fa-spin"></i> }
                   @else { <i class="fas fa-sign-out-alt"></i> }
                   إلغاء التسجيل · Unenroll
                 </button>
+                <button class="enroll-action-btn action-share" (click)="shareCourse()">
+                  <i class="fas fa-share-alt"></i> مشاركة المقرر · Share Course
+                </button>
               </div>
             }
           </div>
+
+          <!-- Change Group -->
+          @if (enrollment()?.status === EnrollmentRequestStatus.Approved && !changingGroup()) {
+            <div class="section-card">
+              <button class="change-group-btn" (click)="openChangeGroup()">
+                <i class="fas fa-random"></i> تغيير المجموعة · Change Group
+              </button>
+            </div>
+          }
+          @if (changingGroup()) {
+            <div class="section-card">
+              <div class="section-title">
+                <i class="fas fa-random"></i> تغيير المجموعة · Change Group
+                <button class="cg-cancel" (click)="changingGroup.set(false)"><i class="fas fa-times"></i></button>
+              </div>
+              @if (loadingOtherGroups()) {
+                <div style="text-align:center;padding:1rem"><div class="spinner"></div></div>
+              } @else if (otherGroups().length === 0) {
+                <div class="empty-sub">لا توجد مجموعات أخرى متاحة · No other groups available</div>
+              } @else {
+                <div style="display:flex;flex-direction:column;gap:.5rem">
+                  @for (g of otherGroups(); track g.groupId) {
+                    <div class="cg-card">
+                      <div class="cg-name">{{ g.name }}</div>
+                      @if (g.schedules?.length) {
+                        <div class="cg-schedules">
+                          @for (s of g.schedules; track s.dayOfWeek) {
+                            <span class="cg-sched"><i class="fas fa-calendar-day"></i> {{ getDayName(s.dayOfWeek) }} {{ formatTime(s.startTime) }}-{{ formatTime(s.endTime) }}</span>
+                          }
+                        </div>
+                      }
+                      <button class="cg-btn" [disabled]="groupChangeSubmitting()" (click)="submitGroupChange(g)">
+                        @if (groupChangeSubmitting()) { <span class="spinner" style="width:14px;height:14px"></span> }
+                        @else { <i class="fas fa-paper-plane"></i> }
+                        إرسال طلب · Send Request
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+              @if (groupChangeMsg()) {
+                <div class="cg-msg" [class.cg-msg--success]="groupChangeSuccess()" [class.cg-msg--error]="!groupChangeSuccess()">
+                  <i [class]="groupChangeSuccess() ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+                  {{ groupChangeMsg() }}
+                </div>
+              }
+            </div>
+          }
 
           <!-- Schedule -->
           @if (group() && group()!.schedules?.length) {
@@ -231,6 +285,32 @@ import { StudentService } from '@proxy/students';
             </div>
           }
 
+        </div>
+      }
+
+      <!-- Unenroll Confirmation Modal -->
+      @if (showUnenrollConfirm()) {
+        <div class="modal-overlay" (click)="showUnenrollConfirm.set(false)">
+          <div class="modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-icon-wrap">
+              <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            </div>
+            <h3 class="modal-title">إلغاء التسجيل · Unenroll</h3>
+            <p class="modal-body">
+              هل أنت متأكد من إلغاء تسجيلك في هذا المقرر؟<br>
+              <span class="modal-body-en">Are you sure you want to unenroll from this course?</span>
+            </p>
+            <div class="modal-actions">
+              <button class="modal-btn modal-btn--cancel" (click)="showUnenrollConfirm.set(false)">
+                <i class="fas fa-arrow-right"></i> رجوع · Cancel
+              </button>
+              <button class="modal-btn modal-btn--danger" [disabled]="unenrolling()" (click)="unenroll()">
+                @if (unenrolling()) { <span class="spinner" style="width:14px;height:14px"></span> }
+                @else { <i class="fas fa-sign-out-alt"></i> }
+                إلغاء التسجيل
+              </button>
+            </div>
+          </div>
         </div>
       }
     </div>
@@ -378,6 +458,13 @@ import { StudentService } from '@proxy/students';
     }
     .action-change { background: rgba(102,126,234,.08); color: #667eea; }
     .action-unenroll { background: rgba(239,68,68,.08); color: #dc2626; }
+    .action-share { background: rgba(16,185,129,.08); color: #059669; }
+    .btn-share-course {
+      width: 100%; margin-top: .5rem; padding: .6rem; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #059669); color: white;
+      font-size: .8rem; font-weight: 700; cursor: pointer; min-height: 44px;
+      display: flex; align-items: center; justify-content: center; gap: .4rem;
+    }
     .info-row {
       display: flex; align-items: center; gap: 0.75rem;
       font-size: 0.88rem;
@@ -397,6 +484,43 @@ import { StudentService } from '@proxy/students';
     .status-pending  { background: #fffbeb; color: #d97706; }
     .status-approved { background: #f0fdf4; color: #15803d; }
     .status-rejected { background: #fef2f2; color: #dc2626; }
+
+    /* ── Change Group ─────────────────────────────── */
+    .change-group-btn {
+      width:100%; padding:.65rem; border:none; border-radius:10px;
+      background:rgba(102,126,234,.08); color:#667eea;
+      font-size:.85rem; font-weight:700; cursor:pointer; min-height:44px;
+      display:flex; align-items:center; justify-content:center; gap:.4rem;
+      &:active { background:rgba(102,126,234,.15); }
+    }
+    .cg-cancel {
+      margin-right:auto; background:none; border:none;
+      color:#9ca3af; font-size:.9rem; cursor:pointer; padding:.25rem;
+    }
+    .cg-card {
+      background:#f5f3ff; border:1px solid #ede9fe; border-radius:10px; padding:.75rem;
+    }
+    .cg-name { font-size:.88rem; font-weight:700; color:#1a202c; margin-bottom:.3rem; }
+    .cg-schedules { display:flex; flex-wrap:wrap; gap:.25rem; margin-bottom:.5rem; }
+    .cg-sched {
+      font-size:.68rem; font-weight:600; color:#4a4a6a;
+      background:white; padding:.2rem .45rem; border-radius:6px;
+      display:flex; align-items:center; gap:.2rem;
+      i { color:#764ba2; font-size:.58rem; }
+    }
+    .cg-btn {
+      width:100%; padding:.55rem; border-radius:8px; border:none;
+      background:linear-gradient(135deg,#667eea,#764ba2); color:#fff;
+      font-size:.8rem; font-weight:700; cursor:pointer; min-height:40px;
+      display:flex; align-items:center; justify-content:center; gap:.35rem;
+      &:disabled { opacity:.5; }
+    }
+    .cg-msg {
+      margin-top:.5rem; padding:.5rem .6rem; border-radius:8px;
+      font-size:.78rem; font-weight:600; display:flex; align-items:center; gap:.3rem;
+      &.cg-msg--success { background:#f0fdf4; color:#15803d; }
+      &.cg-msg--error { background:#fef2f2; color:#dc2626; }
+    }
 
     /* ── Schedule ─────────────────────────────────── */
     .schedules { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -526,6 +650,57 @@ import { StudentService } from '@proxy/students';
     .empty-sub {
       font-size: 0.85rem; color: #9ca3af; text-align: center; padding: 0.75rem 0;
     }
+
+    /* ── Modal ─────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+      animation: fadeIn .2s ease;
+    }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    .modal-card {
+      background: #fff; border-radius: 20px; width: 100%; max-width: 340px;
+      padding: 1.75rem 1.5rem 1.25rem; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from { transform:translateY(30px);opacity:0 } to { transform:translateY(0);opacity:1 } }
+    .modal-icon-wrap { display: flex; justify-content: center; margin-bottom: 1rem; }
+    .modal-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: #d97706;
+      box-shadow: 0 4px 16px rgba(217,119,6,.2);
+    }
+    .modal-title {
+      margin: 0 0 .5rem; font-size: 1.05rem; font-weight: 800; color: #1a202c;
+    }
+    .modal-body {
+      margin: 0 0 1.25rem; font-size: .88rem; color: #6b7280; line-height: 1.5;
+    }
+    .modal-body-en { font-size: .78rem; color: #9ca3af; }
+    .modal-actions {
+      display: flex; gap: .5rem;
+    }
+    .modal-btn {
+      flex: 1; padding: .7rem; border: none; border-radius: 12px;
+      font-size: .85rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: .35rem;
+      min-height: 48px; transition: transform .1s;
+      -webkit-tap-highlight-color: transparent;
+      &:active { transform: scale(.97); }
+      &:disabled { opacity: .5; cursor: not-allowed; }
+    }
+    .modal-btn--cancel {
+      background: #f3f4f6; color: #4b5563;
+    }
+    .modal-btn--danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff;
+      box-shadow: 0 4px 12px rgba(239,68,68,.3);
+    }
   `]
 })
 export class StudentCourseProfileComponent implements OnInit {
@@ -548,9 +723,18 @@ export class StudentCourseProfileComponent implements OnInit {
 
   loading = signal(false);
   unenrolling = signal(false);
+  showUnenrollConfirm = signal(false);
   loadingAttendance = signal(false);
   loadingGrades = signal(false);
   error = signal<string | null>(null);
+
+  // Change group
+  changingGroup = signal(false);
+  loadingOtherGroups = signal(false);
+  otherGroups = signal<GroupWithSchedulesDto[]>([]);
+  groupChangeSubmitting = signal(false);
+  groupChangeMsg = signal<string | null>(null);
+  groupChangeSuccess = signal(false);
 
   private studentId = signal<string | null>(null);
 
@@ -646,7 +830,10 @@ export class StudentCourseProfileComponent implements OnInit {
               maxResultCount: 1,
             })
           );
-          const record = attResult?.items?.[0] ?? null;
+          let record = attResult?.items?.[0] ?? null;
+          if (record) {
+            record = this.recalcAttendance(record);
+          }
           this.attendance.set(record);
         } catch { /* non-critical */ } finally {
           this.loadingAttendance.set(false);
@@ -710,23 +897,129 @@ export class StudentCourseProfileComponent implements OnInit {
     return time;
   }
 
+  /**
+   * Recalculate totalDaysInMonth based on schedule days up to today.
+   * If schedule exists: count only those weekdays from month start to today.
+   * If no schedule: default to Saturday (6) + Tuesday (2), 2 days/week.
+   */
+  private recalcAttendance(record: StudentAttendanceReportDto): StudentAttendanceReportDto {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-based
+    const today = now.getDate();
+
+    // Determine which JS dayOfWeek values count as class days
+    // JS: 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+    const schedules = this.group()?.schedules;
+    let scheduleDays: number[];
+
+    if (schedules && schedules.length > 0) {
+      // Use actual schedule days (backend dayOfWeek: 0=Sun..6=Sat, same as JS)
+      scheduleDays = [...new Set(schedules.map(s => s.dayOfWeek))];
+    } else {
+      // Default: Saturday (6), Tuesday (2), Thursday (4)
+      scheduleDays = [6, 2, 4];
+    }
+
+    // Count schedule days from 1st of month up to today
+    let totalDays = 0;
+    for (let day = 1; day <= today; day++) {
+      const d = new Date(year, month, day);
+      if (scheduleDays.includes(d.getDay())) {
+        totalDays++;
+      }
+    }
+
+    const absentDays = record.absentDays;
+    const attendedDays = Math.max(0, totalDays - absentDays);
+    const pct = totalDays > 0 ? Math.round(attendedDays / totalDays * 100) : 0;
+
+    return {
+      ...record,
+      totalDaysInMonth: totalDays,
+      attendedDays,
+      attendancePercentage: pct,
+    };
+  }
+
+  async openChangeGroup(): Promise<void> {
+    this.changingGroup.set(true);
+    this.groupChangeMsg.set(null);
+    const enroll = this.enrollment();
+    if (!enroll?.teacherId) return;
+    this.loadingOtherGroups.set(true);
+    try {
+      const allGroups = await lastValueFrom(
+        this.groupService.getGroupsForTeacherAndCourse(enroll.teacherId, this.courseId())
+      );
+      // Filter out the current group
+      const currentGroupId = enroll.groupId;
+      this.otherGroups.set((allGroups || []).filter(g => g.groupId !== currentGroupId));
+    } catch { /* ignore */ } finally {
+      this.loadingOtherGroups.set(false);
+    }
+  }
+
+  async submitGroupChange(toGroup: GroupWithSchedulesDto): Promise<void> {
+    const enroll = this.enrollment();
+    const sid = this.studentId();
+    if (!enroll?.id || !sid || !toGroup.groupId) return;
+    this.groupChangeSubmitting.set(true);
+    this.groupChangeMsg.set(null);
+    try {
+      await lastValueFrom(
+        this.studentService.requestGroupChange({
+          studentId: sid,
+          courseId: this.courseId(),
+          enrollmentId: enroll.id,
+          toGroupId: toGroup.groupId,
+        } as any)
+      );
+      this.groupChangeMsg.set('تم إرسال الطلب بنجاح! سيتم الموافقة تلقائياً خلال 3 أيام · Request sent! Auto-approved in 3 days');
+      this.groupChangeSuccess.set(true);
+    } catch (e: any) {
+      this.groupChangeMsg.set(e?.error?.error?.message || 'حدث خطأ · Error');
+      this.groupChangeSuccess.set(false);
+    } finally {
+      this.groupChangeSubmitting.set(false);
+    }
+  }
+
   goBack(): void { this.router.navigate(['/student/courses']); }
   goToEnroll(): void { this.router.navigate(['/student/enroll', this.courseId()]); }
 
   async unenroll(): Promise<void> {
-    if (!confirm('هل أنت متأكد من إلغاء تسجيلك في هذا المقرر؟\nAre you sure you want to unenroll from this course?')) return;
     const enroll = this.enrollment();
     if (!enroll?.id) return;
     this.unenrolling.set(true);
     try {
-      await lastValueFrom(this.studentEnrollmentService.delete(enroll.id));
+      await lastValueFrom(this.studentEnrollmentService.deleteByRequestId(enroll.id));
+      this.showUnenrollConfirm.set(false);
       this.enrollment.set(null);
       this.router.navigate(['/student/courses']);
     } catch (e: any) {
       console.error('Unenroll error:', e);
-      alert(e?.error?.error?.message || 'حدث خطأ · Error occurred');
+      this.showUnenrollConfirm.set(false);
+      this.error.set(e?.error?.error?.message || 'حدث خطأ · Error occurred');
     } finally {
       this.unenrolling.set(false);
     }
+  }
+
+  async shareCourse(): Promise<void> {
+    const c = this.course();
+    if (!c) return;
+    const name = c.nameAr || c.nameEn || 'مقرر';
+    const teacherName = (c as any).teacherName || '';
+    const link = `https://sesha-9999.web.app/register`;
+    const teacherPart = teacherName ? ` مع ${teacherName}` : '';
+    const text = `أنا أدرس ${name}${teacherPart} على تطبيق KAI التعليمي! انضم الآن\nI'm studying ${c.nameEn || name}${teacherName ? ` with ${teacherName}` : ''} on KAI! Join now\n${link}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `KAI - ${name}`, text, url: link });
+      } else {
+        await navigator.clipboard?.writeText(text);
+      }
+    } catch { /* user cancelled */ }
   }
 }

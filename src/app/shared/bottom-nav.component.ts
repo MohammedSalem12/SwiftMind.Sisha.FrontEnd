@@ -30,6 +30,7 @@ function getRoleHomePath(roles: string[]): string {
   if (roles.includes(ROLES.SECRETARY))  return '/secretary';
   if (roles.includes(ROLES.ADMIN))      return '/';
   if (roles.includes(ROLES.ADVERTISER)) return '/ads/my';
+  if (roles.includes('PARTNER'))       return '/partner/dashboard';
   return '/';
 }
 
@@ -62,6 +63,16 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     { path: '/ads/advertisers',      label: 'إدارة المعلنين',      labelEn: 'Advertisers',        icon: 'fas fa-store' },
     { path: '/academic-terms',       label: 'الفصول الدراسية',     labelEn: 'Semesters',          icon: 'fas fa-calendar-alt' },
     { path: '/registration-requests', label: 'طلبات التسجيل',       labelEn: 'Registration',       icon: 'fas fa-user-plus' },
+  ];
+  if (roles.includes(ROLES.TEACHER)) return [
+    { path: '/students',             label: 'طلابي',               labelEn: 'My Students',        icon: 'fas fa-user-graduate' },
+  ];
+  if (roles.includes(ROLES.SECRETARY)) return [
+    { path: '/students',             label: 'الطلاب',              labelEn: 'Students',           icon: 'fas fa-user-graduate' },
+  ];
+  if (roles.includes(ROLES.PARENT)) return [
+    { path: '/parent/home',          label: 'لوحة التفاصيل',       labelEn: 'Dashboard',          icon: 'fas fa-th-large' },
+    { path: '/parent-dashboard',     label: 'متابعة الأبناء',      labelEn: 'Children Stats',     icon: 'fas fa-chart-bar' },
   ];
   return [];
 }
@@ -154,6 +165,13 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
               </div>
             </a>
           }
+          <a class="more-item" routerLink="/partners" (click)="showMore.set(false)">
+            <div class="more-item-icon more-icon-purple"><i class="fas fa-handshake"></i></div>
+            <div class="more-item-text">
+              <span>شركاؤنا</span>
+              <span class="more-item-en">Partners</span>
+            </div>
+          </a>
           <a class="more-item" routerLink="/ads/my-coupons" (click)="showMore.set(false)">
             <div class="more-item-icon more-icon-green"><i class="fas fa-ticket-alt"></i></div>
             <div class="more-item-text">
@@ -161,6 +179,79 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
               <span class="more-item-en">My Coupons</span>
             </div>
           </a>
+
+          <!-- Student-specific -->
+          @if (isStudentRole()) {
+            <a class="more-item" routerLink="/student/invite-friends" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-blue"><i class="fas fa-address-book"></i></div>
+              <div class="more-item-text">
+                <span>دعوة الأصدقاء</span>
+                <span class="more-item-en">Invite Friends</span>
+              </div>
+            </a>
+            <a class="more-item" routerLink="/student/points" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-amber"><i class="fas fa-coins"></i></div>
+              <div class="more-item-text">
+                <span>نقاطي</span>
+                <span class="more-item-en">My Points</span>
+              </div>
+            </a>
+          }
+
+          <!-- Secretary-specific -->
+          @if (isSecretaryRole()) {
+            <a class="more-item" routerLink="/secretary/schedule-overview" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-blue"><i class="fas fa-calendar-alt"></i></div>
+              <div class="more-item-text">
+                <span>جدول المعلمين</span>
+                <span class="more-item-en">Schedule Overview</span>
+              </div>
+            </a>
+            <a class="more-item" routerLink="/secretary/bulk-attendance" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-green"><i class="fas fa-clipboard-list"></i></div>
+              <div class="more-item-text">
+                <span>حضور جماعي</span>
+                <span class="more-item-en">Bulk Attendance</span>
+              </div>
+            </a>
+            <a class="more-item" routerLink="/secretary/announce" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-purple"><i class="fas fa-bullhorn"></i></div>
+              <div class="more-item-text">
+                <span>إعلان للطلاب</span>
+                <span class="more-item-en">Announce</span>
+              </div>
+            </a>
+          }
+
+          <!-- Parent-specific -->
+          @if (isParentRole()) {
+            <a class="more-item" routerLink="/parent/message-teacher" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-blue"><i class="fas fa-envelope"></i></div>
+              <div class="more-item-text">
+                <span>رسالة للمعلم</span>
+                <span class="more-item-en">Message Teacher</span>
+              </div>
+            </a>
+            <a class="more-item" routerLink="/parent/absence-excuse" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-amber"><i class="fas fa-file-medical"></i></div>
+              <div class="more-item-text">
+                <span>عذر غياب</span>
+                <span class="more-item-en">Absence Excuse</span>
+              </div>
+            </a>
+          }
+
+          <!-- Partner-specific -->
+          @if (isPartnerRole()) {
+            <a class="more-item" routerLink="/partner/dashboard" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-green"><i class="fas fa-store"></i></div>
+              <div class="more-item-text">
+                <span>لوحة الشريك</span>
+                <span class="more-item-en">Partner Dashboard</span>
+              </div>
+            </a>
+          }
+
           <a class="more-item" routerLink="/settings" (click)="showMore.set(false)">
             <div class="more-item-icon more-icon-gray"><i class="fas fa-cog"></i></div>
             <div class="more-item-text">
@@ -679,6 +770,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     .more-icon-gray  { background: rgba(107,114,128,0.1); color: #6b7280; }
     .more-icon-blue  { background: rgba(59,130,246,0.1);  color: #3b82f6; }
     .more-icon-green { background: rgba(16,185,129,0.1);  color: #10b981; }
+    .more-icon-purple { background: rgba(139,92,246,0.1); color: #8b5cf6; }
 
     .more-item-text {
       display: flex; flex-direction: column;
@@ -740,6 +832,10 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   secondaryNav     = signal<SecondaryItem[]>([]);
   showMore         = signal(false);
   isAdvertiserRole = signal(false);
+  isStudentRole = signal(false);
+  isSecretaryRole = signal(false);
+  isParentRole = signal(false);
+  isPartnerRole = signal(false);
 
   private readonly NAV_HIDDEN_PATHS = ['/complete-profile', '/login', '/register', '/pending-approval'];
   isAuthenticated = signal(false);
@@ -806,8 +902,15 @@ export class BottomNavComponent implements OnInit, OnDestroy {
 
         const isStudent = roles.includes(ROLES.STUDENT);
         const isTeacher = roles.includes(ROLES.TEACHER);
+        const isSecretary = roles.includes(ROLES.SECRETARY);
+        const isParent = roles.includes(ROLES.PARENT);
         const isAdvertiser = roles.includes(ROLES.ADVERTISER);
+        const isPartner = roles.includes('PARTNER');
         this.isAdvertiserRole.set(isAdvertiser);
+        this.isStudentRole.set(isStudent);
+        this.isSecretaryRole.set(isSecretary);
+        this.isParentRole.set(isParent);
+        this.isPartnerRole.set(isPartner);
 
         if (isAdvertiser) {
           // Advertiser gets minimal nav: My Ads, Create Ad, Redeem, Notifications
@@ -818,6 +921,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
             { path: '/notifications', label: 'إشعارات',     labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' },
           ]);
         } else {
+          const isParent = roles.includes(ROLES.PARENT);
           this.coreNav.set([
             { path: homePath,         label: 'الرئيسية',    labelEn: 'Home',          icon: 'fas fa-home' },
             { path: requestsPath,     label: 'طلباتي',      labelEn: 'Requests',      icon: 'fas fa-clipboard-list', badge: 'requests' },
@@ -826,6 +930,8 @@ export class BottomNavComponent implements OnInit, OnDestroy {
               ? [{ path: '/academies',         label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
               : isTeacher
               ? [{ path: '/teacher/academies', label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
+              : isParent
+              ? [{ path: '/parent/today-sessions', label: 'حصص اليوم', labelEn: 'Today', icon: 'fas fa-calendar-day' }]
               : []
             ),
             { path: '/notifications', label: 'إشعارات',  labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' as const },

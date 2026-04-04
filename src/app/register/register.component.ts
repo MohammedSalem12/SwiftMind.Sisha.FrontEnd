@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { UserRegistrationService } from '@proxy/controllers';
 import { UserRegistrationType } from '@proxy/domain/shared/enums/user-registration-type.enum';
 import type { UserRegStudentDto, UserRegTeacherDto, UserRegParentDto, UserRegSecretaryDto } from '@proxy/common/models';
@@ -22,6 +22,7 @@ export class RegisterComponent implements OnInit {
   private readonly userRegSvc = inject(UserRegistrationService);
   private readonly gradeSvc = inject(GradeService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
 
   UserRegistrationType = UserRegistrationType;
@@ -101,6 +102,14 @@ export class RegisterComponent implements OnInit {
       return;
     }
     await this.loadGrades();
+
+    // Pre-fill referral code from deep link query param (?ref=REF-XXXXXXXX)
+    const ref = this.route.snapshot.queryParamMap.get('ref');
+    if (ref) {
+      this.form.referralCode = ref;
+      this.form.userType = UserRegistrationType.Student;
+      this.step.set('form');
+    }
   }
 
   private async loadGrades(): Promise<void> {

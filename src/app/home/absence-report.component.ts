@@ -184,6 +184,13 @@ type Period = 'today' | 'current-week' | 'week' | 'month' | 'quarter' | '6months
           </div>
         </div>
 
+        <!-- Export Button -->
+        @if (displayedRecords().length > 0) {
+          <button class="export-btn" (click)="exportCsv()">
+            <i class="fas fa-file-csv"></i> تصدير CSV · Export CSV
+          </button>
+        }
+
         <!-- ── Student rows ── -->
         <div class="section-label">
           <i class="fas fa-users"></i>
@@ -388,6 +395,12 @@ type Period = 'today' | 'current-week' | 'week' | 'month' | 'quarter' | '6months
     .stat-good   .stat-val { color: #10b981; }
 
     /* ── Section label ── */
+    .export-btn {
+      width: 100%; padding: .6rem; border: none; border-radius: 10px;
+      background: rgba(16,185,129,.1); color: #059669;
+      font-size: .85rem; font-weight: 700; cursor: pointer; margin-bottom: .75rem;
+      display: flex; align-items: center; justify-content: center; gap: .4rem; min-height: 44px;
+    }
     .section-label {
       display: flex; align-items: center; gap: .5rem;
       padding: .25rem 1.25rem .6rem; font-size: .8rem; font-weight: 700; color: var(--mid);
@@ -747,5 +760,35 @@ export class AbsenceReportComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/teacher']);
+  }
+
+  exportCsv(): void {
+    const recs = this.displayedRecords();
+    if (recs.length === 0) return;
+
+    const headers = ['#', 'Student Name', 'Student Code', 'Course', 'Total Days', 'Attended', 'Absent', 'Attendance %'];
+    const rows = recs.map((r: any, i: number) => [
+      i + 1,
+      r.displayName || `${r.studentNameAr}`,
+      r.studentCode,
+      r.courseNameAr || r.courseNameEn,
+      r.totalDaysInMonth,
+      r.attendedDays,
+      r.absentDays,
+      r.attendancePercentage?.toFixed(1) + '%',
+    ]);
+
+    const csv = [headers, ...rows]
+      .map(row => row.map((cell: any) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const bom = '\uFEFF'; // UTF-8 BOM for Arabic support in Excel
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `attendance-report-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }

@@ -32,6 +32,7 @@ export enum NotificationType {
   RegistrationRequestPending = 28,
   RegistrationRequestApproved = 29,
   RegistrationRequestRejected = 30,
+  SessionCancelled = 31,
 }
 
 export const notificationTypeOptions = mapEnumToOptions(NotificationType);

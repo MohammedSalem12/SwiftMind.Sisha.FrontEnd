@@ -103,4 +103,19 @@ export class TeacherCourseActionComponent implements OnInit {
   goBack(): void {
     this.location.back();
   }
+
+  async shareCourse(): Promise<void> {
+    const c = this.course();
+    if (!c) return;
+    const name = c.nameAr || c.nameEn || 'مقرر';
+    const link = `https://sesha-9999.web.app/register`;
+    const text = `أُدرّس ${name} على تطبيق KAI التعليمي! سجّل الآن وانضم لطلابي\nI teach ${c.nameEn || name} on KAI! Register now and join my students\n${link}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `KAI - ${name}`, text, url: link });
+      } else {
+        await navigator.clipboard?.writeText(text);
+      }
+    } catch { /* user cancelled */ }
+  }
 }

@@ -8,6 +8,7 @@ import { AcademyService } from '@proxy/academies';
 import { AcademyDto } from '@proxy/academies/models';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
+import { ParentService } from '@proxy/parents';
 import { AuthService } from '@abp/ng.core';
 import { RegisterPromptComponent } from '../shared/components/register-prompt.component';
 
@@ -56,8 +57,8 @@ import { RegisterPromptComponent } from '../shared/components/register-prompt.co
           [titleEn]="'Register to join academies and enroll in courses'" />
       }
 
-      <!-- ── Join by code (student) ── -->
-      @if (isStudent()) {
+      <!-- ── Join by code (student/parent) ── -->
+      @if (isStudent() || isParent()) {
         <div class="code-section">
           <div class="code-card">
             <div class="code-card-header">
@@ -88,8 +89,8 @@ import { RegisterPromptComponent } from '../shared/components/register-prompt.co
         </div>
       }
 
-      <!-- ── Student Tabs ── -->
-      @if (isStudent() && !loading()) {
+      <!-- ── Student/Parent Tabs ── -->
+      @if ((isStudent() || isParent()) && !loading()) {
         <div class="tabs-bar">
           <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'my'" (click)="activeTab.set('my')">
             <i class="fas fa-star"></i>
@@ -111,8 +112,8 @@ import { RegisterPromptComponent } from '../shared/components/register-prompt.co
         </div>
       }
 
-      <!-- ── Student: My Academies Tab ── -->
-      @if (!loading() && isStudent() && activeTab() === 'my') {
+      <!-- ── Student/Parent: My Academies Tab ── -->
+      @if (!loading() && (isStudent() || isParent()) && activeTab() === 'my') {
         @if (myAcademies().length === 0) {
           <div class="empty-state">
             <div class="empty-ring"><i class="fas fa-university"></i></div>
@@ -129,8 +130,8 @@ import { RegisterPromptComponent } from '../shared/components/register-prompt.co
         }
       }
 
-      <!-- ── Student: Browse Tab ── -->
-      @if (!loading() && isStudent() && activeTab() === 'browse') {
+      <!-- ── Student/Parent: Browse Tab ── -->
+      @if (!loading() && (isStudent() || isParent()) && activeTab() === 'browse') {
         @if (browseAcademies().length === 0) {
           <div class="empty-state">
             <div class="empty-ring"><i class="fas fa-globe"></i></div>
@@ -147,8 +148,8 @@ import { RegisterPromptComponent } from '../shared/components/register-prompt.co
         }
       }
 
-      <!-- ── Non-student: flat list ── -->
-      @if (!loading() && !isStudent()) {
+      <!-- ── Non-student/parent: flat list ── -->
+      @if (!loading() && !isStudent() && !isParent()) {
         @if (filteredAcademies().length === 0) {
           <div class="empty-state">
             <div class="empty-ring"><i class="fas fa-university"></i></div>
@@ -437,6 +438,7 @@ export class AcademiesListComponent implements OnInit {
   private readonly userSvc     = inject(CurrentUserInfoService);
   private readonly courseSvc   = inject(CourseService);
   private readonly authService = inject(AuthService);
+  private readonly parentSvc   = inject(ParentService);
 
   isGuest = signal(false);
 
@@ -446,6 +448,7 @@ export class AcademiesListComponent implements OnInit {
   activeTab   = signal<'my' | 'browse'>('my');
 
   isStudent        = signal(false);
+  isParent         = signal(false);
   isTeacherOrAdmin = signal(false);
   enrolledAcademyIds = signal<Set<string>>(new Set());
 
@@ -491,11 +494,13 @@ export class AcademiesListComponent implements OnInit {
         userInfo = await lastValueFrom(this.userSvc.getCurrentUserActorInfo()).catch(() => null);
       }
 
-      const roles = userInfo?.userRoles || [];
+      const rawRoles = userInfo?.userRoles || [];
+      const roles = rawRoles.map((r: string) => (r || '').toUpperCase());
       this.isStudent.set(roles.includes('STUDENT'));
+      this.isParent.set(roles.includes('PARENT'));
       this.isTeacherOrAdmin.set(roles.includes('TEACHER') || roles.includes('ADMIN'));
       // Students/Parents only see active academies
-      const filtered = (this.isStudent() || roles.includes('PARENT'))
+      const filtered = (this.isStudent() || this.isParent())
         ? (list || []).filter((a: any) => a.isActive !== false)
         : (list || []);
       this.academies.set(filtered);
@@ -503,7 +508,14 @@ export class AcademiesListComponent implements OnInit {
       // For students: determine which academies they're enrolled in
       if (this.isStudent()) {
         await this.loadStudentEnrolledAcademies(list || []);
-        // Auto-switch to browse if no enrolled academies
+        if (this.myAcademies().length === 0 && this.browseAcademies().length > 0) {
+          this.activeTab.set('browse');
+        }
+      }
+
+      // For parents: determine which academies their children are enrolled in
+      if (this.isParent()) {
+        await this.loadParentEnrolledAcademies(list || []);
         if (this.myAcademies().length === 0 && this.browseAcademies().length > 0) {
           this.activeTab.set('browse');
         }
@@ -521,7 +533,12 @@ export class AcademiesListComponent implements OnInit {
       const studentCourses = await lastValueFrom(
         this.courseSvc.getCoursesForCurrentStudent()
       ).catch(() => []);
-      const enrolledCourseIds = new Set((studentCourses || []).filter((c: any) => c.isEnrolled).map((c: any) => c.id));
+      const enrolledCourseIds = new Set<string>();
+      for (const c of (studentCourses || [])) {
+        if ((c as any).isEnrolled && (c as any).id) {
+          enrolledCourseIds.add((c as any).id);
+        }
+      }
 
       if (enrolledCourseIds.size === 0) return;
 
@@ -530,9 +547,44 @@ export class AcademiesListComponent implements OnInit {
       for (const a of academies) {
         try {
           const courses = await lastValueFrom(
+            this.academySvc.getAcademyCourses(a.id!, { skipHandleError: true } as any)
+          ).catch(() => []);
+          for (const ac of (courses || [])) {
+            if (ac.courseId && enrolledCourseIds.has(ac.courseId)) {
+              ids.add(a.id!);
+              break;
+            }
+          }
+        } catch { /* silent */ }
+      }
+      this.enrolledAcademyIds.set(ids);
+    } catch (e) {
+      console.error('Error loading student enrolled academies:', e);
+    }
+  }
+
+  private async loadParentEnrolledAcademies(academies: AcademyDto[]): Promise<void> {
+    try {
+      const dashboard = await lastValueFrom(this.parentSvc.getDashboard()).catch(() => null) as any;
+      if (!dashboard?.children?.length) return;
+
+      // Collect all courseIds from all children
+      const childCourseIds = new Set<string>();
+      for (const child of dashboard.children) {
+        for (const c of (child.courses || [])) {
+          if (c.courseId) childCourseIds.add(c.courseId);
+        }
+      }
+      if (childCourseIds.size === 0) return;
+
+      // Match academy courses against children's enrolled courses
+      const ids = new Set<string>();
+      for (const a of academies) {
+        try {
+          const courses = await lastValueFrom(
             this.academySvc.getAcademyCourses(a.id!, { skipHandleError: true })
           );
-          if (courses?.some(c => enrolledCourseIds.has(c.courseId))) {
+          if (courses?.some(c => childCourseIds.has(c.courseId))) {
             ids.add(a.id!);
           }
         } catch { /* silent */ }

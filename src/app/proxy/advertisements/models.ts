@@ -110,6 +110,7 @@ export interface CreateUpdateAdvertiserDto {
   address?: string;
   websiteUrl?: string;
   userId?: string;
+  password?: string;
 }
 
 export interface DealCouponDto extends FullAuditedEntityDto<string> {
@@ -122,6 +123,8 @@ export interface DealCouponDto extends FullAuditedEntityDto<string> {
   teacherId?: string;
   teacherName?: string;
   discountPercent: number;
+  amountEgp: number;
+  advertiserId?: string;
   dealDescription?: string;
   advertiserName?: string;
   status?: CouponStatus;
@@ -163,6 +166,17 @@ export interface DealSettlementDto {
   totalPlatformFee: number;
   teacherCommissionPercent: number;
   platformFeePercent: number;
+}
+
+export interface MonthlySettlementDto {
+  advertiserId?: string;
+  advertiserName?: string;
+  totalVouchers: number;
+  totalAmountEgp: number;
+  totalRedeemed: number;
+  totalPending: number;
+  year: number;
+  month: number;
 }
 
 export interface RedeemCouponDto {

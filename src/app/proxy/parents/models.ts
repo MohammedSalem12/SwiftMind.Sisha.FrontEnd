@@ -3,6 +3,7 @@ import type { ParentStudentLinkStatus } from '../enums/parent-student-link-statu
 
 export interface ChildCourseDto {
   courseId?: string;
+  teacherId?: string;
   courseNameAr?: string;
   courseNameEn?: string;
   teacherName?: string;
@@ -72,6 +73,7 @@ export interface ParentDto extends FullAuditedEntityDto<string> {
   occupation?: string;
   emergencyContact?: string;
   parentCode?: string;
+  referralCode?: string;
   fullName?: string;
   parentStudents: ParentStudentDto[];
 }
@@ -124,6 +126,20 @@ export interface RegisterParentDto {
   address?: string;
   occupation?: string;
   emergencyContact?: string;
+}
+
+export interface SendMessageToTeacherDto {
+  studentId: string;
+  teacherId: string;
+  subject: string;
+  message: string;
+}
+
+export interface SubmitAbsenceExcuseDto {
+  studentId: string;
+  date: string;
+  reason: string;
+  notes?: string;
 }
 
 export interface UpdateParentDto {

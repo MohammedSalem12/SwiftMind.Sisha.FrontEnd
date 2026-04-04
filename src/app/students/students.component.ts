@@ -7,7 +7,7 @@ import { lastValueFrom } from 'rxjs';
 
 import { StudentService } from '@proxy/students';
 import { StudentDto } from '@proxy/students/models';
-import { TeacherService } from '@proxy/teachers';
+import { TeacherService, SecretaryTeacherService } from '@proxy/teachers';
 import { TeacherEnrolledCourseDto } from '@proxy/teachers/models';
 import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import { EnrolledStudentDto } from '@proxy/student-enrollments/dtos/models';
@@ -121,14 +121,33 @@ interface CourseTab {
           }
         </div>
 
+        <!-- Name + grade filter for teacher -->
+        @if (activeCourse()?.loaded && activeCourse()!.students.length > 0) {
+          <div class="search-section">
+            <div class="search-row">
+              <input class="search-input" type="text" placeholder="بحث بالاسم · Filter by name"
+                     [ngModel]="nameFilter()"
+                     (ngModelChange)="nameFilter.set($event)" />
+              @if (availableGrades().length > 1) {
+                <select class="grade-select" [ngModel]="gradeFilter()" (ngModelChange)="gradeFilter.set($event)">
+                  <option value="">كل الصفوف · All Grades</option>
+                  @for (g of availableGrades(); track g) {
+                    <option [value]="g">{{ g }}</option>
+                  }
+                </select>
+              }
+            </div>
+          </div>
+        }
+
         <!-- Students of selected course -->
         @if (activeCourse()) {
           <div class="section">
             <div class="section-title">
               <i class="fas fa-user-graduate"></i>
               طلاب {{ activeCourse()!.nameAr || activeCourse()!.nameEn }}
-              @if (activeCourse()!.students.length > 0) {
-                <span class="count-pill">{{ activeCourse()!.students.length }}</span>
+              @if (filteredStudents().length > 0) {
+                <span class="count-pill">{{ filteredStudents().length }}</span>
               }
             </div>
 
@@ -138,7 +157,7 @@ interface CourseTab {
               </div>
             }
 
-            @if (activeCourse()!.loaded && activeCourse()!.students.length === 0) {
+            @if (activeCourse()!.loaded && filteredStudents().length === 0) {
               <div class="empty-box">
                 <i class="fas fa-user-slash"></i>
                 <p>لا يوجد طلاب مسجّلون في هذا المقرر</p>
@@ -146,22 +165,29 @@ interface CourseTab {
               </div>
             }
 
-            @if (activeCourse()!.loaded && activeCourse()!.students.length > 0) {
+            @if (activeCourse()!.loaded && filteredStudents().length > 0) {
               <div class="students-list">
-                @for (s of activeCourse()!.students; track s.studentId) {
-                  <div class="student-row">
-                    <div class="student-avatar">
-                      <span>{{ (s.studentName || '?').charAt(0).toUpperCase() }}</span>
+                @for (s of filteredStudents(); track s.studentId) {
+                  <div class="student-card-rich" (click)="showDetails({id: s.studentId})">
+                    <div class="scr-top">
+                      <div class="student-avatar">
+                        <span>{{ (s.studentName || '?').charAt(0).toUpperCase() }}</span>
+                      </div>
+                      <div class="student-info">
+                        <span class="student-name">{{ s.studentName || 'طالب' }}</span>
+                        <span class="student-meta">{{ s.studentCode }} @if (s.gradeName) { · {{ s.gradeName }} }</span>
+                      </div>
+                      <div class="scr-att-ring" [style.background]="'conic-gradient(' + attColor(s.attendancePercentage) + ' ' + (s.attendancePercentage * 3.6) + 'deg, #e5e7eb ' + (s.attendancePercentage * 3.6) + 'deg)'">
+                        <span class="ring-inner">{{ s.attendancePercentage | number:'1.0-0' }}%</span>
+                      </div>
                     </div>
-                    <div class="student-info">
-                      <span class="student-name">{{ s.studentName || 'طالب' }}</span>
-                      <span class="student-meta">{{ s.studentCode }}</span>
+                    <div class="scr-chips">
+                      @if (s.parentName) {
+                        <span class="scr-chip chip-parent"><i class="fas fa-user-shield"></i> {{ s.parentName }}</span>
+                      }
+                      <span class="scr-chip chip-absent"><i class="fas fa-times-circle"></i> {{ s.absentDays }} غياب</span>
+                      <span class="scr-chip chip-total"><i class="fas fa-calendar"></i> {{ s.totalDays }} يوم</span>
                     </div>
-                    @if (s.enrolledAt) {
-                      <span class="enrolled-date">
-                        {{ formatDate(s.enrolledAt) }}
-                      </span>
-                    }
                   </div>
                 }
               </div>
@@ -171,7 +197,108 @@ interface CourseTab {
       }
 
       <!-- ══════════════ SECRETARY VIEW ══════════════ -->
-      @if (!isTeacher()) {
+      @if (isSecretary()) {
+
+        <!-- Course tabs (from assigned teachers) -->
+        @if (!loadingSecCourses()) {
+          <div class="course-tabs-wrap">
+            <div class="course-tabs">
+              @for (c of secCourseTabs(); track c.id) {
+                <button class="course-tab"
+                        [class.active]="activeCourseId() === c.id"
+                        (click)="selectCourse(c)">
+                  <span class="ct-name">{{ c.nameAr || c.nameEn }}</span>
+                  <span class="ct-code">{{ c.code }}</span>
+                </button>
+              }
+              @if (secCourseTabs().length === 0) {
+                <span class="no-courses">لا توجد مقررات للمعلمين المرتبطين</span>
+              }
+            </div>
+          </div>
+        }
+
+        @if (loadingSecCourses()) {
+          <div class="shimmer-tabs">
+            @for (i of [1,2,3]; track i) { <div class="shimmer-tab"></div> }
+          </div>
+        }
+
+        <!-- Filters: name + grade -->
+        @if (activeCourse()?.loaded && activeCourse()!.students.length > 0) {
+          <div class="search-section">
+            <div class="search-row">
+              <input class="search-input" type="text" placeholder="بحث بالاسم · Filter by name"
+                     [ngModel]="nameFilter()"
+                     (ngModelChange)="nameFilter.set($event)" />
+              <select class="grade-select" [ngModel]="gradeFilter()" (ngModelChange)="gradeFilter.set($event)">
+                <option value="">كل الصفوف · All Grades</option>
+                @for (g of availableGrades(); track g) {
+                  <option [value]="g">{{ g }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        }
+
+        <!-- Students of selected course -->
+        @if (activeCourse()) {
+          <div class="section">
+            <div class="section-title">
+              <i class="fas fa-user-graduate"></i>
+              الطلاب المسجّلون · Enrolled Students
+              @if (filteredStudents().length > 0) {
+                <span class="count-pill">{{ filteredStudents().length }}</span>
+              }
+            </div>
+
+            @if (!activeCourse()!.loaded) {
+              <div class="shimmer-list">
+                @for (i of [1,2,3,4]; track i) { <div class="shimmer-row"></div> }
+              </div>
+            }
+
+            @if (activeCourse()!.loaded && filteredStudents().length === 0) {
+              <div class="empty-box">
+                <i class="fas fa-user-slash"></i>
+                <p>لا يوجد طلاب</p>
+                <span>No students found</span>
+              </div>
+            }
+
+            @if (activeCourse()!.loaded && filteredStudents().length > 0) {
+              <div class="students-list">
+                @for (s of filteredStudents(); track s.studentId) {
+                  <div class="student-card-rich" (click)="showDetails({id: s.studentId})">
+                    <div class="scr-top">
+                      <div class="student-avatar">
+                        <span>{{ (s.studentName || '?').charAt(0).toUpperCase() }}</span>
+                      </div>
+                      <div class="student-info">
+                        <span class="student-name">{{ s.studentName || 'طالب' }}</span>
+                        <span class="student-meta">{{ s.studentCode }} @if (s.gradeName) { · {{ s.gradeName }} }</span>
+                      </div>
+                      <div class="scr-att-ring" [style.background]="'conic-gradient(' + attColor(s.attendancePercentage) + ' ' + (s.attendancePercentage * 3.6) + 'deg, #e5e7eb ' + (s.attendancePercentage * 3.6) + 'deg)'">
+                        <span class="ring-inner">{{ s.attendancePercentage | number:'1.0-0' }}%</span>
+                      </div>
+                    </div>
+                    <div class="scr-chips">
+                      @if (s.parentName) {
+                        <span class="scr-chip chip-parent"><i class="fas fa-user-shield"></i> {{ s.parentName }}</span>
+                      }
+                      <span class="scr-chip chip-absent"><i class="fas fa-times-circle"></i> {{ s.absentDays }} غياب</span>
+                      <span class="scr-chip chip-total"><i class="fas fa-calendar"></i> {{ s.totalDays }} يوم</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- ══════════════ ADMIN VIEW ══════════════ -->
+      @if (isAdmin() && !isTeacher() && !isSecretary()) {
 
         <!-- Search bar -->
         <div class="search-section">
@@ -186,14 +313,12 @@ interface CourseTab {
           </div>
         </div>
 
-        <!-- Loading -->
         @if (loading()) {
           <div class="shimmer-list" style="padding:0 1rem">
             @for (i of [1,2,3,4,5]; track i) { <div class="shimmer-row"></div> }
           </div>
         }
 
-        <!-- Student list -->
         @if (!loading()) {
           <div class="section">
             <div class="section-title">
@@ -223,25 +348,16 @@ interface CourseTab {
                       @if (s.studentCode) { · {{ s.studentCode }} }
                       @if (s.schoolName) { · {{ s.schoolName }} }
                     </span>
-                    @if (s.teacherStudentCode) {
-                      <span class="internal-code">كود داخلي: {{ s.teacherStudentCode }}</span>
-                    }
                   </div>
                   <div class="row-actions">
                     <button class="action-icon-btn view-btn" (click)="showDetails(s)" title="تفاصيل">
                       <i class="fas fa-eye"></i>
                     </button>
-                    @if (isAdmin() || isTeacher()) {
-                      <button class="action-icon-btn enroll-btn" (click)="goToEnroll(s.id!)" title="تسجيل">
-                        <i class="fas fa-plus-circle"></i>
-                      </button>
-                    }
                   </div>
                 </div>
               }
             </div>
 
-            <!-- Pagination -->
             @if (totalCount() > pageSize()) {
               <div class="pager">
                 <button class="page-btn" (click)="onPageChange(page() - 1)" [disabled]="page() <= 1">
@@ -331,7 +447,13 @@ interface CourseTab {
       display:flex; align-items:center; gap:.35rem; margin-bottom:.5rem;
     }
     .search-label i { color:#667eea; }
-    .search-row { display:flex; gap:.5rem; }
+    .search-row { display:flex; gap:.5rem; flex-wrap:wrap; }
+    .grade-select {
+      padding:.7rem .75rem; border-radius:12px; border:1.5px solid #e9ecef;
+      background:#fff; font-size:.82rem; font-family:inherit; color:#1a1a2e;
+      min-height:44px; min-width:120px; outline:none;
+    }
+    .grade-select:focus { border-color:#667eea; }
     .search-input {
       flex:1; padding:.7rem .875rem; border-radius:12px;
       border:1.5px solid #e9ecef; background:#fff;
@@ -401,6 +523,33 @@ interface CourseTab {
     }
     .enrolled-date { font-size:.72rem; color:#9090aa; flex-shrink:0; }
 
+    /* Rich student card */
+    .student-card-rich {
+      background:#fff; border-radius:14px; border:1.5px solid #f0f0f0;
+      padding:.875rem; box-shadow:0 2px 6px rgba(0,0,0,.04);
+      cursor:pointer; transition:transform .1s;
+    }
+    .student-card-rich:active { transform:scale(.98); }
+    .scr-top { display:flex; align-items:center; gap:.75rem; }
+    .scr-att-ring {
+      width:42px; height:42px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .ring-inner {
+      width:32px; height:32px; border-radius:50%; background:#fff;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.6rem; font-weight:800; color:#374151;
+    }
+    .scr-chips { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.5rem; padding-right:3.5rem; }
+    .scr-chip {
+      font-size:.65rem; font-weight:600; padding:.15rem .4rem;
+      border-radius:6px; display:flex; align-items:center; gap:.2rem;
+      i { font-size:.55rem; }
+    }
+    .chip-parent { background:rgba(245,158,11,.1); color:#d97706; }
+    .chip-absent { background:rgba(239,68,68,.08); color:#dc2626; }
+    .chip-total  { background:rgba(107,114,128,.08); color:#6b7280; }
+
     /* Secretary row actions */
     .row-actions { display:flex; gap:.4rem; flex-shrink:0; }
     .action-icon-btn {
@@ -468,20 +617,26 @@ export class StudentsComponent implements OnInit {
   private readonly studentSvc     = inject(StudentService);
   private readonly teacherSvc     = inject(TeacherService);
   private readonly enrollmentSvc  = inject(StudentEnrollmentService);
+  private readonly secTeacherSvc  = inject(SecretaryTeacherService);
 
   readonly Math = Math;
 
   // ── Role detection ──────────────────────────────────────────────────────────
-  isTeacher = signal(false);
-  isAdmin   = signal(false);
+  isTeacher   = signal(false);
+  isAdmin     = signal(false);
+  isSecretary = signal(false);
 
-  // ── Secretary state ─────────────────────────────────────────────────────────
+  // ── Admin state ─────────────────────────────────────────────────────────
   filter       = signal('');
   students     = signal<StudentDto[]>([]);
   totalCount   = signal(0);
   loading      = signal(false);
   page         = signal(1);
   pageSize     = signal(15);
+
+  // ── Secretary state ─────────────────────────────────────────────────────────
+  loadingSecCourses = signal(true);
+  secCourseTabs     = signal<CourseTab[]>([]);
 
   // ── Teacher state ───────────────────────────────────────────────────────────
   loadingCourses  = signal(true);
@@ -491,6 +646,35 @@ export class StudentsComponent implements OnInit {
   activeCourse = computed(() =>
     this.courseTabs().find(c => c.id === this.activeCourseId()) ?? null
   );
+
+  // Name + grade filter (shared by teacher & secretary views)
+  nameFilter  = signal('');
+  gradeFilter = signal('');
+
+  availableGrades = computed(() => {
+    const course = this.activeCourse();
+    if (!course) return [];
+    const grades = [...new Set(course.students.map(s => (s as any).gradeName).filter(Boolean))];
+    return grades.sort();
+  });
+
+  filteredStudents = computed(() => {
+    const course = this.activeCourse();
+    if (!course) return [];
+    let list = course.students;
+    const q = this.nameFilter().trim().toLowerCase();
+    if (q) {
+      list = list.filter(s =>
+        (s.studentName || '').toLowerCase().includes(q) ||
+        (s.studentCode || '').toLowerCase().includes(q)
+      );
+    }
+    const g = this.gradeFilter();
+    if (g) {
+      list = list.filter(s => (s as any).gradeName === g);
+    }
+    return list;
+  });
 
   // Teacher code search
   teacherCodeFilter  = signal('');
@@ -504,11 +688,15 @@ export class StudentsComponent implements OnInit {
     const roles: string[] = (cu?.roles || cu?.roleNames || cu?.userRoles || [])
       .map((r: any) => typeof r === 'string' ? r.toUpperCase() : '');
     const teacher = roles.includes('TEACHER');
+    const secretary = roles.includes('SECRETARY');
     this.isTeacher.set(teacher);
+    this.isSecretary.set(secretary);
     this.isAdmin.set(roles.includes('ADMIN'));
 
     if (teacher) {
       await this.loadTeacherCourses();
+    } else if (secretary) {
+      await this.loadSecretaryCourses();
     } else {
       await this.loadStudents();
     }
@@ -555,6 +743,48 @@ export class StudentsComponent implements OnInit {
       this.courseTabs.update(tabs =>
         tabs.map(t => t.id === tab.id ? { ...t, loaded: true } : t)
       );
+    }
+  }
+
+  // ── Secretary: load enrolled courses from assigned teachers ──────────────────
+  private async loadSecretaryCourses(): Promise<void> {
+    this.loadingSecCourses.set(true);
+    try {
+      const teachers = await lastValueFrom(this.secTeacherSvc.getTeachersForCurrentSecretary());
+      const tabs: CourseTab[] = [];
+      const seen = new Set<string>();
+
+      for (const t of (teachers ?? [])) {
+        try {
+          const courses = await lastValueFrom(
+            this.teacherSvc.getEnrolledCoursesForTeacher(t.teacherId!)
+          ).catch(() => []);
+
+          for (const c of (courses ?? [])) {
+            if (c.id && !seen.has(c.id)) {
+              seen.add(c.id);
+              tabs.push({
+                id: c.id,
+                nameAr: c.nameAr,
+                nameEn: c.nameEn,
+                code: c.code,
+                students: [],
+                loaded: false,
+              });
+            }
+          }
+        } catch { /* skip failed teacher */ }
+      }
+
+      this.secCourseTabs.set(tabs);
+      this.courseTabs.set(tabs);
+      if (tabs.length > 0) {
+        await this.selectCourse(tabs[0]);
+      }
+    } catch (e) {
+      console.error('Error loading secretary courses', e);
+    } finally {
+      this.loadingSecCourses.set(false);
     }
   }
 
@@ -623,6 +853,12 @@ export class StudentsComponent implements OnInit {
 
   initials(s: any): string {
     return ((s?.firstName?.[0] || '') + (s?.lastName?.[0] || '')).toUpperCase() || '?';
+  }
+
+  attColor(pct: number): string {
+    if (pct >= 90) return '#22c55e';
+    if (pct >= 75) return '#f59e0b';
+    return '#ef4444';
   }
 
   formatDate(d?: string): string {

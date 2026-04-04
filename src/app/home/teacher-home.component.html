@@ -181,4 +181,24 @@
     </button>
   </div>
 
+  <!-- Referral Card -->
+  @if (referralCode()) {
+    <div class="referral-section">
+      <div class="section-title"><i class="fas fa-user-plus"></i> دعوة طلاب · Invite Students</div>
+      <div class="referral-card">
+        <p class="ref-hint">شارك كود الدعوة مع طلابك ليسجلوا بسهولة!</p>
+        <p class="ref-hint-en">Share your referral code with students to register easily!</p>
+        <div class="ref-code-box">
+          <span class="ref-code">{{ referralCode() }}</span>
+          <button class="copy-btn" (click)="copyReferral()">
+            <i class="fas fa-copy"></i> {{ copied() ? 'تم!' : 'نسخ' }}
+          </button>
+        </div>
+        <button class="share-btn" (click)="shareReferral()">
+          <i class="fas fa-share-alt"></i> مشاركة عبر واتساب أو SMS · Share via WhatsApp or SMS
+        </button>
+      </div>
+    </div>
+  }
+
 </div>

@@ -106,6 +106,7 @@ export interface TeacherDto extends ExtensibleAuditedEntityDto<string> {
   email?: string;
   phoneNumber?: string;
   teacherCode?: string;
+  referralCode?: string;
   government?: string;
   town?: string;
   sameArea: boolean;

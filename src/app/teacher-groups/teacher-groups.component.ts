@@ -73,11 +73,18 @@ export class TeacherGroupsComponent implements OnInit {
         return;
       }
 
-      this.teacherId.set(currentUserActor.actorId || null);
-      this.teacherName.set(currentUserActor.actorName || null);
-      this.teacherCode.set(currentUserActor.actorCode || null);
+      // Secretary: use teacherId from query param if provided
+      const qpTeacherId = this.route.snapshot.queryParamMap.get('teacherId');
+      if (isSecretary && qpTeacherId) {
+        this.teacherId.set(qpTeacherId);
+        this.teacherName.set(null); // will be loaded from groups
+      } else {
+        this.teacherId.set(currentUserActor.actorId || null);
+        this.teacherName.set(currentUserActor.actorName || null);
+        this.teacherCode.set(currentUserActor.actorCode || null);
+      }
 
-      if (!currentUserActor.actorId) {
+      if (!this.teacherId()) {
         throw new Error(this.l('TeacherGroups:CannotDetermineTeacherId'));
       }
 

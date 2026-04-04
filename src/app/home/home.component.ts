@@ -4,7 +4,7 @@ import {CommonModule} from "@angular/common";
 import { Router, RouterModule } from '@angular/router';
 import { UserProfileService } from '@volo/ngx-lepton-x.core';
 import { StudentService } from '@proxy/students';
-import { TeacherService } from '@proxy/teachers';
+import { TeacherService, TeacherPromotionService } from '@proxy/teachers';
 import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import { lastValueFrom, filter, take } from 'rxjs';
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
@@ -30,6 +30,7 @@ export class HomeComponent implements OnInit {
   private userProfileService = inject(UserProfileService);
   private studentSvc = inject(StudentService);
   private teacherSvc = inject(TeacherService);
+  private promotionSvc = inject(TeacherPromotionService);
   private enrollmentSvc = inject(StudentEnrollmentService);
   private cache = inject(OfflineCacheService);
   private http = inject(HttpClient);
@@ -44,6 +45,7 @@ export class HomeComponent implements OnInit {
   teachersCount = signal<number | null>(null);
   parentsCount = signal<number | null>(null);
   pendingRegistrationCount = signal<number | null>(null);
+  pendingPromotionCount = signal<number | null>(null);
   loadingCounts = signal(false);
   offline = signal(false);
   offlineLastUpdated = signal('');
@@ -115,7 +117,8 @@ export class HomeComponent implements OnInit {
           const isSecretary   = has('secretary');
           const isAdmin       = has('admin');
           const isAdvertiser  = has('advertiser');
-          const knownRoles  = ['student','teacher','parent','admin','secretary','advertiser'];
+          const isPartner     = has('partner');
+          const knownRoles  = ['student','teacher','parent','admin','secretary','advertiser','partner'];
           const hasKnown    = roles.some(r => knownRoles.includes(r));
 
           if (isAdmin) {
@@ -143,7 +146,7 @@ export class HomeComponent implements OnInit {
             return;
           }
 
-          if (isStudent || isParent || isTeacher || isSecretary || isAdvertiser) {
+          if (isStudent || isParent || isTeacher || isSecretary || isAdvertiser || isPartner) {
             this.redirecting.set(true);
           }
 
@@ -151,6 +154,7 @@ export class HomeComponent implements OnInit {
           else if (isParent)      this.router.navigate(['/parent']);
           else if (isTeacher)     this.router.navigate(['/teacher']);
           else if (isSecretary)   this.router.navigate(['/secretary']);
+          else if (isPartner)     this.router.navigate(['/partner/dashboard']);
           else if (isAdvertiser)  this.router.navigate(['/ads/my']);
         } catch (error) {
           console.error('Error checking user role:', error);
@@ -183,11 +187,20 @@ export class HomeComponent implements OnInit {
         this.pendingRegistrationCount.set(null);
       }
 
+      // Load pending promotion requests count
+      try {
+        const pendingPromos = await lastValueFrom(this.promotionSvc.getPendingList());
+        this.pendingPromotionCount.set(pendingPromos?.length ?? 0);
+      } catch {
+        this.pendingPromotionCount.set(null);
+      }
+
       this.cache.set(this.CACHE_KEY, {
         studentsCount: this.studentsCount(),
         teachersCount: this.teachersCount(),
         parentsCount: this.parentsCount(),
         pendingRegistrationCount: this.pendingRegistrationCount(),
+        pendingPromotionCount: this.pendingPromotionCount(),
       });
       this.offline.set(false);
     } catch (e) {
@@ -198,6 +211,7 @@ export class HomeComponent implements OnInit {
         this.teachersCount.set(cached.teachersCount ?? null);
         this.parentsCount.set(cached.parentsCount ?? null);
         this.pendingRegistrationCount.set(cached.pendingRegistrationCount ?? null);
+        this.pendingPromotionCount.set(cached.pendingPromotionCount ?? null);
         this.offline.set(true);
         this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
       } else {
@@ -205,6 +219,7 @@ export class HomeComponent implements OnInit {
         this.teachersCount.set(null);
         this.parentsCount.set(null);
         this.pendingRegistrationCount.set(null);
+        this.pendingPromotionCount.set(null);
       }
     } finally {
       this.loadingCounts.set(false);

@@ -8,6 +8,8 @@ import { TeacherService } from '@proxy/teachers';
 import { GroupService } from '@proxy/groups';
 import { StudentService } from '@proxy/students';
 import { CurrentUserInfoService } from '@proxy/common';
+import { EnrollmentRequestService } from '@proxy/student-enrollments';
+import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 
@@ -44,6 +46,14 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
       }
 
       @if (!success()) {
+        <!-- Current teacher info -->
+        @if (currentTeacherName()) {
+          <div class="current-teacher-bar">
+            <i class="fas fa-user-check"></i>
+            <span>المعلم الحالي · Current: <strong>{{ currentTeacherName() }}</strong></span>
+          </div>
+        }
+
         <!-- Step 1: Select Teacher -->
         @if (!selectedTeacher()) {
           <div class="section-title"><i class="fas fa-chalkboard-teacher"></i> اختر المعلم الجديد · Select New Teacher</div>
@@ -162,6 +172,14 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
     }
     .header-text h1 { margin:0; font-size:1.1rem; font-weight:800; color:white; }
     .header-text p { margin:.1rem 0 0; font-size:.72rem; color:rgba(255,255,255,.65); }
+
+    .current-teacher-bar {
+      margin:.5rem 1rem 0; padding:.6rem .85rem; border-radius:10px;
+      background:rgba(102,126,234,.06); border:1.5px solid rgba(102,126,234,.15);
+      font-size:.82rem; color:#4a4a6a; display:flex; align-items:center; gap:.5rem;
+      i { color:#667eea; flex-shrink:0; }
+      strong { color:#1a1a2e; }
+    }
 
     .section-title {
       display:flex; align-items:center; gap:.4rem;
@@ -291,6 +309,7 @@ export class StudentChangeTeacherComponent implements OnInit {
   private readonly groupService = inject(GroupService);
   private readonly studentService = inject(StudentService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
+  private readonly enrollmentRequestService = inject(EnrollmentRequestService);
 
   courseId = '';
   loading = signal(true);
@@ -301,6 +320,7 @@ export class StudentChangeTeacherComponent implements OnInit {
   teachers = signal<TeacherAutocompleteDto[]>([]);
   groups = signal<GroupWithSchedulesDto[]>([]);
   selectedTeacher = signal<TeacherAutocompleteDto | null>(null);
+  currentTeacherName = signal<string | null>(null);
   reason = '';
 
   private studentId = '';
@@ -313,12 +333,25 @@ export class StudentChangeTeacherComponent implements OnInit {
       const userInfo = await lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo());
       this.studentId = userInfo?.actorId || '';
 
+      // Load current enrollment to get current teacher ID
+      const requests = await lastValueFrom(
+        this.enrollmentRequestService.getRequestsForCurrentStudent()
+      ).catch(() => [] as any[]);
+      const currentEnrollment = (requests as any[]).find(
+        (r: any) => r.courseId === this.courseId && r.status === EnrollmentRequestStatus.Approved
+      );
+      if (currentEnrollment) {
+        this.currentTeacherId = currentEnrollment.teacherId || '';
+        this.enrollmentId = currentEnrollment.id || '';
+        this.currentTeacherName.set(currentEnrollment.teacherName || null);
+      }
+
       // Load teachers for this course, excluding current teacher
       const allTeachers = await lastValueFrom(
         this.teacherService.getTeachersByCourse(this.courseId, undefined, 100)
       );
-      // TODO: filter out current teacher if we know their ID
-      this.teachers.set(allTeachers || []);
+      const filtered = (allTeachers || []).filter(t => t.id !== this.currentTeacherId);
+      this.teachers.set(filtered);
     } catch {
       this.error.set('حدث خطأ أثناء تحميل البيانات');
     } finally {

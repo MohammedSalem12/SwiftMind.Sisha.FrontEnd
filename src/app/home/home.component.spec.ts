@@ -1,98 +1,147 @@
-import { CoreTestingModule } from "@abp/ng.core/testing";
-import { ThemeSharedTestingModule } from "@abp/ng.theme.shared/testing";
-import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
-import { NgxValidateCoreModule } from "@ngx-validate/core";
-import { HomeComponent } from "./home.component";
-import { OAuthService } from 'angular-oauth2-oidc';
-import { AuthService } from '@abp/ng.core';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { HomeComponent } from './home.component';
+import { AuthService, ConfigStateService } from '@abp/ng.core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClient } from '@angular/common/http';
+import { UserProfileService } from '@volo/ngx-lepton-x.core';
+import { StudentService } from '@proxy/students';
+import { TeacherService } from '@proxy/teachers';
+import { StudentEnrollmentService } from '@proxy/student-enrollments';
+import { OfflineCacheService } from '../shared/services/offline-cache.service';
+import { RegisterModalService } from '../shared/services/register-modal.service';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { of, BehaviorSubject } from 'rxjs';
 
-describe("HomeComponent", () => {
+describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
-  const mockOAuthService = jasmine.createSpyObj('OAuthService', ['hasValidAccessToken'])
-  const mockAuthService = jasmine.createSpyObj('AuthService', ['navigateToLogin'])
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [],
-        imports: [
-          CoreTestingModule.withConfig(),
-          ThemeSharedTestingModule.withConfig(),
-          NgxValidateCoreModule,
-          HomeComponent
-        ],
-        providers: [
-          /* mock providers here */
-          {
-            provide: OAuthService,
-            useValue: mockOAuthService
-          },
-          {
-            provide: AuthService,
-            useValue: mockAuthService
-          }
-        ],
-      }).compileComponents();
-    })
-  );
+  let component: HomeComponent;
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(HomeComponent);
-    fixture.detectChanges();
-  });
+  let mockAuthService: jasmine.SpyObj<AuthService>;
+  let mockConfigStateService: any;
+  let mockHttpClient: jasmine.SpyObj<HttpClient>;
+  let mockUserProfileService: any;
+  let mockStudentService: any;
+  let mockTeacherService: any;
+  let mockEnrollmentService: any;
+  let mockCacheService: any;
+  let mockRegisterModalService: any;
 
-  it("should be initiated", () => {
-    expect(fixture.componentInstance).toBeTruthy();
-  });
+  const currentUser$ = new BehaviorSubject<any>({ isAuthenticated: false, roles: [] });
 
-
-
-  describe('when login state is true', () => {
-    beforeAll(() => {
-      mockOAuthService.hasValidAccessToken.and.returnValue(true)
+  function createMocks(isAuthenticated: boolean) {
+    mockAuthService = jasmine.createSpyObj('AuthService', ['navigateToLogin'], {
+      isAuthenticated,
     });
 
-    it("hasLoggedIn should be true", () => {
+    mockConfigStateService = {
+      getOne$: jasmine.createSpy('getOne$').and.returnValue(currentUser$.asObservable()),
+    };
 
-      expect(fixture.componentInstance.hasLoggedIn).toBeTrue();
-      expect(mockOAuthService.hasValidAccessToken).toHaveBeenCalled()
+    mockHttpClient = jasmine.createSpyObj('HttpClient', ['get']);
+    mockHttpClient.get.and.returnValue(of([]));
+
+    mockUserProfileService = { user$: of(null) };
+
+    mockStudentService = { getList: jasmine.createSpy().and.returnValue(of({ totalCount: 0, items: [] })) };
+    mockTeacherService = { getList: jasmine.createSpy().and.returnValue(of({ totalCount: 0, items: [] })) };
+    mockEnrollmentService = { getList: jasmine.createSpy().and.returnValue(of({ totalCount: 0, items: [] })) };
+
+    mockCacheService = {
+      get: jasmine.createSpy().and.returnValue(null),
+      set: jasmine.createSpy(),
+      getLastUpdatedLabel: jasmine.createSpy().and.returnValue(''),
+    };
+
+    mockRegisterModalService = {
+      isOpen: jasmine.createSpy().and.returnValue(false),
+      show: jasmine.createSpy(),
+      dismiss: jasmine.createSpy(),
+    };
+  }
+
+  function configureTestBed() {
+    return TestBed.configureTestingModule({
+      imports: [RouterTestingModule, HomeComponent],
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: ConfigStateService, useValue: mockConfigStateService },
+        { provide: HttpClient, useValue: mockHttpClient },
+        { provide: UserProfileService, useValue: mockUserProfileService },
+        { provide: StudentService, useValue: mockStudentService },
+        { provide: TeacherService, useValue: mockTeacherService },
+        { provide: StudentEnrollmentService, useValue: mockEnrollmentService },
+        { provide: OfflineCacheService, useValue: mockCacheService },
+        { provide: RegisterModalService, useValue: mockRegisterModalService },
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
     })
-
-    it("button should not be exists", () => {
-      const element = fixture.nativeElement
-      const button = element.querySelector('[role="button"]')
-      expect(button).toBeNull()
+    .overrideComponent(HomeComponent, {
+      set: {
+        imports: [CommonModule, RouterTestingModule],
+      },
     })
-
-  })
+    .compileComponents();
+  }
 
   describe('when login state is false', () => {
-    beforeAll(() => {
-      mockOAuthService.hasValidAccessToken.and.returnValue(false)
+    beforeEach(waitForAsync(() => {
+      createMocks(false);
+      spyOn(localStorage, 'getItem').and.returnValue(null);
+      configureTestBed();
+    }));
+
+    beforeEach(() => {
+      fixture = TestBed.createComponent(HomeComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
     });
 
-    it("hasLoggedIn should be false", () => {
+    it('hasLoggedIn should be false', () => {
+      expect(component.hasLoggedIn).toBeFalse();
+    });
 
-      expect(fixture.componentInstance.hasLoggedIn).toBeFalse();
-      expect(mockOAuthService.hasValidAccessToken).toHaveBeenCalled()
-    })
+    it('navigateToLogin have been called when login() is invoked', () => {
+      component.login();
+      expect(mockAuthService.navigateToLogin).toHaveBeenCalled();
+    });
+  });
 
-    it("button should be exists", () => {
-      const element = fixture.nativeElement
-      const button = element.querySelector('[role="button"]')
-      expect(button).toBeDefined()
-    })
-    describe('when button clicked', () => {
+  describe('when login state is true', () => {
+    beforeEach(waitForAsync(() => {
+      createMocks(true);
+      spyOn(localStorage, 'getItem').and.returnValue('some-token');
+      currentUser$.next({ isAuthenticated: true, roles: ['admin'] });
+      configureTestBed();
+    }));
 
-      beforeEach(() => {
-        const element = fixture.nativeElement
-        const button = element.querySelector('[role="button"]')
-        button.click()
-      });
+    beforeEach(() => {
+      fixture = TestBed.createComponent(HomeComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
 
-      it("navigateToLogin have been called", () => {
-        expect(mockAuthService.navigateToLogin).toHaveBeenCalled()
-      })
-    })
-  })
+    it('hasLoggedIn should be true', () => {
+      expect(component.hasLoggedIn).toBeTrue();
+    });
+  });
 
+  describe('general', () => {
+    beforeEach(waitForAsync(() => {
+      createMocks(false);
+      spyOn(localStorage, 'getItem').and.returnValue(null);
+      configureTestBed();
+    }));
+
+    beforeEach(() => {
+      fixture = TestBed.createComponent(HomeComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('should be initiated', () => {
+      expect(component).toBeTruthy();
+    });
+  });
 });

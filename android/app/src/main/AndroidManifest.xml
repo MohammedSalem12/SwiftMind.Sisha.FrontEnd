@@ -22,6 +22,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Deep link: kai:// custom scheme -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="kai" />
+            </intent-filter>
+
+            <!-- Deep link: HTTPS app link for Firebase Hosting -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="sesha-9999.web.app" />
+            </intent-filter>
+
         </activity>
 
         <provider
@@ -44,4 +60,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Required for QR code scanner camera access -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Required for contact discovery and friend invites -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 </manifest>

@@ -98,8 +98,8 @@ import { CurrentUserInfoService } from '@proxy/common';
             @for (a of filteredMine(); track a.id) {
               <div class="academy-card" [class.inactive-card]="!a.isActive">
 
-                <!-- Main row: supervisor → manage, member → courses -->
-                <div class="card-main" (click)="isSupervisor(a) ? goToManage(a) : goToCourses(a)">
+                <!-- Main row: supervisor → manage, member → courses, pending → nothing -->
+                <div class="card-main" [class.card-main--disabled]="isPending(a)" (click)="isPending(a) ? null : (isSupervisor(a) ? goToManage(a) : goToCourses(a))">
                   <div class="academy-avatar" [class.avatar-inactive]="!a.isActive">
                     <i class="fas fa-university"></i>
                   </div>
@@ -108,6 +108,8 @@ import { CurrentUserInfoService } from '@proxy/common';
                       <h4>{{ a.nameAr || a.nameEn }}</h4>
                       @if (isSupervisor(a)) {
                         <span class="supervisor-badge">مشرف · Supervisor</span>
+                      } @else if (isPending(a)) {
+                        <span class="pending-badge">طلب معلق · Pending</span>
                       } @else {
                         <span class="member-badge">عضو · Member</span>
                       }
@@ -440,14 +442,14 @@ export class TeacherAcademiesComponent implements OnInit {
   activeTab  = signal<'mine' | 'browse'>('mine');
   searchText = signal('');
 
-  // Computed: my academies (supervisor or approved member)
+  // Computed: my academies (supervisor, approved member, or pending)
   myAcademies = computed(() =>
-    this.academies().filter(a => this.isSupervisor(a) || this.isMember(a))
+    this.academies().filter(a => this.isSupervisor(a) || this.isMember(a) || this.isPending(a))
   );
 
-  // Computed: other academies (not supervisor, not approved member)
+  // Computed: other academies (not supervisor, not member, not pending)
   otherAcademies = computed(() =>
-    this.academies().filter(a => !this.isSupervisor(a) && !this.isMember(a))
+    this.academies().filter(a => !this.isSupervisor(a) && !this.isMember(a) && !this.isPending(a))
   );
 
   // Filtered by search

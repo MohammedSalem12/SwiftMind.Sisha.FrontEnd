@@ -101,6 +101,20 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
             <span class="qa-en">Link Teacher</span>
           </div>
         </button>
+        <button class="qa-btn qa-btn-enrollment" (click)="goToEnrollmentRequests()">
+          <i class="fas fa-clipboard-check"></i>
+          <div class="qa-text">
+            <span>طلبات التسجيل</span>
+            <span class="qa-en">Enrollment Requests</span>
+          </div>
+        </button>
+        <button class="qa-btn qa-btn-group" (click)="goToCreateGroup()">
+          <i class="fas fa-layer-group"></i>
+          <div class="qa-text">
+            <span>إنشاء مجموعة</span>
+            <span class="qa-en">Create Group</span>
+          </div>
+        </button>
         <button class="qa-btn qa-btn-requests" (click)="goToRequests()">
           <i class="fas fa-paper-plane"></i>
           <div class="qa-text">
@@ -108,11 +122,32 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
             <span class="qa-en">My Requests</span>
           </div>
         </button>
+        <button class="qa-btn qa-btn-announce" (click)="goToAnnounce()">
+          <i class="fas fa-bullhorn"></i>
+          <div class="qa-text">
+            <span>إعلان للطلاب</span>
+            <span class="qa-en">Announce</span>
+          </div>
+        </button>
+        <button class="qa-btn qa-btn-schedule" (click)="goToScheduleOverview()">
+          <i class="fas fa-calendar-alt"></i>
+          <div class="qa-text">
+            <span>جدول المعلمين</span>
+            <span class="qa-en">Schedule</span>
+          </div>
+        </button>
+        <button class="qa-btn qa-btn-bulk" (click)="goToBulkAttendance()">
+          <i class="fas fa-clipboard-list"></i>
+          <div class="qa-text">
+            <span>حضور جماعي</span>
+            <span class="qa-en">Bulk Attendance</span>
+          </div>
+        </button>
         <button class="qa-btn qa-btn-reports" (click)="goToReports()">
           <i class="fas fa-chart-bar"></i>
           <div class="qa-text">
-            <span>تقارير الغياب</span>
-            <span class="qa-en">Reports</span>
+            <span>تقارير (تصدير)</span>
+            <span class="qa-en">Reports (Export)</span>
           </div>
         </button>
       </div>
@@ -307,6 +342,12 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
     .qa-btn:active { transform: scale(.97); box-shadow: 0 1px 6px rgba(0,0,0,.1); }
     .qa-btn i { font-size: 1rem; flex-shrink: 0; }
     .qa-btn-reports { background: linear-gradient(135deg, #f093fb, #f5576c); }
+    .qa-btn-enrollment { background: linear-gradient(135deg, #10b981, #059669); }
+    .qa-btn-course { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .qa-btn-group { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .qa-btn-announce { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .qa-btn-schedule { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+    .qa-btn-bulk { background: linear-gradient(135deg, #10b981, #047857); }
     .qa-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
     .qa-en { font-size: .65rem; font-weight: 500; opacity: .85; }
 
@@ -401,6 +442,30 @@ export class SecretaryHomeComponent implements OnInit {
 
   goToReports() {
     this.router.navigate(['/reports/absence']);
+  }
+
+  goToEnrollmentRequests() {
+    this.router.navigate(['/enrollment-requests']);
+  }
+
+  goToAddCourse() {
+    this.router.navigate(['/add-course']);
+  }
+
+  goToCreateGroup() {
+    this.router.navigate(['/teacher-groups/create']);
+  }
+
+  goToAnnounce() {
+    this.router.navigate(['/secretary/announce']);
+  }
+
+  goToScheduleOverview() {
+    this.router.navigate(['/secretary/schedule-overview']);
+  }
+
+  goToBulkAttendance() {
+    this.router.navigate(['/secretary/bulk-attendance']);
   }
 
   goToTeacherCourses(teacher: SecretaryTeacherDto) {

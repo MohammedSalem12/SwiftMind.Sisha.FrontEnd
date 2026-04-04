@@ -815,3 +815,27 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   font-weight: 400;
   opacity: 0.75;
 }
+
+.fab-wrap {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 12px);
+  left: 1rem;
+  z-index: 90;
+}
+.fab-link-parent {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+  transition: transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  i { font-size: 0.85rem; }
+  &:active { transform: scale(0.94); }
+}

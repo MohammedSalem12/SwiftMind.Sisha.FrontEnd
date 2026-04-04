@@ -5275,6 +5275,78 @@
               },
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Advertisements.IDealCouponAppService"
+            },
+            "GetPartnerPendingVouchersAsync": {
+              "uniqueName": "GetPartnerPendingVouchersAsync",
+              "name": "GetPartnerPendingVouchersAsync",
+              "httpMethod": "GET",
+              "url": "api/app/deal-coupon/partner-pending-vouchers",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Advertisements.DealCouponDto>",
+                "typeSimple": "[SwiftMind.Sesha.Advertisements.DealCouponDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Advertisements.DealCouponAppService"
+            },
+            "GetMonthlySettlementAsyncByYearAndMonth": {
+              "uniqueName": "GetMonthlySettlementAsyncByYearAndMonth",
+              "name": "GetMonthlySettlementAsync",
+              "httpMethod": "GET",
+              "url": "api/app/deal-coupon/monthly-settlement",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "year",
+                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "month",
+                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "year",
+                  "name": "year",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "month",
+                  "name": "month",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Advertisements.MonthlySettlementDto>",
+                "typeSimple": "[SwiftMind.Sesha.Advertisements.MonthlySettlementDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Advertisements.DealCouponAppService"
             }
           }
         },
@@ -6339,6 +6411,54 @@
               },
               "allowAnonymous": true,
               "implementFrom": "SwiftMind.Sesha.Common.IUserRegistrationAppService"
+            }
+          }
+        },
+        "SwiftMind.Sesha.Contacts.ContactAppService": {
+          "controllerName": "Contact",
+          "controllerGroupName": "Contact",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "SwiftMind.Sesha.Contacts.ContactAppService",
+          "interfaces": [],
+          "actions": {
+            "CheckAsyncByInput": {
+              "uniqueName": "CheckAsyncByInput",
+              "name": "CheckAsync",
+              "httpMethod": "POST",
+              "url": "api/app/contact/check",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Contacts.ContactCheckInputDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Contacts.ContactCheckInputDto",
+                  "typeSimple": "SwiftMind.Sesha.Contacts.ContactCheckInputDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Contacts.ContactCheckInputDto",
+                  "typeSimple": "SwiftMind.Sesha.Contacts.ContactCheckInputDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Contacts.ContactCheckResultDto",
+                "typeSimple": "SwiftMind.Sesha.Contacts.ContactCheckResultDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Contacts.ContactAppService"
             }
           }
         },
@@ -10404,6 +10524,43 @@
               },
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Groups.SessionAppService"
+            },
+            "CancelTodaySessionAsyncByInput": {
+              "uniqueName": "CancelTodaySessionAsyncByInput",
+              "name": "CancelTodaySessionAsync",
+              "httpMethod": "POST",
+              "url": "api/app/session/cancel-today-session",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Groups.CancelSessionDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Groups.CancelSessionDto",
+                  "typeSimple": "SwiftMind.Sesha.Groups.CancelSessionDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Groups.CancelSessionDto",
+                  "typeSimple": "SwiftMind.Sesha.Groups.CancelSessionDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Groups.SessionAppService"
             }
           }
         },
@@ -12030,6 +12187,95 @@
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Parents.IParentAppService"
             },
+            "SendMessageToTeacherAsyncByInput": {
+              "uniqueName": "SendMessageToTeacherAsyncByInput",
+              "name": "SendMessageToTeacherAsync",
+              "httpMethod": "POST",
+              "url": "api/app/parent/send-message-to-teacher",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Parents.SendMessageToTeacherDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Parents.SendMessageToTeacherDto",
+                  "typeSimple": "SwiftMind.Sesha.Parents.SendMessageToTeacherDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Parents.SendMessageToTeacherDto",
+                  "typeSimple": "SwiftMind.Sesha.Parents.SendMessageToTeacherDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Parents.ParentAppService"
+            },
+            "SubmitAbsenceExcuseAsyncByInput": {
+              "uniqueName": "SubmitAbsenceExcuseAsyncByInput",
+              "name": "SubmitAbsenceExcuseAsync",
+              "httpMethod": "POST",
+              "url": "api/app/parent/submit-absence-excuse",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Parents.SubmitAbsenceExcuseDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Parents.SubmitAbsenceExcuseDto",
+                  "typeSimple": "SwiftMind.Sesha.Parents.SubmitAbsenceExcuseDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Parents.SubmitAbsenceExcuseDto",
+                  "typeSimple": "SwiftMind.Sesha.Parents.SubmitAbsenceExcuseDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Parents.ParentAppService"
+            },
+            "GetMyReferralInfoAsync": {
+              "uniqueName": "GetMyReferralInfoAsync",
+              "name": "GetMyReferralInfoAsync",
+              "httpMethod": "GET",
+              "url": "api/app/parent/my-referral-info",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Common.ReferralInfoDto",
+                "typeSimple": "SwiftMind.Sesha.Common.ReferralInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Parents.ParentAppService"
+            },
             "UpdateAsyncByIdAndInput": {
               "uniqueName": "UpdateAsyncByIdAndInput",
               "name": "UpdateAsync",
@@ -13440,6 +13686,43 @@
               },
               "allowAnonymous": false,
               "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
+            },
+            "DeleteByRequestIdAsyncByEnrollmentRequestId": {
+              "uniqueName": "DeleteByRequestIdAsyncByEnrollmentRequestId",
+              "name": "DeleteByRequestIdAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/student-enrollment/by-request-id/{enrollmentRequestId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "enrollmentRequestId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "enrollmentRequestId",
+                  "name": "enrollmentRequestId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.StudentEnrollments.StudentEnrollmentAppService"
             },
             "GetEnrolledStudentsByCourseAsyncByCourseId": {
               "uniqueName": "GetEnrolledStudentsByCourseAsyncByCourseId",
@@ -16240,6 +16523,43 @@
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
             },
+            "GetEnrolledCoursesForTeacherAsyncByTeacherId": {
+              "uniqueName": "GetEnrolledCoursesForTeacherAsyncByTeacherId",
+              "name": "GetEnrolledCoursesForTeacherAsync",
+              "httpMethod": "GET",
+              "url": "api/app/teacher/enrolled-courses-for-teacher/{teacherId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "teacherId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "teacherId",
+                  "name": "teacherId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.TeacherEnrolledCourseDto>",
+                "typeSimple": "[SwiftMind.Sesha.Teachers.TeacherEnrolledCourseDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Teachers.TeacherAppService"
+            },
             "RequestUnenrollFromCourseAsyncByCourseId": {
               "uniqueName": "RequestUnenrollFromCourseAsyncByCourseId",
               "name": "RequestUnenrollFromCourseAsync",
@@ -16506,6 +16826,21 @@
               },
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
+            },
+            "GetMyReferralInfoAsync": {
+              "uniqueName": "GetMyReferralInfoAsync",
+              "name": "GetMyReferralInfoAsync",
+              "httpMethod": "GET",
+              "url": "api/app/teacher/my-referral-info",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Common.ReferralInfoDto",
+                "typeSimple": "SwiftMind.Sesha.Common.ReferralInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Teachers.TeacherAppService"
             },
             "DeleteAsyncById": {
               "uniqueName": "DeleteAsyncById",
@@ -25333,6 +25668,18 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "Password",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": 128,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -25444,6 +25791,30 @@
           "jsonName": null,
           "type": "System.Decimal",
           "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "AmountEgp",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "AdvertiserId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -25881,6 +26252,111 @@
           "name": "PlatformFeePercent",
           "jsonName": null,
           "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Advertisements.MonthlySettlementDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "AdvertiserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "AdvertiserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalVouchers",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalAmountEgp",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalRedeemed",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalPending",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Year",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Month",
+          "jsonName": null,
+          "type": "System.Int32",
           "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
@@ -26643,6 +27119,39 @@
         }
       ]
     },
+    "SwiftMind.Sesha.Common.ReferralInfoDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "ReferralCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ReferrerName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "SwiftMind.Sesha.Common.RegisterUserDto": {
       "baseType": null,
       "isEnum": false,
@@ -27193,6 +27702,30 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "Government",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Town",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -27203,6 +27736,105 @@
       "enumValues": null,
       "genericArguments": null,
       "properties": []
+    },
+    "SwiftMind.Sesha.Contacts.ContactCheckInputDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PhoneNumbers",
+          "jsonName": null,
+          "type": "[System.String]",
+          "typeSimple": "[string]",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Contacts.ContactCheckResultDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Registered",
+          "jsonName": null,
+          "type": "[SwiftMind.Sesha.Contacts.RegisteredContactDto]",
+          "typeSimple": "[SwiftMind.Sesha.Contacts.RegisteredContactDto]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Unregistered",
+          "jsonName": null,
+          "type": "[System.String]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Contacts.RegisteredContactDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PhoneNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ActorType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
     },
     "SwiftMind.Sesha.Courses.CourseSimpleDto": {
       "baseType": null,
@@ -29012,6 +29644,39 @@
         }
       ]
     },
+    "SwiftMind.Sesha.Groups.CancelSessionDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "GroupScheduleId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Reason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "SwiftMind.Sesha.Groups.CreateUpdateGroupDto": {
       "baseType": null,
       "isEnum": false,
@@ -29054,6 +29719,42 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "GroupType",
+          "jsonName": null,
+          "type": "SwiftMind.Sesha.Groups.GroupType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MeetingLink",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Location",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -29078,6 +29779,42 @@
         },
         {
           "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "GroupType",
+          "jsonName": null,
+          "type": "SwiftMind.Sesha.Groups.GroupType?",
+          "typeSimple": "enum?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MeetingLink",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Location",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -29297,6 +30034,42 @@
         },
         {
           "name": "GradeName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "GroupType",
+          "jsonName": null,
+          "type": "SwiftMind.Sesha.Groups.GroupType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MeetingLink",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Location",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -29654,8 +30427,58 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "GroupType",
+          "jsonName": null,
+          "type": "SwiftMind.Sesha.Groups.GroupType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MeetingLink",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Location",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
+    },
+    "SwiftMind.Sesha.Groups.GroupType": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Offline",
+        "Online"
+      ],
+      "enumValues": [
+        0,
+        1
+      ],
+      "genericArguments": null,
+      "properties": null
     },
     "SwiftMind.Sesha.Home.DashboardSummaryDto": {
       "baseType": null,
@@ -30036,7 +30859,8 @@
         "GroupChangeRequestRejected",
         "RegistrationRequestPending",
         "RegistrationRequestApproved",
-        "RegistrationRequestRejected"
+        "RegistrationRequestRejected",
+        "SessionCancelled"
       ],
       "enumValues": [
         0,
@@ -30069,7 +30893,8 @@
         27,
         28,
         29,
-        30
+        30,
+        31
       ],
       "genericArguments": null,
       "properties": null
@@ -30116,6 +30941,18 @@
       "properties": [
         {
           "name": "CourseId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TeacherId",
           "jsonName": null,
           "type": "System.Guid",
           "typeSimple": "string",
@@ -30793,6 +31630,18 @@
           "regex": null
         },
         {
+          "name": "ReferralCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "FullName",
           "jsonName": null,
           "type": "System.String",
@@ -31277,6 +32126,120 @@
           "isRequired": false,
           "minLength": 0,
           "maxLength": 256,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Parents.SendMessageToTeacherDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "StudentId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TeacherId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Subject",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": 200,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Message",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": 2000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Parents.SubmitAbsenceExcuseDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "StudentId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Date",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Reason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Notes",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": 500,
           "minimum": null,
           "maximum": null,
           "regex": null
@@ -32023,8 +32986,8 @@
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
-          "minimum": "10",
-          "maximum": "1000",
+          "minimum": "1",
+          "maximum": "10000",
           "regex": null
         }
       ]
@@ -32422,6 +33385,78 @@
           "jsonName": null,
           "type": "System.DateTime",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CurrentGrade",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "GradeName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ParentName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "AbsentDays",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalDays",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "AttendancePercentage",
+          "jsonName": null,
+          "type": "System.Double",
+          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -34438,6 +35473,18 @@
         },
         {
           "name": "TeacherCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ReferralCode",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",

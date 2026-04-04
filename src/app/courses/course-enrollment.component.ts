@@ -134,6 +134,12 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
                 </button>
                 <div class="teacher-avatar">{{ getInitials(t.displayName) }}</div>
                 <div class="teacher-name">{{ t.displayName }}</div>
+                @if (t.government || t.town) {
+                  <div class="teacher-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    {{ [t.government, t.town].filter(Boolean).join(' — ') }}
+                  </div>
+                }
                 <button class="select-btn">
                   اختيار <i class="fas fa-chevron-left"></i>
                 </button>
@@ -427,6 +433,10 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
     .teacher-name {
       font-size: 0.85rem; font-weight: 600; color: #1a202c;
       line-height: 1.3;
+    }
+    .teacher-location {
+      font-size: 0.68rem; color: #9ca3af; display: flex; align-items: center; gap: 0.2rem;
+      i { font-size: 0.58rem; color: #667eea; }
     }
     .teacher-promoted {
       border-color: #f59e0b;

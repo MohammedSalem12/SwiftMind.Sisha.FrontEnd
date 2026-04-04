@@ -27,6 +27,14 @@ export class StudentEnrollmentService {
     { apiName: this.apiName,...config });
   
 
+  deleteByRequestId = (enrollmentRequestId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/student-enrollment/by-request-id/${enrollmentRequestId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   get = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, EnrollmentDto>({
       method: 'GET',
