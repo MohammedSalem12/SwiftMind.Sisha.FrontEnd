@@ -35,6 +35,7 @@ export class StudentDetailComponent implements OnInit {
   private readonly configSvc = inject(ConfigStateService);
 
   canPromote = signal(false);
+  canEdit = signal(false);
   loading = signal(false);
   studentId = signal<string | null>(null);
   enrollments = signal<EnrollmentDto[]>([]);
@@ -125,6 +126,7 @@ export class StudentDetailComponent implements OnInit {
     this.canPromote.set(
       roles.includes('ADMIN') || roles.includes('PARENT') || roles.includes('STUDENT')
     );
+    this.canEdit.set(roles.includes('ADMIN'));
 
     this.route.paramMap.subscribe(pm => {
       const id = pm.get('id');

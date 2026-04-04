@@ -28,11 +28,13 @@
         <a class="btn-back" routerLink="/students">
           <i class="fas fa-arrow-right"></i>
         </a>
-        <!-- Edit button -->
-        <a class="btn-edit" [routerLink]="['/students', studentId(), 'edit']">
-          <i class="fas fa-edit"></i>
-          <span>تعديل</span>
-        </a>
+        <!-- Edit button (admin only) -->
+        @if (canEdit()) {
+          <a class="btn-edit" [routerLink]="['/students', studentId(), 'edit']">
+            <i class="fas fa-edit"></i>
+            <span>تعديل</span>
+          </a>
+        }
       </div>
 
       <div class="hero-body">
@@ -175,7 +177,7 @@
                   <button class="act-cancel" (click)="cancelEdit()">
                     <i class="fas fa-times"></i>
                   </button>
-                } @else {
+                } @else if (canEdit()) {
                   <button class="act-edit" (click)="startEdit(e)">
                     <i class="fas fa-pen"></i>
                   </button>

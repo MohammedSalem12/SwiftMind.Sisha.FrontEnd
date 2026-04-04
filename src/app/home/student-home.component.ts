@@ -158,6 +158,14 @@ export class StudentHomeComponent implements OnInit {
     this.router.navigate(['/student/today-sessions']);
   }
 
+  formatCountdown(seconds: number): string {
+    if (!seconds || seconds <= 0) return 'الآن';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0) return `${h}س ${m}د`;
+    return `${m} دقيقة`;
+  }
+
   goRegister(): void {
     this.router.navigate(['/student/courses']);
   }

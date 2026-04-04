@@ -3,6 +3,9 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { RestService } from '@abp/ng.core';
+import { EnrollmentRequestService } from '@proxy/student-enrollments';
+import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
+import { GroupService } from '@proxy/groups';
 
 const DAY_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
@@ -100,6 +103,8 @@ export class ParentChildScheduleComponent implements OnInit {
   readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly rest = inject(RestService);
+  private readonly enrollmentSvc = inject(EnrollmentRequestService);
+  private readonly groupSvc = inject(GroupService);
 
   loading = signal(false);
   childName = signal('');
@@ -123,31 +128,30 @@ export class ParentChildScheduleComponent implements OnInit {
 
     this.loading.set(true);
     try {
-      // Get student's enrollments to find their groups
-      const enrollments = await lastValueFrom(this.rest.request<any, any[]>({
-        method: 'GET', url: `/api/app/student-enrollment`,
-        params: { studentId, maxResultCount: 100, skipCount: 0 },
-      }));
+      // Get student's approved enrollments via enrollment requests (parent-accessible)
+      const allRequests = await lastValueFrom(this.enrollmentSvc.getList({ skipHandleError: true } as any)).catch(() => []);
+      const approved = (allRequests || []).filter(
+        (r: any) => r.studentId === studentId && r.status === EnrollmentRequestStatus.Approved
+      );
 
-      const items = (enrollments as any)?.items ?? enrollments ?? [];
       const schedules: ScheduleItem[] = [];
 
-      for (const e of items) {
-        if (!e.groupId) continue;
+      for (const e of approved) {
+        if (!e.teacherId || !e.courseId) continue;
         try {
-          const group = await lastValueFrom(this.rest.request<any, any>({
-            method: 'GET', url: `/api/app/group/${e.groupId}`,
-          }));
+          const groups = await lastValueFrom(
+            this.groupSvc.getGroupsForTeacherAndCourse(e.teacherId, e.courseId)
+          ).catch(() => []);
+          const group = e.groupId
+            ? groups?.find((g: any) => g.groupId === e.groupId) ?? groups?.[0]
+            : groups?.[0];
+          if (!group) continue;
           if (!this.childName()) this.childName.set(e.studentName || '');
-          // Get schedules for this group
-          const scheds = await lastValueFrom(this.rest.request<any, any>({
-            method: 'GET', url: `/api/app/group-schedule`, params: { groupId: e.groupId },
-          }));
-          for (const s of ((scheds as any)?.items ?? scheds ?? [])) {
+          for (const s of (group.schedules || [])) {
             schedules.push({
-              courseName: e.courseName || group?.courseName || '',
-              groupName: group?.name || '',
-              teacherName: e.teacherName || '',
+              courseName: e.courseName || (group as any).courseName || '',
+              groupName: group.name || '',
+              teacherName: (group as any).teacherName || e.teacherName || '',
               dayOfWeek: s.dayOfWeek ?? 0,
               startTime: s.startTime ?? '00:00',
               endTime: s.endTime ?? '00:00',

@@ -101,20 +101,6 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
             <span class="qa-en">Link Teacher</span>
           </div>
         </button>
-        <button class="qa-btn qa-btn-enrollment" (click)="goToEnrollmentRequests()">
-          <i class="fas fa-clipboard-check"></i>
-          <div class="qa-text">
-            <span>طلبات التسجيل</span>
-            <span class="qa-en">Enrollment Requests</span>
-          </div>
-        </button>
-        <button class="qa-btn qa-btn-group" (click)="goToCreateGroup()">
-          <i class="fas fa-layer-group"></i>
-          <div class="qa-text">
-            <span>إنشاء مجموعة</span>
-            <span class="qa-en">Create Group</span>
-          </div>
-        </button>
         <button class="qa-btn qa-btn-requests" (click)="goToRequests()">
           <i class="fas fa-paper-plane"></i>
           <div class="qa-text">

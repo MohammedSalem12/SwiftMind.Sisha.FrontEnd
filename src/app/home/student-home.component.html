@@ -122,8 +122,19 @@
     </div>
   }
 
-  <!-- FAB: Link Parent -->
+  <!-- FAB: Session Timer + Link Parent -->
   <div class="fab-wrap">
+    @if (nextSession()) {
+      <div class="fab-session" (click)="goTodaySessions()">
+        <div class="fab-session-ring" [class.fab-session--now]="nextSession()!.isNow">
+          <i class="fas" [class.fa-broadcast-tower]="nextSession()!.isNow" [class.fa-clock]="!nextSession()!.isNow"></i>
+        </div>
+        <div class="fab-session-info">
+          <span class="fab-session-course">{{ nextSession()!.courseName }}</span>
+          <span class="fab-session-time">{{ nextSession()!.isNow ? 'الآن · Now' : formatCountdown(nextSession()!.secondsUntilStart) }}</span>
+        </div>
+      </div>
+    }
     <a class="fab-link-parent" routerLink="/student/requests">
       <i class="fas fa-user-shield"></i>
       <span>ربط ولي أمر</span>

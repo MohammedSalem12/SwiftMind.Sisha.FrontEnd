@@ -71,6 +71,8 @@ export interface TeacherAutocompleteDto {
   nameArabic?: string;
   displayName?: string;
   isPromoted: boolean;
+  government?: string;
+  town?: string;
 }
 
 export interface TeacherDashboardAbsentDto {

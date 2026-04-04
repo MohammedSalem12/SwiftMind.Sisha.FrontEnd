@@ -17,6 +17,7 @@ interface CourseInfo {
   courseName: string;
   teacherName: string;
   groupName: string;
+  gradeName: string;
   schedules: { day: string; time: string }[];
 }
 
@@ -49,10 +50,22 @@ const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربع�
         </div>
       }
 
-      <!-- Courses -->
+      <!-- Tabs -->
       @if (!loading() && courses().length > 0) {
+        <div class="tabs">
+          <button class="tab" [class.tab--active]="activeTab() === 'current'" (click)="activeTab.set('current')">
+            <i class="fas fa-graduation-cap"></i> الصف الحالي · Current
+          </button>
+          <button class="tab" [class.tab--active]="activeTab() === 'previous'" (click)="activeTab.set('previous')">
+            <i class="fas fa-history"></i> صفوف سابقة · Previous
+          </button>
+        </div>
+      }
+
+      <!-- Courses -->
+      @if (!loading() && filteredCourses().length > 0) {
         <div class="list">
-          @for (c of courses(); track $index) {
+          @for (c of filteredCourses(); track $index) {
             <div class="card">
               <div class="card-top">
                 <div class="card-icon"><i class="fas fa-book-open"></i></div>
@@ -77,7 +90,7 @@ const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربع�
       }
 
       <!-- Empty -->
-      @if (!loading() && courses().length === 0) {
+      @if (!loading() && filteredCourses().length === 0) {
         <div class="empty">
           <i class="fas fa-book"></i>
           <p>لا توجد مقررات مسجلة</p>
@@ -117,6 +130,22 @@ const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربع�
       font-size:.72rem; color:rgba(255,255,255,.6);
       background:rgba(255,255,255,.12); padding:.1rem .5rem; border-radius:8px;
     }
+
+    .tabs {
+      display:flex; gap:.25rem; padding:.6rem 1rem 0;
+      background:#fff; margin:0 .75rem; border-radius:12px;
+      box-shadow:0 1px 4px rgba(0,0,0,.04);
+    }
+    .tab {
+      flex:1; display:flex; align-items:center; justify-content:center; gap:.3rem;
+      padding:.55rem; border:none; background:transparent; border-radius:10px;
+      font-size:.78rem; font-weight:600; color:#6c757d; cursor:pointer; min-height:40px;
+    }
+    .tab--active {
+      background:linear-gradient(135deg,#667eea,#764ba2); color:#fff;
+      box-shadow:0 2px 8px rgba(102,126,234,.3);
+    }
+    .tab i { font-size:.7rem; }
 
     .list { padding:.75rem 1rem; display:flex; flex-direction:column; gap:.6rem; }
 
@@ -192,6 +221,31 @@ export class ParentChildOverviewComponent implements OnInit {
   student = signal<StudentDto | null>(null);
   courses = signal<CourseInfo[]>([]);
   loading = signal(true);
+  activeTab = signal<'current' | 'previous'>('current');
+
+  filteredCourses(): CourseInfo[] {
+    const s = this.student();
+    const currentGrade = s?.currentGrade ?? 0;
+    const all = this.courses();
+    if (this.activeTab() === 'current') {
+      // Show courses matching current grade or courses with no grade info
+      const currentGradeName = this.getGradeName(currentGrade);
+      return all.filter(c => !c.gradeName || c.gradeName === currentGradeName || c.gradeName.includes(String(currentGrade)));
+    } else {
+      const currentGradeName = this.getGradeName(currentGrade);
+      return all.filter(c => c.gradeName && c.gradeName !== currentGradeName && !c.gradeName.includes(String(currentGrade)));
+    }
+  }
+
+  private getGradeName(grade: number): string {
+    const names: Record<number, string> = {
+      1:'الأول الابتدائي',2:'الثاني الابتدائي',3:'الثالث الابتدائي',
+      4:'الرابع الابتدائي',5:'الخامس الابتدائي',6:'السادس الابتدائي',
+      7:'الأول الإعدادي',8:'الثاني الإعدادي',9:'الثالث الإعدادي',
+      10:'الأول الثانوي',11:'الثاني الثانوي',12:'الثالث الثانوي',
+    };
+    return names[grade] ?? `الصف ${grade}`;
+  }
 
   async ngOnInit(): Promise<void> {
     this.studentId = this.route.snapshot.paramMap.get('studentId') || '';
@@ -215,12 +269,13 @@ export class ParentChildOverviewComponent implements OnInit {
         let groupName = req.groupName || '';
         let teacherName = req.teacherName || '';
 
+        let myGroup: any = null;
         if (req.teacherId && req.courseId) {
           try {
             const groups = await lastValueFrom(
               this.groupSvc.getGroupsForTeacherAndCourse(req.teacherId, req.courseId)
             ).catch(() => []);
-            const myGroup = req.groupId
+            myGroup = req.groupId
               ? groups?.find(g => g.groupId === req.groupId) ?? groups?.[0]
               : groups?.[0];
             if (myGroup) {
@@ -253,10 +308,14 @@ export class ParentChildOverviewComponent implements OnInit {
           } catch { /* silent */ }
         }
 
+        // Get grade name from group data
+        const gradeName = (myGroup as any)?.gradeName || '';
+
         courseInfos.push({
           courseName,
           teacherName,
           groupName,
+          gradeName,
           schedules,
         });
       }

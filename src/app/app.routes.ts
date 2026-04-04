@@ -497,6 +497,11 @@ export const appRoutes: Routes = [
     data: { roles: ['TEACHER'] },
   },
   {
+    path: 'shared-cards',
+    loadComponent: () => import('./home/shared-cards.component').then(m => m.SharedCardsComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'teacher/academies/:academyId/courses',
     loadComponent: () => import('./home/teacher-academy-courses.component').then(m => m.TeacherAcademyCoursesComponent),
     canActivate: [roleGuard],
