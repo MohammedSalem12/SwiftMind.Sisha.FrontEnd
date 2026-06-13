@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
@@ -12,6 +12,7 @@ import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status
 @Component({
   selector: 'app-parent-profile',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule],
   template: `
     <div class="page" dir="rtl">

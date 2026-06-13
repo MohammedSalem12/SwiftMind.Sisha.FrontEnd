@@ -1,6 +1,6 @@
 import { CommonModule, Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 
@@ -17,6 +17,7 @@ interface ResetRequestDto {
 @Component({
   selector: 'app-password-reset-requests',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="page" dir="rtl">

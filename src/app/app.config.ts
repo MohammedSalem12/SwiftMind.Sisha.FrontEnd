@@ -3,6 +3,7 @@ import { provideRouter, Router, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ngrokInterceptor } from './shared/ngrok.interceptor';
 import { serverOfflineInterceptor } from './shared/interceptors/server-offline.interceptor';
+import { apiErrorInterceptor } from './shared/interceptors/api-error.interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -64,7 +65,7 @@ function patchAuthServiceLogout(
 export const appConfig: ApplicationConfig = {
     providers: [
     provideRouter(appRoutes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
-    provideHttpClient(withInterceptors([ngrokInterceptor, serverOfflineInterceptor])),
+    provideHttpClient(withInterceptors([ngrokInterceptor, serverOfflineInterceptor, apiErrorInterceptor])),
     APP_ROUTE_PROVIDER,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideAbpCore(withOptions({

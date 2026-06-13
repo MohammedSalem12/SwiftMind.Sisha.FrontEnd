@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, OnDestroy, effect, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, OnDestroy, effect, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { ConfigStateService, AuthService } from '@abp/ng.core';
-import { filter, take, Subscription, lastValueFrom } from 'rxjs';
+import { filter, take, lastValueFrom } from 'rxjs';
 import { ROLES } from '../route.provider';
 import { RealtimeNotificationService } from './services/realtime-notification.service';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
@@ -80,6 +81,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
 @Component({
   selector: 'app-bottom-nav',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule],
   template: `
 @if (!navHidden()) {
@@ -807,8 +809,8 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   private readonly realtimeSvc         = inject(RealtimeNotificationService);
   private readonly enrollmentSvc       = inject(EnrollmentRequestService);
   private readonly secretaryTeacherSvc = inject(SecretaryTeacherService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private routerSub?: Subscription;
   private notifEffect = effect(() => {
     const notif = this.realtimeSvc.latestNotification();
     if (notif && this.isTeacher) this.loadPendingCount();
@@ -850,8 +852,8 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     this.loadUserAndNav();
     this.currentPath.set(this.router.url);
 
-    this.routerSub = this.router.events
-      .pipe(filter(e => e instanceof NavigationEnd))
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed(this.destroyRef))
       .subscribe((e: NavigationEnd) => {
         this.currentPath.set(e.urlAfterRedirects);
         this.showMore.set(false);
@@ -860,7 +862,6 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.routerSub?.unsubscribe();
     this.notifEffect.destroy();
     this.navHiddenEffect.destroy();
   }
@@ -873,7 +874,8 @@ export class BottomNavComponent implements OnInit, OnDestroy {
       .getOne$('currentUser')
       .pipe(
         filter((u: any) => !!u && u.isAuthenticated === true),
-        take(1)
+        take(1),
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((cu: any) => {
         this.isAuthenticated.set(true);

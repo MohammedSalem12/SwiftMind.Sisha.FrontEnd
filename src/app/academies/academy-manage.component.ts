@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
@@ -13,6 +13,7 @@ import type { AcademyCourseDto } from '@proxy/academies/models';
 @Component({
   selector: 'app-academy-manage',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
     <div class="academy-manage-page" dir="rtl">

@@ -1,4 +1,5 @@
-import { Component, inject, signal, effect, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, effect, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { RealtimeNotificationService } from './services/realtime-notification.service';
@@ -63,11 +64,13 @@ import { RealtimeNotificationService } from './services/realtime-notification.se
       }
     }
   `],
-  standalone: true
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidebarNotificationBadgeComponent implements OnInit {
   private readonly realtimeService = inject(RealtimeNotificationService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly unreadCount = this.realtimeService.unreadCount;
   showBadge = signal(false);
@@ -77,7 +80,7 @@ export class SidebarNotificationBadgeComponent implements OnInit {
     this.updateBadgeVisibility();
     
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(filter(event => event instanceof NavigationEnd), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.updateBadgeVisibility();
       });

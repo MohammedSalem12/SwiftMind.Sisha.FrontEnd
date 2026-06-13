@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RegisterModalService } from '../services/register-modal.service';
@@ -6,6 +6,7 @@ import { RegisterModalService } from '../services/register-modal.service';
 @Component({
   selector: 'app-register-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     @if (visible()) {

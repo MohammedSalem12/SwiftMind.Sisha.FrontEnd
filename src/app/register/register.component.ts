@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -13,6 +13,7 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-register',
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './register.component.html',

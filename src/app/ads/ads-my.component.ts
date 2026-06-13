@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { environment } from '../../environments/environment';
 
@@ -21,6 +21,7 @@ interface AdDto {
 @Component({
   selector: 'app-ads-my',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule],
   template: `
     <div class="page" dir="rtl">

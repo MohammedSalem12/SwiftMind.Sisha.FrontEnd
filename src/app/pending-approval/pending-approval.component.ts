@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -8,6 +9,7 @@ import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-pending-approval',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="pending-container" dir="rtl">
@@ -140,6 +142,7 @@ export class PendingApprovalComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly apiBase = (environment as any).apis?.default?.url || '';
 
   requestInfo = signal<any>(null);
@@ -152,6 +155,7 @@ export class PendingApprovalComponent implements OnInit {
   checkStatus() {
     this.loading.set(true);
     this.http.get<any>(`${this.apiBase}/api/app/registration-request/my-request-status`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (req) => {
           this.loading.set(false);

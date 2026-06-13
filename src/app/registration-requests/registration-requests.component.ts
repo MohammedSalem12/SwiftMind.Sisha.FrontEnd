@@ -1,6 +1,6 @@
 import { CommonModule, Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 
@@ -27,6 +27,7 @@ type TabFilter = 'pending' | 'approved' | 'rejected' | 'all';
 @Component({
   selector: 'app-registration-requests',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="page" dir="rtl">

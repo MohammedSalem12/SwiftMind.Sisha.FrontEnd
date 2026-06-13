@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, Location } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -8,6 +9,7 @@ import type { FeedDto } from '@proxy/feeds/dtos/models';
 @Component({
   selector: 'app-feed-detail',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule],
   templateUrl: './feed-detail.component.html',
   styles: [`
@@ -26,13 +28,14 @@ export class FeedDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly location = inject(Location);
+  private readonly destroyRef = inject(DestroyRef);
 
   feed = signal<FeedDto | null>(null);
   safeContent = signal<SafeHtml | string>('');
   loading = signal(false);
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((pm) => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((pm) => {
       const id = pm.get('id');
       if (id) this.load(id);
     });
@@ -40,7 +43,7 @@ export class FeedDetailComponent implements OnInit {
 
   load(id: string) {
     this.loading.set(true);
-    this.svc.get(id).subscribe({
+    this.svc.get(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (f) => {
         this.feed.set(f);
         this.safeContent.set(this.sanitizer.bypassSecurityTrustHtml(f.content ?? ''));

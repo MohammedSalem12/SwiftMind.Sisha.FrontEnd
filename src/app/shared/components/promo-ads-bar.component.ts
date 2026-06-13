@@ -1,4 +1,5 @@
-import { Component, input, signal, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal, OnInit, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -8,6 +9,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-promo-ads-bar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     @if (ads().length > 0) {
@@ -106,6 +108,7 @@ import { environment } from '../../../environments/environment';
 export class PromoAdsBarComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly apiBase = (environment as any).apis?.default?.url || '';
 
   audience = input<number>(0); // 0=All, 1=Students, 2=Parents, 3=Teachers
@@ -124,7 +127,7 @@ export class PromoAdsBarComponent implements OnInit {
 
   onAdClick(ad: any): void {
     if (ad?.id) {
-      this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/click`, {}).subscribe();
+      this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/click`, {}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
       this.router.navigate(['/ads', 'detail', ad.id]);
     }
   }

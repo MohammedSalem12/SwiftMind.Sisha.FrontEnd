@@ -1,6 +1,7 @@
 import { AuthService, ConfigStateService, LocalizationPipe, LocalizationService } from '@abp/ng.core';
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
@@ -10,6 +11,7 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 @Component({
   selector: 'app-teacher-groups',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, LocalizationPipe],
   templateUrl: './teacher-groups.component.html',
   styleUrls: ['./teacher-groups.component.scss'],
@@ -22,6 +24,7 @@ export class TeacherGroupsComponent implements OnInit {
   private router             = inject(Router);
   private route              = inject(ActivatedRoute);
   private localization       = inject(LocalizationService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Component state
   loading = signal<boolean>(false);
@@ -38,7 +41,7 @@ export class TeacherGroupsComponent implements OnInit {
   courseName = signal<string | null>(null);
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       this.courseId.set(params['courseId'] || null);
     });
     this.loadCurrentUserAndGroups();
@@ -128,7 +131,7 @@ export class TeacherGroupsComponent implements OnInit {
               .map(g => ({
                 groupId: g.id, name: g.name, teacherId: g.teacherId,
                 teacherName: g.teacherName, groupCode: g.groupCode,
-                courseId: g.courseId, courseName: g.courseName, schedules: [],
+                courseId: g.courseId, courseName: g.courseName, isStopped: false, schedules: [],
               }));
             this.groups.set(filtered);
             if (filtered.length > 0) this.courseName.set(filtered[0].courseName || null);
@@ -157,7 +160,7 @@ export class TeacherGroupsComponent implements OnInit {
               .map(g => ({
                 groupId: g.id, name: g.name, teacherId: g.teacherId,
                 teacherName: g.teacherName, groupCode: g.groupCode,
-                courseId: g.courseId, courseName: g.courseName, schedules: [],
+                courseId: g.courseId, courseName: g.courseName, isStopped: false, schedules: [],
               }));
             allGroupsWithSchedules.push(...basicGroups);
           }

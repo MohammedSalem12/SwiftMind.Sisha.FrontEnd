@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +10,7 @@ import { TeacherService } from '@proxy/teachers';
 @Component({
   selector: 'app-teachers',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   templateUrl: './teachers.component.html',
   styleUrls: ['./teachers.component.scss'],
@@ -18,6 +20,7 @@ export class TeachersComponent implements OnInit {
   private readonly list = inject(ListService);
   private readonly svc = inject(TeacherService);
   readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   teachers = signal<TeacherDto[]>([]);
   totalCount = signal(0);
@@ -36,7 +39,7 @@ export class TeachersComponent implements OnInit {
       this.loading.set(true);
       const req = { skipCount: (this.page() - 1) * this.pageSize(), maxResultCount: this.pageSize(), sorting: q.sort ?? 'lastName' } as any;
       return this.svc.getList(req).pipe();
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: PagedResultDto<TeacherDto>) => {
         const items = (res.items ?? []).filter(t => {
           const f = this.filter()?.trim().toLowerCase();

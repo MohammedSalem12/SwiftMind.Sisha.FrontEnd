@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ConfigStateService } from '@abp/ng.core';
@@ -22,6 +22,7 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
 @Component({
   selector: 'app-parent-home',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
   templateUrl: './parent-home.component.html',
   styleUrls: ['./parent-home.component.scss'],

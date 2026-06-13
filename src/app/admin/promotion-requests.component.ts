@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
@@ -24,6 +24,7 @@ interface PromotionDto {
 @Component({
   selector: 'app-promotion-requests',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="page" dir="rtl">

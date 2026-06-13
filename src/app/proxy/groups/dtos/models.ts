@@ -35,6 +35,7 @@ export interface GroupWithSchedulesDto {
   groupType?: GroupType;
   meetingLink?: string;
   location?: string;
+  isStopped: boolean;
   schedules: GroupScheduleDto[];
 }
 

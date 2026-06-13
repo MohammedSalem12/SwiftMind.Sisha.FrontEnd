@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import * as QRCode from 'qrcode';
@@ -9,6 +9,7 @@ import { StudentService } from '@proxy/students';
 @Component({
   selector: 'app-student-qr',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   templateUrl: './student-qr.component.html',
   styleUrls: ['./student-qr.component.scss'],

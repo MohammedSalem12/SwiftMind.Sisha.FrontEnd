@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,6 +13,7 @@ import type { StudentDto } from '@proxy/students/models';
 @Component({
   selector: 'app-parent-link-child',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="link-child-page">

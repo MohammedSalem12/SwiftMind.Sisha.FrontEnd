@@ -71,6 +71,24 @@ export class GroupService {
     { apiName: this.apiName,...config });
   
 
+  isCourseStopped = (courseId: string, teacherId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, boolean>({
+      method: 'POST',
+      url: '/api/app/group/is-course-stopped',
+      params: { courseId, teacherId },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  toggleCourseStopped = (courseId: string, stopped: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/group/toggle-course-stopped/${courseId}`,
+      params: { stopped },
+    },
+    { apiName: this.apiName,...config });
+  
+
   update = (id: string, input: EditGroupDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, GroupDto>({
       method: 'PUT',

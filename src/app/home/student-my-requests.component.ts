@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
@@ -14,6 +14,7 @@ type Tab = 'pending' | 'finished';
 @Component({
   selector: 'app-student-my-requests',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="requests-page" dir="rtl">

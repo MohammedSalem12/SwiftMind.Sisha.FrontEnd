@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
@@ -26,6 +26,7 @@ const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربع�
 @Component({
   selector: 'app-parent-child-overview',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule],
   template: `
     <div class="page" dir="rtl">

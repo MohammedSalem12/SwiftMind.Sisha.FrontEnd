@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
@@ -8,6 +9,7 @@ import { CurrentUserInfoService } from '@proxy/common';
 @Component({
   selector: 'app-parent-enrollment-approval',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="parent-approval-container">
@@ -307,6 +309,8 @@ export class ParentEnrollmentApprovalComponent implements OnInit {
   activeTab = signal<'pending' | 'approved'>('pending');
   showDebugInfo = signal(false);
 
+  private readonly destroyRef = inject(DestroyRef);
+
   constructor(
     private enrollmentRequestService: EnrollmentRequestService,
     private currentUserService: CurrentUserInfoService
@@ -456,7 +460,7 @@ export class ParentEnrollmentApprovalComponent implements OnInit {
     this.enrollmentRequestService.approve({
       requestId: request.id!,
       isParent: true
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.successMessage.set(`تمت الموافقة على طلب تسجيل ${request.studentName} بنجاح`);
         this.processingRequest.set('');
@@ -478,7 +482,7 @@ export class ParentEnrollmentApprovalComponent implements OnInit {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    this.enrollmentRequestService.reject(request.id!).subscribe({
+    this.enrollmentRequestService.reject(request.id!).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.successMessage.set(`تم رفض طلب تسجيل ${request.studentName}`);
         this.processingRequest.set('');

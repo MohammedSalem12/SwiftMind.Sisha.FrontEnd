@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,6 +11,7 @@ import { BiometricService } from '../shared/services/biometric.service';
 @Component({
   selector: 'app-profile',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],

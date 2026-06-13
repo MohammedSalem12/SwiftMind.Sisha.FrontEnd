@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
@@ -23,6 +24,7 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
 @Component({
   selector: 'app-parent-enroll-child',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="enroll-page" dir="rtl">
@@ -583,6 +585,7 @@ export class ParentEnrollChildComponent implements OnInit {
   private readonly studentService = inject(StudentService);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
   private readonly restSvc = inject(RestService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly governorates = EGYPT_GOVERNORATES_LIST;
   readonly districts    = computed(() => getDistricts(this.filterGovernment()));
@@ -666,7 +669,7 @@ export class ParentEnrollChildComponent implements OnInit {
     this.filterTown.set('');
     this.filterNameCode.set('');
     this.govTownTeacherIds.set(null);
-    this.teacherService.getTeachersByCourse(courseId, undefined, 100).subscribe({
+    this.teacherService.getTeachersByCourse(courseId, undefined, 100).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: teachers => { this.teachers.set(teachers); this.loading.set(false); },
       error: () => { this.errorMessage.set('حدث خطأ أثناء تحميل المعلمين'); this.loading.set(false); }
     });
@@ -697,7 +700,7 @@ export class ParentEnrollChildComponent implements OnInit {
     this.step.set('group');
     this.loading.set(true);
     this.errorMessage.set('');
-    this.groupService.getGroupsForTeacherAndCourse(teacher.id!, this.selectedCourse()!.id!).subscribe({
+    this.groupService.getGroupsForTeacherAndCourse(teacher.id!, this.selectedCourse()!.id!).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: groups => { this.groups.set(groups); this.loading.set(false); },
       error: () => { this.errorMessage.set('حدث خطأ أثناء تحميل المجموعات'); this.loading.set(false); }
     });

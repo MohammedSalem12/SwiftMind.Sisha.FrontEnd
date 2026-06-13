@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,6 +21,7 @@ type CourseGroup = {
 @Component({
   selector: 'app-course-groups',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, GroupScheduleEditComponent],
   templateUrl: './course-groups.component.html',
   styleUrls: ['./course-groups.component.scss'],
@@ -31,6 +33,7 @@ export class CourseGroupsComponent implements OnInit {
   private groupSvc = inject(GroupService);
   private toast = inject(ToastService);
   private teacherSvc = inject(TeacherService);
+  private readonly destroyRef = inject(DestroyRef);
   courseId = signal<string | null>(null);
   groups = signal<CourseGroup[]>([]);
   loading = signal(false);
@@ -46,7 +49,7 @@ export class CourseGroupsComponent implements OnInit {
   createBuffer: { [groupId: string]: any } = {};
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(pm => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(pm => {
       const id = pm.get('id');
       this.courseId.set(id);
       void this.loadTeachers();

@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TeacherService } from '@proxy/teachers';
@@ -7,6 +8,7 @@ import type { TeacherDto } from '@proxy/teachers/models';
 @Component({
   selector: 'app-teacher-detail',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="card">
@@ -36,6 +38,7 @@ export class TeacherDetailComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private svc = inject(TeacherService);
+  private readonly destroyRef = inject(DestroyRef);
 
   teacher = signal<TeacherDto | null>(null);
   loading = signal(true);
@@ -52,7 +55,7 @@ export class TeacherDetailComponent {
 
   load(id: string) {
     this.loading.set(true);
-    this.svc.get(id).subscribe({ next: (t) => { this.teacher.set(t); this.loading.set(false); }, error: (e) => { console.error(e); this.loading.set(false); } });
+    this.svc.get(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: (t) => { this.teacher.set(t); this.loading.set(false); }, error: (e) => { console.error(e); this.loading.set(false); } });
   }
 
   goBack() { this.router.navigate(['/teachers']); }

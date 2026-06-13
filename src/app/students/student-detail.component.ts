@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, KeyValuePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -20,6 +21,7 @@ import { ConfigStateService } from '@abp/ng.core';
 @Component({
   selector: 'app-student-detail',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, FormsModule, KeyValuePipe],
   templateUrl: './student-detail.component.html',
   styleUrls: ['./student-detail.component.scss']
@@ -33,6 +35,7 @@ export class StudentDetailComponent implements OnInit {
   private readonly studentSvc = inject(StudentService);
   private readonly examGradeSvc = inject(ExamGradeService);
   private readonly configSvc = inject(ConfigStateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   canPromote = signal(false);
   canEdit = signal(false);
@@ -128,7 +131,7 @@ export class StudentDetailComponent implements OnInit {
     );
     this.canEdit.set(roles.includes('ADMIN'));
 
-    this.route.paramMap.subscribe(pm => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(pm => {
       const id = pm.get('id');
       this.studentId.set(id);
       if (id) void this.loadDetails(id);

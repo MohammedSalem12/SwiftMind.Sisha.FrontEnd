@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
@@ -37,6 +38,7 @@ const GRADE_NAMES: Record<number, string> = {
 @Component({
   selector: 'app-student-home',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.scss'],
@@ -48,6 +50,7 @@ export class StudentHomeComponent implements OnInit {
   private readonly http           = inject(HttpClient);
   private readonly sessionService = inject(SessionService);
   private readonly cache          = inject(OfflineCacheService);
+  private readonly destroyRef     = inject(DestroyRef);
   private readonly apiBase        = environment.apis?.default?.url || '';
 
   studentName        = signal('');
@@ -141,7 +144,7 @@ export class StudentHomeComponent implements OnInit {
 
   trackAdClick(ad: any): void {
     if (ad?.id) {
-      this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/click`, {}).subscribe();
+      this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/click`, {}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
       this.router.navigate(['/ads', 'detail', ad.id]);
     }
   }

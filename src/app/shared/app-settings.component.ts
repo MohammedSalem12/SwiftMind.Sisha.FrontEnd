@@ -1,5 +1,5 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
@@ -10,6 +10,7 @@ import { BiometricService } from './services/biometric.service';
 @Component({
   selector: 'app-settings',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="page" dir="rtl">

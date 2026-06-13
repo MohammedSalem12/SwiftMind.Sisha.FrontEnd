@@ -1,8 +1,9 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, inject, signal, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy, HostListener, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '@abp/ng.core';
-import { Subscription, filter, lastValueFrom } from 'rxjs';
+import { filter, lastValueFrom } from 'rxjs';
 import { SessionService } from '@proxy/groups';
 import { CurrentUserInfoService } from '@proxy/common';
 import type { NextSessionDto } from '@proxy/groups/dtos/models';
@@ -12,6 +13,7 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
 @Component({
   selector: 'app-top-bar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     @if (visible()) {
@@ -219,7 +221,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   private readonly location = inject(Location);
   private readonly authService = inject(AuthService);
   private readonly sessionService = inject(SessionService);
-  private sub!: Subscription;
+  private readonly destroyRef = inject(DestroyRef);
   private countdownInterval: any;
 
   private readonly currentUserSvc = inject(CurrentUserInfoService);
@@ -244,15 +246,14 @@ export class TopBarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateVisibility(this.router.url);
-    this.sub = this.router.events
-      .pipe(filter(e => e instanceof NavigationEnd))
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed(this.destroyRef))
       .subscribe((e: NavigationEnd) => this.updateVisibility(e.urlAfterRedirects));
     this.loadNextSession();
     this.loadUserInfo();
   }
 
   ngOnDestroy(): void {
-    this.sub?.unsubscribe();
     if (this.countdownInterval) clearInterval(this.countdownInterval);
   }
 

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
@@ -15,6 +15,7 @@ import { RegisterPromptComponent } from '../shared/components/register-prompt.co
 @Component({
   selector: 'app-academies-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, FormsModule, RegisterPromptComponent],
   template: `
     <div class="page" dir="rtl">

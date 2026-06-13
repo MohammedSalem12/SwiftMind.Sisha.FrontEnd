@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
@@ -12,6 +12,7 @@ import { CurrentUserInfoService } from '@proxy/common';
 @Component({
   selector: 'app-child-grades',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule],
   templateUrl: './child-grades.component.html',
   styleUrls: ['./child-grades.component.scss'],

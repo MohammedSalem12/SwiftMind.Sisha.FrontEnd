@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService, RestService } from '@abp/ng.core';
@@ -13,6 +13,7 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
 @Component({
   selector: 'app-teacher-profile',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
     <div class="page" dir="rtl">

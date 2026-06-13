@@ -19,12 +19,15 @@ describe('LoginComponent', () => {
     const authSpy = jasmine.createSpyObj('AuthService', ['loginUsingGrant'], {
       isAuthenticated: false,
     });
+    authSpy.loginUsingGrant.and.rejectWith({ error: { error: 'invalid_grant' }, status: 400 });
     const configSpy = jasmine.createSpyObj('ConfigStateService', ['getOne', 'refreshAppState']);
+    configSpy.refreshAppState.and.returnValue(of(null));
     const bioSpy = jasmine.createSpyObj('BiometricService', ['isAvailable', 'authenticate', 'getCredentials', 'isEnabled'], {
       isLocked: jasmine.createSpy().and.returnValue(false),
     });
     bioSpy.isAvailable.and.resolveTo(false);
-    const redirectSpy = jasmine.createSpyObj('AuthRedirectService', ['getAndClearPendingUrl']);
+    const redirectSpy = jasmine.createSpyObj('AuthRedirectService', ['consumeRedirectUrl']);
+    redirectSpy.consumeRedirectUrl.and.returnValue(null);
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent],

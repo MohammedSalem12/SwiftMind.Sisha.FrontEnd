@@ -1,4 +1,4 @@
-import { Component, input, signal, OnInit, OnDestroy, inject, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal, OnInit, OnDestroy, inject, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
@@ -65,6 +65,7 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
 @Component({
   selector: 'app-did-you-know',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="tip-card" dir="rtl">
