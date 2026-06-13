@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfigStateService } from '@abp/ng.core';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
@@ -8,6 +9,7 @@ import { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 @Component({
   selector: 'app-enrollment-requests',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="enrollment-requests-container">
@@ -187,6 +189,7 @@ import { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 export class EnrollmentRequestsComponent implements OnInit {
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
   private readonly configStateService = inject(ConfigStateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   requests = signal<EnrollmentRequestDto[]>([]);
   loading = signal(false);
@@ -208,7 +211,7 @@ export class EnrollmentRequestsComponent implements OnInit {
       ? this.enrollmentRequestService.getPendingRequestsForSecretary()
       : this.enrollmentRequestService.getPendingRequestsForCurrentTeacher();
 
-    service.subscribe({
+    service.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (requests) => {
         this.requests.set(requests);
         this.loading.set(false);
@@ -231,7 +234,7 @@ export class EnrollmentRequestsComponent implements OnInit {
       isParent: false // Teacher/Secretary approval
     };
 
-    this.enrollmentRequestService.approve(approveDto).subscribe({
+    this.enrollmentRequestService.approve(approveDto).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.successMessage.set(`تمت الموافقة على طلب ${request.studentName} بنجاح`);
         this.processingRequest.set('');
@@ -254,7 +257,7 @@ export class EnrollmentRequestsComponent implements OnInit {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    this.enrollmentRequestService.reject(request.id!).subscribe({
+    this.enrollmentRequestService.reject(request.id!).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.successMessage.set(`تم رفض طلب ${request.studentName}`);
         this.processingRequest.set('');

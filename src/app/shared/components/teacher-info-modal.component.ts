@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, effect } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { TeacherService } from '@proxy/teachers';
@@ -29,6 +29,7 @@ interface CourseInfo {
 @Component({
   selector: 'app-teacher-info-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule],
   template: `
     @if (modalService.isOpen()) {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { SecretaryTeacherService } from '@proxy/teachers';
@@ -7,6 +7,7 @@ import { SecretaryTeacherService } from '@proxy/teachers';
 @Component({
   selector: 'app-secretary-requests',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="page" dir="rtl">

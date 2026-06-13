@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
@@ -18,6 +19,7 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
 @Component({
   selector: 'app-course-enrollment',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="enroll-page" dir="rtl">
@@ -584,6 +586,7 @@ export class CourseEnrollmentComponent implements OnInit {
   private readonly academyService         = inject(AcademyService);
   private readonly restSvc                = inject(RestService);
   private readonly teacherInfoModal       = inject(TeacherInfoModalService);
+  private readonly destroyRef             = inject(DestroyRef);
 
   readonly governorates = EGYPT_GOVERNORATES_LIST;
   readonly districts    = computed(() => getDistricts(this.filterGovernment()));
@@ -703,7 +706,7 @@ export class CourseEnrollmentComponent implements OnInit {
     this.teacherStudentCodeInput = '';
     this.loading.set(true);
     this.errorMessage.set('');
-    this.groupService.getGroupsForTeacherAndCourse(teacher.id!, this.courseId()).subscribe({
+    this.groupService.getGroupsForTeacherAndCourse(teacher.id!, this.courseId()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: groups => { this.groups.set(groups); this.loading.set(false); },
       error: () => { this.errorMessage.set('حدث خطأ أثناء تحميل المجموعات'); this.loading.set(false); }
     });

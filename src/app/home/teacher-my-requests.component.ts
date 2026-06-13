@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { RestService } from '@abp/ng.core';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
@@ -14,6 +14,7 @@ type SubTab  = 'pending' | 'done';
 @Component({
   selector: 'app-teacher-my-requests',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="page" dir="rtl">

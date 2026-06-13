@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CourseService } from '@proxy/courses';
@@ -9,6 +10,7 @@ import type { CourseDto } from '../proxy/courses/dtos/models';
 @Component({
   selector: 'app-teacher-courses',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="teacher-courses">
@@ -63,6 +65,7 @@ export class TeacherCoursesComponent {
   private courseSvc = inject(CourseService);
   private enrollmentSvc = inject(EnrollmentService);
   private teacherSvc = inject(TeacherService);
+  private readonly destroyRef = inject(DestroyRef);
 
   teacherId = signal<string | null>(null);
   courses = signal<CourseDto[]>([]);
@@ -71,13 +74,13 @@ export class TeacherCoursesComponent {
 
   constructor() {
     // react to param changes so navigating from the teachers list always reloads data
-    this.route.paramMap.subscribe((pm) => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((pm) => {
       const id = pm.get('id');
       this.teacherId.set(id);
       this.teacherName.set(null);
       if (id) {
         // load teacher display name
-        this.teacherSvc.get(id).subscribe({ next: (t) => this.teacherName.set((t.firstName || '') + ' ' + (t.lastName || '')), error: () => this.teacherName.set(null) });
+        this.teacherSvc.get(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: (t) => this.teacherName.set((t.firstName || '') + ' ' + (t.lastName || '')), error: () => this.teacherName.set(null) });
       }
       this.loadTeacherCourses();
     });
@@ -88,7 +91,7 @@ export class TeacherCoursesComponent {
     if (!t) return;
     this.loading.set(true);
     // Use the teacher API to get the courses assigned to this teacher
-    this.teacherSvc.getTeacherCourses(t).subscribe({
+    this.teacherSvc.getTeacherCourses(t).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (items) => { this.courses.set(items ?? []); this.loading.set(false); },
       error: (err) => { console.error('Failed to load teacher courses', err); this.courses.set([]); this.loading.set(false); }
     });

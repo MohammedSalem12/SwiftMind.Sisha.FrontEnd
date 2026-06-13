@@ -1,11 +1,13 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ToastService, ToastMessage } from './toast.service';
-import { Subscription, timer } from 'rxjs';
+import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-toasts',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="toast-container">
@@ -22,22 +24,19 @@ import { Subscription, timer } from 'rxjs';
     .toast.error { background:#dc3545 }
   `]
 })
-export class ToastContainerComponent implements OnInit, OnDestroy {
+export class ToastContainerComponent implements OnInit {
   private svc = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
   messages: ToastMessage[] = [];
-  private sub?: Subscription;
 
   ngOnInit(): void {
-    this.sub = this.svc.messages$.subscribe(m => {
+    this.svc.messages$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(m => {
       this.messages = [m, ...this.messages];
       if (m.timeout && m.timeout > 0) {
-        const t = timer(m.timeout).subscribe(() => {
+        timer(m.timeout).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
           this.messages = this.messages.filter(x => x.id !== m.id);
-          t.unsubscribe();
         });
       }
     });
   }
-
-  ngOnDestroy(): void { this.sub?.unsubscribe(); }
 }

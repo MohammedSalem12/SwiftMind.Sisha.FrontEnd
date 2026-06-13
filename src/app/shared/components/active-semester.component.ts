@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -18,6 +18,7 @@ interface ActiveTermDto {
 @Component({
   selector: 'app-active-semester',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     @if (term()) {

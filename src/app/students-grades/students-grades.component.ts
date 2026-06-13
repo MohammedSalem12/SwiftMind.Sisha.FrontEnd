@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ListService, PagedResultDto } from '@abp/ng.core';
@@ -16,6 +17,7 @@ type StudentWithGrades = StudentDto & { lastTwoGrades?: ExamGradeDto[] };
 @Component({
   selector: 'app-students-grades',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   templateUrl: './students-grades.component.html',
   styleUrls: ['./students-grades.component.scss'],
@@ -26,6 +28,7 @@ export class StudentsGradesComponent implements OnInit {
   private readonly studentsSvc = inject(StudentService);
   private readonly examSvc = inject(ExamGradeService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   // State
   students = signal<StudentWithGrades[]>([]);
@@ -58,7 +61,7 @@ export class StudentsGradesComponent implements OnInit {
 
       // مفيش فلتر جاهز في الـDTO الافتراضي — هنعمل فلترة بالفرونت كـ مثال بسيط
       return this.studentsSvc.getList(req).pipe();
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: async (res: PagedResultDto<StudentDto>) => {
         this.totalCount.set(res.totalCount ?? 0);
 

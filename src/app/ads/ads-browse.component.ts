@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
@@ -34,6 +35,7 @@ interface AdDto {
 @Component({
   selector: 'app-ads-browse',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
     <div class="page" dir="rtl">
@@ -340,6 +342,7 @@ export class AdsBrowseComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly apiBase = environment.apis?.default?.url || '';
 
   loading = signal(true);
@@ -427,7 +430,7 @@ export class AdsBrowseComponent implements OnInit {
   }
 
   viewAd(ad: AdDto): void {
-    this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/view`, {}).subscribe();
+    this.http.post(`${this.apiBase}/api/app/advertisement/${ad.id}/view`, {}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     this.router.navigate(['/ads', 'detail', ad.id]);
   }
 

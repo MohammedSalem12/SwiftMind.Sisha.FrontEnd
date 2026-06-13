@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +13,7 @@ import type { CourseDto } from '../proxy/courses/dtos/models';
 @Component({
   selector: 'app-enroll-teacher',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="card">
@@ -44,6 +46,7 @@ export class EnrollTeacherComponent {
   private courseSvc = inject(CourseService);
   private enrollmentSvc = inject(EnrollmentService);
   private teacherSvc = inject(TeacherService);
+  private readonly destroyRef = inject(DestroyRef);
   // teacher service kept for future server enroll API (if available)
 
   teacherId = signal<string | null>(null);
@@ -61,7 +64,7 @@ export class EnrollTeacherComponent {
 
   loadCourses() {
     this.loading.set(true);
-    this.courseSvc.getList({ skipCount: 0, maxResultCount: 1000 }).subscribe({
+    this.courseSvc.getList({ skipCount: 0, maxResultCount: 1000 }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         this.courses.set(res.items ?? []);
         this.loading.set(false);

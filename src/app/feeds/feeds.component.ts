@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -9,6 +10,7 @@ import type { FeedDto } from '@proxy/feeds/dtos/models';
 @Component({
   selector: 'app-feeds',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './feeds.component.html',
   styleUrls: ['./feeds.component.scss'],
@@ -17,6 +19,7 @@ import type { FeedDto } from '@proxy/feeds/dtos/models';
 export class FeedsComponent implements OnInit {
   private readonly list = inject(ListService);
   private readonly svc = inject(FeedService);
+  private readonly destroyRef = inject(DestroyRef);
 
   feeds = signal<FeedDto[]>([]);
   loading = signal(false);
@@ -30,7 +33,7 @@ export class FeedsComponent implements OnInit {
     this.list.hookToQuery((q) => {
       this.loading.set(true);
       return this.svc.getList({ skipCount: 0, maxResultCount: 50, sorting: q.sort ?? 'publishDate desc' } as any);
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: PagedResultDto<FeedDto>) => {
         const items = (res.items ?? []).filter(f => {
           const fterm = this.filter()?.trim().toLowerCase();

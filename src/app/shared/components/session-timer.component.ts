@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 import { SessionService } from '@proxy/groups';
 import type { NextSessionDto } from '@proxy/groups/dtos/models';
@@ -8,6 +8,7 @@ import type { NextSessionDto } from '@proxy/groups/dtos/models';
 @Component({
   selector: 'app-session-timer',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     @if (session) {

@@ -25,4 +25,5 @@ export interface GroupDto extends ExtensibleAuditedEntityDto<string> {
   groupType?: GroupType;
   meetingLink?: string;
   location?: string;
+  isStopped: boolean;
 }

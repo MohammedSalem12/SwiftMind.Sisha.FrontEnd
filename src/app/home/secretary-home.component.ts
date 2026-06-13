@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
@@ -14,6 +14,7 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
 @Component({
   selector: 'app-secretary-home',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, OfflineBannerComponent, DidYouKnowComponent, ActiveSemesterComponent],
   template: `
     <div class="secretary-home" dir="rtl">

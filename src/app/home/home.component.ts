@@ -1,5 +1,6 @@
 import {AuthService, ConfigStateService} from '@abp/ng.core';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {CommonModule} from "@angular/common";
 import { Router, RouterModule } from '@angular/router';
 import { UserProfileService } from '@volo/ngx-lepton-x.core';
@@ -18,6 +19,7 @@ import { environment } from '../../environments/environment';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
@@ -36,6 +38,7 @@ export class HomeComponent implements OnInit {
   private http = inject(HttpClient);
   private readonly apiBase = (environment as any).apis?.default?.url || '';
   readonly registerModal = inject(RegisterModalService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Observable for current user info
   readonly user$ = this.userProfileService.user$;
@@ -102,7 +105,8 @@ export class HomeComponent implements OnInit {
       .getOne$('currentUser')
       .pipe(
         filter((u: any) => !!u && u.isAuthenticated === true),
-        take(1)
+        take(1),
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((currentUser: any) => {
         try {
@@ -131,6 +135,7 @@ export class HomeComponent implements OnInit {
             this.redirecting.set(true);
             // Check if they have a pending registration request
             this.http.get<any>(`${this.apiBase}/api/app/registration-request/my-request-status`)
+              .pipe(takeUntilDestroyed(this.destroyRef))
               .subscribe({
                 next: (req) => {
                   if (req && req.status === 0) {

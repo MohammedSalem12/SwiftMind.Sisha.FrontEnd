@@ -1,6 +1,7 @@
 import { CommonModule, Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -9,6 +10,7 @@ import { CurrentUserInfoService } from '@proxy/common';
 @Component({
   selector: 'app-ad-detail',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="page" dir="rtl">
@@ -262,6 +264,7 @@ export class AdDetailComponent implements OnInit {
   private readonly apiBase = environment.apis?.default?.url || '';
 
   private readonly currentUserSvc = inject(CurrentUserInfoService);
+  private readonly destroyRef = inject(DestroyRef);
 
   ad = signal<any>(null);
   coupon = signal<any>(null);
@@ -274,7 +277,7 @@ export class AdDetailComponent implements OnInit {
 
     try {
       // Track view
-      this.http.post(`${this.apiBase}/api/app/advertisement/${id}/view`, {}).subscribe();
+      this.http.post(`${this.apiBase}/api/app/advertisement/${id}/view`, {}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
 
       const data = await lastValueFrom(
         this.http.get(`${this.apiBase}/api/app/advertisement/${id}`)

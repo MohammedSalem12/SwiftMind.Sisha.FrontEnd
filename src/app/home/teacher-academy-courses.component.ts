@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
@@ -12,6 +12,7 @@ import { TeacherService } from '@proxy/teachers';
 @Component({
   selector: 'app-teacher-academy-courses',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="page" dir="rtl">

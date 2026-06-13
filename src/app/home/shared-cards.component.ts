@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { SharedKnowledgeCardService } from '@proxy/knowledge-cards';
 import type { SharedKnowledgeCardDto, UserSearchResultDto, ShareKnowledgeCardDto } from '@proxy/knowledge-cards/models';
@@ -11,6 +12,7 @@ import type { SharedKnowledgeCardDto, UserSearchResultDto, ShareKnowledgeCardDto
 @Component({
   selector: 'app-shared-cards',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="page" dir="rtl">
@@ -218,6 +220,7 @@ import type { SharedKnowledgeCardDto, UserSearchResultDto, ShareKnowledgeCardDto
 export class SharedCardsComponent implements OnInit {
   readonly router = inject(Router);
   private readonly svc = inject(SharedKnowledgeCardService);
+  private readonly destroyRef = inject(DestroyRef);
 
   loading = signal(true);
   cards = signal<SharedKnowledgeCardDto[]>([]);
@@ -241,6 +244,7 @@ export class SharedCardsComponent implements OnInit {
     this.searchDebounce.pipe(
       debounceTime(400),
       distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe(q => this.doSearch(q));
 
     try {

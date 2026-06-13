@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { InternetConnectionStatusComponent, LoaderBarComponent } from '@abp/ng.theme.shared';
 import { DynamicLayoutComponent } from '@abp/ng.core';
 import { OAuthService } from 'angular-oauth2-oidc';
@@ -90,11 +91,12 @@ export class AppComponent implements OnInit {
   readonly serverOffline = inject(ServerOfflineService);
   readonly registerModal = inject(RegisterModalService);
   readonly biometricService = inject(BiometricService);
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     // Add/remove auth-page class on body for CSS sidebar hiding
     this.updateAuthBodyClass(this.router.url);
-    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed(this.destroyRef)).subscribe((e: NavigationEnd) => {
       this.updateAuthBodyClass(e.urlAfterRedirects);
       this.scrollToTop();
     });
@@ -137,7 +139,7 @@ export class AppComponent implements OnInit {
       });
     }
 
-    this.oauthService.events.subscribe(event => {
+    this.oauthService.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
       if (event.type === 'token_received' || event.type === 'silently_refreshed') {
         this.initRealtime();
       }

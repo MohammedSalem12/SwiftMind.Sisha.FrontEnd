@@ -6,7 +6,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClient } from '@angular/common/http';
 import { UserProfileService } from '@volo/ngx-lepton-x.core';
 import { StudentService } from '@proxy/students';
-import { TeacherService } from '@proxy/teachers';
+import { TeacherService, TeacherPromotionService } from '@proxy/teachers';
 import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { RegisterModalService } from '../shared/services/register-modal.service';
@@ -24,6 +24,7 @@ describe('HomeComponent', () => {
   let mockUserProfileService: any;
   let mockStudentService: any;
   let mockTeacherService: any;
+  let mockPromotionService: any;
   let mockEnrollmentService: any;
   let mockCacheService: any;
   let mockRegisterModalService: any;
@@ -46,6 +47,7 @@ describe('HomeComponent', () => {
 
     mockStudentService = { getList: jasmine.createSpy().and.returnValue(of({ totalCount: 0, items: [] })) };
     mockTeacherService = { getList: jasmine.createSpy().and.returnValue(of({ totalCount: 0, items: [] })) };
+    mockPromotionService = { getPendingCount: jasmine.createSpy().and.returnValue(of(0)) };
     mockEnrollmentService = { getList: jasmine.createSpy().and.returnValue(of({ totalCount: 0, items: [] })) };
 
     mockCacheService = {
@@ -71,6 +73,7 @@ describe('HomeComponent', () => {
         { provide: UserProfileService, useValue: mockUserProfileService },
         { provide: StudentService, useValue: mockStudentService },
         { provide: TeacherService, useValue: mockTeacherService },
+        { provide: TeacherPromotionService, useValue: mockPromotionService },
         { provide: StudentEnrollmentService, useValue: mockEnrollmentService },
         { provide: OfflineCacheService, useValue: mockCacheService },
         { provide: RegisterModalService, useValue: mockRegisterModalService },

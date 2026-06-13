@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
@@ -19,6 +19,7 @@ import { StudentService } from '@proxy/students';
 @Component({
   selector: 'app-student-course-profile',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule],
   template: `
     <div class="profile-page" dir="rtl">
@@ -118,6 +119,17 @@ import { StudentService } from '@proxy/students';
               </div>
             }
           </div>
+
+          <!-- Stopped banner -->
+          @if (group()?.isStopped) {
+            <div class="stopped-banner">
+              <i class="fas fa-pause-circle"></i>
+              <div>
+                <strong>تم إيقاف هذا المقرر مؤقتاً</strong>
+                <span>Course paused by teacher</span>
+              </div>
+            </div>
+          }
 
           <!-- Change Group -->
           @if (enrollment()?.status === EnrollmentRequestStatus.Approved && !changingGroup()) {
@@ -484,6 +496,16 @@ import { StudentService } from '@proxy/students';
     .status-pending  { background: #fffbeb; color: #d97706; }
     .status-approved { background: #f0fdf4; color: #15803d; }
     .status-rejected { background: #fef2f2; color: #dc2626; }
+
+    /* ── Stopped Banner ─────────────────────────────── */
+    .stopped-banner {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 14px;
+      padding: 0.875rem 1rem; margin: 0.75rem 1rem 0;
+      i { font-size: 1.3rem; color: #d97706; flex-shrink: 0; }
+      strong { display: block; font-size: 0.88rem; color: #92400e; }
+      span { font-size: 0.72rem; color: #b45309; }
+    }
 
     /* ── Change Group ─────────────────────────────── */
     .change-group-btn {

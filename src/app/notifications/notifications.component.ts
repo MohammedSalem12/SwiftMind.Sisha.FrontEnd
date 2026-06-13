@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, effect, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, effect, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { NotificationService } from '@proxy/notifications';
 import type { NotificationDto } from '@proxy/notifications/models';
@@ -12,6 +13,7 @@ import { lastValueFrom } from 'rxjs';
 @Component({
   selector: 'app-notifications',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="notifications-page" dir="rtl">
@@ -501,6 +503,7 @@ export class NotificationsComponent implements OnInit {
   private readonly realtimeSvc = inject(RealtimeNotificationService);
   private readonly gradeThemeService = inject(GradeThemeService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
+  private readonly destroyRef = inject(DestroyRef);
 
   private userRole = '';
 
@@ -568,7 +571,7 @@ export class NotificationsComponent implements OnInit {
 
   markRead(n: NotificationDto): void {
     if (n.isRead) return;
-    this.notificationSvc.markAsRead(n.id!).subscribe(() => {
+    this.notificationSvc.markAsRead(n.id!).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       n.isRead = true;
       this.realtimeSvc.decrementUnread();
     });
@@ -663,7 +666,7 @@ export class NotificationsComponent implements OnInit {
   }
 
   markAllRead(): void {
-    this.notificationSvc.markAllAsRead().subscribe(() => {
+    this.notificationSvc.markAllAsRead().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.notifications().forEach(n => (n.isRead = true));
       this.realtimeSvc.resetUnread();
     });

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { SessionService } from '@proxy/groups';
 import { CurrentUserInfoService } from '@proxy/common';
 import type { NextSessionDto } from '@proxy/groups/dtos/models';
@@ -8,6 +8,7 @@ import { lastValueFrom } from 'rxjs';
 @Component({
   selector: 'app-today-sessions',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="ts-page" dir="rtl">

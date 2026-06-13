@@ -1,10 +1,11 @@
-import { Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthRedirectService } from '../services/auth-redirect.service';
 
 @Component({
   selector: 'app-register-prompt',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="prompt-card" dir="rtl">

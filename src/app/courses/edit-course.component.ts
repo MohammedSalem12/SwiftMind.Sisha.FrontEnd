@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +13,7 @@ import type { GradeDto } from '@proxy/grades/dtos/models';
 @Component({
   selector: 'app-edit-course',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="card">
@@ -52,6 +54,7 @@ export class EditCourseComponent {
   private router = inject(Router);
   private svc = inject(CourseService);
   private gradeSvc = inject(GradeService);
+  private readonly destroyRef = inject(DestroyRef);
 
   model = signal<CreateUpdateCourseDto>({ nameAr: '', nameEn: '', gradeId: '1' });
   loading = signal(true);
@@ -66,7 +69,7 @@ export class EditCourseComponent {
 
   load(id: string) {
   this.loading.set(true);
-  this.svc.get(id).subscribe({ next: (c) => { this.model.set({ nameAr: c.nameAr || '', nameEn: c.nameEn || '', gradeId: (c.gradeId || '1') }); this.loading.set(false); }, error: (e) => { console.error(e); this.loading.set(false); } });
+  this.svc.get(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: (c) => { this.model.set({ nameAr: c.nameAr || '', nameEn: c.nameEn || '', gradeId: (c.gradeId || '1') }); this.loading.set(false); }, error: (e) => { console.error(e); this.loading.set(false); } });
   }
 
   async loadGrades() {
@@ -87,7 +90,7 @@ export class EditCourseComponent {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
     this.saving.set(true);
-    this.svc.update(id, this.model() as any).subscribe({ next: () => { this.saving.set(false); this.router.navigate(['/courses']); }, error: (e) => { console.error(e); this.saving.set(false); } });
+    this.svc.update(id, this.model() as any).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: () => { this.saving.set(false); this.router.navigate(['/courses']); }, error: (e) => { console.error(e); this.saving.set(false); } });
   }
 
   cancel() { this.router.navigate(['/courses']); }

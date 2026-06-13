@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -9,6 +10,7 @@ import type { StudentDto, CreateUpdateStudentDto } from '@proxy/students/models'
 @Component({
   selector: 'app-student-edit',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './student-edit.component.html',
   styleUrls: ['./student-edit.component.scss']
@@ -17,6 +19,7 @@ export class StudentEditComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly studentSvc = inject(StudentService);
+  private readonly destroyRef = inject(DestroyRef);
 
   loading = signal(false);
   saving = signal(false);
@@ -39,7 +42,7 @@ export class StudentEditComponent implements OnInit {
   gradeOptions = Array.from({ length: 12 }, (_, i) => i + 1);
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(pm => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(pm => {
       const id = pm.get('id');
       this.studentId.set(id);
       if (id) void this.loadStudent(id);
