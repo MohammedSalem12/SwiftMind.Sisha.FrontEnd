@@ -57,7 +57,7 @@
   <app-did-you-know [role]="'PARENT'" />
 
   <!-- Dashboard Link -->
-  <div class="dashboard-link-card" (click)="goToDashboard()">
+  <div class="dashboard-link-card" role="button" tabindex="0" (click)="goToDashboard()">
     <div class="dashboard-link-icon">
       <i class="fas fa-chart-pie"></i>
     </div>
@@ -221,13 +221,5 @@
     </div>
   }
 
-  <!-- Fixed Bottom Bar -->
-  <div class="bottom-bar">
-    <button class="link-child-btn" (click)="goToLinkChild()">
-      <i class="fas fa-user-plus"></i>
-      <span>ربط طالب جديد</span>
-      <span class="link-child-btn-en">Link Student</span>
-    </button>
-  </div>
 
 </div>

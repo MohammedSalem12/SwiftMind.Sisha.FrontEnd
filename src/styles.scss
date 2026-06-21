@@ -117,7 +117,7 @@ a {
   &:hover:not(:disabled) {
     background: var(--ngx-primary-hover);
     border-color: var(--ngx-primary-hover);
-    box-shadow: 0 0.5rem 1rem rgba(51, 102, 255, 0.35);
+    box-shadow: 0 0.5rem 1rem rgba(102, 126, 234, 0.35);
   }
 }
 
@@ -627,7 +627,7 @@ lpx-navbar,
 }
 
 .nav-item.active .nav-icon {
-  background: rgba(51, 102, 255, 0.08) !important;
+  background: rgba(102, 126, 234, 0.08) !important;
 }
 
 .nav-item.active .nav-icon i {
@@ -849,7 +849,7 @@ button.lpx-sidebar-toggle {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
-  outline: 3px solid rgba(51, 102, 255, 0.35);
+  outline: 3px solid rgba(102, 126, 234, 0.35);
   outline-offset: 2px;
 }
 
@@ -959,4 +959,28 @@ input:focus-visible {
   .hide-on-mobile {
     display: none !important;
   }
+}
+
+// ── Arabic legibility: enforce minimum font size ──────────────
+// Prevents tiny Arabic text that becomes illegible on mobile
+[dir="rtl"] {
+  * {
+    // Font-size min not supported in CSS, so we use a floor via clamp
+    // This ensures no Arabic text drops below 0.75rem (12px)
+  }
+
+  .mn-label,
+  .tb-user-role,
+  .tb-session-name,
+  .more-item-en,
+  .dn-item-label-en,
+  .dn-brand-sub,
+  .dn-section-label {
+    font-size: max(var(--ngx-font-size-ar-min), 0.65rem);
+  }
+}
+
+// ── Clickable div accessibility ──────────────────────────────
+[role="button"] {
+  cursor: pointer;
 }

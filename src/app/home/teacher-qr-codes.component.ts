@@ -59,7 +59,7 @@ export class TeacherQrCodesComponent implements OnInit {
           const qrDataUrl = await QRCode.toDataURL(enrollUrl, {
             width: 260,
             margin: 2,
-            color: { dark: '#3366ff', light: '#ffffff' },
+            color: { dark: '#667eea', light: '#ffffff' },
           });
           return { course, qrDataUrl, enrollUrl };
         })

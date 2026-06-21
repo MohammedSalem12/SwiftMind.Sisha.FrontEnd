@@ -1,6 +1,6 @@
 // ─── Design Tokens ───────────────────────────────────────────
-$grad-start:    #667eea;
-$grad-end:      #764ba2;
+$grad-start:    var(--ngx-primary, #667eea);
+$grad-end:      var(--ngx-primary-end, #764ba2);
 $academy-start: #f59e0b;
 $academy-end:   #f97316;
 $white:         #ffffff;

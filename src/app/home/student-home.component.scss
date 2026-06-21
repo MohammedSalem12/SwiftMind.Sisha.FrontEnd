@@ -1,6 +1,6 @@
-$purple-start: #667eea;
-$purple-end: #764ba2;
-$purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
+$purple-start: var(--ngx-primary, #667eea);
+$purple-end: var(--ngx-primary-end, #764ba2);
+$purple-grad: var(--ngx-primary-gradient, linear-gradient(135deg, #667eea, #764ba2));
 
 // ──────────────────────────────────────────
 // Root

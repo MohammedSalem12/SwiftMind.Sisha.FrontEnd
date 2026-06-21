@@ -106,7 +106,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
         }
 
         <!-- More tab -->
-        <button class="mn-tab" (click)="toggleMore()" [class.active]="showMore()">
+        <button class="mn-tab" (click)="toggleMore()" [class.active]="showMore()" aria-label="المزيد من الخيارات">
           <div class="mn-icon-wrap">
             <i class="fas fa-ellipsis-h"></i>
           </div>
@@ -431,10 +431,11 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       cursor: pointer;
       padding: 6px 0 4px;
       min-width: 0;
+      min-height: var(--ngx-touch-min);
       transition: color 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
-    .mn-tab.active { color: #5b21b6; }
+    .mn-tab.active { color: var(--ngx-bottom-nav-active); }
 
     .mn-icon-wrap {
       position: relative;
@@ -444,7 +445,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       transition: background 0.2s;
     }
     .mn-tab.active .mn-icon-wrap {
-      background: rgba(91,33,182,0.12);
+      background: rgba(102,126,234,0.12);
     }
     .mn-icon-wrap i { font-size: 1.25rem; }
 
@@ -465,7 +466,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       transform: translateX(-50%);
       width: 24px; height: 3px;
       border-radius: 0 0 3px 3px;
-      background: linear-gradient(90deg, #7c3aed, #5b21b6);
+      background: var(--ngx-primary-gradient);
     }
 
     .mn-badge {
@@ -486,7 +487,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     .mn-avatar-sm {
       width: 28px; height: 28px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      background: var(--ngx-primary-gradient);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.65rem; font-weight: 700;
@@ -509,7 +510,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       width: 248px;
       height: 100vh;
       height: 100dvh;
-      background: #1a2142;
+      background: var(--ngx-sidebar-bg);
       flex-direction: column;
       z-index: 900;
       overflow-y: auto;
@@ -531,7 +532,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     }
     .dn-logo {
       width: 42px; height: 42px; border-radius: 12px;
-      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      background: var(--ngx-primary-gradient);
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 1.15rem; flex-shrink: 0;
     }
@@ -572,7 +573,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       color: rgba(255,255,255,0.9);
     }
     .dn-item.active {
-      background: linear-gradient(135deg, rgba(124,58,237,0.35), rgba(91,33,182,0.35));
+      background: linear-gradient(135deg, rgba(102,126,234,0.35), rgba(118,75,162,0.35));
       color: #fff;
     }
 
@@ -586,7 +587,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     .dn-item-icon.sm { width: 30px; height: 30px; border-radius: 8px; }
     .dn-item-icon i { font-size: 0.95rem; }
     .dn-item.active .dn-item-icon {
-      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      background: var(--ngx-primary-gradient);
     }
 
     .dn-badge {
@@ -595,7 +596,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       font-size: 0.5rem; font-weight: 700;
       min-width: 15px; height: 15px; border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      padding: 0 3px; border: 1.5px solid #1a2142;
+      padding: 0 3px; border: 1.5px solid var(--ngx-sidebar-bg);
     }
 
     .dn-item-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
@@ -624,7 +625,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     }
     .dn-user-avatar {
       width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
-      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      background: var(--ngx-primary-gradient);
       color: #fff; display: flex; align-items: center; justify-content: center;
       font-size: 0.85rem; font-weight: 700;
     }
@@ -713,12 +714,12 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     .more-avatar {
       width: 44px; height: 44px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: var(--ngx-primary-gradient);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.95rem; font-weight: 700;
       flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+      box-shadow: 0 2px 8px rgba(102,126,234,0.25);
     }
     .more-profile-info {
       flex: 1; min-width: 0;

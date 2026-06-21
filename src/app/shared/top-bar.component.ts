@@ -20,7 +20,7 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       <div class="top-bar" dir="rtl">
         <!-- Left: back button or user info on home -->
         @if (isHomePage()) {
-          <div class="tb-user" (click)="goToProfile()">
+          <div class="tb-user" role="button" tabindex="0" aria-label="الملف الشخصي" (click)="goToProfile()">
             <div class="tb-avatar">{{ userInitials() }}</div>
             <div class="tb-user-info">
               <span class="tb-user-name">{{ userName() }}</span>
@@ -39,7 +39,7 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
         <!-- Center: session timer always shown if available, otherwise logo -->
         <div class="tb-center">
           @if (nextSession()) {
-            <div class="tb-session" (click)="goToSessions()">
+            <div class="tb-session" role="button" tabindex="0" aria-label="الحصص القادمة" (click)="goToSessions()">
               <i class="fas fa-clock"></i>
               <span class="tb-session-name">{{ nextSession()!.courseName }}</span>
               <span class="tb-session-time">{{ formatCountdown() }}</span>
@@ -48,13 +48,7 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
         </div>
 
         <div class="tb-actions">
-          @if (!isHomePage()) {
-            <button class="tb-btn" (click)="toggleLang()">
-              <i class="fas fa-globe"></i>
-              <span class="tb-btn-label">{{ lang() }}</span>
-            </button>
-          }
-          <button class="tb-btn tb-logout" (click)="logout()">
+          <button class="tb-btn tb-logout" (click)="logout()" aria-label="تسجيل الخروج">
             <i class="fas fa-sign-out-alt"></i>
           </button>
         </div>
@@ -74,7 +68,7 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       height: 48px;
       padding: 0 .75rem;
       padding-top: env(safe-area-inset-top, 0px);
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--ngx-primary-gradient);
       box-shadow: 0 2px 8px rgba(0,0,0,.15);
     }
 
@@ -88,7 +82,7 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       flex-shrink: 1;
     }
     .tb-avatar {
-      width: 30px; height: 30px;
+      width: 34px; height: 34px;
       border-radius: 50%;
       background: rgba(255,255,255,.25);
       color: #fff;
@@ -168,8 +162,8 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       align-items: center;
       justify-content: center;
       gap: .3rem;
-      min-width: 36px;
-      min-height: 36px;
+      min-width: var(--ngx-touch-min);
+      min-height: var(--ngx-touch-min);
       border: none;
       border-radius: 10px;
       background: rgba(255,255,255,.15);
@@ -191,12 +185,6 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 140px;
-    }
-
-    .tb-btn-label {
-      font-size: .7rem;
-      font-weight: 700;
-      text-transform: uppercase;
     }
 
     .tb-actions {
@@ -230,7 +218,6 @@ export class TopBarComponent implements OnInit, OnDestroy {
   canGoBack = signal(false);
   isHomePage = signal(false);
   pageTitle = signal('');
-  lang = signal('AR');
   scrolled = signal(false);
   nextSession = signal<NextSessionDto | null>(null);
   userName = signal('');
@@ -385,12 +372,6 @@ export class TopBarComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.location.back();
-  }
-
-  toggleLang(): void {
-    // Simple toggle between AR/EN for now
-    this.lang.update(l => l === 'AR' ? 'EN' : 'AR');
-    // Language switching can be wired to ABP localization later
   }
 
   logout(): void {

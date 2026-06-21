@@ -1,6 +1,6 @@
-$purple-start: #667eea;
-$purple-end: #764ba2;
-$purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
+$purple-start: var(--ngx-primary, #667eea);
+$purple-end: var(--ngx-primary-end, #764ba2);
+$purple-grad: var(--ngx-primary-gradient, linear-gradient(135deg, #667eea, #764ba2));
 
 // ──────────────────────────────────────────
 // Root
@@ -514,51 +514,6 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   overflow: hidden;
 }
 
-// ──────────────────────────────────────────
-// Fixed Bottom Bar
-// ──────────────────────────────────────────
-.bottom-bar {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  padding: 0.75rem 1rem;
-  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid #e9e6ff;
-  z-index: 100;
-}
-
-.link-child-btn {
-  width: 100%;
-  background: $purple-grad;
-  color: #fff;
-  border: none;
-  border-radius: 14px;
-  padding: 0.85rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  min-height: 52px;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.35);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-
-  &:active {
-    opacity: 0.9;
-    transform: scale(0.98);
-  }
-}
-
-.link-child-btn-en {
-  font-size: 0.75rem;
-  font-weight: 400;
-  opacity: 0.75;
-}
 
 // ──────────────────────────────────────────
 // Did You Know Tip

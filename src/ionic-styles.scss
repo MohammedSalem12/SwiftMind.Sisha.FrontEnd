@@ -22,7 +22,7 @@ ion-app {
   display: block;
   width: 100%;
   height: 100%;
-  
+
   /* Allow ABP layouts to work normally */
   & > * {
     display: block;
@@ -36,30 +36,29 @@ ion-content {
 
 ion-header {
   ion-toolbar {
-    --background: var(--ion-color-primary, #3880ff);
+    --background: var(--ngx-primary, #667eea);
     --color: #ffffff;
   }
 }
 
-/* Make Ionic work well with the existing Egyptian theme */
+/* Map Ionic color system to KAI design tokens */
 :root {
-  --ion-color-primary: var(--ancient-gold, #d4af37);
-  --ion-color-primary-rgb: 212, 175, 55;
-  --ion-color-primary-contrast: #000000;
-  --ion-color-primary-contrast-rgb: 0, 0, 0;
-  --ion-color-primary-shade: #bb9930;
-  --ion-color-primary-tint: #dab849;
-  
-  --ion-color-secondary: var(--lapis, #0b3b5c);
-  --ion-color-secondary-rgb: 11, 59, 92;
+  --ion-color-primary: var(--ngx-primary, #667eea);
+  --ion-color-primary-rgb: 102, 126, 234;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: var(--ngx-primary-hover, #5a6fd6);
+  --ion-color-primary-tint: #7a92ed;
+
+  --ion-color-secondary: var(--ngx-sidebar-bg, #1a2142);
+  --ion-color-secondary-rgb: 26, 33, 66;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #0a3451;
-  --ion-color-secondary-tint: #23506c;
+  --ion-color-secondary-shade: #171d3a;
+  --ion-color-secondary-tint: #313755;
 }
 
 /* Ensure mobile platforms get proper styling */
 .mobile-platform {
-  /* Add mobile-specific classes here when needed */
   display: block;
 }
