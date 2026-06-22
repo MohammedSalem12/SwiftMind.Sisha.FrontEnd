@@ -6,10 +6,12 @@ import { UserRegistrationService } from '@proxy/controllers';
 import { UserRegistrationType } from '@proxy/domain/shared/enums/user-registration-type.enum';
 import type { UserRegStudentDto, UserRegTeacherDto, UserRegParentDto, UserRegSecretaryDto } from '@proxy/common/models';
 import { GradeService } from '@proxy/grades';
-import { AuthService } from '@abp/ng.core';
+import { AuthService, ConfigStateService } from '@abp/ng.core';
+import { Capacitor } from '@capacitor/core';
 import { lastValueFrom } from 'rxjs';
 import { AuthRedirectService } from '../shared/services/auth-redirect.service';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
+import { environment } from '../../environments/environment';
 
 @Component({
   standalone: true,
@@ -25,6 +27,7 @@ export class RegisterComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
+  private readonly configState = inject(ConfigStateService);
 
   UserRegistrationType = UserRegistrationType;
 
@@ -231,7 +234,14 @@ export class RegisterComponent implements OnInit {
       this.successUserName.set(this.form.userName.trim());
       this.successPassword.set(this.form.password);
       this.successFullName.set(this.form.fullName.trim());
-      this.step.set('success');
+
+      // Auto-login the newly created user and route straight to their dashboard,
+      // instead of sending them back to the login form.
+      const loggedIn = await this.autoLogin(this.form.userName.trim(), this.form.password);
+      if (!loggedIn) {
+        // Fallback: show the success screen with credentials for manual login.
+        this.step.set('success');
+      }
     } catch (e: any) {
       console.error('Registration error:', e);
       const body = e?.error;
@@ -247,6 +257,34 @@ export class RegisterComponent implements OnInit {
       this.error.set(msg);
     } finally {
       this.registering.set(false);
+    }
+  }
+
+  /**
+   * Logs the freshly-registered user in via the OAuth password grant and navigates
+   * to the home dashboard (which redirects per role). Returns false on failure so
+   * the caller can fall back to the success screen for manual login.
+   */
+  private async autoLogin(username: string, password: string): Promise<boolean> {
+    try {
+      await this.authService.loginUsingGrant('password', {
+        username,
+        password,
+        scope: environment.oAuthConfig?.scope ?? undefined,
+        client_id: environment.oAuthConfig?.clientId ?? undefined,
+      } as any);
+
+      try { await lastValueFrom(this.configState.refreshAppState()); } catch { /* non-fatal */ }
+
+      if (!Capacitor.isNativePlatform()) {
+        window.location.href = '/';
+      } else {
+        await this.router.navigateByUrl('/');
+      }
+      return true;
+    } catch (e) {
+      console.warn('Auto-login after registration failed; showing success screen.', e);
+      return false;
     }
   }
 }

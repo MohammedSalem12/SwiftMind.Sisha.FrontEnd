@@ -1,3 +1,10 @@
+// ============================================================
+// PRODUCTION environment
+//   Frontend: Firebase Hosting (sesha-9999.web.app)
+//   Backend: public HTTPS (currently the ngrok static tunnel → DB: Sesha_Staging)
+//   Used by `npm run build:prod` (ng build --configuration production).
+//   Test counterpart: environment.ts
+// ============================================================
 import { Environment } from '@abp/ng.core';
 
 // Frontend production URL (Firebase hosting)

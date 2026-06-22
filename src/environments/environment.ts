@@ -1,3 +1,9 @@
+// ============================================================
+// TEST environment (local/dev)
+//   Frontend: http://localhost:4200   Backend: https://localhost:44367 (DB: Sesha)
+//   Used by `npm start` and `npm run build:test` (ng build, development config).
+//   Production counterpart: environment.prod.ts
+// ============================================================
 import { Environment } from '@abp/ng.core';
 
 const baseUrl = 'http://localhost:4200';
