@@ -11,6 +11,8 @@ import { TeacherService } from '@proxy/teachers';
 import { AcademyService } from '@proxy/academies';
 import type { AcademyDto } from '@proxy/academies/models';
 import type { GroupScheduleDto } from '@proxy/groups/dtos/models';
+import { Capacitor } from '@capacitor/core';
+import { BarcodeScanner, BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
 import { lastValueFrom } from 'rxjs';
 
 interface StudentEntry {
@@ -59,7 +61,7 @@ export class AttendanceComponent implements OnInit {
   markedPresent = signal<Set<string>>(new Set());
   attSearch = signal('');
   scanning = signal(false);
-  qrSupported = signal(typeof (globalThis as any).BarcodeDetector !== 'undefined');
+  qrSupported = signal(Capacitor.isNativePlatform() || typeof (globalThis as any).BarcodeDetector !== 'undefined');
   markedCount = computed(() => this.markedPresent().size);
   private scanStream: MediaStream | null = null;
   private scanRAF = 0;
@@ -626,6 +628,12 @@ export class AttendanceComponent implements OnInit {
   }
 
   async startScan(): Promise<void> {
+    // Native devices: use the ML Kit native scanner (full-screen, fast, works offline).
+    if (Capacitor.isNativePlatform()) {
+      await this.scanNative();
+      return;
+    }
+    // Browser / WebView fallback: BarcodeDetector.
     if (!this.qrSupported()) {
       this.showMessage('مسح QR غير مدعوم على هذا الجهاز · QR scan not supported here', 'error');
       return;
@@ -655,6 +663,42 @@ export class AttendanceComponent implements OnInit {
       console.error('scan start failed', e);
       this.showMessage('تعذّر فتح الكاميرا · Camera unavailable', 'error');
       this.stopScan();
+    }
+  }
+
+  /** Native (Capacitor) QR scanning via ML Kit — scans repeatedly until cancelled. */
+  private async scanNative(): Promise<void> {
+    try {
+      const perm = await BarcodeScanner.requestPermissions();
+      if (perm.camera !== 'granted' && perm.camera !== 'limited') {
+        this.showMessage('تم رفض إذن الكاميرا · Camera permission denied', 'error');
+        return;
+      }
+
+      // Android: ensure Google's barcode module is installed (downloaded on demand).
+      if (Capacitor.getPlatform() === 'android') {
+        try {
+          const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
+          if (!available) {
+            this.showMessage('جاري تجهيز الماسح... · Preparing scanner...', 'success');
+            await BarcodeScanner.installGoogleBarcodeScannerModule();
+          }
+        } catch { /* best effort — scan() may still work */ }
+      }
+
+      // Scan repeatedly so the teacher can mark many students; cancel ends the loop.
+      let keepScanning = true;
+      while (keepScanning) {
+        const { barcodes } = await BarcodeScanner.scan({ formats: [BarcodeFormat.QrCode] });
+        if (!barcodes || barcodes.length === 0) {
+          keepScanning = false;
+          break;
+        }
+        this.handleScan(barcodes[0].rawValue ?? '');
+      }
+    } catch (e) {
+      console.error('native scan failed', e);
+      this.showMessage('تعذّر فتح الماسح · Scanner unavailable', 'error');
     }
   }
 
