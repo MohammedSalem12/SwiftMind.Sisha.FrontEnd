@@ -2,6 +2,18 @@
 
   <app-active-semester />
 
+  <!-- Active (live) session banner — visible on all sizes incl. mobile -->
+  @if (nextSession()?.isNow) {
+    <button class="live-session-banner" (click)="goTodaySessions()">
+      <span class="live-dot"></span>
+      <div class="live-text">
+        <span class="live-title">حصتك الآن مباشرة · Your session is live</span>
+        <span class="live-sub">{{ nextSession()?.courseName }}<span *ngIf="nextSession()?.groupName"> · {{ nextSession()?.groupName }}</span></span>
+      </div>
+      <i class="fas fa-chevron-left live-arrow"></i>
+    </button>
+  }
+
   @if (offline()) {
     <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
   }
