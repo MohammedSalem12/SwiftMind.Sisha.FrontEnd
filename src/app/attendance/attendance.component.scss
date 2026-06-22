@@ -606,3 +606,58 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Attendance mode toggle + Mode B ─────────────────────────── */
+.mode-toggle {
+  display: flex; gap: 6px; background: #eef0f5; border-radius: 12px; padding: 4px; margin-bottom: 10px;
+}
+.mode-btn {
+  flex: 1; min-height: 44px; border: none; border-radius: 9px; background: transparent;
+  color: #555; font-size: .8rem; font-weight: 700; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; gap: 6px;
+}
+.mode-btn.active { background: #fff; color: var(--ngx-primary, #667eea); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+
+.attendees-bar {
+  background: #fff; border: 1.5px solid #eef0fd; border-radius: 14px; padding: 10px; margin-bottom: 10px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.att-search-row { display: flex; gap: 8px; }
+.att-search {
+  flex: 1; min-height: 48px; padding: 0 12px; border: 1.5px solid #e5e7eb; border-radius: 12px;
+  font-size: 16px; font-family: inherit; direction: rtl;
+}
+.att-search:focus { outline: none; border-color: var(--ngx-primary, #667eea); box-shadow: 0 0 0 3px rgba(102,126,234,.15); }
+.att-scan-btn {
+  width: 48px; height: 48px; flex-shrink: 0; border: none; border-radius: 12px;
+  background: var(--ngx-primary, #667eea); color: #fff; font-size: 1.1rem; cursor: pointer;
+}
+.att-actions-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.att-counter { font-size: .85rem; font-weight: 700; color: #15803d; }
+.att-counter i { margin-inline-end: 4px; }
+.att-finalize {
+  min-height: 44px; padding: 0 16px; border: none; border-radius: 12px;
+  background: var(--ngx-primary, #667eea); color: #fff; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+}
+.att-finalize:disabled { opacity: .5; cursor: not-allowed; }
+
+.card-present { border-color: #22c55e !important; background: #f0fdf4 !important; }
+.btn-compact-unmarked { background: #eef0f5; color: #6b7280; }
+.btn-compact-present { background: #dcfce7; color: #15803d; }
+
+/* QR scan overlay */
+.scan-overlay {
+  position: fixed; inset: 0; z-index: 3000; background: #000;
+  display: flex; align-items: center; justify-content: center;
+}
+.scan-video { width: 100%; height: 100%; object-fit: cover; }
+.scan-frame {
+  position: absolute; width: 230px; height: 230px; border: 3px solid #fff; border-radius: 18px;
+  box-shadow: 0 0 0 4000px rgba(0,0,0,.45);
+}
+.scan-close {
+  position: absolute; bottom: calc(28px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+  min-height: 48px; padding: 0 22px; border: none; border-radius: 999px;
+  background: #fff; color: #1a1a2e; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;
+}

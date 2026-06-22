@@ -52,6 +52,20 @@ export class AttendanceComponent implements OnInit {
   isTeacher = signal(false);
   teacherId = signal<string | null>(null);
 
+  // ── Attendance marking mode (per-session) ──
+  // 'absentees' (Mode A): all present by default, mark the absentees (existing behavior)
+  // 'attendees' (Mode B): all unmarked, mark attendees via tap/search/QR; finalize → rest become absent
+  attendanceMode = signal<'absentees' | 'attendees'>('absentees');
+  markedPresent = signal<Set<string>>(new Set());
+  attSearch = signal('');
+  scanning = signal(false);
+  qrSupported = signal(typeof (globalThis as any).BarcodeDetector !== 'undefined');
+  markedCount = computed(() => this.markedPresent().size);
+  private scanStream: MediaStream | null = null;
+  private scanRAF = 0;
+  private lastScanValue = '';
+  private lastScanAt = 0;
+
   // Locked mode: when arriving with ?courseId= the dropdown becomes a read-only label
   lockedCourseId = signal<string | null>(null);
 
@@ -571,7 +585,140 @@ export class AttendanceComponent implements OnInit {
     setTimeout(() => this.message.set(null), 5000);
   }
 
-  goBack(): void { this.location.back(); }
+  // ── Mode B: mark attendees ──────────────────────────────────
+  setMode(mode: 'absentees' | 'attendees'): void {
+    this.attendanceMode.set(mode);
+    if (mode === 'attendees') {
+      this.markedPresent.set(new Set());
+    } else {
+      this.stopScan();
+    }
+  }
+
+  isPresent(enrollmentId: string): boolean {
+    return this.markedPresent().has(enrollmentId);
+  }
+
+  togglePresent(s: StudentEntry): void {
+    this.markedPresent.update(set => {
+      const next = new Set(set);
+      if (next.has(s.enrollmentId)) next.delete(s.enrollmentId);
+      else next.add(s.enrollmentId);
+      return next;
+    });
+  }
+
+  markPresentByValue(value: string): void {
+    const v = (value || '').trim().toLowerCase();
+    if (!v) return;
+    const match = this.students().find(s =>
+      (s.studentCode || '').toLowerCase() === v ||
+      (s.studentName || '').toLowerCase() === v ||
+      (s.studentId || '').toLowerCase() === v ||
+      (s.enrollmentId || '').toLowerCase() === v);
+    if (match) {
+      this.markedPresent.update(set => new Set(set).add(match.enrollmentId));
+      this.showMessage(`تم تعليم ${match.studentName} حاضراً · Present`, 'success');
+      this.attSearch.set('');
+    } else {
+      this.showMessage(`لم يتم العثور على طالب بالكود: ${value}`, 'error');
+    }
+  }
+
+  async startScan(): Promise<void> {
+    if (!this.qrSupported()) {
+      this.showMessage('مسح QR غير مدعوم على هذا الجهاز · QR scan not supported here', 'error');
+      return;
+    }
+    try {
+      this.scanning.set(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      this.scanStream = stream;
+      // wait a tick for the video element to render
+      setTimeout(async () => {
+        const video = document.getElementById('att-scan-video') as HTMLVideoElement | null;
+        if (!video) { this.stopScan(); return; }
+        video.srcObject = stream;
+        try { await video.play(); } catch { /* autoplay */ }
+        const detector = new (globalThis as any).BarcodeDetector({ formats: ['qr_code'] });
+        const tick = async () => {
+          if (!this.scanning()) return;
+          try {
+            const codes = await detector.detect(video);
+            if (codes && codes.length) this.handleScan(String(codes[0].rawValue ?? ''));
+          } catch { /* per-frame errors ignored */ }
+          this.scanRAF = requestAnimationFrame(tick);
+        };
+        this.scanRAF = requestAnimationFrame(tick);
+      }, 100);
+    } catch (e) {
+      console.error('scan start failed', e);
+      this.showMessage('تعذّر فتح الكاميرا · Camera unavailable', 'error');
+      this.stopScan();
+    }
+  }
+
+  private handleScan(raw: string): void {
+    if (!raw) return;
+    const now = Date.now();
+    // ignore the same code re-detected within 2.5s (continuous frames)
+    if (raw === this.lastScanValue && now - this.lastScanAt < 2500) return;
+    this.lastScanValue = raw;
+    this.lastScanAt = now;
+    let value = raw;
+    try {
+      const obj = JSON.parse(raw);
+      value = obj.studentCode || obj.code || obj.studentId || obj.id || raw;
+    } catch { /* plain string code */ }
+    this.markPresentByValue(String(value));
+  }
+
+  stopScan(): void {
+    this.scanning.set(false);
+    if (this.scanRAF) cancelAnimationFrame(this.scanRAF);
+    this.scanRAF = 0;
+    if (this.scanStream) {
+      this.scanStream.getTracks().forEach(t => t.stop());
+      this.scanStream = null;
+    }
+  }
+
+  async finalizeAttendees(): Promise<void> {
+    const marked = this.markedPresent();
+    const list = this.students();
+    const toAbsent = list.filter(s => !marked.has(s.enrollmentId) && !s.isAbsent);
+    const toPresent = list.filter(s => marked.has(s.enrollmentId) && s.isAbsent);
+    if (toAbsent.length === 0 && toPresent.length === 0) {
+      this.showMessage('لا تغييرات للحفظ · Nothing to save', 'error');
+      return;
+    }
+    if (!confirm(`سيتم تعليم ${marked.size} حاضر و ${toAbsent.length} غائب. متابعة؟`)) return;
+
+    this.stopScan();
+    this.saving.set(true);
+    this.message.set(null);
+    try {
+      for (const s of toAbsent) {
+        try {
+          await lastValueFrom(this.attendanceSvc.create(
+            { enrollmentId: s.enrollmentId, date: new Date(this.attendanceDate()).toISOString(), isAbsent: true, note: '--' },
+            { skipHandleError: true }));
+        } catch { /* continue */ }
+      }
+      for (const s of toPresent) {
+        if (s.attendanceId) {
+          try { await lastValueFrom(this.attendanceSvc.delete(s.attendanceId, { skipHandleError: true })); } catch { /* continue */ }
+        }
+      }
+      await this.loadStudents();
+      this.markedPresent.set(new Set());
+      this.showMessage(`تم الحفظ: ${marked.size} حاضر · ${toAbsent.length} غائب`, 'success');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  goBack(): void { this.stopScan(); this.location.back(); }
 
   trackByEnrollment = (_: number, item: StudentEntry) => item.enrollmentId;
 }
