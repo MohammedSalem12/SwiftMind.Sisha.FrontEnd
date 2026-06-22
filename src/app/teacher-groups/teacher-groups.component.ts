@@ -30,6 +30,8 @@ export class TeacherGroupsComponent implements OnInit {
   loading = signal<boolean>(false);
   error   = signal<string | null>(null);
   groups  = signal<GroupWithSchedulesDto[]>([]);
+  // groupId -> auto-accept join requests enabled
+  autoAccept = signal<Record<string, boolean>>({});
 
   // Teacher info
   teacherName = signal<string | null>(null);
@@ -112,6 +114,7 @@ export class TeacherGroupsComponent implements OnInit {
     this.error.set(null);
 
     try {
+      await this.loadAutoAcceptMap();
       const filterCourseId = this.courseId();
 
       if (filterCourseId) {
@@ -241,6 +244,33 @@ export class TeacherGroupsComponent implements OnInit {
     } catch (err) {
       console.error('Error deleting schedule:', err);
       this.error.set(this.l('TeacherGroups:ErrorDeletingSchedule'));
+    }
+  }
+
+  private async loadAutoAcceptMap() {
+    try {
+      const all = await lastValueFrom(this.groupService.getList());
+      const map: Record<string, boolean> = {};
+      (all?.items ?? []).forEach(g => { if (g.id) map[g.id] = !!g.autoAcceptJoinRequests; });
+      this.autoAccept.set(map);
+    } catch {
+      // non-fatal — toggle just defaults to off until reload
+    }
+  }
+
+  async toggleAutoAccept(group: GroupWithSchedulesDto) {
+    const id = group.groupId;
+    if (!id) return;
+    const next = !this.autoAccept()[id];
+    // optimistic update
+    this.autoAccept.update(m => ({ ...m, [id]: next }));
+    try {
+      await lastValueFrom(this.groupService.setAutoAccept(id, next));
+    } catch (err) {
+      // revert on failure
+      this.autoAccept.update(m => ({ ...m, [id]: !next }));
+      console.error('Error toggling auto-accept:', err);
+      this.error.set(this.l('TeacherGroups:ErrorUpdatingGroup'));
     }
   }
 

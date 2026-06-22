@@ -29,6 +29,7 @@ function getRoleHomePath(roles: string[]): string {
   if (roles.includes(ROLES.TEACHER))    return '/teacher';
   if (roles.includes(ROLES.PARENT))     return '/parent';
   if (roles.includes(ROLES.SECRETARY))  return '/secretary';
+  if (roles.includes(ROLES.MARKETER))   return '/marketer';
   if (roles.includes(ROLES.ADMIN))      return '/';
   if (roles.includes(ROLES.ADVERTISER)) return '/ads/my';
   if (roles.includes('PARTNER'))       return '/partner/dashboard';
@@ -62,6 +63,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     { path: '/courses',              label: 'المقررات',             labelEn: 'Courses',            icon: 'fas fa-book' },
     { path: '/ads/admin',            label: 'إدارة الإعلانات',     labelEn: 'Ads Management',     icon: 'fas fa-bullhorn' },
     { path: '/ads/advertisers',      label: 'إدارة المعلنين',      labelEn: 'Advertisers',        icon: 'fas fa-store' },
+    { path: '/marketers-admin',      label: 'المسوّقون',           labelEn: 'Marketers',          icon: 'fas fa-bullhorn' },
     { path: '/academic-terms',       label: 'الفصول الدراسية',     labelEn: 'Semesters',          icon: 'fas fa-calendar-alt' },
     { path: '/registration-requests', label: 'طلبات التسجيل',       labelEn: 'Registration',       icon: 'fas fa-user-plus' },
   ];
@@ -70,6 +72,10 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
   ];
   if (roles.includes(ROLES.SECRETARY)) return [
     { path: '/students',             label: 'الطلاب',              labelEn: 'Students',           icon: 'fas fa-user-graduate' },
+  ];
+  if (roles.includes(ROLES.MARKETER)) return [
+    { path: '/marketer/teachers',    label: 'معلميني',             labelEn: 'My Teachers',        icon: 'fas fa-chalkboard-teacher' },
+    { path: '/marketer/fees',        label: 'أرباحي',              labelEn: 'My Fees',            icon: 'fas fa-coins' },
   ];
   if (roles.includes(ROLES.PARENT)) return [
     { path: '/parent/home',          label: 'لوحة التفاصيل',       labelEn: 'Dashboard',          icon: 'fas fa-th-large' },
@@ -914,6 +920,8 @@ export class BottomNavComponent implements OnInit, OnDestroy {
         this.isParentRole.set(isParent);
         this.isPartnerRole.set(isPartner);
 
+        const isMarketer = roles.includes(ROLES.MARKETER);
+
         if (isAdvertiser) {
           // Advertiser gets minimal nav: My Ads, Create Ad, Redeem, Notifications
           this.coreNav.set([
@@ -921,6 +929,14 @@ export class BottomNavComponent implements OnInit, OnDestroy {
             { path: '/ads/create',    label: 'إعلان جديد',  labelEn: 'New Ad',        icon: 'fas fa-plus-circle' },
             { path: '/ads/redeem',    label: 'استبدال',      labelEn: 'Redeem',        icon: 'fas fa-qrcode' },
             { path: '/notifications', label: 'إشعارات',     labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' },
+          ]);
+        } else if (isMarketer) {
+          // Marketer: Home, My Teachers, Onboard a teacher, Notifications
+          this.coreNav.set([
+            { path: '/marketer',          label: 'الرئيسية',   labelEn: 'Home',          icon: 'fas fa-home' },
+            { path: '/marketer/teachers', label: 'معلميني',     labelEn: 'My Teachers',   icon: 'fas fa-chalkboard-teacher' },
+            { path: '/marketer/onboard',  label: 'تسجيل معلم', labelEn: 'Onboard',       icon: 'fas fa-user-plus' },
+            { path: '/notifications',     label: 'إشعارات',    labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' },
           ]);
         } else {
           const isParent = roles.includes(ROLES.PARENT);

@@ -152,6 +152,19 @@
               </div>
             }
 
+            <!-- Auto-accept join requests -->
+            <button type="button" class="auto-accept-row"
+                    [class.on]="autoAccept()[g.groupId!]"
+                    (click)="toggleAutoAccept(g)">
+              <div class="aa-text">
+                <i class="fas fa-user-check"></i>
+                <span>قبول طلبات الانضمام تلقائياً · Auto-accept join requests</span>
+              </div>
+              <span class="aa-switch" [class.on]="autoAccept()[g.groupId!]">
+                <span class="aa-knob"></span>
+              </span>
+            </button>
+
             <!-- Actions -->
             <div class="group-actions">
               <button class="act act-sched" (click)="manageSchedule(g)">

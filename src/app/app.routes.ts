@@ -463,6 +463,18 @@ export const appRoutes: Routes = [
     data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
   },
   {
+    path: 'marketer',
+    loadChildren: () => import('./marketer/marketer.routes').then(m => m.marketerRoutes),
+    canActivate: [roleGuard],
+    data: { roles: ['MARKETER'] }
+  },
+  {
+    path: 'marketers-admin',
+    loadComponent: () => import('./marketers-admin/marketers-admin.component').then(m => m.MarketersAdminComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
     path: 'parents',
     loadChildren: () => import('./parents/parents.routes').then(m => m.parentsRoutes),
     canActivate: [authGuard]
