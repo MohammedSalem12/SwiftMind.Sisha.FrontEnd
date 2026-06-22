@@ -591,7 +591,7 @@ export class NotificationsComponent implements OnInit {
         return null;
 
       case NotificationType.EnrollmentRequestPending:
-        if (role === 'TEACHER') return { path: ['/teacher/enrollment-requests'] };
+        if (role === 'TEACHER') return { path: ['/teacher/my-requests'] };
         if (role === 'PARENT') return { path: ['/parent/enrollment-approval'] };
         if (role === 'STUDENT') return { path: ['/student/requests'] };
         return null;
