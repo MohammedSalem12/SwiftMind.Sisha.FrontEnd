@@ -67,7 +67,7 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       top: 0;
       left: 0;
       right: 0;
-      z-index: 9998;
+      z-index: 1500;
       display: flex;
       align-items: center;
       justify-content: space-between;

@@ -451,14 +451,14 @@ interface CourseTab {
     .search-row { display:flex; gap:.5rem; flex-wrap:wrap; }
     .grade-select {
       padding:.7rem .75rem; border-radius:12px; border:1.5px solid #e9ecef;
-      background:#fff; font-size:.82rem; font-family:inherit; color:#1a1a2e;
+      background:#fff; font-size:16px; font-family:inherit; color:#1a1a2e;
       min-height:44px; min-width:120px; outline:none;
     }
     .grade-select:focus { border-color:#667eea; }
     .search-input {
       flex:1; padding:.7rem .875rem; border-radius:12px;
       border:1.5px solid #e9ecef; background:#fff;
-      font-size:.88rem; min-height:44px;
+      font-size:16px; min-height:44px;
       outline:none; transition:border-color .15s;
     }
     .search-input:focus { border-color:#667eea; }
@@ -554,7 +554,7 @@ interface CourseTab {
     /* Secretary row actions */
     .row-actions { display:flex; gap:.4rem; flex-shrink:0; }
     .action-icon-btn {
-      width:36px; height:36px; border-radius:10px; border:none;
+      width:44px; height:44px; border-radius:10px; border:none;
       cursor:pointer; display:flex; align-items:center; justify-content:center;
       font-size:.85rem; transition:transform .15s;
     }
@@ -564,7 +564,7 @@ interface CourseTab {
 
     /* Code result detail button */
     .detail-btn {
-      width:40px; height:40px; border-radius:50%; flex-shrink:0;
+      width:44px; height:44px; border-radius:50%; flex-shrink:0;
       background:rgba(102,126,234,.1); border:none; cursor:pointer;
       color:#667eea; font-size:.9rem;
       display:flex; align-items:center; justify-content:center;

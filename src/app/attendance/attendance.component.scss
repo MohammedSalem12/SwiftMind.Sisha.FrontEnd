@@ -244,7 +244,7 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   background: $purple-grad;
   color: #fff; font-size: 0.68rem; font-weight: 700;
   border: none; cursor: pointer; white-space: nowrap;
-  min-height: 28px;
+  min-height: 44px;
   transition: opacity 0.15s;
 
   &:active { opacity: 0.8; }
@@ -268,7 +268,7 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
-  min-height: 40px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   -webkit-tap-highlight-color: transparent;

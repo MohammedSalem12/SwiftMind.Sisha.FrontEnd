@@ -1,88 +1,104 @@
-<div class="exam-grade-page card">
-  <h2>درجات الاختبار</h2>
-  <div class="toolbar" style="display:flex; gap:8px; margin-bottom:8px">
-    <button class="btn-primary" type="button" (click)="openAddExam()" [disabled]="!selectedCourse()">Add Exam</button>
-    <button class="btn-outline" type="button" (click)="loadStudents()" [disabled]="!selectedCourse()">Refresh</button>
+<div class="exam-grade-page card" dir="rtl">
+  <h2>درجات الاختبار · Exam Grades</h2>
+  <div class="toolbar">
+    <ion-button size="small" (click)="openAddExam()" [disabled]="!selectedCourse()">
+      <i class="fas fa-plus" slot="start"></i> إضافة اختبار · Add Exam
+    </ion-button>
+    <ion-button size="small" fill="outline" (click)="loadStudents()" [disabled]="!selectedCourse()">
+      <i class="fas fa-rotate" slot="start"></i> تحديث · Refresh
+    </ion-button>
   </div>
 
-  <div class="filters" style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
-    <label style="display:flex; flex-direction:column;">
-      Course
-      <select [(ngModel)]="selectedCourseModel">
-        <option [ngValue]="null">-- اختر المقرر --</option>
-        <option *ngFor="let c of courses()" [value]="c.id">{{ c.nameAr || c.name }}</option>
-      </select>
-    </label>
-    <label style="display:flex; flex-direction:column;">
-      Exam
-      <select [(ngModel)]="selectedExamModel" [disabled]="!selectedCourse()">
-        <option [ngValue]="null">-- اختر الاختبار --</option>
-        <option *ngFor="let e of exams()" [value]="e.id">{{ e.name }}</option>
-      </select>
-    </label>
-    <label style="display:flex; flex-direction:column;">
-      Student Code
-      <input type="text" [(ngModel)]="studentCodeFilterModel" placeholder="search code" [disabled]="!selectedCourse()" />
-    </label>
+  <ion-list class="filters" lines="full">
+    <ion-item>
+      <ion-select
+        label="المقرر · Course"
+        labelPlacement="stacked"
+        interface="action-sheet"
+        placeholder="-- اختر المقرر --"
+        [(ngModel)]="selectedCourseModel">
+        <ion-select-option [value]="null">-- اختر المقرر --</ion-select-option>
+        <ion-select-option *ngFor="let c of courses()" [value]="c.id">{{ c.nameAr || c.name }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-select
+        label="الاختبار · Exam"
+        labelPlacement="stacked"
+        interface="action-sheet"
+        placeholder="-- اختر الاختبار --"
+        [disabled]="!selectedCourse()"
+        [(ngModel)]="selectedExamModel">
+        <ion-select-option [value]="null">-- اختر الاختبار --</ion-select-option>
+        <ion-select-option *ngFor="let e of exams()" [value]="e.id">{{ e.name }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-input
+        label="رمز الطالب · Student Code"
+        labelPlacement="stacked"
+        placeholder="search code"
+        [disabled]="!selectedCourse()"
+        [(ngModel)]="studentCodeFilterModel"></ion-input>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="loading()" class="loading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <span>جاري التحميل · Loading...</span>
   </div>
 
-  <div *ngIf="loading()" class="loading">Loading...</div>
-
-  <div *ngIf="!loading() && !selectedCourse()" class="info-message" style="text-align: center; padding: 20px; color: #666; background-color: #f8f9fa; border-radius: 5px; margin: 20px 0;">
-    <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+  <div *ngIf="!loading() && !selectedCourse()" class="info-message">
+    <i class="fas fa-info-circle"></i>
     يرجى اختيار مقرر لعرض الطلاب المسجلين
   </div>
 
-  <table *ngIf="!loading() && selectedCourse()" class="table table-sm">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>الاسم</th>
-        <th>الرمز</th>
-        <th>الصف</th>
-        <th *ngIf="selectedExam()">درجة الاختبار</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let s of students(); let i = index">
-        <td>{{ i + 1 }}</td>
-        <td>{{ s.name }}</td>
-        <td>{{ s.code }}</td>
-        <td>{{ s.grade }}</td>
-        <td *ngIf="selectedExam()">
-          <span *ngIf="s.examGrade?.hasGrade" class="grade-display">
-            {{ s.examGrade.grade }}/{{ s.examGrade.maxGrade }}
-          </span>
-          <span *ngIf="!s.examGrade?.hasGrade" class="no-grade" style="color: #999; font-style: italic;">
-            لم يتم تقييمه
-          </span>
-        </td>
-        <td>
-          <button 
-            *ngIf="selectedExam() && !s.examGrade?.hasGrade" 
-            class="btn btn-sm btn-primary" 
+  <div *ngIf="!loading() && selectedCourse()" class="student-cards">
+    <ion-card class="student-card" *ngFor="let s of students(); let i = index">
+      <ion-card-content>
+        <div class="sc-top">
+          <div class="sc-avatar" aria-hidden="true">{{ i + 1 }}</div>
+          <div class="sc-info">
+            <div class="sc-name">{{ s.name }}</div>
+            <div class="sc-meta">
+              <span class="sc-code"><i class="fas fa-id-card"></i> {{ s.code }}</span>
+              <span class="sc-grade"><i class="fas fa-layer-group"></i> {{ s.grade }}</span>
+            </div>
+          </div>
+          <div class="sc-score" *ngIf="selectedExam()">
+            <ion-badge *ngIf="s.examGrade?.hasGrade" color="success">
+              {{ s.examGrade.grade }}/{{ s.examGrade.maxGrade }}
+            </ion-badge>
+            <ion-badge *ngIf="!s.examGrade?.hasGrade" color="medium">لم يتم تقييمه</ion-badge>
+          </div>
+        </div>
+
+        <div class="sc-actions">
+          <ion-button
+            *ngIf="selectedExam() && !s.examGrade?.hasGrade"
+            expand="block"
             (click)="openAddGrades(s)">
-            Add Grade
-          </button>
-          <button 
-            *ngIf="selectedExam() && s.examGrade?.hasGrade" 
-            class="btn btn-sm btn-secondary" 
+            <i class="fas fa-plus" slot="start"></i> إضافة درجة · Add Grade
+          </ion-button>
+          <ion-button
+            *ngIf="selectedExam() && s.examGrade?.hasGrade"
+            expand="block"
+            fill="outline"
             (click)="openAddGrades(s)">
-            Edit Grade
-          </button>
-          <span *ngIf="!selectedExam()" class="text-muted" style="font-size: 12px;">
-            اختر اختبار
+            <i class="fas fa-pen" slot="start"></i> تعديل الدرجة · Edit Grade
+          </ion-button>
+          <span *ngIf="!selectedExam()" class="sc-hint">
+            <i class="fas fa-info-circle"></i> اختر اختبار · Select an exam
           </span>
-        </td>
-      </tr>
-      <tr *ngIf="students().length === 0">
-        <td [attr.colspan]="selectedExam() ? 6 : 5" style="text-align: center; padding: 20px; color: #666;">
-          لا يوجد طلاب مسجلين في هذا المقرر
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <div *ngIf="students().length === 0" class="empty-state">
+      <i class="fas fa-user-graduate"></i>
+      <p>لا يوجد طلاب مسجلين في هذا المقرر</p>
+    </div>
+  </div>
 
 </div>
 
