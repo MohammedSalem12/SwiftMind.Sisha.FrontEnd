@@ -1,6 +1,7 @@
 import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LocalizationPipe, LocalizationService } from '@abp/ng.core';
 import { AttendanceService } from '@proxy/attendances';
@@ -37,7 +38,7 @@ interface GroupOption {
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, LocalizationPipe],
+  imports: [CommonModule, FormsModule, LocalizationPipe, IonicModule],
   templateUrl: './marks-entry.component.html',
   styleUrls: ['./marks-entry.component.scss'],
 })

@@ -960,3 +960,17 @@ input:focus-visible {
     display: none !important;
   }
 }
+
+// ── Ionic native picker, themed to sit inside an existing boxed field ──
+// Add class "ion-select-field" to an <ion-select> that already carries the
+// form's own box class (.field-input / .form-select / etc.).
+ion-select.ion-select-field {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --placeholder-color: #9ca3af;
+  --placeholder-opacity: 1;
+  width: 100%;
+  font-size: 16px;       // prevents iOS auto-zoom
+  color: var(--ngx-text, #1f2937);
+}

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupService } from '@proxy/groups';
 import { TeacherService } from '@proxy/teachers';
@@ -10,7 +11,7 @@ import { lastValueFrom } from 'rxjs';
   selector: 'app-create-group',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IonicModule],
   template: `
     <div class="page">
       <div class="card form-card">
@@ -27,10 +28,9 @@ import { lastValueFrom } from 'rxjs';
 
           <div class="field">
             <label>Teacher</label>
-            <select name="teacherId" [ngModel]="model().teacherId" (ngModelChange)="setField('teacherId',$event)" #teacherField="ngModel">
-              <option [ngValue]="''" disabled>Select teacher...</option>
-              <option *ngFor="let t of teachers()" [ngValue]="t.id">{{ t.firstName }} {{ t.lastName }}</option>
-            </select>
+            <ion-select class="ion-select-field" name="teacherId" interface="action-sheet" placeholder="Select teacher..." [ngModel]="model().teacherId" (ngModelChange)="setField('teacherId',$event)" #teacherField="ngModel">
+              <ion-select-option *ngFor="let t of teachers()" [value]="t.id">{{ t.firstName }} {{ t.lastName }}</ion-select-option>
+            </ion-select>
           </div>
 
           <div class="actions">

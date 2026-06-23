@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
@@ -16,7 +17,7 @@ import { CurrentUserInfoService } from '@proxy/common';
   selector: 'app-add-course',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IonicModule],
   template: `
     <div class="page" dir="rtl">
 
@@ -132,14 +133,14 @@ import { CurrentUserInfoService } from '@proxy/common';
               @if (loadingGrades()) {
                 <div class="select-shimmer"></div>
               } @else {
-                <select class="field-input field-select" name="gradeId"
+                <ion-select class="field-input ion-select-field" name="gradeId"
+                        interface="action-sheet" placeholder="— بدون صف محدد —" cancelText="إلغاء"
                         [ngModel]="model().gradeId"
                         (ngModelChange)="setField('gradeId', $event || null)">
-                  <option value="">— بدون صف محدد —</option>
                   @for (g of grades(); track g.id) {
-                    <option [value]="g.id">{{ g.name }}</option>
+                    <ion-select-option [value]="g.id">{{ g.name }}</ion-select-option>
                   }
-                </select>
+                </ion-select>
               }
             </div>
 
