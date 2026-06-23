@@ -104,6 +104,9 @@
 }
 
 .role-card {
+  position: relative;
+  overflow: hidden;
+  ion-ripple-effect { color: rgba(102, 126, 234, 0.28); }
   display: flex;
   align-items: center;
   gap: 1rem;

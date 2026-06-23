@@ -149,7 +149,7 @@
   <!-- Loading state -->
   @if (loading()) {
     <div class="loading-area">
-      <div class="spinner"></div>
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
       <span>جاري التحميل...</span>
     </div>
   }
@@ -328,7 +328,7 @@
     <!-- Saving overlay -->
     @if (saving()) {
       <div class="saving-bar">
-        <div class="mini-spinner"></div>
+        <ion-spinner name="dots" color="primary" style="width:22px;height:22px"></ion-spinner>
         <span>جاري الحفظ وإرسال الإشعارات...</span>
       </div>
     }

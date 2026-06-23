@@ -25,7 +25,7 @@
       <div class="role-grid">
         <button
           *ngFor="let role of roles"
-          class="role-card"
+          class="role-card ion-activatable"
           [style.--card-color]="role.color"
           [style.--card-bg]="role.bg"
           [style.--card-border]="role.border"
@@ -39,6 +39,7 @@
             <span class="role-desc">{{ role.description }}</span>
           </div>
           <i class="fas fa-chevron-left role-arrow"></i>
+          <ion-ripple-effect></ion-ripple-effect>
         </button>
       </div>
 
