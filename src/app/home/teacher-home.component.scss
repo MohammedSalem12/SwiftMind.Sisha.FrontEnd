@@ -228,6 +228,9 @@ $radius-card:   18px;
 }
 
 .course-card {
+  position: relative;
+  overflow: hidden;
+  ion-ripple-effect { color: rgba(102, 126, 234, 0.35); }
   display: flex;
   align-items: center;
   gap: 0.75rem;

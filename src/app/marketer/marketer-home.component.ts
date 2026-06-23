@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 
 import { MarketerService } from '@proxy/marketers';
@@ -9,7 +10,7 @@ import type { MarketerStatsDto } from '@proxy/marketers';
 @Component({
   selector: 'app-marketer-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IonicModule],
   template: `
     <div class="mk-page" dir="rtl">
       <div class="mk-hero">
@@ -49,17 +50,20 @@ import type { MarketerStatsDto } from '@proxy/marketers';
         </div>
 
         <div class="mk-actions">
-          <button class="mk-action mk-action--primary" (click)="go('/marketer/onboard')">
+          <button class="mk-action mk-action--primary ion-activatable" (click)="go('/marketer/onboard')">
             <i class="fas fa-user-plus"></i>
             <span>تسجيل معلم جديد · Onboard a teacher</span>
+            <ion-ripple-effect></ion-ripple-effect>
           </button>
-          <button class="mk-action" (click)="go('/marketer/teachers')">
+          <button class="mk-action ion-activatable" (click)="go('/marketer/teachers')">
             <i class="fas fa-chalkboard-teacher"></i>
             <span>معلميني · My teachers</span>
+            <ion-ripple-effect></ion-ripple-effect>
           </button>
-          <button class="mk-action" (click)="go('/marketer/fees')">
+          <button class="mk-action ion-activatable" (click)="go('/marketer/fees')">
             <i class="fas fa-coins"></i>
             <span>أرباحي · My fees</span>
+            <ion-ripple-effect></ion-ripple-effect>
           </button>
         </div>
       </ng-container>
@@ -91,6 +95,7 @@ import type { MarketerStatsDto } from '@proxy/marketers';
     .mk-stat-lbl { font-size: .68rem; color: #6b7280; margin-top: 4px; }
     .mk-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
     .mk-action {
+      position: relative; overflow: hidden;
       display: flex; align-items: center; gap: 12px; width: 100%;
       min-height: 56px; padding: 0 16px; border-radius: 14px; cursor: pointer;
       background: #fff; border: 1.5px solid #eef0fd; color: #1a1a2e;

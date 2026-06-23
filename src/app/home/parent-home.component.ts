@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 import { ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
@@ -23,7 +24,7 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
   selector: 'app-parent-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
+  imports: [CommonModule, RouterModule, IonicModule, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
   templateUrl: './parent-home.component.html',
   styleUrls: ['./parent-home.component.scss'],
 })

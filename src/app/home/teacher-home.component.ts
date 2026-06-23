@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
@@ -25,7 +26,7 @@ interface AcademyCourseGroup {
   selector: 'app-teacher-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
+  imports: [CommonModule, RouterModule, IonicModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
   templateUrl: './teacher-home.component.html',
   styleUrls: ['./teacher-home.component.scss'],
 })

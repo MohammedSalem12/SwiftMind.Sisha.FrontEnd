@@ -56,7 +56,7 @@
     @if (coursesExpanded()) {
       <div class="courses-grid collapsible-content">
         @for (course of personalCourses(); track course.id) {
-          <button class="course-card" (click)="selectCourse(course)">
+          <button class="course-card ion-activatable" (click)="selectCourse(course)">
             <div class="course-card-icon">
               <i class="fas fa-book"></i>
             </div>
@@ -79,6 +79,7 @@
             <div class="course-card-arrow">
               <i class="fas fa-chevron-left"></i>
             </div>
+            <ion-ripple-effect></ion-ripple-effect>
           </button>
         }
       </div>

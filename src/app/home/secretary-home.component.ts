@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 
 import { SecretaryTeacherService } from '@proxy/teachers';
@@ -15,7 +16,7 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
   selector: 'app-secretary-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, OfflineBannerComponent, DidYouKnowComponent, ActiveSemesterComponent],
+  imports: [CommonModule, IonicModule, OfflineBannerComponent, DidYouKnowComponent, ActiveSemesterComponent],
   template: `
     <div class="secretary-home" dir="rtl">
 
@@ -72,7 +73,7 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
         @if (teachersExpanded()) {
           <div class="teachers-grid collapsible-content">
             @for (t of teachers(); track t.id) {
-              <button class="teacher-card" (click)="goToTeacherCourses(t)">
+              <button class="teacher-card ion-activatable" (click)="goToTeacherCourses(t)">
                 <div class="teacher-card-icon">
                   <i class="fas fa-chalkboard-teacher"></i>
                 </div>
@@ -87,6 +88,7 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
                 <div class="teacher-card-arrow">
                   <i class="fas fa-chevron-left"></i>
                 </div>
+                <ion-ripple-effect></ion-ripple-effect>
               </button>
             }
           </div>
@@ -265,6 +267,8 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
     }
 
     .teacher-card {
+      position: relative;
+      overflow: hidden;
       display: flex;
       align-items: center;
       gap: .75rem;

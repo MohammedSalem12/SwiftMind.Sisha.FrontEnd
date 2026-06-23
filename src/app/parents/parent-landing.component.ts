@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
@@ -12,7 +13,7 @@ import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status
   selector: 'app-parent-landing',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IonicModule],
   template: `
     <div class="page" dir="rtl">
 
@@ -42,7 +43,7 @@ import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status
       @if (!loading() && children().length > 0) {
         <div class="grid">
           @for (child of children(); track child.studentId) {
-            <div class="child-card" (click)="goToChild(child)">
+            <div class="child-card ion-activatable" (click)="goToChild(child)">
               <div class="card-bg"></div>
               <div class="card-avatar">
                 <span>{{ getInitials(child.studentName) }}</span>
@@ -57,6 +58,7 @@ import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status
                 }
               </div>
               <div class="card-arrow"><i class="fas fa-chevron-left"></i></div>
+              <ion-ripple-effect></ion-ripple-effect>
             </div>
           }
         </div>
@@ -134,6 +136,7 @@ import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status
       position:relative; overflow:hidden;
       box-shadow:0 4px 16px rgba(0,0,0,.06); cursor:pointer;
       transition:transform .12s; -webkit-tap-highlight-color:transparent;
+      ion-ripple-effect { color: rgba(102,126,234,.3); }
     }
     .child-card:active { transform:scale(.97); }
     .card-bg {

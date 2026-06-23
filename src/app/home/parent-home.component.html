@@ -57,7 +57,7 @@
   <app-did-you-know [role]="'PARENT'" />
 
   <!-- Dashboard Link -->
-  <div class="dashboard-link-card" (click)="goToDashboard()">
+  <div class="dashboard-link-card ion-activatable" (click)="goToDashboard()">
     <div class="dashboard-link-icon">
       <i class="fas fa-chart-pie"></i>
     </div>
@@ -66,6 +66,7 @@
       <span class="dashboard-link-sub">تابع حضور ودرجات أبنائك · Children Dashboard</span>
     </div>
     <i class="fas fa-chevron-left dashboard-link-arrow"></i>
+    <ion-ripple-effect></ion-ripple-effect>
   </div>
 
   <!-- Pending Promotion Requests -->
@@ -117,7 +118,7 @@
     @if (childrenExpanded()) {
     <div class="children-grid collapsible-content">
       @for (child of children(); track child.studentId) {
-        <div class="child-card" (click)="viewChildDetails(child)">
+        <div class="child-card ion-activatable" (click)="viewChildDetails(child)">
           <div class="child-card-icon">
             <span>{{ getInitials(child.studentName) }}</span>
           </div>
@@ -142,6 +143,7 @@
             }
           </div>
           <i class="fas fa-chevron-left child-arrow"></i>
+          <ion-ripple-effect></ion-ripple-effect>
         </div>
       }
     </div>
