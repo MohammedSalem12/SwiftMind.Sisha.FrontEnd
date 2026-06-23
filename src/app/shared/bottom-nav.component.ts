@@ -455,18 +455,19 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
 
     .mn-icon-wrap {
       position: relative;
-      width: 44px; height: 28px;
+      width: 48px; height: 32px;
       display: flex; align-items: center; justify-content: center;
-      border-radius: 14px;
-      transition: background 0.2s;
+      border-radius: 16px;
+      transition: background 0.2s, transform 0.2s;
     }
     .mn-tab.active .mn-icon-wrap {
-      background: rgba(91,33,182,0.12);
+      background: rgba(91,33,182,0.16);
+      transform: translateY(-1px);
     }
-    .mn-icon-wrap i { font-size: 1.25rem; }
+    .mn-icon-wrap i { font-size: 1.45rem; }
 
     .mn-label {
-      font-size: 0.65rem;
+      font-size: 0.72rem;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;

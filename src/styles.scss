@@ -752,6 +752,12 @@ button.lpx-sidebar-toggle {
 
 @media (max-width: 767px) {
 
+  // Larger mobile type scale: the app's rem sizes are based on the html root.
+  // Raising the root ~+10% on phones scales the whole type scale up to match
+  // modern apps (names ~15.5px, secondary ~12.5px, nav labels ~12px), with
+  // spacing scaling proportionally. Desktop keeps the 15px base.
+  html { font-size: 16.5px; }
+
   .page-container { padding: 0.75rem; }
 
   .stats-row {
