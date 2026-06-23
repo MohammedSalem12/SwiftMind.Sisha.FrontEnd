@@ -260,6 +260,17 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
             </a>
           }
 
+          <!-- Role management links (admin: Students/Teachers/Parents/Courses/Marketers/…; secretary/teacher: Students; parent: dashboards) -->
+          @for (item of secondaryNav(); track item.path) {
+            <a class="more-item" [routerLink]="item.path" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-purple"><i [class]="item.icon"></i></div>
+              <div class="more-item-text">
+                <span>{{ item.label }}</span>
+                <span class="more-item-en">{{ item.labelEn }}</span>
+              </div>
+            </a>
+          }
+
           <a class="more-item" routerLink="/settings" (click)="showMore.set(false)">
             <div class="more-item-icon more-icon-gray"><i class="fas fa-cog"></i></div>
             <div class="more-item-text">
