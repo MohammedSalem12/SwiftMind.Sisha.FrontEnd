@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, effect, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { NotificationService } from '@proxy/notifications';
 import type { NotificationDto } from '@proxy/notifications/models';
 import { NotificationType } from '@proxy/notifications/notification-type.enum';
@@ -14,7 +15,7 @@ import { lastValueFrom } from 'rxjs';
   selector: 'app-notifications',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, IonicModule],
   template: `
     <div class="notifications-page" dir="rtl">
       <!-- Modern Header with Grade Theme -->
@@ -66,7 +67,7 @@ import { lastValueFrom } from 'rxjs';
         <div class="notifications-list" *ngIf="!loading() && notifications().length > 0">
           <div 
             *ngFor="let n of notifications(); trackBy: trackById"
-            class="notification-item"
+            class="notification-item ion-activatable"
             [class.unread]="!n.isRead"
             [style.border-right-color]="!n.isRead ? currentTheme().primary : 'transparent'"
             (click)="onNotificationClick(n)">
@@ -99,6 +100,7 @@ import { lastValueFrom } from 'rxjs';
               </div>
               <i class="fas fa-chevron-left nav-arrow" *ngIf="hasRoute(n)"></i>
             </div>
+            <ion-ripple-effect></ion-ripple-effect>
           </div>
         </div>
       </div>
@@ -298,7 +300,10 @@ import { lastValueFrom } from 'rxjs';
       cursor: pointer;
       transition: all 0.3s ease;
       position: relative;
+      overflow: hidden;
       border-right: 4px solid transparent;
+
+      ion-ripple-effect { color: rgba(102, 126, 234, 0.22); }
 
       &:hover {
         transform: translateY(-2px);

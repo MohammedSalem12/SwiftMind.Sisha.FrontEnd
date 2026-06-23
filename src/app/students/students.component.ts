@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
@@ -25,7 +26,7 @@ interface CourseTab {
   selector: 'app-students',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, IonicModule],
   template: `
     <div class="page" dir="rtl">
 
@@ -169,7 +170,7 @@ interface CourseTab {
             @if (activeCourse()!.loaded && filteredStudents().length > 0) {
               <div class="students-list">
                 @for (s of filteredStudents(); track s.studentId) {
-                  <div class="student-card-rich" (click)="showDetails({id: s.studentId})">
+                  <div class="student-card-rich ion-activatable" (click)="showDetails({id: s.studentId})">
                     <div class="scr-top">
                       <div class="student-avatar">
                         <span>{{ (s.studentName || '?').charAt(0).toUpperCase() }}</span>
@@ -189,6 +190,7 @@ interface CourseTab {
                       <span class="scr-chip chip-absent"><i class="fas fa-times-circle"></i> {{ s.absentDays }} غياب</span>
                       <span class="scr-chip chip-total"><i class="fas fa-calendar"></i> {{ s.totalDays }} يوم</span>
                     </div>
+                    <ion-ripple-effect></ion-ripple-effect>
                   </div>
                 }
               </div>
@@ -270,7 +272,7 @@ interface CourseTab {
             @if (activeCourse()!.loaded && filteredStudents().length > 0) {
               <div class="students-list">
                 @for (s of filteredStudents(); track s.studentId) {
-                  <div class="student-card-rich" (click)="showDetails({id: s.studentId})">
+                  <div class="student-card-rich ion-activatable" (click)="showDetails({id: s.studentId})">
                     <div class="scr-top">
                       <div class="student-avatar">
                         <span>{{ (s.studentName || '?').charAt(0).toUpperCase() }}</span>
@@ -290,6 +292,7 @@ interface CourseTab {
                       <span class="scr-chip chip-absent"><i class="fas fa-times-circle"></i> {{ s.absentDays }} غياب</span>
                       <span class="scr-chip chip-total"><i class="fas fa-calendar"></i> {{ s.totalDays }} يوم</span>
                     </div>
+                    <ion-ripple-effect></ion-ripple-effect>
                   </div>
                 }
               </div>
@@ -526,11 +529,13 @@ interface CourseTab {
 
     /* Rich student card */
     .student-card-rich {
+      position:relative; overflow:hidden;
       background:#fff; border-radius:14px; border:1.5px solid #f0f0f0;
       padding:.875rem; box-shadow:0 2px 6px rgba(0,0,0,.04);
       cursor:pointer; transition:transform .1s;
     }
     .student-card-rich:active { transform:scale(.98); }
+    .student-card-rich ion-ripple-effect { color: rgba(102,126,234,.3); }
     .scr-top { display:flex; align-items:center; gap:.75rem; }
     .scr-att-ring {
       width:42px; height:42px; border-radius:50%; flex-shrink:0;

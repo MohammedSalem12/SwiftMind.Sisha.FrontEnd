@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 
 import { MarketerService } from '@proxy/marketers';
@@ -9,7 +10,7 @@ import type { MarketerTeacherDto } from '@proxy/marketers';
 @Component({
   selector: 'app-marketer-teachers',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IonicModule],
   template: `
     <div class="mk-list-page" dir="rtl">
       <div class="mk-head">
@@ -39,7 +40,7 @@ import type { MarketerTeacherDto } from '@proxy/marketers';
         </div>
 
         <div class="mk-cards">
-          <button class="mk-tcard" *ngFor="let t of teachers()" (click)="openSetup(t)">
+          <button class="mk-tcard ion-activatable" *ngFor="let t of teachers()" (click)="openSetup(t)">
             <div class="mk-avatar">{{ initials(t.fullName) }}</div>
             <div class="mk-tinfo">
               <div class="mk-tname">{{ t.fullName }}</div>
@@ -49,6 +50,7 @@ import type { MarketerTeacherDto } from '@proxy/marketers';
               </div>
             </div>
             <i class="fas fa-chevron-left mk-chev"></i>
+            <ion-ripple-effect></ion-ripple-effect>
           </button>
         </div>
       </ng-container>
@@ -64,11 +66,13 @@ import type { MarketerTeacherDto } from '@proxy/marketers';
     .mk-head-txt p { margin: 0; font-size: .8rem; color: #6b7280; }
     .mk-cards { display: flex; flex-direction: column; gap: 10px; }
     .mk-tcard {
+      position: relative; overflow: hidden;
       display: flex; align-items: center; gap: 12px; width: 100%; text-align: right;
       background: #fff; border: 1.5px solid #f0f0f0; border-radius: 14px; padding: 12px; cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,.04);
     }
     .mk-tcard:active { transform: scale(.99); }
+    .mk-tcard ion-ripple-effect { color: rgba(102,126,234,.3); }
     .mk-avatar {
       width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; color: #fff; font-weight: 800;
       background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center;
