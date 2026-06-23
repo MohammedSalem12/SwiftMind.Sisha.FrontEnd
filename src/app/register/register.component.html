@@ -160,16 +160,15 @@
             الصف الدراسي
           </label>
           <div class="select-wrap">
-            <select
-              id="grade"
+            <ion-select
               name="grade"
-              class="field-input field-select"
-              [(ngModel)]="form.grade"
-              required>
-              <option value="">-- اختر الصف --</option>
-              <option *ngFor="let g of gradeOptions()" [value]="g.value">{{ g.label }}</option>
-            </select>
-            <i class="fas fa-chevron-down select-chevron"></i>
+              class="field-input ion-select-field"
+              interface="action-sheet"
+              placeholder="-- اختر الصف --"
+              cancelText="إلغاء"
+              [(ngModel)]="form.grade">
+              <ion-select-option *ngFor="let g of gradeOptions()" [value]="g.value">{{ g.label }}</ion-select-option>
+            </ion-select>
           </div>
         </div>
 
@@ -181,26 +180,28 @@
           </label>
           <p class="field-hint">حدد موقعك لنعرض لك أقرب المعلمين · Set your location to find nearby teachers</p>
           <div class="select-wrap">
-            <select
+            <ion-select
               name="government"
-              class="field-input field-select"
+              class="field-input ion-select-field"
+              interface="action-sheet"
+              placeholder="-- المحافظة · Governorate --"
+              cancelText="إلغاء"
               [(ngModel)]="form.government"
               (ngModelChange)="onGovernorateChange($event)">
-              <option value="">-- المحافظة · Governorate --</option>
-              <option *ngFor="let g of governorates" [value]="g">{{ g }}</option>
-            </select>
-            <i class="fas fa-chevron-down select-chevron"></i>
+              <ion-select-option *ngFor="let g of governorates" [value]="g">{{ g }}</ion-select-option>
+            </ion-select>
           </div>
           <div class="select-wrap" style="margin-top:.4rem;">
-            <select
+            <ion-select
               name="town"
-              class="field-input field-select"
+              class="field-input ion-select-field"
+              interface="action-sheet"
+              [placeholder]="form.government ? '-- المركز / الحي · District --' : '-- اختر المحافظة أولاً --'"
+              cancelText="إلغاء"
               [(ngModel)]="form.town"
               [disabled]="!form.government">
-              <option value="">{{ form.government ? '-- المركز / الحي · District --' : '-- اختر المحافظة أولاً --' }}</option>
-              <option *ngFor="let d of districts()" [value]="d">{{ d }}</option>
-            </select>
-            <i class="fas fa-chevron-down select-chevron"></i>
+              <ion-select-option *ngFor="let d of districts()" [value]="d">{{ d }}</ion-select-option>
+            </ion-select>
           </div>
         </div>
 

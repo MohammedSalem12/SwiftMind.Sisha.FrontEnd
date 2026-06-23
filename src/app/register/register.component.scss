@@ -287,6 +287,20 @@
   }
 }
 
+// Ionic native picker styled to match the boxed .field-input
+ion-select.ion-select-field {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --placeholder-color: #9ca3af;
+  --placeholder-opacity: 1;
+  width: 100%;
+  min-height: 1.4rem;
+  font-size: 16px;        // prevent iOS zoom
+  color: #1f2937;
+  direction: rtl;
+}
+
 /* ─── Field Sub Hint ─── */
 .field-sub-hint {
   display: block;

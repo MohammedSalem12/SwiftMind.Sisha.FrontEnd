@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { UserRegistrationService } from '@proxy/controllers';
 import { UserRegistrationType } from '@proxy/domain/shared/enums/user-registration-type.enum';
@@ -17,7 +18,7 @@ import { environment } from '../../environments/environment';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-register',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, IonicModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
 })
