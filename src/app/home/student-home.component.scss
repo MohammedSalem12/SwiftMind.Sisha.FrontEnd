@@ -549,6 +549,8 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 }
 
 .course-card {
+  position: relative;        // anchor for ion-ripple-effect
+  overflow: hidden;          // contain the ripple within rounded corners
   background: #fff;
   border-radius: 14px;
   padding: 1rem;
@@ -558,6 +560,8 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   border: 1.5px solid #e9e6ff;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  ion-ripple-effect { color: rgba(102, 126, 234, 0.35); }
 
   &:active { transform: scale(0.98); }
 

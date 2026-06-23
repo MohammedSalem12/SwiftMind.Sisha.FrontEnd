@@ -66,7 +66,7 @@
     @if (coursesExpanded()) {
       <div class="courses-grid collapsible-content">
         @for (course of enrolledCourses(); track course.id) {
-          <div class="course-card" [class.course-card--pending]="course.hasPendingRequest && !course.isEnrolled" (click)="viewCourse(course)">
+          <div class="course-card ion-activatable" [class.course-card--pending]="course.hasPendingRequest && !course.isEnrolled" (click)="viewCourse(course)">
             <div class="course-card-icon" [class.course-card-icon--pending]="course.hasPendingRequest && !course.isEnrolled">
               <i class="fas" [class.fa-book]="course.isEnrolled" [class.fa-clock]="!course.isEnrolled"></i>
             </div>
@@ -87,6 +87,7 @@
             } @else {
               <div class="status-badge status-pending">قيد المراجعة</div>
             }
+            <ion-ripple-effect></ion-ripple-effect>
           </div>
         }
       </div>
