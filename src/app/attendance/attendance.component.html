@@ -239,15 +239,15 @@
       }
     </div>
 
-    <!-- Attendance mode toggle (per session) -->
-    <div class="mode-toggle">
-      <button class="mode-btn" [class.active]="attendanceMode() === 'absentees'" (click)="setMode('absentees')">
-        <i class="fas fa-user-check"></i> الحاضر افتراضي · Absentees
-      </button>
-      <button class="mode-btn" [class.active]="attendanceMode() === 'attendees'" (click)="setMode('attendees')">
-        <i class="fas fa-user-plus"></i> تحديد الحاضرين · Attendees
-      </button>
-    </div>
+    <!-- Attendance mode toggle (per session) — Ionic segment -->
+    <ion-segment class="mode-segment" [value]="attendanceMode()" (ionChange)="setMode($any($event).detail.value)">
+      <ion-segment-button value="absentees">
+        <ion-label><i class="fas fa-user-check"></i> الحاضر افتراضي · Absentees</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="attendees">
+        <ion-label><i class="fas fa-user-plus"></i> تحديد الحاضرين · Attendees</ion-label>
+      </ion-segment-button>
+    </ion-segment>
 
     <!-- Mode A: all present, mark the absentees -->
     @if (attendanceMode() === 'absentees') {

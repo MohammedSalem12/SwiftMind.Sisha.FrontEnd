@@ -618,6 +618,28 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 }
 .mode-btn.active { background: #fff; color: var(--ngx-primary, #667eea); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
 
+/* Ionic segment styled as an iOS-style pill toggle */
+.mode-segment {
+  --background: #eef0f5;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  padding: 3px;
+
+  ion-segment-button {
+    --background-checked: #fff;
+    --indicator-color: #fff;
+    --color: #555;
+    --color-checked: var(--ngx-primary, #667eea);
+    --border-radius: 9px;
+    --indicator-box-shadow: 0 1px 4px rgba(0,0,0,.1);
+    min-height: 42px;
+    font-weight: 700;
+    text-transform: none;
+    font-size: .8rem;
+  }
+  ion-segment-button i { margin-inline-end: 5px; }
+}
+
 .attendees-bar {
   background: #fff; border: 1.5px solid #eef0fd; border-radius: 14px; padding: 10px; margin-bottom: 10px;
   display: flex; flex-direction: column; gap: 8px;
