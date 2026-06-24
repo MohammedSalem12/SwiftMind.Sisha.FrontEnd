@@ -7,12 +7,13 @@ import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { GroupService } from '@proxy/groups';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 
 @Component({
   selector: 'app-teacher-groups',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, LocalizationPipe],
+  imports: [CommonModule, RouterModule, LocalizationPipe, PullToRefreshDirective],
   templateUrl: './teacher-groups.component.html',
   styleUrls: ['./teacher-groups.component.scss'],
 })
@@ -47,6 +48,10 @@ export class TeacherGroupsComponent implements OnInit {
       this.courseId.set(params['courseId'] || null);
     });
     this.loadCurrentUserAndGroups();
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try { await this.loadCurrentUserAndGroups(); } finally { e.complete(); }
   }
 
   private async loadCurrentUserAndGroups() {

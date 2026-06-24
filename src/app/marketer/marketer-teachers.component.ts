@@ -6,13 +6,14 @@ import { lastValueFrom } from 'rxjs';
 
 import { MarketerService } from '@proxy/marketers';
 import type { MarketerTeacherDto } from '@proxy/marketers';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 
 @Component({
   selector: 'app-marketer-teachers',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective],
   template: `
-    <div class="mk-list-page" dir="rtl">
+    <div class="mk-list-page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
       <div class="mk-head">
         <button class="mk-back" (click)="back()"><i class="fas fa-arrow-right"></i></button>
         <div class="mk-head-txt">
@@ -116,6 +117,10 @@ export class MarketerTeachersComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try { await this.load(); } finally { e.complete(); }
   }
 
   initials(name?: string): string {

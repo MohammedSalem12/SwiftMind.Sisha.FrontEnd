@@ -6,13 +6,14 @@ import { lastValueFrom } from 'rxjs';
 
 import { MarketerService } from '@proxy/marketers';
 import type { MarketerStatsDto } from '@proxy/marketers';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 
 @Component({
   selector: 'app-marketer-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective],
   template: `
-    <div class="mk-page" dir="rtl">
+    <div class="mk-page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
       <div class="mk-hero">
         <div class="mk-hero-top">
           <div>
@@ -138,6 +139,10 @@ export class MarketerHomeComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try { await this.load(); } finally { e.complete(); }
   }
 
   go(path: string): void {

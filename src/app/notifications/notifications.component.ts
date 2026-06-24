@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal, effect, com
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 import { NotificationService } from '@proxy/notifications';
 import type { NotificationDto } from '@proxy/notifications/models';
 import { NotificationType } from '@proxy/notifications/notification-type.enum';
@@ -15,9 +16,9 @@ import { lastValueFrom } from 'rxjs';
   selector: 'app-notifications',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PullToRefreshDirective],
   template: `
-    <div class="notifications-page" dir="rtl">
+    <div class="notifications-page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
       <!-- Modern Header with Grade Theme -->
       <div class="page-header" [style.background]="currentTheme().gradient">
         <div class="header-content">
@@ -548,6 +549,10 @@ export class NotificationsComponent implements OnInit {
     } catch (error) {
       console.error('Failed to load user info:', error);
     }
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try { await this.loadNotifications(); } finally { e.complete(); }
   }
 
   private async loadNotifications(): Promise<void> {

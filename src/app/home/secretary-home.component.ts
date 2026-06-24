@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 
 import { SecretaryTeacherService } from '@proxy/teachers';
 import type { SecretaryTeacherDto } from '@proxy/teachers';
@@ -16,9 +17,9 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
   selector: 'app-secretary-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, IonicModule, OfflineBannerComponent, DidYouKnowComponent, ActiveSemesterComponent],
+  imports: [CommonModule, IonicModule, PullToRefreshDirective, OfflineBannerComponent, DidYouKnowComponent, ActiveSemesterComponent],
   template: `
-    <div class="secretary-home" dir="rtl">
+    <div class="secretary-home" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
 
       <app-active-semester />
 
@@ -396,6 +397,14 @@ export class SecretaryHomeComponent implements OnInit {
       const info = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
       this.secretaryName.set(info?.actorName ?? '');
     } catch { /* silent */ }
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try {
+      await Promise.all([this.loadTeachers(), this.loadSecretaryName()]);
+    } finally {
+      e.complete();
+    }
   }
 
   private async loadTeachers() {

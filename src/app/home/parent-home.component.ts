@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 import { ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
@@ -24,7 +25,7 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
   selector: 'app-parent-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, IonicModule, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
   templateUrl: './parent-home.component.html',
   styleUrls: ['./parent-home.component.scss'],
 })
@@ -100,6 +101,19 @@ export class ParentHomeComponent implements OnInit {
       this.recentNotifications.set(notifications?.slice(0, 3) || []);
     } catch (error) {
       console.error('Error loading notifications:', error);
+    }
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try {
+      await Promise.all([
+        this.loadParentChildren(),
+        this.loadPendingPromotions(),
+        this.loadPendingRequestsCount(),
+        this.loadRecentNotifications(),
+      ]);
+    } finally {
+      e.complete();
     }
   }
 

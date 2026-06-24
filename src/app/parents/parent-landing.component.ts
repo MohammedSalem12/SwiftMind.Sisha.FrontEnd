@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ConfigStateService } from '@abp/ng.core';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 import { lastValueFrom } from 'rxjs';
 
 import { ParentService } from '@proxy/parents';
@@ -13,9 +14,9 @@ import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status
   selector: 'app-parent-landing',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, IonicModule],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective],
   template: `
-    <div class="page" dir="rtl">
+    <div class="page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
 
       <!-- Header -->
       <div class="header">
@@ -247,6 +248,14 @@ export class ParentLandingComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    await this.loadChildren();
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try { await this.loadChildren(); } finally { e.complete(); }
+  }
+
+  private async loadChildren(): Promise<void> {
     try {
       const userId = this.configSvc.getOne('currentUser')?.id;
       if (!userId) return;

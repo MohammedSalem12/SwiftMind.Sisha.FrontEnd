@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } 
 import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
 import { AcademyService } from '@proxy/academies';
@@ -26,7 +27,7 @@ interface AcademyCourseGroup {
   selector: 'app-teacher-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, IonicModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
   templateUrl: './teacher-home.component.html',
   styleUrls: ['./teacher-home.component.scss'],
 })
@@ -88,6 +89,14 @@ export class TeacherHomeComponent implements OnInit {
       const session = await lastValueFrom(this.sessionService.getNextSession({ skipHandleError: true }));
       this.nextSession.set(session ?? null);
     } catch { /* no sessions */ }
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try {
+      await Promise.all([this.loadCourses(), this.loadAcademies(), this.loadNextSession(), this.loadReferralCode()]);
+    } finally {
+      e.complete();
+    }
   }
 
   private async loadCourses(): Promise<void> {
