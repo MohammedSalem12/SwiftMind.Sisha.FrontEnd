@@ -32,7 +32,9 @@ export class PullToRefreshDirective implements OnInit {
     if (getComputedStyle(host).position === 'static') {
       this.r.setStyle(host, 'position', 'relative');
     }
-    this.r.setStyle(host, 'will-change', 'transform');
+    // NOTE: do NOT set transform/will-change at rest — a transform on the host
+    // makes position:fixed descendants (FABs, modals) anchor to it. Transform is
+    // applied only during an active pull and fully removed afterwards.
 
     this.indicator = this.r.createElement('div');
     this.r.setStyle(this.indicator, 'position', 'absolute');
@@ -62,6 +64,7 @@ export class PullToRefreshDirective implements OnInit {
     this.startY = e.touches[0].clientY;
     this.pulling = true;
     this.pull = 0;
+    this.r.setStyle(this.el.nativeElement, 'will-change', 'transform');
   }
 
   @HostListener('touchmove', ['$event'])
@@ -97,7 +100,13 @@ export class PullToRefreshDirective implements OnInit {
     const host = this.el.nativeElement;
     this.r.setStyle(host, 'transition', 'transform .25s ease');
     this.apply(0);
-    setTimeout(() => { this.r.removeStyle(host, 'transition'); this.pull = 0; }, 260);
+    setTimeout(() => {
+      // Remove transform entirely at rest so position:fixed descendants stay viewport-anchored.
+      this.r.removeStyle(host, 'transition');
+      this.r.removeStyle(host, 'transform');
+      this.r.removeStyle(host, 'will-change');
+      this.pull = 0;
+    }, 260);
   }
 
   private done(): void {
