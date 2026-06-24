@@ -6,12 +6,13 @@ import { FormsModule } from '@angular/forms';
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import type { TeacherDto } from '@proxy/teachers/models';
 import { TeacherService } from '@proxy/teachers';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 
 @Component({
   selector: 'app-teachers',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PullToRefreshDirective],
   templateUrl: './teachers.component.html',
   styleUrls: ['./teachers.component.scss'],
   providers: [ListService],
@@ -32,6 +33,11 @@ export class TeachersComponent implements OnInit {
 
   ngOnInit(): void {
     this.hookList();
+  }
+
+  refreshData(e: { complete: () => void }): void {
+    this.list.get();
+    e.complete();
   }
 
   hookList(): void {

@@ -7,12 +7,13 @@ import { ListService, PagedResultDto } from '@abp/ng.core';
 
 import type { CourseDto } from '@proxy/courses/dtos';
 import { CourseService } from '@proxy/courses';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 
 @Component({
   selector: 'app-courses',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PullToRefreshDirective],
   templateUrl: './courses.component.html',
   styleUrls: ['./courses.component.scss'],
   providers: [ListService],
@@ -33,6 +34,11 @@ export class CoursesComponent implements OnInit {
 
   ngOnInit(): void {
     this.hookList();
+  }
+
+  refreshData(e: { complete: () => void }): void {
+    this.list.get();
+    e.complete();
   }
 
   hookList(): void {

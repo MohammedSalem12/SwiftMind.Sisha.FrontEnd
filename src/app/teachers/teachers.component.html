@@ -1,3 +1,4 @@
+<div appPullToRefresh (appPullToRefresh)="refreshData($event)">
 <div class="teachers-hero">
   <div>
     <h1>Teachers</h1>
@@ -27,4 +28,6 @@
       <button class="btn-primary" (click)="router.navigate(['/teachers', t.id, 'enroll'])">Enroll</button>
     </div>
   </div>
+</div>
+
 </div>

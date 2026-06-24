@@ -12,6 +12,7 @@ import { TeacherService, SecretaryTeacherService } from '@proxy/teachers';
 import { TeacherEnrolledCourseDto } from '@proxy/teachers/models';
 import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import { EnrolledStudentDto } from '@proxy/student-enrollments/dtos/models';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 
 interface CourseTab {
   id: string;
@@ -26,9 +27,9 @@ interface CourseTab {
   selector: 'app-students',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterModule, IonicModule],
+  imports: [CommonModule, FormsModule, RouterModule, IonicModule, PullToRefreshDirective],
   template: `
-    <div class="page" dir="rtl">
+    <div class="page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
 
       <!-- ── Header ── -->
       <div class="page-header">
@@ -818,6 +819,16 @@ export class StudentsComponent implements OnInit {
   }
 
   // ── Secretary: student list ─────────────────────────────────────────────────
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try {
+      if (this.isTeacher()) await this.loadTeacherCourses();
+      else if (this.isSecretary()) await this.loadSecretaryCourses();
+      else await this.loadStudents();
+    } finally {
+      e.complete();
+    }
+  }
+
   async loadStudents(): Promise<void> {
     this.loading.set(true);
     try {
