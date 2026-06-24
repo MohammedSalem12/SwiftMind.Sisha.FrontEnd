@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 
 import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
@@ -40,7 +41,7 @@ const GRADE_NAMES: Record<number, string> = {
   selector: 'app-student-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, IonicModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.scss'],
 })
@@ -107,6 +108,14 @@ export class StudentHomeComponent implements OnInit {
       this.promoAds.set(cached.promoAds || []);
       this.offline.set(true);
       this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
+    }
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try {
+      await Promise.all([this.loadCourses(), this.loadNextSession(), this.loadPromoAds()]);
+    } finally {
+      e.complete();
     }
   }
 
