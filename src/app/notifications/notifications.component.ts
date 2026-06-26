@@ -641,8 +641,9 @@ export class NotificationsComponent implements OnInit {
 
       // ── Parent-Student Link ──
       case NotificationType.ParentStudentLinked:
-        if (role === 'STUDENT') return { path: ['/student/profile'] };
-        if (role === 'PARENT') return { path: ['/parent'] };
+        // Student approves/reviews the parent-link request from their requests page.
+        if (role === 'STUDENT') return { path: ['/student/requests'] };
+        if (role === 'PARENT') return { path: ['/parent/requests'] };
         return null;
 
       // ── Grades ──
