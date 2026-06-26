@@ -17,42 +17,34 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
   imports: [CommonModule],
   template: `
     @if (visible()) {
-      <div class="top-bar" dir="rtl">
-        <!-- Left: user info on home only. Feature pages own their own gradient
-             header (title + back), so the top-bar stays minimal to avoid duplication. -->
-        @if (isHomePage()) {
-          <div class="tb-user" (click)="goToProfile()">
-            <div class="tb-avatar">{{ userInitials() }}</div>
-            <div class="tb-user-info">
-              <span class="tb-user-name">{{ userName() }}</span>
-              <span class="tb-user-role">{{ userRoleName() }}</span>
-            </div>
-          </div>
-        } @else {
-          <div class="tb-spacer"></div>
-        }
-
-        <!-- Center: session timer always shown if available, otherwise logo -->
-        <div class="tb-center">
-          @if (nextSession()) {
-            <div class="tb-session" (click)="goToSessions()">
-              <i class="fas fa-clock"></i>
-              <span class="tb-session-name">{{ nextSession()!.courseName }}</span>
-              <span class="tb-session-time">{{ formatCountdown() }}</span>
-            </div>
-          }
-        </div>
-
-        <div class="tb-actions">
-          @if (!isHomePage()) {
-            <button class="tb-btn" (click)="toggleLang()">
-              <i class="fas fa-globe"></i>
-              <span class="tb-btn-label">{{ lang() }}</span>
+      <header class="top-bar" [class.scrolled]="scrolled()" role="banner" dir="rtl">
+        <!-- START: profile (home) · back + title (feature pages without their own header) -->
+        <div class="tb-start">
+          @if (isHomePage()) {
+            <button class="tb-user" (click)="goToProfile()" type="button" aria-label="فتح الملف الشخصي · Open profile">
+              <span class="tb-avatar">{{ userInitials() }}</span>
+              <span class="tb-user-info">
+                <span class="tb-user-name">{{ userName() }}</span>
+                <span class="tb-user-role">{{ userRoleName() }}</span>
+              </span>
             </button>
+          } @else if (!pageHasOwnHeader()) {
+            <button class="tb-back" (click)="goBack()" type="button" aria-label="رجوع · Back">
+              <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </button>
+            @if (pageTitle()) { <h1 class="tb-title">{{ pageTitle() }}</h1> }
           }
-          <!-- Logout moved to the More menu / profile to avoid accidental sign-out -->
         </div>
-      </div>
+
+        <!-- END: next-session chip (in flow — no overlap with the title) -->
+        @if (nextSession()) {
+          <button class="tb-session" (click)="goToSessions()" type="button" [attr.aria-label]="sessionAria()">
+            <i class="fas fa-clock" aria-hidden="true"></i>
+            <span class="tb-session-name">{{ nextSession()!.courseName }}</span>
+            <span class="tb-session-time">{{ formatCountdown() }}</span>
+          </button>
+        }
+      </header>
     }
   `,
   styles: [`
@@ -64,23 +56,37 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       z-index: 1500;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: .5rem;
       height: 48px;
-      padding: 0 .75rem;
+      padding: 0 .5rem;
       padding-top: env(safe-area-inset-top, 0px);
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+      /* Darker gradient than the brand pastel so white text/icons meet WCAG AA */
+      background: linear-gradient(135deg, #5b6fd6 0%, #6a4b9c 100%);
+      box-shadow: 0 1px 6px rgba(0,0,0,.12);
+      transition: box-shadow .2s ease, background .2s ease;
     }
+    /* Elevate + deepen on scroll */
+    .top-bar.scrolled {
+      background: linear-gradient(135deg, #556ad2 0%, #634593 100%);
+      box-shadow: 0 4px 16px rgba(0,0,0,.28);
+    }
+    .tb-start { display: flex; align-items: center; gap: .35rem; flex: 1; min-width: 0; }
 
     .tb-user {
       display: flex;
       align-items: center;
-      gap: .45rem;
+      gap: .5rem;
+      border: none;
+      background: transparent;
+      border-radius: 12px;
+      padding: .2rem .35rem;
+      min-height: 44px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       min-width: 0;
       flex-shrink: 1;
     }
+    .tb-user:active { background: rgba(255,255,255,.12); }
     .tb-avatar {
       width: 30px; height: 30px;
       border-radius: 50%;
@@ -96,21 +102,23 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       display: flex;
       flex-direction: column;
       min-width: 0;
+      text-align: start;
     }
     .tb-user-name {
-      font-size: .72rem;
+      font-size: .8rem;
       font-weight: 700;
       color: #fff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 120px;
-      line-height: 1.1;
+      max-width: 150px;
+      line-height: 1.15;
+      text-shadow: 0 1px 2px rgba(0,0,0,.18);
     }
     .tb-user-role {
-      font-size: .55rem;
-      color: rgba(255,255,255,.6);
-      font-weight: 500;
+      font-size: .6rem;
+      color: rgba(255,255,255,.82);
+      font-weight: 600;
     }
 
     .tb-center {
@@ -125,6 +133,39 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     /* Keeps actions pinned right when the left side is empty (non-home pages) */
     .tb-spacer { width: 1px; flex: none; }
 
+    /* Global back button — 44px tap target, shown only on feature pages that lack their own header */
+    .tb-back {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .16);
+      color: #fff;
+      font-size: 1.05rem;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s;
+    }
+    .tb-back:active { background: rgba(255, 255, 255, .3); }
+    .tb-title {
+      flex: 1;
+      min-width: 0;
+      margin: 0;
+      font-size: .95rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-shadow: 0 1px 2px rgba(0,0,0,.18);
+      animation: tb-title-in .22s ease;
+    }
+    @keyframes tb-title-in { from { opacity: 0; transform: translateX(6px); } to { opacity: 1; transform: none; } }
+
     .tb-logo {
       height: 28px;
       width: auto;
@@ -136,11 +177,18 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       display: flex;
       align-items: center;
       gap: .3rem;
-      background: rgba(255,255,255,.15);
-      border-radius: 8px;
-      padding: .2rem .6rem;
+      flex-shrink: 0;
+      max-width: 46%;
+      border: none;
+      background: rgba(255,255,255,.16);
+      border-radius: 10px;
+      padding: .3rem .55rem;
+      min-height: 36px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
       animation: fadeIn .3s ease;
     }
+    .tb-session:active { background: rgba(255,255,255,.28); }
     .tb-session i { font-size: .65rem; color: rgba(255,255,255,.7); }
     .tb-session-name {
       font-size: .65rem;
@@ -207,6 +255,11 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     }
     .tb-logout:active { background: rgba(239,68,68,.5); }
 
+    @media (prefers-reduced-motion: reduce) {
+      .tb-title, .tb-session { animation: none; }
+      .top-bar { transition: none; }
+    }
+
     /* Desktop: hide (desktop has its own nav) */
     @media (min-width: 768px) {
       .top-bar { display: none; }
@@ -227,6 +280,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   canGoBack = signal(false);
   isHomePage = signal(false);
   pageTitle = signal('');
+  pageHasOwnHeader = signal(true); // suppress the global back/title when the page has its own header
   lang = signal('AR');
   scrolled = signal(false);
   nextSession = signal<NextSessionDto | null>(null);
@@ -337,6 +391,34 @@ export class TopBarComponent implements OnInit, OnDestroy {
       || Object.entries(TopBarComponent.PAGE_TITLES).find(([k]) => path.startsWith(k + '/'))?.[1]
       || '';
     this.pageTitle.set(title);
+
+    this.detectPageHeader();
+  }
+
+  /**
+   * Detect whether the routed page renders its own header (back + title). If so, the
+   * global top-bar suppresses its own back/title to avoid a stacked double header.
+   * Defaults to "has header" so we never flash a duplicate back on headered pages.
+   */
+  private detectPageHeader(): void {
+    this.pageHasOwnHeader.set(true);
+    setTimeout(() => {
+      const root = document.querySelector('.app-content') || document.body;
+      const has = !!root.querySelector(
+        '.back-btn, .page-header, .hero-header, .ts-header, .enroll-header, .reg-header, .qr-page'
+      );
+      this.pageHasOwnHeader.set(has);
+    }, 90);
+  }
+
+  /** Accessible, human-readable label for the next-session chip (ticking time is hard for SR). */
+  sessionAria(): string {
+    const s = this.nextSession();
+    if (!s) return '';
+    const name = s.courseName || 'الحصة القادمة';
+    if (s.isNow) return `${name} الآن`;
+    const mins = Math.max(0, Math.round(this.countdownSeconds / 60));
+    return `الحصة القادمة: ${name} بعد ${mins} دقيقة`;
   }
 
   private async loadUserInfo(): Promise<void> {
@@ -381,7 +463,11 @@ export class TopBarComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.location.back();
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigateByUrl('/');
+    }
   }
 
   toggleLang(): void {
