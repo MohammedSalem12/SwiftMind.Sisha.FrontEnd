@@ -139,25 +139,40 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
             </div>
           }
 
-          <div class="teachers-grid">
+          <div class="teachers-list">
             @for (t of filteredTeachers(); track t.id) {
               <ion-card class="teacher-card ion-activatable" [class.teacher-promoted]="t.isPromoted" button (click)="selectTeacher(t)">
                 @if (t.isPromoted) {
                   <div class="promoted-badge"><i class="fas fa-crown"></i> مميز</div>
                 }
-                <button class="info-btn" (click)="openTeacherInfo(t.id!); $event.stopPropagation()" title="معلومات المعلم">
-                  <i class="fas fa-info-circle"></i>
-                </button>
-                <div class="teacher-avatar">{{ getInitials(t.displayName) }}</div>
-                <div class="teacher-name">{{ t.displayName }}</div>
-                @if (t.government || t.town) {
-                  <div class="teacher-location">
-                    <i class="fas fa-map-marker-alt"></i>
-                    {{ [t.government, t.town].filter(Boolean).join(' — ') }}
+                <div class="tc-row">
+                  <div class="tc-photo">
+                    @if ($any(t).photoUrl) {
+                      <img [src]="$any(t).photoUrl" [alt]="t.displayName" />
+                    } @else {
+                      <span class="tc-initials">{{ getInitials(t.displayName) }}</span>
+                    }
                   </div>
-                }
+                  <div class="tc-info">
+                    <div class="tc-name-row">
+                      <span class="teacher-name">{{ t.displayName }}</span>
+                      <button class="info-btn" type="button" (click)="openTeacherInfo(t.id!); $event.stopPropagation()" title="معلومات المعلم">
+                        <i class="fas fa-info-circle"></i>
+                      </button>
+                    </div>
+                    @if (t.government || t.town) {
+                      <div class="teacher-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ [t.government, t.town].filter(Boolean).join(' — ') }}
+                      </div>
+                    }
+                    @if ($any(t).bio) {
+                      <p class="teacher-bio">{{ $any(t).bio }}</p>
+                    }
+                  </div>
+                </div>
                 <ion-button class="select-btn" expand="block" size="small">
-                  اختيار <i class="fas fa-chevron-left" style="margin-inline-start:.35rem"></i>
+                  اختيار المعلم <i class="fas fa-chevron-left" style="margin-inline-start:.35rem"></i>
                 </ion-button>
                 <ion-ripple-effect></ion-ripple-effect>
               </ion-card>
@@ -419,41 +434,44 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Teachers */
-    .teachers-grid {
+    .teachers-list {
       padding: 0 1rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 0.75rem;
       margin-bottom: 1rem;
     }
     .teacher-card {
       background: #fff;
-      border-radius: 14px;
-      padding: 1.1rem 0.75rem;
-      display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+      border-radius: 16px;
+      padding: 0.9rem;
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       border: 1.5px solid #e9e6ff;
       cursor: pointer;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
       position: relative;
-      text-align: center;
-      &:active { transform: scale(0.97); }
+      &:active { transform: scale(0.99); }
     }
-    .teacher-avatar {
-      width: 52px; height: 52px;
-      border-radius: 50%;
+    .tc-row { display: flex; align-items: flex-start; gap: 0.85rem; }
+    .tc-photo {
+      width: 64px; height: 64px; border-radius: 16px; flex-shrink: 0; overflow: hidden;
       background: $pg;
-      color: #fff;
-      font-size: 1.1rem; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
     }
+    .tc-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .tc-initials { color: #fff; font-size: 1.3rem; font-weight: 700; }
+    .tc-info { flex: 1; min-width: 0; }
+    .tc-name-row { display: flex; align-items: center; gap: 0.4rem; }
     .teacher-name {
-      font-size: 0.85rem; font-weight: 600; color: #1a202c;
-      line-height: 1.3;
+      flex: 1; font-size: 0.95rem; font-weight: 700; color: #1a202c; line-height: 1.3;
     }
     .teacher-location {
-      font-size: 0.68rem; color: #9ca3af; display: flex; align-items: center; gap: 0.2rem;
-      i { font-size: 0.58rem; color: #667eea; }
+      font-size: 0.72rem; color: #9ca3af; display: flex; align-items: center; gap: 0.25rem; margin-top: 0.2rem;
+      i { font-size: 0.62rem; color: #667eea; }
+    }
+    .teacher-bio {
+      font-size: 0.78rem; color: #6b6b85; line-height: 1.5; margin: 0.4rem 0 0;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .teacher-promoted {
       border-color: #f59e0b;
@@ -463,16 +481,15 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       position: absolute; top: -1px; right: -1px;
       background: linear-gradient(135deg, #f59e0b, #d97706);
       color: #fff; font-size: .6rem; font-weight: 700;
-      padding: .15rem .45rem; border-radius: 0 13px 0 10px;
-      display: flex; align-items: center; gap: .2rem;
+      padding: .15rem .45rem; border-radius: 0 15px 0 10px;
+      display: flex; align-items: center; gap: .2rem; z-index: 1;
     }
     .promoted-badge i { font-size: .55rem; }
     .info-btn {
-      position: absolute; top: .4rem; left: .4rem;
-      width: 28px; height: 28px; border-radius: 50%;
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
       background: rgba(102,126,234,.08); border: none; color: #667eea;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: .75rem; z-index: 1;
+      cursor: pointer; font-size: .8rem;
     }
     .info-btn:active { background: rgba(102,126,234,.18); }
     .select-btn {
@@ -613,10 +630,9 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
 
     ion-card.teacher-card {
       margin: 0; --background: #fff;
-      border-radius: 14px; padding: 1.1rem 0.75rem;
-      display: flex; flex-direction: column; align-items: center; gap: 0.55rem;
+      border-radius: 16px; padding: 0.9rem;
       border: 1.5px solid #e9e6ff; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      text-align: center;
+      text-align: start;
     }
     ion-card.teacher-card.teacher-promoted { border-color: #f59e0b; box-shadow: 0 2px 12px rgba(245,158,11,.2); }
 
