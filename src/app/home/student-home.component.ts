@@ -6,6 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { FixedToBodyDirective } from '../shared/directives/fixed-to-body.directive';
 
 import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
@@ -41,7 +42,7 @@ const GRADE_NAMES: Record<number, string> = {
   selector: 'app-student-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, FixedToBodyDirective, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.scss'],
 })

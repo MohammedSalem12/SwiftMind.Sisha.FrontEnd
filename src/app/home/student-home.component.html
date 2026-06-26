@@ -136,7 +136,7 @@
   }
 
   <!-- FAB: Session Timer + Link Parent -->
-  <div class="fab-wrap">
+  <div class="fab-wrap" appFixedToBody>
     @if (nextSession()) {
       <div class="fab-session" (click)="goTodaySessions()">
         <div class="fab-session-ring" [class.fab-session--now]="nextSession()!.isNow">

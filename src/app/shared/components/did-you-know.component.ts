@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { FixedToBodyDirective } from '../directives/fixed-to-body.directive';
 
 interface KnowledgeCard {
   titleAr: string;
@@ -66,10 +67,10 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
   selector: 'app-did-you-know',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, FixedToBodyDirective],
   template: `
     <!-- Floating "i" information icon — always on top of page content -->
-    <button #fab class="info-fab" type="button" [class.has-badge]="hasNewBadge()"
+    <button #fab class="info-fab" appFixedToBody type="button" [class.has-badge]="hasNewBadge()"
       (click)="openOverlay()"
       aria-label="هل تعلم؟ · Did you know" aria-haspopup="dialog" [attr.aria-expanded]="open()">
       <i class="fas fa-info"></i>
