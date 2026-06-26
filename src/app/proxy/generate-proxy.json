@@ -16925,6 +16925,31 @@
                   }
                 },
                 {
+                  "name": "GetTeachersForMyGradeAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.TeacherCardDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Teachers.TeacherCardDto]"
+                  }
+                },
+                {
+                  "name": "GetPublicProfileAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "teacherId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Teachers.TeacherPublicProfileDto",
+                    "typeSimple": "SwiftMind.Sesha.Teachers.TeacherPublicProfileDto"
+                  }
+                },
+                {
                   "name": "GetTeachersBySearchAsync",
                   "parametersOnMethod": [
                     {
@@ -17442,6 +17467,58 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.CourseDto>",
                 "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
+            },
+            "GetTeachersForMyGradeAsync": {
+              "uniqueName": "GetTeachersForMyGradeAsync",
+              "name": "GetTeachersForMyGradeAsync",
+              "httpMethod": "GET",
+              "url": "api/app/teacher/teachers-for-my-grade",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.TeacherCardDto>",
+                "typeSimple": "[SwiftMind.Sesha.Teachers.TeacherCardDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
+            },
+            "GetPublicProfileAsyncByTeacherId": {
+              "uniqueName": "GetPublicProfileAsyncByTeacherId",
+              "name": "GetPublicProfileAsync",
+              "httpMethod": "GET",
+              "url": "api/app/teacher/public-profile/{teacherId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "teacherId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "teacherId",
+                  "name": "teacherId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Teachers.TeacherPublicProfileDto",
+                "typeSimple": "SwiftMind.Sesha.Teachers.TeacherPublicProfileDto"
               },
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
@@ -23512,6 +23589,31 @@
                   }
                 },
                 {
+                  "name": "GetTeachersForMyGradeAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.TeacherCardDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Teachers.TeacherCardDto]"
+                  }
+                },
+                {
+                  "name": "GetPublicProfileAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "teacherId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Teachers.TeacherPublicProfileDto",
+                    "typeSimple": "SwiftMind.Sesha.Teachers.TeacherPublicProfileDto"
+                  }
+                },
+                {
                   "name": "GetTeachersBySearchAsync",
                   "parametersOnMethod": [
                     {
@@ -24248,6 +24350,58 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.CourseDto>",
                 "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
+            },
+            "GetTeachersForMyGradeAsync": {
+              "uniqueName": "GetTeachersForMyGradeAsync",
+              "name": "GetTeachersForMyGradeAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/teachers/for-my-grade",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Teachers.TeacherCardDto>",
+                "typeSimple": "[SwiftMind.Sesha.Teachers.TeacherCardDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
+            },
+            "GetPublicProfileAsyncByTeacherId": {
+              "uniqueName": "GetPublicProfileAsyncByTeacherId",
+              "name": "GetPublicProfileAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/teachers/{teacherId}/public-profile",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "teacherId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "teacherId",
+                  "name": "teacherId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Teachers.TeacherPublicProfileDto",
+                "typeSimple": "SwiftMind.Sesha.Teachers.TeacherPublicProfileDto"
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
@@ -37214,6 +37368,30 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "Bio",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -37671,6 +37849,111 @@
         }
       ]
     },
+    "SwiftMind.Sesha.Teachers.TeacherCardDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DisplayName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TeacherCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Bio",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Government",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Town",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CourseCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "SwiftMind.Sesha.Teachers.TeacherDashboardAbsentDto": {
       "baseType": null,
       "isEnum": false,
@@ -38007,6 +38290,30 @@
         },
         {
           "name": "Town",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Bio",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhotoUrl",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -38456,6 +38763,111 @@
       ],
       "genericArguments": null,
       "properties": null
+    },
+    "SwiftMind.Sesha.Teachers.TeacherPublicProfileDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DisplayName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TeacherCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Bio",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Government",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Town",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Courses",
+          "jsonName": null,
+          "type": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]",
+          "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
     },
     "SwiftMind.Sesha.Teachers.TeacherUnenrollRequestDto": {
       "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",

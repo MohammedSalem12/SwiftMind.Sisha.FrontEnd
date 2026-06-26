@@ -622,13 +622,19 @@ export class CourseEnrollmentComponent implements OnInit {
     return result;
   });
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
     const aId = this.route.snapshot.queryParamMap.get('academyId');
+    const tId = this.route.snapshot.queryParamMap.get('teacherId');
     if (id) {
       this.courseId.set(id);
       if (aId) this.academyId.set(aId);
-      this.loadTeachers();
+      await this.loadTeachers();
+      // Pre-select the teacher when arriving from a teacher's public profile
+      if (tId) {
+        const match = this.teachers().find(t => t.id === tId);
+        if (match) this.selectTeacher(match);
+      }
     }
   }
 

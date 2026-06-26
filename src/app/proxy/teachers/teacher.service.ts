@@ -1,4 +1,4 @@
-import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherDashboardDto, TeacherDto, TeacherEnrolledCourseDto, TeacherEnrollmentResultDto, TeacherFilterDto, TeacherUnenrollRequestDto } from './models';
+import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherCardDto, TeacherDashboardDto, TeacherDto, TeacherEnrolledCourseDto, TeacherEnrollmentResultDto, TeacherFilterDto, TeacherPublicProfileDto, TeacherUnenrollRequestDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -112,6 +112,14 @@ export class TeacherService {
     { apiName: this.apiName,...config });
   
 
+  getPublicProfile = (teacherId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherPublicProfileDto>({
+      method: 'GET',
+      url: `/api/app/teacher/public-profile/${teacherId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   getTeacherCourses = (teacherId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CourseDto[]>({
       method: 'GET',
@@ -134,6 +142,14 @@ export class TeacherService {
       method: 'GET',
       url: '/api/app/teacher/teachers-by-search',
       params: { searchPrefix, maxResults },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getTeachersForMyGrade = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherCardDto[]>({
+      method: 'GET',
+      url: '/api/app/teacher/teachers-for-my-grade',
     },
     { apiName: this.apiName,...config });
   

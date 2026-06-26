@@ -8,6 +8,7 @@ import { NotificationService } from '@proxy/notifications';
 import type { NotificationDto } from '@proxy/notifications/models';
 import { NotificationType } from '@proxy/notifications/notification-type.enum';
 import { RealtimeNotificationService } from '../shared/services/realtime-notification.service';
+import { PushNotificationService } from '../shared/services/push-notification.service';
 import { GradeThemeService } from '../shared/services/grade-theme.service';
 import { CurrentUserInfoService } from '@proxy/common';
 import { lastValueFrom } from 'rxjs';
@@ -507,6 +508,7 @@ export class NotificationsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly notificationSvc = inject(NotificationService);
   private readonly realtimeSvc = inject(RealtimeNotificationService);
+  private readonly pushSvc = inject(PushNotificationService);
   private readonly gradeThemeService = inject(GradeThemeService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
   private readonly destroyRef = inject(DestroyRef);
@@ -532,6 +534,12 @@ export class NotificationsComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    // Gate native push-notification setup behind this screen visit. The app is
+    // idle here (no post-login navigation in flight), so requesting permission
+    // can't race the Capacitor Activity lifecycle. Idempotent + fire-and-forget.
+    this.pushSvc.initialize().catch(err =>
+      console.warn('[PushNotifications] init error:', err)
+    );
     await this.loadUserInfo();
     await this.loadNotifications();
   }

@@ -103,8 +103,18 @@ export const appConfig: ApplicationConfig = {
         AccountLayoutModule.forRoot(), 
         ThemeSharedModule
     ), 
-    provideAbpThemeShared(withValidationBluePrint({
-        wrongPassword: 'Please choose 1q2w3E*'
-    }))
+    provideAbpThemeShared(
+        withValidationBluePrint({
+            wrongPassword: 'Please choose 1q2w3E*'
+        }),
+        // Suppress ABP's default full-screen "An error has occurred!" page (which
+        // leaks the raw backend/ngrok URL) for network + server errors. Our own
+        // interceptors handle these gracefully: serverOfflineInterceptor shows the
+        // branded offline overlay (status 0), apiErrorInterceptor shows an Arabic
+        // toast (500/403), and 401 redirects to /login. Components show inline errors.
+        withHttpErrorConfig({
+            skipHandledErrorCodes: [0, 401, 403, 500],
+        }),
+    )
 ],
 };

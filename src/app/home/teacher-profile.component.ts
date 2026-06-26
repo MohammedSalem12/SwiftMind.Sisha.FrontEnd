@@ -23,7 +23,13 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
         <div class="blob b1"></div>
         <div class="blob b2"></div>
         <div class="avatar-wrap">
-          <div class="avatar"><span>{{ initials() }}</span></div>
+          <div class="avatar">
+            @if (photoUrl()) {
+              <img [src]="photoUrl()" alt="Teacher photo" />
+            } @else {
+              <span>{{ initials() }}</span>
+            }
+          </div>
           <div class="role-badge"><i class="fas fa-chalkboard-teacher"></i> معلم · Teacher</div>
         </div>
         <div class="header-info">
@@ -101,6 +107,69 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
               <span class="al">ترويج</span><span class="ae">Promote</span>
             </a>
           </div>
+        </div>
+
+        <!-- About / Profile section -->
+        <div class="section">
+          <div class="section-title">
+            <i class="fas fa-id-badge"></i> نبذة تعريفية · About Me
+            <button class="edit-loc-btn" (click)="editingProfile.set(!editingProfile())">
+              <i [class]="editingProfile() ? 'fas fa-times' : 'fas fa-pen'"></i>
+              {{ editingProfile() ? 'إلغاء · Cancel' : 'تعديل · Edit' }}
+            </button>
+          </div>
+          @if (editingProfile()) {
+            <div class="loc-edit-card">
+              <!-- Photo -->
+              <div class="photo-edit">
+                <div class="photo-preview">
+                  @if (photoUrl()) {
+                    <img [src]="photoUrl()" alt="preview" />
+                  } @else {
+                    <i class="fas fa-user"></i>
+                  }
+                </div>
+                <div class="photo-actions">
+                  <label class="photo-btn">
+                    @if (photoProcessing()) { <span class="spinner-xs"></span> } @else { <i class="fas fa-camera"></i> }
+                    {{ photoUrl() ? 'تغيير الصورة · Change' : 'إضافة صورة · Add photo' }}
+                    <input type="file" accept="image/*" hidden (change)="onPhotoSelected($event)" />
+                  </label>
+                  @if (photoUrl()) {
+                    <button type="button" class="photo-remove" (click)="removePhoto()">
+                      <i class="fas fa-trash"></i> إزالة · Remove
+                    </button>
+                  }
+                </div>
+              </div>
+              <!-- Bio -->
+              <div class="loc-field-body" style="width:100%">
+                <label>نبذة عنك · Bio</label>
+                <textarea
+                  [ngModel]="bio()" (ngModelChange)="bio.set($event)"
+                  class="loc-input bio-input" rows="4" maxlength="1000"
+                  placeholder="اكتب نبذة تعريفية عنك وعن خبراتك التدريسية... · Tell students about yourself and your teaching experience"></textarea>
+                <span class="bio-count">{{ bio().length }}/1000</span>
+              </div>
+              @if (profileSaveError()) { <p class="loc-error">{{ profileSaveError() }}</p> }
+              <button type="button" class="loc-save-btn" [disabled]="profileSaving()" (click)="saveProfile()">
+                @if (profileSaving()) { <span class="spinner-xs"></span> } @else { <i class="fas fa-check-circle"></i> }
+                حفظ · Save
+              </button>
+            </div>
+          } @else {
+            <div class="about-card">
+              @if (bio()) {
+                <p class="about-text">{{ bio() }}</p>
+              } @else {
+                <div class="loc-empty-state" style="position:static">
+                  <div class="loc-empty-icon" style="background:rgba(102,126,234,.1);color:#667eea"><i class="fas fa-id-badge"></i></div>
+                  <p class="loc-empty-text" style="color:#555">لم تتم إضافة نبذة بعد</p>
+                  <span class="loc-empty-sub" style="color:#9090aa">No bio yet — tap edit to add one</span>
+                </div>
+              }
+            </div>
+          }
         </div>
 
         <!-- Location section -->
@@ -267,8 +336,9 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       width:80px; height:80px; border-radius:50%;
       background:rgba(255,255,255,.2); border:3px solid rgba(255,255,255,.5);
       display:flex; align-items:center; justify-content:center;
-      font-size:1.8rem; font-weight:800; color:#fff;
+      font-size:1.8rem; font-weight:800; color:#fff; overflow:hidden;
     }
+    .avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
     .role-badge {
       display:flex; align-items:center; gap:.35rem;
       background:rgba(255,255,255,.18); color:rgba(255,255,255,.92);
@@ -454,6 +524,41 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
     }
     @keyframes spin { to { transform:rotate(360deg); } }
 
+    /* About / Profile */
+    .about-card {
+      background:#fff; border-radius:16px; border:1.5px solid #f0f0f0;
+      padding:1.125rem; box-shadow:0 2px 12px rgba(0,0,0,.06);
+    }
+    .about-text {
+      margin:0; font-size:.92rem; line-height:1.7; color:#374151; white-space:pre-wrap;
+    }
+    .photo-edit { display:flex; align-items:center; gap:1rem; }
+    .photo-preview {
+      width:72px; height:72px; border-radius:50%; flex-shrink:0; overflow:hidden;
+      background:linear-gradient(135deg,rgba(102,126,234,.12),rgba(118,75,162,.12));
+      display:flex; align-items:center; justify-content:center;
+      color:#667eea; font-size:1.6rem; border:2px solid #e0e0f0;
+    }
+    .photo-preview img { width:100%; height:100%; object-fit:cover; }
+    .photo-actions { display:flex; flex-direction:column; gap:.5rem; flex:1; }
+    .photo-btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+      padding:.55rem .875rem; border-radius:12px; cursor:pointer; min-height:44px;
+      background:rgba(102,126,234,.08); border:1.5px solid rgba(102,126,234,.25);
+      color:#667eea; font-size:.82rem; font-weight:700;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .photo-btn:active { transform:scale(.97); }
+    .photo-remove {
+      display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+      padding:.45rem .875rem; border-radius:12px; cursor:pointer; min-height:40px;
+      background:rgba(220,38,38,.06); border:1.5px solid rgba(220,38,38,.2);
+      color:#dc2626; font-size:.78rem; font-weight:700;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .bio-input { resize:vertical; min-height:96px; line-height:1.6; }
+    .bio-count { font-size:.68rem; color:#9090aa; align-self:flex-start; margin-top:.15rem; }
+
   `],
 })
 export class TeacherProfileComponent implements OnInit {
@@ -473,6 +578,14 @@ export class TeacherProfileComponent implements OnInit {
 
   locGov  = signal('');
   locTown = signal('');
+
+  // Profile (bio + photo)
+  editingProfile  = signal(false);
+  profileSaving   = signal(false);
+  profileSaveError= signal<string | null>(null);
+  bio             = signal('');
+  photoUrl        = signal<string | null>(null);
+  photoProcessing = signal(false);
 
   groupCount = () => 0;
 
@@ -509,6 +622,8 @@ export class TeacherProfileComponent implements OnInit {
           if (t) {
             this.locGov.set(t.government || '');
             this.locTown.set(t.town || '');
+            this.bio.set(t.bio || '');
+            this.photoUrl.set(t.photoUrl || null);
           }
         } catch (e) {
           console.warn('[TeacherProfile] failed to load teacher by actorId:', e);
@@ -540,8 +655,10 @@ export class TeacherProfileComponent implements OnInit {
         phoneNumber: t?.phoneNumber ?? '',
         government: gov,
         town: town,
+        bio: this.bio() || null,
+        photoUrl: this.photoUrl() || null,
       };
-      console.log('[TeacherProfile] saving location:', JSON.stringify({ gov, town, body }));
+      console.log('[TeacherProfile] saving location:', JSON.stringify({ gov, town }));
       await lastValueFrom(this.teacherSvc.update(id, body));
       // Re-fetch to confirm the saved values from the server
       const refreshed = await lastValueFrom(this.teacherSvc.get(id));
@@ -561,6 +678,84 @@ export class TeacherProfileComponent implements OnInit {
       this.locSaveError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ · Error saving location');
     } finally {
       this.locSaving.set(false);
+    }
+  }
+
+  /** Read a selected image file, downscale to <=320px, and store as a JPEG base64 data URL. */
+  async onPhotoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.profileSaveError.set('الرجاء اختيار صورة صحيحة · Please select a valid image');
+      return;
+    }
+    this.profileSaveError.set(null);
+    this.photoProcessing.set(true);
+    try {
+      const dataUrl = await this.resizeImageToDataUrl(file, 320, 0.8);
+      this.photoUrl.set(dataUrl);
+    } catch (e) {
+      console.error('[TeacherProfile] photo processing error:', e);
+      this.profileSaveError.set('تعذّر معالجة الصورة · Could not process image');
+    } finally {
+      this.photoProcessing.set(false);
+      input.value = '';
+    }
+  }
+
+  removePhoto(): void {
+    this.photoUrl.set(null);
+  }
+
+  private resizeImageToDataUrl(file: File, maxSize: number, quality: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('image load failed'));
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > height && width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
+          else if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('no canvas context')); return; }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async saveProfile(): Promise<void> {
+    this.profileSaving.set(true);
+    this.profileSaveError.set(null);
+    try {
+      // Self-service endpoint: the server resolves the teacher from the logged-in user,
+      // so it works even if the client's actorId claim is missing/stale.
+      const refreshed = await lastValueFrom(
+        this.restSvc.request<{ bio: string | null; photoUrl: string | null }, TeacherDto>({
+          method: 'PUT',
+          url: '/api/sesha/teachers/my-profile',
+          body: { bio: this.bio() || null, photoUrl: this.photoUrl() || null },
+        })
+      );
+      if (refreshed) {
+        this.teacherInfo.set(refreshed);
+        this.bio.set(refreshed.bio || '');
+        this.photoUrl.set(refreshed.photoUrl || null);
+      }
+      this.editingProfile.set(false);
+    } catch (err: any) {
+      console.error('[TeacherProfile] save profile error:', err);
+      this.profileSaveError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ · Error saving profile');
+    } finally {
+      this.profileSaving.set(false);
     }
   }
 

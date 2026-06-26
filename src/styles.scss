@@ -313,8 +313,26 @@ input, textarea, select {
 .grade-chip { background: var(--ngx-primary-light) !important; color: var(--ngx-primary) !important; }
 .day-chip   { background: var(--ngx-primary-light) !important; color: var(--ngx-primary) !important; }
 
-// Spinner color
-.spinner { border-top-color: var(--ngx-primary) !important; }
+// ─── Branded "KAI pulse" loader ────────────────────────────────────────────
+// Globally rebrands every <div class="spinner"></div> (used across ~45 screens)
+// from the generic rotating arc into the KAI logo gently breathing inside a
+// purple badge with an expanding halo. !important overrides the per-component
+// scoped .spinner styles. Width/height are intentionally NOT overridden, so each
+// screen keeps its own sizing (page loaders ~40px, inline ones ~16px).
+@keyframes kai-pulse {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0     rgba(102, 126, 234, 0.45); }
+  50%      { transform: scale(1.07); box-shadow: 0 0 0 0.85em rgba(102, 126, 234, 0);    }
+}
+.spinner {
+  border: none !important;
+  border-radius: 30% !important;
+  background:
+    url('/assets/images/logo/logo-light-thumbnail2.png') center / 60% no-repeat,
+    linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.30) !important;
+  animation: kai-pulse 1.5s ease-in-out infinite !important;
+  box-sizing: border-box !important;
+}
 
 // Nav active color
 .nav-item.active, .nav-item.active .nav-icon i {

@@ -8,7 +8,6 @@ import { filter } from 'rxjs';
 import { ToastContainerComponent } from './shared/toast-container.component';
 import { BottomNavComponent } from './shared/bottom-nav.component';
 import { RealtimeNotificationService } from './shared/services/realtime-notification.service';
-import { PushNotificationService } from './shared/services/push-notification.service';
 import { SidebarNotificationDirective } from './shared/sidebar-notification.directive';
 import { TopBarComponent } from './shared/top-bar.component';
 import { ServerOfflineOverlayComponent } from './shared/components/server-offline-overlay.component';
@@ -87,7 +86,6 @@ export class AppComponent implements OnInit {
   private readonly oauthService = inject(OAuthService);
   private readonly router = inject(Router);
   private readonly realtimeNotificationService = inject(RealtimeNotificationService);
-  private readonly pushNotificationService = inject(PushNotificationService);
   readonly serverOffline = inject(ServerOfflineService);
   readonly registerModal = inject(RegisterModalService);
   readonly biometricService = inject(BiometricService);
@@ -176,9 +174,12 @@ export class AppComponent implements OnInit {
   }
 
   private initRealtime(): void {
+    // SignalR live notifications only. Push notification init is deliberately
+    // NOT started here: requesting native push permission during the post-login
+    // navigation raced the Capacitor Activity lifecycle and crashed the plugin
+    // (NPE in getPermissionStates). It is now gated behind the first visit to
+    // the notifications screen (NotificationsComponent.ngOnInit), where the app
+    // is idle and the bridge is stable.
     this.realtimeNotificationService.connect();
-    this.pushNotificationService.initialize().catch(err =>
-      console.warn('[PushNotifications] unhandled init error:', err)
-    );
   }
 }

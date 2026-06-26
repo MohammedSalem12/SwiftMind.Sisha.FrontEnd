@@ -190,6 +190,13 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
 
           <!-- Student-specific -->
           @if (isStudentRole()) {
+            <a class="more-item" routerLink="/student/teachers" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-purple"><i class="fas fa-chalkboard-teacher"></i></div>
+              <div class="more-item-text">
+                <span>معلمو صفّي</span>
+                <span class="more-item-en">My Teachers</span>
+              </div>
+            </a>
             <a class="more-item" routerLink="/student/invite-friends" (click)="showMore.set(false)">
               <div class="more-item-icon more-icon-blue"><i class="fas fa-address-book"></i></div>
               <div class="more-item-text">

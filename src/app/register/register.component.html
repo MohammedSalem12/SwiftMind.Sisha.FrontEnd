@@ -164,9 +164,10 @@
             <ion-select
               name="grade"
               class="field-input ion-select-field"
-              interface="action-sheet"
+              interface="alert"
               placeholder="-- اختر الصف --"
               cancelText="إلغاء"
+              okText="اختيار"
               [(ngModel)]="form.grade">
               <ion-select-option *ngFor="let g of gradeOptions()" [value]="g.value">{{ g.label }}</ion-select-option>
             </ion-select>
@@ -184,9 +185,10 @@
             <ion-select
               name="government"
               class="field-input ion-select-field"
-              interface="action-sheet"
+              interface="alert"
               placeholder="-- المحافظة · Governorate --"
               cancelText="إلغاء"
+              okText="اختيار"
               [(ngModel)]="form.government"
               (ngModelChange)="onGovernorateChange($event)">
               <ion-select-option *ngFor="let g of governorates" [value]="g">{{ g }}</ion-select-option>
@@ -196,9 +198,10 @@
             <ion-select
               name="town"
               class="field-input ion-select-field"
-              interface="action-sheet"
+              interface="alert"
               [placeholder]="form.government ? '-- المركز / الحي · District --' : '-- اختر المحافظة أولاً --'"
               cancelText="إلغاء"
+              okText="اختيار"
               [(ngModel)]="form.town"
               [disabled]="!form.government">
               <ion-select-option *ngFor="let d of districts()" [value]="d">{{ d }}</ion-select-option>

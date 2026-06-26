@@ -24,9 +24,7 @@ import { RegisterPromptComponent } from '../shared/components/register-prompt.co
       <div class="page-header">
         <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
         <div class="header-top-row">
-          <button class="back-btn" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
+          <!-- Academies is a root bottom-nav tab: no back button here -->
           @if (canCreate()) {
             <button class="create-btn" (click)="router.navigate(['/academies/create'])">
               <i class="fas fa-plus"></i>
@@ -45,7 +43,7 @@ import { RegisterPromptComponent } from '../shared/components/register-prompt.co
         <div class="header-search">
           <i class="fas fa-search"></i>
           <input type="text"
-                 placeholder="ابحث بالاسم أو الكود · Search..."
+                 placeholder="ابحث بالاسم أو الكود"
                  [ngModel]="searchQuery()"
                  (ngModelChange)="searchQuery.set($event)" />
         </div>
@@ -351,22 +349,37 @@ import { RegisterPromptComponent } from '../shared/components/register-prompt.co
     /* ── Empty ── */
     .empty-state {
       display:flex; flex-direction:column; align-items:center;
-      padding:3.5rem 1.5rem; text-align:center;
+      padding:2.5rem 1.5rem; text-align:center;
     }
     .empty-ring {
-      width:72px; height:72px; border-radius:50%;
-      background:linear-gradient(135deg,rgba(102,126,234,.12),rgba(118,75,162,.12));
+      position:relative;
+      width:96px; height:96px; border-radius:50%;
+      background:linear-gradient(135deg,rgba(102,126,234,.16),rgba(118,75,162,.16));
+      border:1px solid rgba(102,126,234,.18);
       display:flex; align-items:center; justify-content:center;
-      font-size:1.8rem; color:#667eea; margin-bottom:1rem;
+      font-size:2.4rem; color:#667eea; margin-bottom:1.25rem;
+      box-shadow:0 10px 28px rgba(102,126,234,.18);
     }
-    .empty-state h3 { font-size:1rem; font-weight:700; color:#1a1a2e; margin:0 0 .25rem; }
-    .empty-state p  { font-size:.82rem; color:#9090aa; margin:0 0 1rem; }
+    /* Soft halo behind the ring */
+    .empty-ring::before {
+      content:''; position:absolute; inset:-10px; border-radius:50%;
+      border:1.5px solid rgba(102,126,234,.12); animation:emptyPulse 2.4s ease-in-out infinite;
+    }
+    @keyframes emptyPulse {
+      0%,100% { transform:scale(1); opacity:.7; }
+      50%     { transform:scale(1.08); opacity:.3; }
+    }
+    .empty-state h3 { font-size:1.1rem; font-weight:800; color:#1a1a2e; margin:0 0 .4rem; }
+    .empty-state p  { font-size:.85rem; color:#9090aa; line-height:1.5; max-width:280px; margin:0 auto 1.25rem; }
     .empty-btn {
-      display:inline-flex; align-items:center; gap:.4rem;
-      padding:.7rem 1.25rem; border-radius:12px;
+      display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+      padding:.8rem 1.5rem; border-radius:14px; min-height:48px;
       background:linear-gradient(135deg,#667eea,#764ba2);
-      color:#fff; border:none; font-size:.85rem; font-weight:700; cursor:pointer;
+      color:#fff; border:none; font-size:.9rem; font-weight:700; cursor:pointer;
+      box-shadow:0 6px 18px rgba(102,126,234,.3);
+      -webkit-tap-highlight-color:transparent; transition:transform .15s;
     }
+    .empty-btn:active { transform:scale(.97); }
 
     /* ── Academy card ── */
     .a-card {

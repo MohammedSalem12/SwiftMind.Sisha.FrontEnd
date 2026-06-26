@@ -13,10 +13,18 @@ export class PushNotificationService {
   private readonly router = inject(Router);
 
   private currentToken: string | null = null;
+  private initialized = false;
 
-  /** Call once after login on native platforms. */
+  /**
+   * Initialize push notifications. Safe to call multiple times — it runs at
+   * most once per app session (the notifications screen calls this on every
+   * visit). Gated behind a user-initiated screen visit rather than login so the
+   * native permission request can never race the post-login navigation, which
+   * crashed the plugin (NPE in getPermissionStates).
+   */
   async initialize(): Promise<void> {
-    if (!Capacitor.isNativePlatform()) return;
+    if (!Capacitor.isNativePlatform() || this.initialized) return;
+    this.initialized = true;
     try {
       const permissionStatus = await PushNotifications.requestPermissions();
       if (permissionStatus.receive !== 'granted') return;

@@ -18,7 +18,8 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
   template: `
     @if (visible()) {
       <div class="top-bar" dir="rtl">
-        <!-- Left: back button or user info on home -->
+        <!-- Left: user info on home only. Feature pages own their own gradient
+             header (title + back), so the top-bar stays minimal to avoid duplication. -->
         @if (isHomePage()) {
           <div class="tb-user" (click)="goToProfile()">
             <div class="tb-avatar">{{ userInitials() }}</div>
@@ -28,12 +29,7 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
             </div>
           </div>
         } @else {
-          <button class="tb-btn tb-back" (click)="goBack()" [class.tb-btn--hidden]="!canGoBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
-          @if (pageTitle()) {
-            <span class="tb-page-title">{{ pageTitle() }}</span>
-          }
+          <div class="tb-spacer"></div>
         }
 
         <!-- Center: session timer always shown if available, otherwise logo -->
@@ -54,9 +50,7 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
               <span class="tb-btn-label">{{ lang() }}</span>
             </button>
           }
-          <button class="tb-btn tb-logout" (click)="logout()">
-            <i class="fas fa-sign-out-alt"></i>
-          </button>
+          <!-- Logout moved to the More menu / profile to avoid accidental sign-out -->
         </div>
       </div>
     }
@@ -128,6 +122,9 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       justify-content: center;
     }
 
+    /* Keeps actions pinned right when the left side is empty (non-home pages) */
+    .tb-spacer { width: 1px; flex: none; }
+
     .tb-logo {
       height: 28px;
       width: auto;
@@ -168,8 +165,8 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
       align-items: center;
       justify-content: center;
       gap: .3rem;
-      min-width: 36px;
-      min-height: 36px;
+      min-width: 44px;
+      min-height: 44px;
       border: none;
       border-radius: 10px;
       background: rgba(255,255,255,.15);
