@@ -14,6 +14,12 @@ interface CourseQR {
   enrollUrl: string;
 }
 
+interface FullscreenQR {
+  course: CourseDto;
+  dataUrl: string;
+  enrollUrl: string;
+}
+
 @Component({
   selector: 'app-teacher-qr-codes',
   standalone: true,
@@ -30,9 +36,28 @@ export class TeacherQrCodesComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
   courseQRs = signal<CourseQR[]>([]);
+  fullscreen = signal<FullscreenQR | null>(null);
 
   async ngOnInit(): Promise<void> {
     await this.loadQRCodes();
+  }
+
+  /** Open a single course QR full-screen, re-rendered at high resolution for easy scanning. */
+  async openFullscreen(item: CourseQR): Promise<void> {
+    try {
+      const dataUrl = await QRCode.toDataURL(item.enrollUrl, {
+        width: 720,
+        margin: 2,
+        color: { dark: '#111827', light: '#ffffff' }, // high-contrast for reliable scanning
+      });
+      this.fullscreen.set({ course: item.course, dataUrl, enrollUrl: item.enrollUrl });
+    } catch {
+      this.fullscreen.set({ course: item.course, dataUrl: item.qrDataUrl, enrollUrl: item.enrollUrl });
+    }
+  }
+
+  closeFullscreen(): void {
+    this.fullscreen.set(null);
   }
 
   async loadQRCodes(): Promise<void> {

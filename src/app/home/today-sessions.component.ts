@@ -1,5 +1,6 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { SessionService } from '@proxy/groups';
 import { CurrentUserInfoService } from '@proxy/common';
 import type { NextSessionDto } from '@proxy/groups/dtos/models';
@@ -12,6 +13,20 @@ import { lastValueFrom } from 'rxjs';
   imports: [CommonModule],
   template: `
     <div class="ts-page" dir="rtl">
+
+      <!-- Header with back button -->
+      <div class="ts-header">
+        <button class="ts-back-btn" (click)="goBack()" aria-label="رجوع · Back" type="button">
+          <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="ts-header-icon">
+          <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="ts-header-text">
+          <h1>حصص اليوم</h1>
+          <p>Today's Sessions</p>
+        </div>
+      </div>
 
       <!-- Loading -->
       @if (loading()) {
@@ -144,6 +159,33 @@ import { lastValueFrom } from 'rxjs';
   `,
   styles: [`
     .ts-page { direction: rtl; min-height: 100vh; background: #f4f5fb; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+
+    /* Header */
+    .ts-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; padding: 1rem;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 4px 16px rgba(102,126,234,0.25);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .ts-back-btn {
+      width: 40px; height: 40px; min-width: 40px; flex-shrink: 0;
+      border: none; border-radius: 12px;
+      background: rgba(255,255,255,0.18); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; transition: background 0.15s;
+    }
+    .ts-back-btn:active { background: rgba(255,255,255,0.32); transform: scale(0.95); }
+    .ts-header-icon {
+      width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px;
+      background: rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    }
+    .ts-header-text { display: flex; flex-direction: column; gap: 0.1rem; }
+    .ts-header-text h1 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+    .ts-header-text p { margin: 0; font-size: 0.72rem; opacity: 0.85; }
 
     /* Loading / Empty */
     .loading-area { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; padding: 3rem 1rem; font-size: 0.88rem; color: #6b7280; }
@@ -309,6 +351,8 @@ import { lastValueFrom } from 'rxjs';
 export class TodaySessionsComponent implements OnInit {
   private readonly sessionService = inject(SessionService);
   private readonly currentUserService = inject(CurrentUserInfoService);
+  private readonly location = inject(Location);
+  private readonly router = inject(Router);
 
   loading = signal(true);
   sessions = signal<NextSessionDto[]>([]);
@@ -339,6 +383,15 @@ export class TodaySessionsComponent implements OnInit {
       console.error('Error loading sessions:', err);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  goBack(): void {
+    // Use browser history when available, otherwise fall back to home.
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigateByUrl('/');
     }
   }
 

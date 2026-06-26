@@ -117,7 +117,16 @@ export class AppComponent implements OnInit {
     if (Capacitor.isNativePlatform()) {
       import('@capacitor/app').then(({ App }) => {
         App.addListener('appStateChange', async ({ isActive }) => {
-          if (isActive && this.oauthService.hasValidAccessToken()) {
+          if (!isActive) return;
+          // If the session expired while the app was backgrounded, send the user to
+          // login instead of leaving them on a stale, half-loaded page.
+          const onAuth = AUTH_PATHS.some(p => this.router.url.startsWith(p));
+          if (!onAuth && !this.oauthService.hasValidAccessToken()) {
+            this.oauthService.logOut(true);
+            this.router.navigate(['/login']);
+            return;
+          }
+          if (this.oauthService.hasValidAccessToken()) {
             const enabled = await this.biometricService.isEnabled();
             if (enabled) {
               this.biometricService.lock();

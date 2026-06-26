@@ -683,3 +683,51 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   min-height: 48px; padding: 0 22px; border: none; border-radius: 999px;
   background: #fff; color: #1a1a2e; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;
 }
+
+/* ─── Find-student bar (search + QR) ─────────────────────────────────────── */
+.att-find-bar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .75rem 1rem .25rem;
+}
+.att-find-search {
+  flex: 1;
+  padding: 0;
+  --background: #fff;
+  --border-radius: 12px;
+  --box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+  --color: #1a202c;
+  --placeholder-color: #9ca3af;
+  --icon-color: #667eea;
+}
+.att-find-qr {
+  flex-shrink: 0;
+  margin: 0;
+  height: 44px;
+  width: 50px;
+  --background: linear-gradient(135deg, #667eea, #764ba2);
+  --color: #fff;
+  --border-radius: 12px;
+  --box-shadow: none;
+}
+.att-find-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  color: #9ca3af;
+  font-size: .85rem;
+  padding: 1.25rem 1rem;
+}
+
+.card-codes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin-top: .15rem;
+}
+.card-code--internal {
+  color: #764ba2 !important;
+  background: rgba(118, 75, 162, .08);
+}

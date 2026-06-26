@@ -291,40 +291,65 @@ import { lastValueFrom } from 'rxjs';
       gap: 1rem;
     }
 
+    @keyframes notif-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: none; }
+    }
+
     .notification-item {
       background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
+      border-radius: 18px;
+      padding: 1.25rem 1.4rem;
       display: flex;
       align-items: flex-start;
       gap: 1rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 6px 20px -10px rgba(31, 41, 55, 0.25);
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
       position: relative;
       overflow: hidden;
       border-right: 4px solid transparent;
+      animation: notif-in 0.35s ease both;
 
       ion-ripple-effect { color: rgba(102, 126, 234, 0.22); }
 
+      &:active { transform: scale(0.985); }
       &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1), 0 6px 10px -5px rgba(0, 0, 0, 0.04);
+        transform: translateY(-3px);
+        box-shadow: 0 16px 30px -12px rgba(31, 41, 55, 0.28);
       }
 
       &.unread {
-        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #f7f6ff 100%);
+        border-right-width: 5px;
+      }
+      // Soft glow toward the accent (right) edge on unread items
+      &.unread::before {
+        content: '';
+        position: absolute;
+        top: 0; right: 0; bottom: 0;
+        width: 90px;
+        background: radial-gradient(circle at right, rgba(102, 126, 234, 0.07), transparent 70%);
+        pointer-events: none;
       }
 
       .notification-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
+        box-shadow: 0 6px 14px -4px rgba(0, 0, 0, 0.18);
+        position: relative;
+        &::after {
+          content: '';
+          position: absolute; inset: 0; border-radius: inherit;
+          background: linear-gradient(135deg, rgba(255,255,255,0.35), transparent 55%);
+          pointer-events: none;
+        }
 
         &.success {
           background: #dcfce7;

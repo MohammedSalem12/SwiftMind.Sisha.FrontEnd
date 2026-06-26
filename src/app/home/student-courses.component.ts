@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 
 import { CourseService } from '@proxy/courses';
@@ -11,7 +12,7 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
   selector: 'app-student-courses',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, IonicModule],
   template: `
     <div class="page" dir="rtl">
 
@@ -30,36 +31,31 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
         </div>
 
         <!-- Search -->
-        <div class="header-search">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="بحث بالاسم أو الكود · Search..."
-                 [ngModel]="searchText()"
-                 (ngModelChange)="searchText.set($event)" />
-          @if (searchText()) {
-            <button class="search-clear" (click)="searchText.set('')">
-              <i class="fas fa-times"></i>
-            </button>
-          }
-        </div>
+        <ion-searchbar
+          class="header-searchbar"
+          [value]="searchText()"
+          (ionInput)="searchText.set($any($event).detail.value || '')"
+          placeholder="بحث بالاسم أو الكود · Search"
+          [animated]="true"></ion-searchbar>
       </div>
 
       <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab" [class.tab--active]="activeTab() === 'enrolled'" (click)="activeTab.set('enrolled')">
-          <i class="fas fa-check-circle"></i>
-          <span>مسجّل · Enrolled</span>
-          @if (enrolledCourses().length > 0) {
-            <span class="tab-count">{{ enrolledCourses().length }}</span>
-          }
-        </button>
-        <button class="tab" [class.tab--active]="activeTab() === 'available'" (click)="activeTab.set('available')">
-          <i class="fas fa-plus-circle"></i>
-          <span>متاح · Available</span>
-          @if (availableCourses().length > 0) {
-            <span class="tab-count">{{ availableCourses().length }}</span>
-          }
-        </button>
-      </div>
+      <ion-segment class="course-tabs" [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)" mode="ios">
+        <ion-segment-button value="enrolled">
+          <ion-label>
+            <i class="fas fa-check-circle"></i>
+            مسجّل
+            @if (enrolledCourses().length > 0) { <span class="tab-count">{{ enrolledCourses().length }}</span> }
+          </ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="available">
+          <ion-label>
+            <i class="fas fa-plus-circle"></i>
+            متاح
+            @if (availableCourses().length > 0) { <span class="tab-count">{{ availableCourses().length }}</span> }
+          </ion-label>
+        </ion-segment-button>
+      </ion-segment>
 
       <!-- Loading -->
       @if (loading()) {
@@ -83,16 +79,16 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
             <h3>{{ searchText() ? 'لا توجد نتائج' : 'لم تسجّل في أي مقرر بعد' }}</h3>
             <p>{{ searchText() ? 'No results' : 'Browse available courses and enroll' }}</p>
             @if (!searchText()) {
-              <button class="empty-btn" (click)="activeTab.set('available')">
-                <i class="fas fa-plus"></i> استعراض المقررات المتاحة
-              </button>
+              <ion-button class="empty-btn" (click)="activeTab.set('available')">
+                <i class="fas fa-plus" style="margin-inline-end:.4rem"></i> استعراض المقررات المتاحة
+              </ion-button>
             }
           </div>
         }
         @if (filteredEnrolled().length > 0) {
           <div class="courses-list">
             @for (c of filteredEnrolled(); track c.id) {
-              <div class="course-card course-card--enrolled" (click)="openProfile(c)">
+              <ion-card class="course-card course-card--enrolled ion-activatable" button (click)="openProfile(c)">
                 <div class="card-icon card-icon--enrolled">
                   <i class="fas fa-book"></i>
                 </div>
@@ -106,7 +102,8 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
                   </div>
                 </div>
                 <i class="fas fa-chevron-left card-arrow"></i>
-              </div>
+                <ion-ripple-effect></ion-ripple-effect>
+              </ion-card>
             }
           </div>
         }
@@ -124,7 +121,7 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
         @if (filteredAvailable().length > 0) {
           <div class="courses-list">
             @for (c of filteredAvailable(); track c.id) {
-              <div class="course-card" [class.course-card--pending]="c.hasPendingRequest">
+              <ion-card class="course-card" [class.course-card--pending]="c.hasPendingRequest">
                 <div class="card-icon" [class.card-icon--pending]="c.hasPendingRequest">
                   <i class="fas" [class]="c.hasPendingRequest ? 'fas fa-hourglass-half' : 'fas fa-book-open'"></i>
                 </div>
@@ -144,12 +141,12 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
                     <span class="pending-text">بانتظار الموافقة</span>
                   </div>
                 } @else {
-                  <button class="enroll-btn" (click)="enrollInCourse(c); $event.stopPropagation()">
-                    <i class="fas fa-plus"></i>
-                    <span>سجّل</span>
-                  </button>
+                  <ion-button class="enroll-btn" size="small" (click)="enrollInCourse(c); $event.stopPropagation()">
+                    <i class="fas fa-chalkboard-teacher" style="margin-inline-end:.3rem"></i>
+                    عرض المدرسين
+                  </ion-button>
                 }
-              </div>
+              </ion-card>
             }
           </div>
         }
@@ -321,6 +318,53 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
       cursor:pointer; flex-shrink:0; min-height:38px;
       transition:transform .15s;
       &:active { transform:scale(.95); }
+    }
+
+    /* ─── Ionic native component theming ─────────────────────────────── */
+    .page { --ion-color-primary:#667eea; }
+
+    ion-searchbar.header-searchbar {
+      position:relative; z-index:1; padding:0; margin-top:.15rem;
+      --background:rgba(255,255,255,.16); --color:#fff;
+      --placeholder-color:rgba(255,255,255,.6); --icon-color:rgba(255,255,255,.7);
+      --clear-button-color:rgba(255,255,255,.8);
+      --border-radius:14px; --box-shadow:none;
+      border:1.5px solid rgba(255,255,255,.2); border-radius:14px;
+    }
+
+    ion-segment.course-tabs {
+      margin:.75rem .75rem 0; border-radius:14px; padding:.3rem;
+      --background:#fff; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.04);
+    }
+    ion-segment.course-tabs ion-segment-button {
+      --indicator-color:transparent; --color:#6c757d; --color-checked:#fff;
+      --border-radius:10px; min-height:40px; text-transform:none;
+      font-size:.8rem; font-weight:600;
+    }
+    ion-segment.course-tabs ion-segment-button.segment-button-checked {
+      background:linear-gradient(135deg,#667eea,#764ba2) !important;
+      border-radius:10px; box-shadow:0 2px 8px rgba(102,126,234,.3);
+    }
+    ion-segment.course-tabs ion-label i { font-size:.72rem; margin-inline-end:.25rem; }
+
+    ion-card.course-card {
+      margin:0; --background:#fff;
+      display:flex; align-items:center; gap:.75rem;
+      border-radius:16px; padding:.85rem; min-height:72px;
+      box-shadow:0 2px 8px rgba(0,0,0,.05); border:1.5px solid #f0f0f5;
+    }
+    ion-card.course-card.course-card--enrolled { border-color:rgba(34,197,94,.2); }
+    ion-card.course-card.course-card--pending { border-color:rgba(245,158,11,.2); }
+
+    ion-button.enroll-btn {
+      flex-shrink:0; margin:0; font-size:.78rem; font-weight:700;
+      --background:linear-gradient(135deg,#667eea,#764ba2);
+      --color:#fff; --border-radius:10px; --box-shadow:none;
+    }
+    ion-button.empty-btn {
+      margin:0; font-weight:700;
+      --background:linear-gradient(135deg,#667eea,#764ba2);
+      --color:#fff; --border-radius:12px;
     }
   `]
 })

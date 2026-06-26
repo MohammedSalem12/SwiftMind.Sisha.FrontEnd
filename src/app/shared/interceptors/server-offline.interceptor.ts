@@ -17,12 +17,16 @@ export const serverOfflineInterceptor: HttpInterceptorFn = (req, next) => {
         offlineService.notifyOffline();
       }
 
-      // 401 with expired/missing token — redirect to /login before OAuth
-      // can redirect to the backend authorize URL
+      // 401 = the server rejected the token (expired / revoked — possibly due to clock
+      // skew the client-side hasValidAccessToken() check misses, which previously left
+      // the app sitting on a stale page). Always end the session and go to /login, but
+      // only once and never from an auth page (avoids redirect loops). Token requests are
+      // excluded so a failed login doesn't bounce the login page.
       if (error.status === 401 && !req.url.includes('/connect/token')) {
-        if (!oauthService.hasValidAccessToken()) {
-          // Clear tokens to prevent OAuth from trying to redirect
-          oauthService.logOut(true);
+        const url = router.url;
+        const onAuthPage = url.startsWith('/login') || url.startsWith('/register') || url.startsWith('/forgot-password');
+        if (!onAuthPage) {
+          oauthService.logOut(true); // clear tokens (prevents OAuth authorize redirect)
           router.navigate(['/login']);
         }
       }

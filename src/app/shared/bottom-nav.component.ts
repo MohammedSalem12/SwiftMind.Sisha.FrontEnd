@@ -98,8 +98,9 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       <div class="mn-inner">
 
         <!-- 5 core tabs -->
-        @for (item of coreNav(); track item.path) {
-          <a class="mn-tab" [routerLink]="item.path" [class.active]="isActive(item.path)">
+        @for (item of coreNav(); track item.path; let i = $index) {
+          <a class="mn-tab" [routerLink]="item.path" [class.active]="isActive(item.path)"
+             [style.--tab-color]="tabColor(i).color" [style.--tab-bg]="tabColor(i).bg">
             <div class="mn-icon-wrap">
               <i [class]="item.icon"></i>
               @if (badge(item) > 0) {
@@ -112,7 +113,8 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
         }
 
         <!-- More tab -->
-        <button class="mn-tab" (click)="toggleMore()" [class.active]="showMore()">
+        <button class="mn-tab mn-tab-more" (click)="toggleMore()" [class.active]="showMore()"
+                [style.--tab-color]="'#64748b'" [style.--tab-bg]="'rgba(100,116,139,0.16)'">
           <div class="mn-icon-wrap">
             <i class="fas fa-ellipsis-h"></i>
           </div>
@@ -458,7 +460,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       transition: color 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
-    .mn-tab.active { color: #5b21b6; }
+    .mn-tab.active { color: var(--tab-color, #5b21b6); }
 
     .mn-icon-wrap {
       position: relative;
@@ -468,10 +470,13 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       transition: background 0.2s, transform 0.2s;
     }
     .mn-tab.active .mn-icon-wrap {
-      background: rgba(91,33,182,0.16);
+      background: var(--tab-bg, rgba(91,33,182,0.16));
       transform: translateY(-1px);
     }
-    .mn-icon-wrap i { font-size: 1.45rem; }
+    /* Each tab keeps its own accent colour so the bar reads colourful;
+       inactive icons are slightly dimmed, the active one is full-strength. */
+    .mn-icon-wrap i { font-size: 1.45rem; color: var(--tab-color, #9ca3af); opacity: 0.78; }
+    .mn-tab.active .mn-icon-wrap i { opacity: 1; }
 
     .mn-label {
       font-size: 0.72rem;
@@ -490,7 +495,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       transform: translateX(-50%);
       width: 24px; height: 3px;
       border-radius: 0 0 3px 3px;
-      background: linear-gradient(90deg, #7c3aed, #5b21b6);
+      background: var(--tab-color, #5b21b6);
     }
 
     .mn-badge {
@@ -990,6 +995,19 @@ export class BottomNavComponent implements OnInit, OnDestroy {
       ]);
       this.pendingRequestsCount.set((enroll?.length || 0) + (link?.length || 0));
     } catch { /* silent */ }
+  }
+
+  // Per-tab accent colours (positional) so the bottom bar reads colourful.
+  private readonly TAB_COLORS = [
+    { color: '#7c3aed', bg: 'rgba(124,58,237,0.16)' }, // 1st (Home)          — purple
+    { color: '#2563eb', bg: 'rgba(37,99,235,0.16)'  }, // 2nd (Requests)      — blue
+    { color: '#0d9488', bg: 'rgba(13,148,136,0.16)' }, // 3rd (Academies/Today)— teal
+    { color: '#f59e0b', bg: 'rgba(245,158,11,0.16)' }, // 4th (Notifications) — amber
+    { color: '#db2777', bg: 'rgba(219,39,119,0.16)' }, // 5th (fallback)      — pink
+  ];
+
+  tabColor(index: number): { color: string; bg: string } {
+    return this.TAB_COLORS[index % this.TAB_COLORS.length];
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { AttendanceService } from '@proxy/attendances';
@@ -19,6 +20,7 @@ interface StudentEntry {
   enrollmentId: string;
   studentId: string;
   studentCode: string;
+  teacherStudentCode: string;
   studentName: string;
   isAbsent: boolean;
   attendanceId: string | null;
@@ -36,7 +38,7 @@ interface GroupOption {
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IonicModule],
   templateUrl: './attendance.component.html',
   styleUrls: ['./attendance.component.scss'],
 })
@@ -63,6 +65,21 @@ export class AttendanceComponent implements OnInit {
   scanning = signal(false);
   qrSupported = signal(Capacitor.isNativePlatform() || typeof (globalThis as any).BarcodeDetector !== 'undefined');
   markedCount = computed(() => this.markedPresent().size);
+
+  // List search — filter the roster by name, external (StudentCode) or internal
+  // (TeacherStudentCode) code. Works in both attendance modes.
+  listSearch = signal('');
+  filteredStudents = computed(() => {
+    const q = this.listSearch().trim().toLowerCase();
+    const list = this.students();
+    if (!q) return list;
+    return list.filter(s =>
+      (s.studentName || '').toLowerCase().includes(q) ||
+      (s.studentCode || '').toLowerCase().includes(q) ||
+      (s.teacherStudentCode || '').toLowerCase().includes(q));
+  });
+  private scanFillsSearch = false;
+
   private scanStream: MediaStream | null = null;
   private scanRAF = 0;
   private lastScanValue = '';
@@ -441,6 +458,7 @@ export class AttendanceComponent implements OnInit {
         enrollmentId: item.enrollmentId,
         studentId: item.studentId,
         studentCode: item.studentCode || '',
+        teacherStudentCode: item.teacherStudentCode || '',
         studentName:
           item.fullName ||
           `${item.firstName || ''} ${item.lastName || ''}`.trim(),
@@ -615,6 +633,7 @@ export class AttendanceComponent implements OnInit {
     if (!v) return;
     const match = this.students().find(s =>
       (s.studentCode || '').toLowerCase() === v ||
+      (s.teacherStudentCode || '').toLowerCase() === v ||
       (s.studentName || '').toLowerCase() === v ||
       (s.studentId || '').toLowerCase() === v ||
       (s.enrollmentId || '').toLowerCase() === v);
@@ -702,6 +721,15 @@ export class AttendanceComponent implements OnInit {
     }
   }
 
+  private extractCode(raw: string): string {
+    let value = raw;
+    try {
+      const obj = JSON.parse(raw);
+      value = obj.studentCode || obj.teacherStudentCode || obj.code || obj.studentId || obj.id || raw;
+    } catch { /* plain string code */ }
+    return String(value);
+  }
+
   private handleScan(raw: string): void {
     if (!raw) return;
     const now = Date.now();
@@ -709,12 +737,38 @@ export class AttendanceComponent implements OnInit {
     if (raw === this.lastScanValue && now - this.lastScanAt < 2500) return;
     this.lastScanValue = raw;
     this.lastScanAt = now;
-    let value = raw;
-    try {
-      const obj = JSON.parse(raw);
-      value = obj.studentCode || obj.code || obj.studentId || obj.id || raw;
-    } catch { /* plain string code */ }
-    this.markPresentByValue(String(value));
+    const value = this.extractCode(raw);
+    if (this.scanFillsSearch) {
+      // QR search: drop the scanned code into the list filter to locate the student.
+      this.scanFillsSearch = false;
+      this.listSearch.set(value);
+      this.stopScan();
+    } else {
+      this.markPresentByValue(value);
+    }
+  }
+
+  /** Scan a QR code and place its value into the list search filter (find a student). */
+  async scanToFilter(): Promise<void> {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const perm = await BarcodeScanner.requestPermissions();
+        if (perm.camera !== 'granted' && perm.camera !== 'limited') {
+          this.showMessage('تم رفض إذن الكاميرا · Camera permission denied', 'error');
+          return;
+        }
+        const { barcodes } = await BarcodeScanner.scan({ formats: [BarcodeFormat.QrCode] });
+        if (barcodes && barcodes.length) {
+          this.listSearch.set(this.extractCode(barcodes[0].rawValue ?? ''));
+        }
+      } catch {
+        this.showMessage('تعذّر فتح الماسح · Scanner unavailable', 'error');
+      }
+      return;
+    }
+    // Browser/WebView: reuse the live-camera scanner but fill the search instead of marking.
+    this.scanFillsSearch = true;
+    this.startScan();
   }
 
   stopScan(): void {

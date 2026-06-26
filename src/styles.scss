@@ -998,3 +998,21 @@ ion-select.ion-select-field {
   font-size: 16px;       // prevents iOS auto-zoom
   color: var(--ngx-text, #1f2937);
 }
+
+/* ─── Ionic overlay positioning fix ──────────────────────────────────────────
+   This app has no <ion-app> wrapper and scrolls at the document level. Ionic
+   overlays (ion-select's alert/action-sheet, popovers, etc.) are position:absolute
+   and expect an <ion-app> as their offset parent; appended to <body> they otherwise
+   anchor to the document top and appear at the TOP of long/scrolled pages. Forcing
+   fixed positioning centers them in the viewport. */
+ion-alert,
+ion-action-sheet,
+ion-popover,
+ion-modal,
+ion-picker,
+ion-loading,
+ion-toast {
+  position: fixed !important;
+  inset: 0;
+  z-index: 100000;
+}

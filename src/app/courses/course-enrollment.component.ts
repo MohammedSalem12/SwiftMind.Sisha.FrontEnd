@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
 import { CurrentUserInfoService } from '@proxy/common';
@@ -20,7 +21,7 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
   selector: 'app-course-enrollment',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IonicModule],
   template: `
     <div class="enroll-page" dir="rtl">
 
@@ -62,9 +63,8 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       <!-- Loading -->
       @if (loading()) {
         <div class="loading-area">
-          <div class="sk-card"></div>
-          <div class="sk-card"></div>
-          <div class="sk-card"></div>
+          <ion-spinner name="crescent" class="enroll-spinner"></ion-spinner>
+          <span class="loading-text">جاري التحميل...</span>
         </div>
       }
 
@@ -73,41 +73,55 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
         <div class="step-content">
           <!-- Filter panel -->
           <div class="filter-panel">
+            <ion-searchbar
+              class="enroll-searchbar"
+              [value]="filterNameCode()"
+              (ionInput)="filterNameCode.set($any($event).detail.value || '')"
+              placeholder="ابحث باسم المعلم أو كوده"
+              [animated]="true"></ion-searchbar>
+
             <div class="filter-row">
-              <div class="filter-field">
-                <label class="filter-lbl"><i class="fas fa-map-marker-alt"></i> المحافظة</label>
-                <select class="filter-select"
-                        [ngModel]="filterGovernment()"
-                        (ngModelChange)="filterGovernment.set($event); filterTown.set(''); onLocationFilterChange()">
-                  <option value="">كل المحافظات</option>
+              <ion-item class="filter-item" lines="none">
+                <i class="fas fa-map-marker-alt filter-ico" slot="start"></i>
+                <ion-select
+                  label="المحافظة"
+                  label-placement="stacked"
+                  interface="alert"
+                  [interfaceOptions]="{ header: 'المحافظة', cssClass: 'enroll-select-alert' }"
+                  okText="اختيار" cancelText="إلغاء"
+                  placeholder="كل المحافظات"
+                  [value]="filterGovernment()"
+                  (ionChange)="filterGovernment.set($any($event).detail.value); filterTown.set(''); onLocationFilterChange()">
+                  <ion-select-option value="">كل المحافظات</ion-select-option>
                   @for (g of governorates; track g) {
-                    <option [value]="g">{{ g }}</option>
+                    <ion-select-option [value]="g">{{ g }}</ion-select-option>
                   }
-                </select>
-              </div>
-              <div class="filter-field">
-                <label class="filter-lbl"><i class="fas fa-city"></i> المركز / الحي</label>
-                <select class="filter-select"
-                        [ngModel]="filterTown()"
-                        (ngModelChange)="filterTown.set($event); onLocationFilterChange()"
-                        [disabled]="!filterGovernment()">
-                  <option value="">{{ filterGovernment() ? 'كل المراكز' : '-- اختر المحافظة أولاً --' }}</option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item class="filter-item" lines="none">
+                <i class="fas fa-city filter-ico" slot="start"></i>
+                <ion-select
+                  label="المركز / الحي"
+                  label-placement="stacked"
+                  interface="alert"
+                  [interfaceOptions]="{ header: 'المركز / الحي', cssClass: 'enroll-select-alert' }"
+                  okText="اختيار" cancelText="إلغاء"
+                  [placeholder]="filterGovernment() ? 'كل المراكز' : 'اختر المحافظة أولاً'"
+                  [disabled]="!filterGovernment()"
+                  [value]="filterTown()"
+                  (ionChange)="filterTown.set($any($event).detail.value); onLocationFilterChange()">
+                  <ion-select-option value="">كل المراكز</ion-select-option>
                   @for (d of districts(); track d) {
-                    <option [value]="d">{{ d }}</option>
+                    <ion-select-option [value]="d">{{ d }}</ion-select-option>
                   }
-                </select>
-              </div>
+                </ion-select>
+              </ion-item>
             </div>
-            <div class="filter-field">
-              <label class="filter-lbl"><i class="fas fa-search"></i> بحث بالاسم أو الكود</label>
-              <input class="filter-input" type="text"
-                     [ngModel]="filterNameCode()"
-                     (ngModelChange)="filterNameCode.set($event)"
-                     placeholder="اسم المعلم أو كوده" />
-            </div>
+
             @if (locationFilterLoading()) {
               <div class="filter-loading">
-                <span class="spinner-xs"></span> جاري البحث...
+                <ion-spinner name="dots"></ion-spinner> جاري البحث...
               </div>
             }
           </div>
@@ -127,7 +141,7 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
 
           <div class="teachers-grid">
             @for (t of filteredTeachers(); track t.id) {
-              <div class="teacher-card" [class.teacher-promoted]="t.isPromoted" (click)="selectTeacher(t)">
+              <ion-card class="teacher-card ion-activatable" [class.teacher-promoted]="t.isPromoted" button (click)="selectTeacher(t)">
                 @if (t.isPromoted) {
                   <div class="promoted-badge"><i class="fas fa-crown"></i> مميز</div>
                 }
@@ -142,10 +156,11 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
                     {{ [t.government, t.town].filter(Boolean).join(' — ') }}
                   </div>
                 }
-                <button class="select-btn">
-                  اختيار <i class="fas fa-chevron-left"></i>
-                </button>
-              </div>
+                <ion-button class="select-btn" expand="block" size="small">
+                  اختيار <i class="fas fa-chevron-left" style="margin-inline-start:.35rem"></i>
+                </ion-button>
+                <ion-ripple-effect></ion-ripple-effect>
+              </ion-card>
             }
           </div>
         </div>
@@ -162,7 +177,7 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
               <span class="st-lbl">المعلم المختار</span>
               <span class="st-name">{{ selectedTeacher()?.displayName }}</span>
             </div>
-            <button class="change-btn" (click)="backToTeachers()">تغيير</button>
+            <ion-button class="change-btn" fill="outline" size="small" (click)="backToTeachers()">تغيير</ion-button>
           </div>
 
           <!-- Teacher code input — only shown when groups are available -->
@@ -172,12 +187,13 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
                 <i class="fas fa-key"></i> رمز الطالب الداخلي
                 <span class="optional-tag">اختياري</span>
               </label>
-              <input
+              <ion-input
                 class="code-input"
                 type="text"
+                fill="outline"
                 [(ngModel)]="teacherStudentCodeInput"
                 placeholder="أدخل الرمز إن زودك به المعلم"
-                maxlength="32" />
+                [maxlength]="32"></ion-input>
             </div>
           }
 
@@ -196,38 +212,37 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
 
           <div class="groups-list">
             @for (g of groups(); track g.groupId) {
-              <div class="group-card">
-                <div class="group-top">
-                  <div>
-                    <div class="group-name">{{ g.name }}</div>
-                    <div class="group-code"><i class="fas fa-hashtag"></i> {{ g.groupCode }}</div>
-                  </div>
-                </div>
-
-                @if (g.schedules && g.schedules.length > 0) {
-                  <div class="schedules">
-                    @for (s of g.schedules; track s.dayOfWeek) {
-                      <div class="schedule-row">
-                        <i class="fas fa-calendar-day"></i>
-                        <span class="sch-day">{{ getDayName(s.dayOfWeek) }}</span>
-                        <i class="fas fa-clock"></i>
-                        <span>{{ formatTime(s.startTime) }} - {{ formatTime(s.endTime) }}</span>
-                        @if (s.location) {
-                          <span class="sch-loc"><i class="fas fa-map-marker-alt"></i> {{ s.location }}</span>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-
-                <button class="join-btn" (click)="selectGroup(g)" [disabled]="submitting()">
-                  @if (submitting()) {
-                    <i class="fas fa-spinner fa-spin"></i> جاري الإرسال...
-                  } @else {
-                    <i class="fas fa-user-plus"></i> انضم للمجموعة
+              <ion-card class="group-card">
+                <ion-card-header>
+                  <ion-card-title class="group-name">{{ g.name }}</ion-card-title>
+                  <ion-card-subtitle class="group-code"><i class="fas fa-hashtag"></i> {{ g.groupCode }}</ion-card-subtitle>
+                </ion-card-header>
+                <ion-card-content>
+                  @if (g.schedules && g.schedules.length > 0) {
+                    <div class="schedules">
+                      @for (s of g.schedules; track s.dayOfWeek) {
+                        <div class="schedule-row">
+                          <i class="fas fa-calendar-day"></i>
+                          <span class="sch-day">{{ getDayName(s.dayOfWeek) }}</span>
+                          <i class="fas fa-clock"></i>
+                          <span>{{ formatTime(s.startTime) }} - {{ formatTime(s.endTime) }}</span>
+                          @if (s.location) {
+                            <span class="sch-loc"><i class="fas fa-map-marker-alt"></i> {{ s.location }}</span>
+                          }
+                        </div>
+                      }
+                    </div>
                   }
-                </button>
-              </div>
+
+                  <ion-button class="join-btn" expand="block" (click)="selectGroup(g)" [disabled]="submitting()">
+                    @if (submitting()) {
+                      <ion-spinner name="crescent" slot="start"></ion-spinner> جاري الإرسال...
+                    } @else {
+                      <i class="fas fa-user-plus" style="margin-inline-end:.4rem"></i> انضم للمجموعة
+                    }
+                  </ion-button>
+                </ion-card-content>
+              </ion-card>
             }
           </div>
         </div>
@@ -241,12 +256,12 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
           <p>سيتم مراجعة طلب التسجيل من قبل المعلم والموافقة عليه قريباً</p>
           <p class="success-en">Your enrollment request has been sent successfully</p>
           <div class="success-actions">
-            <button class="sa-btn sa-btn--outline" (click)="goBack()">
-              <i class="fas fa-home"></i> الرئيسية
-            </button>
-            <button class="sa-btn sa-btn--primary" (click)="goToRequests()">
-              <i class="fas fa-clipboard-list"></i> طلباتي
-            </button>
+            <ion-button class="sa-btn" fill="outline" expand="block" (click)="goBack()">
+              <i class="fas fa-home" style="margin-inline-end:.4rem"></i> الرئيسية
+            </ion-button>
+            <ion-button class="sa-btn" expand="block" (click)="goToRequests()">
+              <i class="fas fa-clipboard-list" style="margin-inline-end:.4rem"></i> طلباتي
+            </ion-button>
           </div>
         </div>
       }
@@ -574,6 +589,62 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
     }
     .sa-btn--primary { background: $pg; color: #fff; }
     .sa-btn--outline { background: #fff; color: $pe; border: 1.5px solid $pe; }
+
+    /* ─── Ionic native component theming ─────────────────────────────── */
+    .enroll-page { --ion-color-primary: #667eea; --ion-color-primary-rgb: 102,126,234; }
+
+    .enroll-spinner { width: 44px; height: 44px; --color: #667eea; }
+    .loading-text { color: #6b7280; font-size: 0.9rem; margin-top: 0.6rem; }
+
+    ion-searchbar.enroll-searchbar {
+      --background: #fff; --border-radius: 12px; --box-shadow: none;
+      --color: #1a202c; --placeholder-color: #9ca3af; --icon-color: #667eea;
+      padding: 0; margin-bottom: 0.6rem;
+      border: 1.5px solid #e9e6ff; border-radius: 12px;
+    }
+
+    .filter-item {
+      flex: 1; margin: 0; border: 1px solid #e9e6ff; border-radius: 10px;
+      --background: #fff; --border-radius: 10px; --min-height: 52px;
+      --padding-start: 0.6rem; --inner-padding-end: 0.5rem;
+      --highlight-color-focused: #667eea;
+    }
+    .filter-ico { color: #667eea; font-size: 0.85rem; margin-inline-end: 0.5rem; }
+
+    ion-card.teacher-card {
+      margin: 0; --background: #fff;
+      border-radius: 14px; padding: 1.1rem 0.75rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.55rem;
+      border: 1.5px solid #e9e6ff; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    ion-card.teacher-card.teacher-promoted { border-color: #f59e0b; box-shadow: 0 2px 12px rgba(245,158,11,.2); }
+
+    ion-button.select-btn {
+      width: 100%; margin: 0; font-size: 0.75rem; font-weight: 700;
+      --background: linear-gradient(135deg, #667eea, #764ba2);
+      --background-activated: #5b6fd6; --color: #fff;
+      --border-radius: 9px; --box-shadow: none;
+      --padding-top: 0.4rem; --padding-bottom: 0.4rem;
+    }
+
+    ion-card.group-card {
+      margin: 0 0 0.75rem; --background: #fff;
+      border-radius: 14px; border: 1.5px solid #e9e6ff; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    ion-card.group-card ion-card-header { padding-bottom: 0.4rem; }
+    ion-button.join-btn {
+      margin-top: 0.5rem; font-weight: 700;
+      --background: linear-gradient(135deg, #667eea, #764ba2);
+      --color: #fff; --border-radius: 10px; --box-shadow: none;
+    }
+
+    ion-button.change-btn { --color: #667eea; --border-color: #667eea; --border-radius: 8px; font-weight: 600; margin: 0; }
+    ion-input.code-input { --background: #fff; --border-radius: 8px; --color: #1a202c; margin-top: 0.25rem; }
+
+    .success-actions ion-button.sa-btn { flex: 1; margin: 0; --border-radius: 12px; font-weight: 700; }
+    .success-actions ion-button.sa-btn[fill="outline"] { --color: #764ba2; --border-color: #764ba2; }
+    .success-actions ion-button.sa-btn:not([fill]) { --background: linear-gradient(135deg, #667eea, #764ba2); --color: #fff; }
   `]
 })
 export class CourseEnrollmentComponent implements OnInit {
@@ -656,6 +727,10 @@ export class CourseEnrollmentComponent implements OnInit {
         }
       } catch { /* ignore - location is optional */ }
 
+      // Auto-select the student's own governorate & center as the default teacher filter.
+      if (studentGov && !this.filterGovernment()) this.filterGovernment.set(studentGov);
+      if (studentTown && !this.filterTown()) this.filterTown.set(studentTown);
+
       const teachers = await lastValueFrom(
         this.restSvc.request<void, TeacherAutocompleteDto[]>({
           method: 'GET',
@@ -679,6 +754,11 @@ export class CourseEnrollmentComponent implements OnInit {
         }
       } else {
         this.teachers.set(teachers || []);
+      }
+
+      // Apply the auto-selected location filter now that the teachers are loaded.
+      if (this.filterGovernment() || this.filterTown()) {
+        await this.onLocationFilterChange();
       }
     } catch {
       this.errorMessage.set('حدث خطأ أثناء تحميل المعلمين');

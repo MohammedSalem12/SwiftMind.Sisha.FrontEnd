@@ -64,7 +64,10 @@ export class PullToRefreshDirective implements OnInit {
     this.startY = e.touches[0].clientY;
     this.pulling = true;
     this.pull = 0;
-    this.r.setStyle(this.el.nativeElement, 'will-change', 'transform');
+    // NOTE: deliberately NOT setting will-change/transform here. Either one creates a
+    // containing block that re-anchors position:fixed descendants (FABs, next-session &
+    // link-parent buttons) to this host, making them scroll with the content. Transform
+    // is applied only while actively pulling (apply()) and fully removed afterwards.
   }
 
   @HostListener('touchmove', ['$event'])
@@ -115,7 +118,13 @@ export class PullToRefreshDirective implements OnInit {
   }
 
   private reset(): void {
-    if (this.pull > 0) this.apply(0);
+    const host = this.el.nativeElement;
+    // Fully remove the transform/will-change (NOT translateY(0) — that still creates a
+    // containing block) so position:fixed descendants stay viewport-anchored.
+    this.r.removeStyle(host, 'transition');
+    this.r.removeStyle(host, 'transform');
+    this.r.removeStyle(host, 'will-change');
+    this.r.setStyle(this.indicator, 'opacity', '0');
     this.pulling = false;
     this.pull = 0;
   }

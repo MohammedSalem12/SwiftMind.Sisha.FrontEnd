@@ -175,6 +175,24 @@
   <!-- Students section -->
   @if (students().length > 0 && !loading()) {
 
+    <!-- Find student: name / external (StudentCode) / internal (TeacherStudentCode) / QR -->
+    <div class="att-find-bar">
+      <ion-searchbar
+        class="att-find-search"
+        [value]="listSearch()"
+        (ionInput)="listSearch.set($any($event).detail.value || '')"
+        placeholder="ابحث بالاسم أو الكود الداخلي / الخارجي · name or code"
+        [animated]="true"></ion-searchbar>
+      @if (qrSupported()) {
+        <ion-button class="att-find-qr" (click)="scanToFilter()" [disabled]="scanning()" title="بحث بمسح QR">
+          <i class="fas fa-qrcode"></i>
+        </ion-button>
+      }
+    </div>
+    @if (listSearch() && filteredStudents().length === 0) {
+      <div class="att-find-empty"><i class="fas fa-user-slash"></i> لا يوجد طالب مطابق · No match</div>
+    }
+
     <!-- Stats Bar (collapsible) -->
     <div class="stats-bar">
       <button class="stats-bar-header" (click)="toggleStats()">
@@ -335,7 +353,7 @@
 
     <!-- Student cards -->
     <div class="student-cards">
-      @for (s of students(); track s.enrollmentId; let i = $index) {
+      @for (s of filteredStudents(); track s.enrollmentId; let i = $index) {
         <div class="student-card"
           [class.card-absent]="attendanceMode() === 'absentees' && s.isAbsent"
           [class.card-present]="attendanceMode() === 'attendees' && isPresent(s.enrollmentId)"
@@ -351,9 +369,14 @@
             </div>
             <div class="card-info">
               <span class="student-name">{{ s.studentName }}</span>
-              @if (s.studentCode) {
-                <span class="card-code">{{ s.studentCode }}</span>
-              }
+              <span class="card-codes">
+                @if (s.studentCode) {
+                  <span class="card-code" title="الكود الخارجي · External"><i class="fas fa-id-card"></i> {{ s.studentCode }}</span>
+                }
+                @if (s.teacherStudentCode) {
+                  <span class="card-code card-code--internal" title="الكود الداخلي · Internal"><i class="fas fa-user-tag"></i> {{ s.teacherStudentCode }}</span>
+                }
+              </span>
             </div>
             @if (attendanceMode() === 'absentees') {
               <button

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, signal, OnInit, OnDestroy, inject, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal, OnInit, OnDestroy, inject, computed, HostListener, ElementRef, viewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
@@ -68,31 +68,50 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
-    <div class="tip-card" dir="rtl">
-      <div class="tip-icon" [style.background]="iconBg()">
-        <i class="fas" [class]="iconClass()"></i>
-      </div>
-      <div class="tip-content">
-        @if (card()) {
-          <div class="tip-header">
-            <span class="tip-label">{{ card()!.cardType === 'did_you_know' ? 'هل تعلم؟' : 'معلومة' }}</span>
-            <span class="tip-topic">{{ getTopicLabel(card()!.topic) }}</span>
+    <!-- Floating "i" information icon — always on top of page content -->
+    <button #fab class="info-fab" type="button" [class.has-badge]="hasNewBadge()"
+      (click)="openOverlay()"
+      aria-label="هل تعلم؟ · Did you know" aria-haspopup="dialog" [attr.aria-expanded]="open()">
+      <i class="fas fa-info"></i>
+      @if (hasNewBadge()) { <span class="fab-badge" aria-hidden="true"></span> }
+    </button>
+
+    <!-- Overlay: bottom-sheet on mobile, centered modal on desktop.
+         Teleported to <body> on open so it escapes the home page's stacking context. -->
+    @if (open()) {
+      <div #backdrop class="kc-backdrop" (click)="closeOverlay()">
+        <div #dialog class="kc-sheet" dir="rtl" role="dialog" aria-modal="true"
+          [attr.aria-label]="dialogLabel()" tabindex="-1"
+          (click)="$event.stopPropagation()" (keydown)="onDialogKeydown($event)">
+
+          <div class="kc-handle" aria-hidden="true"></div>
+          <button class="kc-close" (click)="closeOverlay()" aria-label="إغلاق · Close" type="button">
+            <i class="fas fa-times"></i>
+          </button>
+
+          <div class="kc-body">
+            <div class="tip-icon" [style.background]="iconBg()">
+              <i class="fas" [class]="iconClass()"></i>
+            </div>
+            <div class="kc-text">
+              @if (card()) {
+                <div class="tip-header">
+                  <span class="tip-label">{{ card()!.cardType === 'did_you_know' ? 'هل تعلم؟' : 'معلومة' }}</span>
+                  <span class="tip-topic">{{ getTopicLabel(card()!.topic) }}</span>
+                </div>
+                <span class="tip-title">{{ card()!.titleAr }}</span>
+                <span class="tip-text">{{ card()!.contentAr }}</span>
+                <span class="tip-text-en">{{ card()!.contentEn }}</span>
+              } @else {
+                <span class="tip-label">هل تعلم؟ · Did you know?</span>
+                <span class="tip-text">{{ fallbackTip().ar }}</span>
+                <span class="tip-text-en">{{ fallbackTip().en }}</span>
+              }
+            </div>
           </div>
-          <span class="tip-title">{{ card()!.titleAr }}</span>
-          @if (expanded()) {
-            <span class="tip-text">{{ card()!.contentAr }}</span>
-            <span class="tip-text-en">{{ card()!.contentEn }}</span>
-          }
-        } @else {
-          <span class="tip-label">هل تعلم؟ · Did you know?</span>
-          @if (expanded()) {
-            <span class="tip-text">{{ fallbackTip().ar }}</span>
-            <span class="tip-text-en">{{ fallbackTip().en }}</span>
-          }
-        }
-        @if (expanded()) {
-          <div class="tip-footer">
-            <button class="tip-next" [disabled]="loading()" (click)="showNext(); resetTimer(); $event.stopPropagation()">
+
+          <div class="kc-footer">
+            <button class="tip-next" [disabled]="loading()" (click)="onNext()" type="button">
               @if (loading()) {
                 <i class="fas fa-spinner fa-spin"></i>
               } @else {
@@ -100,7 +119,11 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
               }
               التالي · Next
             </button>
-            <div class="countdown-ring" (click)="showNext(); resetTimer(); $event.stopPropagation()">
+            <button class="kc-pause" (click)="togglePause()" type="button"
+              [attr.aria-label]="paused() ? 'تشغيل التبديل التلقائي · Resume autoplay' : 'إيقاف التبديل التلقائي · Pause autoplay'">
+              <i class="fas" [class.fa-pause]="!paused()" [class.fa-play]="paused()"></i>
+            </button>
+            <div class="countdown-ring" aria-hidden="true" (click)="onNext()">
               <svg viewBox="0 0 36 36" class="ring-svg">
                 <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(102,126,234,.15)" stroke-width="2.5"/>
                 <circle cx="18" cy="18" r="15.5" fill="none" stroke="#667eea" stroke-width="2.5"
@@ -110,95 +133,164 @@ const FALLBACK: Record<string, { ar: string; en: string }[]> = {
               <span class="ring-text">{{ countdown() }}</span>
             </div>
           </div>
-        }
+        </div>
       </div>
-      <button class="tip-toggle" (click)="expanded.set(!expanded()); $event.stopPropagation()">
-        <i class="fas" [class]="expanded() ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-      </button>
-    </div>
+    }
   `,
   styles: [`
-    .tip-card {
-      display: flex;
-      align-items: flex-start;
-      gap: .65rem;
-      margin: .5rem 1rem 0;
-      padding: .75rem .85rem;
-      background: linear-gradient(135deg, rgba(102,126,234,.06), rgba(118,75,162,.06));
-      border: 1.5px solid rgba(102,126,234,.15);
-      border-radius: 14px;
+    /* ─── Floating "i" FAB ─────────────────────────────────────────── */
+    .info-fab {
+      position: fixed;
+      /* Bottom-RIGHT, aligned to the same baseline as the student-home action
+         cluster (which sits bottom-LEFT) so the two never intersect and read as
+         a balanced pair. The 80px offset clears the per-page bottom action bar
+         (register / link-child) and the bottom nav on every home screen. */
+      right: 14px;
+      bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 12px);
+      width: 52px; height: 52px; border-radius: 50%;
+      border: none; cursor: pointer;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 20px rgba(102,126,234,.42);
+      z-index: 9000;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform .15s, box-shadow .2s;
+      i { font-size: 1.15rem; }
     }
+    .info-fab:active { transform: scale(.92); }
+    .info-fab.has-badge::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      pointer-events: none;
+      animation: fab-pulse 2.4s ease-out infinite;
+    }
+    @keyframes fab-pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(102,126,234,.45); }
+      70%  { box-shadow: 0 0 0 15px rgba(102,126,234,0); }
+      100% { box-shadow: 0 0 0 0 rgba(102,126,234,0); }
+    }
+    .fab-badge {
+      position: absolute; top: 2px; right: 2px;
+      width: 13px; height: 13px; border-radius: 50%;
+      background: #e11d48; border: 2px solid #fff;
+    }
+    /* Desktop: keep it bottom-right; offset still clears any bottom action bar */
+    @media (min-width: 768px) {
+      .info-fab { right: 24px; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); width: 56px; height: 56px; }
+    }
+
+    /* ─── Overlay backdrop ─────────────────────────────────────────── */
+    .kc-backdrop {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(15,15,35,.5);
+      -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+      display: flex; align-items: flex-end; justify-content: center;
+      animation: kc-fade .25s ease;
+    }
+    @keyframes kc-fade { from { opacity: 0; } to { opacity: 1; } }
+    @media (min-width: 768px) {
+      .kc-backdrop { align-items: center; padding: 1rem; }
+    }
+
+    /* ─── Sheet / modal ────────────────────────────────────────────── */
+    .kc-sheet {
+      position: relative; width: 100%;
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      padding: 1rem 1.15rem calc(1.15rem + env(safe-area-inset-bottom, 0px));
+      box-shadow: 0 -8px 40px rgba(0,0,0,.25);
+      max-height: 85vh; overflow-y: auto;
+      animation: kc-slide-up .3s cubic-bezier(.32,.72,0,1);
+    }
+    @keyframes kc-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @media (min-width: 768px) {
+      .kc-sheet {
+        max-width: 420px; border-radius: 24px;
+        padding: 1.5rem 1.5rem 1.25rem;
+        box-shadow: 0 24px 70px rgba(0,0,0,.3);
+        animation: kc-pop .2s ease-out;
+      }
+      @keyframes kc-pop { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    }
+    .kc-handle {
+      width: 40px; height: 4px; background: #e0e0ee; border-radius: 2px;
+      margin: 0 auto .9rem;
+    }
+    @media (min-width: 768px) { .kc-handle { display: none; } }
+    .kc-close {
+      position: absolute; top: .6rem; left: .6rem;
+      width: 44px; height: 44px; border-radius: 50%;
+      border: none; background: transparent; cursor: pointer;
+      color: #9090aa; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s;
+      &:active { background: rgba(0,0,0,.05); }
+    }
+
+    /* ─── Card content (reused look) ───────────────────────────────── */
+    .kc-body { display: flex; align-items: flex-start; gap: .75rem; }
     .tip-icon {
-      width: 36px; height: 36px; border-radius: 50%;
+      width: 44px; height: 44px; border-radius: 50%;
       background: linear-gradient(135deg, #667eea, #764ba2);
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      i { font-size: .85rem; color: white; }
+      i { font-size: 1rem; color: white; }
     }
-    .tip-content {
-      flex: 1; display: flex; flex-direction: column; gap: .15rem;
-    }
-    .tip-header {
-      display: flex; align-items: center; gap: .4rem; margin-bottom: .1rem;
-    }
-    .tip-label {
-      font-size: .65rem; font-weight: 700; color: #667eea;
-    }
+    .kc-text { flex: 1; display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+    .tip-header { display: flex; align-items: center; gap: .4rem; margin-bottom: .1rem; }
+    .tip-label { font-size: .72rem; font-weight: 700; color: #667eea; }
     .tip-topic {
-      font-size: .58rem; font-weight: 600;
+      font-size: .62rem; font-weight: 600;
       background: rgba(102,126,234,.1); color: #764ba2;
-      padding: .05rem .35rem; border-radius: 6px;
+      padding: .08rem .4rem; border-radius: 6px;
     }
-    .tip-title {
-      font-size: .82rem; font-weight: 800; color: #1a1a2e; line-height: 1.3;
-    }
-    .tip-text {
-      font-size: .75rem; font-weight: 500; color: #4a4a6a; line-height: 1.5;
-    }
-    .tip-text-en {
-      font-size: .65rem; color: #9090aa; line-height: 1.4; margin-top: .1rem;
-    }
-    .tip-footer {
-      display: flex; align-items: center; gap: .5rem; margin-top: .4rem;
-    }
+    .tip-title { font-size: 1rem; font-weight: 800; color: #1a1a2e; line-height: 1.35; }
+    .tip-text { font-size: .85rem; font-weight: 500; color: #44445e; line-height: 1.6; margin-top: .15rem; }
+    .tip-text-en { font-size: .72rem; color: #6b6b85; line-height: 1.5; margin-top: .15rem; }
+
+    .kc-footer { display: flex; align-items: center; gap: .5rem; margin-top: 1rem; }
     .tip-next {
-      display: flex; align-items: center; justify-content: center; gap: .35rem;
-      flex: 1; padding: .4rem .75rem;
-      border-radius: 10px; border: 1.5px solid rgba(102,126,234,.2);
+      display: flex; align-items: center; justify-content: center; gap: .4rem;
+      flex: 1; padding: .55rem .75rem;
+      border-radius: 12px; border: 1.5px solid rgba(102,126,234,.2);
       background: rgba(102,126,234,.06); color: #667eea;
-      font-size: .72rem; font-weight: 700; cursor: pointer;
-      min-height: 36px;
+      font-size: .82rem; font-weight: 700; cursor: pointer;
+      min-height: 44px;
       -webkit-tap-highlight-color: transparent;
       transition: background .15s;
       &:active { background: rgba(102,126,234,.15); }
       &:disabled { opacity: .5; cursor: default; }
-      i { font-size: .6rem; }
+      i { font-size: .7rem; }
     }
-    .countdown-ring {
-      position: relative; width: 36px; height: 36px;
-      flex-shrink: 0; cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .ring-svg {
-      width: 36px; height: 36px;
-      transform: rotate(-90deg);
-    }
-    .ring-progress {
-      transition: stroke-dashoffset 1s linear;
-    }
-    .ring-text {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .6rem; font-weight: 800; color: #667eea;
-    }
-    .tip-toggle {
-      border: none; background: none; color: #667eea;
-      font-size: .65rem; cursor: pointer; flex-shrink: 0;
-      width: 28px; height: 28px; border-radius: 50%;
+    .kc-pause {
+      width: 44px; height: 44px; border-radius: 12px;
+      border: 1.5px solid rgba(102,126,234,.2);
+      background: rgba(102,126,234,.06); color: #667eea;
+      cursor: pointer; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       -webkit-tap-highlight-color: transparent;
       transition: background .15s;
-      &:active { background: rgba(102,126,234,.1); }
+      &:active { background: rgba(102,126,234,.15); }
+      i { font-size: .8rem; }
+    }
+    .countdown-ring {
+      position: relative; width: 44px; height: 44px;
+      flex-shrink: 0; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ring-svg { width: 44px; height: 44px; transform: rotate(-90deg); }
+    .ring-progress { transition: stroke-dashoffset 1s linear; }
+    .ring-text {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .72rem; font-weight: 800; color: #667eea;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .kc-backdrop, .kc-sheet { animation: none; }
+      .info-fab.has-badge::before { animation: none; }
+      .ring-progress { transition: none; }
     }
   `],
 })
@@ -211,7 +303,16 @@ export class DidYouKnowComponent implements OnInit, OnDestroy {
   currentIndex = signal(0);
   card = computed(() => this.cards().length > 0 ? this.cards()[this.currentIndex()] : null);
   fallbackTip = signal<{ ar: string; en: string }>({ ar: '', en: '' });
-  expanded = signal(window.innerWidth < 768);
+
+  // Overlay state
+  open = signal(false);
+  paused = signal(false);
+  hasNewBadge = signal(false);
+  dialogLabel = computed(() => this.card()?.titleAr || 'هل تعلم؟ · Did you know');
+
+  private readonly fabRef = viewChild<ElementRef<HTMLButtonElement>>('fab');
+  private readonly dialogRef = viewChild<ElementRef<HTMLElement>>('dialog');
+  private readonly backdropRef = viewChild<ElementRef<HTMLElement>>('backdrop');
 
   private static readonly DURATION = 10;
   countdown = signal(DidYouKnowComponent.DURATION);
@@ -236,11 +337,17 @@ export class DidYouKnowComponent implements OnInit, OnDestroy {
   private readonly apiBase = (environment as any).apis?.default?.url || '';
 
   async ngOnInit(): Promise<void> {
+    // Show the pulsing "new tip" hint until the user opens the overlay once.
+    try { this.hasNewBadge.set(!localStorage.getItem('kc_info_seen')); } catch { this.hasNewBadge.set(true); }
+
+    // Pause/resume auto-advance when the app is backgrounded.
+    document.addEventListener('visibilitychange', this.onVisibility);
+
     // Set fallback first
     const tips = FALLBACK[this.role().toUpperCase()] || FALLBACK['STUDENT'];
     this.fallbackTip.set(tips[new Date().getDate() % tips.length]);
 
-    // Try to fetch batch from API
+    // Try to fetch batch from API (timer only starts when the overlay opens).
     try {
       const gradeParam = this.grade() ? `&grade=${this.grade()}` : '';
       const result = await lastValueFrom(
@@ -249,7 +356,6 @@ export class DidYouKnowComponent implements OnInit, OnDestroy {
       if (result?.length) {
         this.cards.set(result);
         this.currentIndex.set(0);
-        this.startTimer();
       }
     } catch {
       // Try single card fallback
@@ -260,7 +366,6 @@ export class DidYouKnowComponent implements OnInit, OnDestroy {
         );
         if (single) {
           this.cards.set([single]);
-          this.startTimer();
         }
       } catch {
         // Use fallback — already set
@@ -270,7 +375,72 @@ export class DidYouKnowComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearTimer();
+    document.removeEventListener('visibilitychange', this.onVisibility);
   }
+
+  // ─── Overlay open / close ───────────────────────────────────────────
+  openOverlay(): void {
+    if (this.open()) return;
+    this.open.set(true);
+    if (this.hasNewBadge()) {
+      this.hasNewBadge.set(false);
+      try { localStorage.setItem('kc_info_seen', '1'); } catch { /* ignore */ }
+    }
+    if (!this.paused()) this.startTimer();
+    // After the @if renders, teleport the backdrop to <body> so it sits above all
+    // page content regardless of any transformed/stacking-context ancestor on the
+    // host page, then move focus into the dialog.
+    setTimeout(() => {
+      const backdrop = this.backdropRef()?.nativeElement;
+      if (backdrop && backdrop.parentElement !== document.body) {
+        document.body.appendChild(backdrop);
+      }
+      this.dialogRef()?.nativeElement?.focus();
+    }, 0);
+  }
+
+  closeOverlay(): void {
+    if (!this.open()) return;
+    this.open.set(false);
+    this.clearTimer();
+    // Return focus to the launching FAB.
+    setTimeout(() => this.fabRef()?.nativeElement?.focus(), 0);
+  }
+
+  togglePause(): void {
+    this.paused.update(p => !p);
+    if (this.paused()) this.clearTimer();
+    else if (this.open()) this.startTimer();
+  }
+
+  async onNext(): Promise<void> {
+    await this.showNext();
+    if (this.open() && !this.paused()) this.resetTimer();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.open()) this.closeOverlay();
+  }
+
+  onDialogKeydown(e: KeyboardEvent): void {
+    if (e.key !== 'Tab') return;
+    const el = this.dialogRef()?.nativeElement;
+    if (!el) return;
+    const focusables = Array.from(
+      el.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')
+    ).filter(n => n.offsetParent !== null);
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+
+  private readonly onVisibility = (): void => {
+    if (document.hidden) this.clearTimer();
+    else if (this.open() && !this.paused()) this.startTimer();
+  };
 
   private startTimer(): void {
     this.clearTimer();
