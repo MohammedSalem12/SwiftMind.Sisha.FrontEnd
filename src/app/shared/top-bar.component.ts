@@ -405,7 +405,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       const root = document.querySelector('.app-content') || document.body;
       const has = !!root.querySelector(
-        '.back-btn, .page-header, .hero-header, .ts-header, .enroll-header, .reg-header, .qr-page'
+        '[data-page-header], .back-btn, .page-header, .hero-header, .ts-header, .enroll-header, .reg-header, .qr-page'
       );
       this.pageHasOwnHeader.set(has);
     }, 90);

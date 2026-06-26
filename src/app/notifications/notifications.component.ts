@@ -20,33 +20,21 @@ import { lastValueFrom } from 'rxjs';
   imports: [CommonModule, IonicModule, PullToRefreshDirective],
   template: `
     <div class="notifications-page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
-      <!-- Modern Header with Grade Theme -->
-      <div class="page-header" [style.background]="currentTheme().gradient">
-        <div class="header-content">
-          <button class="back-btn" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
-          <div class="header-icon">
-            <i class="fas fa-bell"></i>
-          </div>
-          <div class="header-text">
-            <h1>الإشعارات</h1>
-            <p>{{ unreadCount() }} إشعار غير مقروء</p>
-          </div>
-          <div class="header-actions">
-            <button 
-              class="btn-mark-all" 
-              (click)="markAllRead()" 
-              *ngIf="unreadCount() > 0"
-              [style.background]="currentTheme().light"
-              [style.color]="currentTheme().primary"
-              [style.borderColor]="currentTheme().borderColor">
-              <i class="fas fa-check-double"></i>
-              <span>تحديد الكل كمقروء</span>
-            </button>
-          </div>
+      <!-- Flat minimal header (data-page-header => global top-bar suppresses its own) -->
+      <header class="notif-topbar" data-page-header dir="rtl">
+        <button class="nt-back" (click)="goBack()" type="button" aria-label="رجوع · Back">
+          <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="nt-title">
+          <h1>الإشعارات</h1>
+          @if (unreadCount() > 0) { <span class="nt-count">{{ unreadCount() }}</span> }
         </div>
-      </div>
+        @if (unreadCount() > 0) {
+          <button class="nt-markall" (click)="markAllRead()" type="button" aria-label="تحديد الكل كمقروء · Mark all read">
+            <i class="fas fa-check-double"></i>
+          </button>
+        }
+      </header>
 
       <!-- Content Container -->
       <div class="content-container">
@@ -121,6 +109,43 @@ import { lastValueFrom } from 'rxjs';
       background: #f4f5fb;
       direction: rtl;
     }
+
+    /* ── Flat minimal header ────────────────────────────────────────── */
+    .notif-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      background: #fff;
+      padding: .55rem .6rem;
+      padding-top: calc(.55rem + env(safe-area-inset-top, 0px));
+      border-bottom: 1px solid #ececf2;
+    }
+    .nt-back {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: none; background: transparent; color: #1a202c;
+      font-size: 1.05rem; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent; transition: background .15s;
+    }
+    .nt-back:active { background: #f0f0f5; }
+    .nt-title { flex: 1; display: flex; align-items: center; gap: .5rem; min-width: 0; }
+    .nt-title h1 { margin: 0; font-size: 1.3rem; font-weight: 800; color: #1a202c; }
+    .nt-count {
+      background: #667eea; color: #fff; font-size: .66rem; font-weight: 800;
+      min-width: 20px; height: 20px; border-radius: 10px; padding: 0 .35rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nt-markall {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: none; background: rgba(102,126,234,.1); color: #667eea;
+      font-size: .95rem; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent; transition: background .15s;
+    }
+    .nt-markall:active { background: rgba(102,126,234,.2); }
 
     /* ── Grouped feed (New / Earlier) ───────────────────────────────── */
     .feed-label {
