@@ -731,3 +731,40 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   color: #764ba2 !important;
   background: rgba(118, 75, 162, .08);
 }
+
+/* ─── Ionic form controls (selects + checkboxes) ─────────────────────────── */
+.attendance-page { --ion-color-primary: #667eea; --ion-color-primary-rgb: 102,126,234; }
+
+ion-select.field-select {
+  width: 100%;
+  --background: #fff;
+  --padding-start: .85rem;
+  --padding-end: .6rem;
+  --placeholder-color: #9ca3af;
+  --placeholder-opacity: 1;
+  --color: #1a202c;
+  min-height: 48px;
+  border: 1.5px solid #e8e8f0;
+  border-radius: 12px;
+  font-size: .9rem;
+}
+ion-select.field-select::part(icon) { color: #667eea; opacity: 1; }
+
+ion-checkbox {
+  --size: 20px;
+  --border-radius: 6px;
+  --border-color: #cbd5e1;
+  --border-color-checked: #667eea;
+  --checkbox-background-checked: #667eea;
+  --checkmark-color: #fff;
+}
+ion-checkbox.checkbox-label {
+  font-size: .82rem;
+  font-weight: 600;
+  color: #374151;
+  --color: #374151;
+}
+ion-checkbox.card-check {
+  margin-inline-end: .15rem;
+  flex-shrink: 0;
+}

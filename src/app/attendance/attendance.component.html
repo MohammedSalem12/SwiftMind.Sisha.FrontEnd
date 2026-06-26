@@ -55,17 +55,18 @@
           }
         </div>
       } @else {
-        <select class="field-input"
-          [ngModel]="selectedCourseId()"
-          (ngModelChange)="onCourseChange($event)"
+        <ion-select class="field-select"
+          interface="alert"
+          [interfaceOptions]="{ header: 'المقرر الدراسي · Course' }"
+          okText="اختيار" cancelText="إلغاء"
+          placeholder="-- اختر المقرر --"
+          [value]="selectedCourseId()"
+          (ionChange)="onCourseChange($any($event).detail.value)"
           [disabled]="loading()">
-          <option value="">-- اختر المقرر --</option>
           @for (c of courses(); track c.id) {
-            <option [value]="c.id">
-              {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' — ' + c.gradeName : '' }}
-            </option>
+            <ion-select-option [value]="c.id">{{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' — ' + c.gradeName : '' }}</ion-select-option>
           }
-        </select>
+        </ion-select>
       }
     </div>
 
@@ -75,17 +76,18 @@
         <label class="field-label">
           <i class="fas fa-users"></i> المجموعة · Group
         </label>
-        <select class="field-input"
-          [ngModel]="selectedGroupId()"
-          (ngModelChange)="onGroupChange($event)"
+        <ion-select class="field-select"
+          interface="alert"
+          [interfaceOptions]="{ header: 'المجموعة · Group' }"
+          okText="اختيار" cancelText="إلغاء"
+          placeholder="-- اختر المجموعة --"
+          [value]="selectedGroupId()"
+          (ionChange)="onGroupChange($any($event).detail.value)"
           [disabled]="loading()">
-          <option value="">-- اختر المجموعة --</option>
           @for (g of groups(); track g.id) {
-            <option [value]="g.id">
-              {{ g.name }}{{ g.teacherName ? ' — ' + g.teacherName : '' }}
-            </option>
+            <ion-select-option [value]="g.id">{{ g.name }}{{ g.teacherName ? ' — ' + g.teacherName : '' }}</ion-select-option>
           }
-        </select>
+        </ion-select>
       </div>
     }
 
@@ -271,10 +273,10 @@
     @if (attendanceMode() === 'absentees') {
       <div class="bulk-actions-bar">
         <div class="bulk-top-row">
-          <label class="checkbox-label">
-            <input type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll()" />
-            <span>تحديد الكل · Select All</span>
-          </label>
+          <ion-checkbox class="checkbox-label" labelPlacement="end" justify="start"
+            [checked]="allSelected()" (ionChange)="toggleSelectAll()">
+            تحديد الكل · Select All
+          </ion-checkbox>
           @if (selectedCount() > 0) {
             <span class="selected-badge">{{ selectedCount() }} محدد</span>
           }
@@ -360,9 +362,7 @@
           [class.card-selected]="attendanceMode() === 'absentees' && s.selected && !s.isAbsent">
           <div class="card-main-row">
             @if (attendanceMode() === 'absentees') {
-              <label class="card-check">
-                <input type="checkbox" [checked]="s.selected" (change)="toggleSelect(i)" />
-              </label>
+              <ion-checkbox class="card-check" [checked]="s.selected" (ionChange)="toggleSelect(i)"></ion-checkbox>
             }
             <div class="avatar" [class.avatar-absent]="s.isAbsent">
               {{ s.studentName.charAt(0) }}
