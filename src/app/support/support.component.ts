@@ -41,15 +41,24 @@ import { FormsModule } from '@angular/forms';
               <span class="contact-value ltr">support&#64;swiftmind.dev</span>
             </div>
           </div>
-          <div class="contact-item">
+          <a class="contact-item" href="tel:+201019322902">
+            <div class="contact-icon" style="background:rgba(102,126,234,.12);color:#667eea">
+              <i class="fas fa-phone-alt"></i>
+            </div>
+            <div class="contact-text">
+              <span class="contact-label">الهاتف · Phone</span>
+              <span class="contact-value ltr">+20 101 932 2902</span>
+            </div>
+          </a>
+          <a class="contact-item" href="https://wa.me/201019322902" target="_blank" rel="noopener">
             <div class="contact-icon" style="background:rgba(16,185,129,.12);color:#059669">
               <i class="fab fa-whatsapp"></i>
             </div>
             <div class="contact-text">
               <span class="contact-label">واتساب · WhatsApp</span>
-              <span class="contact-value ltr">+966 XX XXX XXXX</span>
+              <span class="contact-value ltr">+20 101 932 2902</span>
             </div>
-          </div>
+          </a>
           <div class="contact-item">
             <div class="contact-icon" style="background:rgba(245,158,11,.12);color:#d97706">
               <i class="fas fa-clock"></i>
@@ -158,7 +167,10 @@ import { FormsModule } from '@angular/forms';
       display:flex; align-items:center; gap:.65rem;
       padding:.75rem .85rem; background:#fff; border-radius:14px;
       border:1.5px solid #f0f0f5; box-shadow:0 2px 6px rgba(0,0,0,.03);
+      text-decoration:none; color:inherit;
+      -webkit-tap-highlight-color:transparent; transition:transform .12s, border-color .15s;
     }
+    a.contact-item:active { transform:scale(.99); border-color:rgba(102,126,234,.3); }
     .contact-icon {
       width:42px; height:42px; border-radius:12px; flex-shrink:0;
       display:flex; align-items:center; justify-content:center; font-size:1.1rem;

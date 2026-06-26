@@ -65,46 +65,51 @@ import { lastValueFrom } from 'rxjs';
           <p>ستظهر هنا جميع إشعاراتك عند توفرها</p>
         </div>
 
-        <!-- Notifications List -->
-        <div class="notifications-list" *ngIf="!loading() && notifications().length > 0">
-          <div 
-            *ngFor="let n of notifications(); trackBy: trackById"
-            class="notification-item ion-activatable"
-            [class.unread]="!n.isRead"
-            [style.border-right-color]="!n.isRead ? currentTheme().primary : 'transparent'"
-            (click)="onNotificationClick(n)">
-            
-            <div 
-              class="notification-icon"
-              [ngClass]="getIconClass(n.type!)"
-              [style.background]="getNotificationColor(n.type!, 'bg')"
-              [style.color]="getNotificationColor(n.type!, 'color')">
-              <i class="fas" [ngClass]="getIcon(n.type!)"></i>
+        <!-- Notifications feed — grouped New / Earlier -->
+        @if (!loading() && notifications().length > 0) {
+          @if (newNotifications().length > 0) {
+            <div class="feed-label">جديد · New</div>
+            <div class="notif-list">
+              @for (n of newNotifications(); track n.id) {
+                <button class="notif-row ion-activatable" [class.unread]="!n.isRead" (click)="onNotificationClick(n)" type="button">
+                  <div class="notif-avatar"
+                    [style.background]="getNotificationColor(n.type!, 'bg')"
+                    [style.color]="getNotificationColor(n.type!, 'color')">
+                    <i class="fas" [ngClass]="getIcon(n.type!)"></i>
+                    <span class="notif-badge" [style.background]="currentTheme().primary"><i class="fas fa-bell"></i></span>
+                  </div>
+                  <div class="notif-body">
+                    <p class="notif-text"><strong>{{ n.title }}</strong> {{ n.message }}</p>
+                    <span class="notif-time" [class.unread]="!n.isRead" [style.color]="!n.isRead ? currentTheme().primary : null">{{ formatDate(n.creationTime!) }}</span>
+                  </div>
+                  @if (!n.isRead) { <span class="notif-dot" [style.background]="currentTheme().primary"></span> }
+                  <ion-ripple-effect></ion-ripple-effect>
+                </button>
+              }
             </div>
-            
-            <div class="notification-content">
-              <div class="notification-header">
-                <h4 class="notification-title" [class.unread]="!n.isRead" [style.color]="!n.isRead ? currentTheme().textColor : 'inherit'">
-                  {{ n.title }}
-                </h4>
-                <span class="notification-time">{{ formatDate(n.creationTime!) }}</span>
-              </div>
-              <p class="notification-message">{{ n.message }}</p>
+          }
+
+          @if (earlierNotifications().length > 0) {
+            <div class="feed-label">أقدم · Earlier</div>
+            <div class="notif-list">
+              @for (n of earlierNotifications(); track n.id) {
+                <button class="notif-row ion-activatable" (click)="onNotificationClick(n)" type="button">
+                  <div class="notif-avatar"
+                    [style.background]="getNotificationColor(n.type!, 'bg')"
+                    [style.color]="getNotificationColor(n.type!, 'color')">
+                    <i class="fas" [ngClass]="getIcon(n.type!)"></i>
+                    <span class="notif-badge" [style.background]="currentTheme().primary"><i class="fas fa-bell"></i></span>
+                  </div>
+                  <div class="notif-body">
+                    <p class="notif-text"><strong>{{ n.title }}</strong> {{ n.message }}</p>
+                    <span class="notif-time">{{ formatDate(n.creationTime!) }}</span>
+                  </div>
+                  <ion-ripple-effect></ion-ripple-effect>
+                </button>
+              }
             </div>
-            
-            <div class="notification-right">
-              <div class="notification-indicator" *ngIf="!n.isRead">
-                <div
-                  class="unread-dot"
-                  [style.background]="currentTheme().primary"
-                  [style.box-shadow]="'0 0 0 4px ' + currentTheme().light">
-                </div>
-              </div>
-              <i class="fas fa-chevron-left nav-arrow" *ngIf="hasRoute(n)"></i>
-            </div>
-            <ion-ripple-effect></ion-ripple-effect>
-          </div>
-        </div>
+          }
+        }
       </div>
     </div>
   `,
@@ -113,9 +118,88 @@ import { lastValueFrom } from 'rxjs';
 
     .notifications-page {
       min-height: 100vh;
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      background: #f4f5fb;
       direction: rtl;
     }
+
+    /* ── Grouped feed (New / Earlier) ───────────────────────────────── */
+    .feed-label {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1a202c;
+      padding: 1.1rem 1rem .45rem;
+    }
+    .notif-list {
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 0 .5rem .5rem;
+      box-shadow: 0 2px 10px rgba(31,41,55,.05);
+    }
+    .notif-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      width: 100%;
+      text-align: start;
+      border: none;
+      background: #fff;
+      padding: .7rem .9rem;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid #f1f1f6;
+      transition: background .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .notif-row:last-child { border-bottom: none; }
+    .notif-row:active { background: #f5f5fa; }
+    .notif-row.unread { background: rgba(102,126,234,.06); }
+    .notif-row ion-ripple-effect { color: rgba(102,126,234,.18); }
+
+    .notif-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      position: relative;
+    }
+    .notif-badge {
+      position: absolute;
+      bottom: -2px;
+      inset-inline-end: -2px;
+      width: 21px;
+      height: 21px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: .55rem;
+      border: 2px solid #fff;
+    }
+
+    .notif-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .15rem; }
+    .notif-text {
+      margin: 0;
+      font-size: .85rem;
+      color: #1a202c;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .notif-text strong { font-weight: 700; }
+    .notif-time { font-size: .72rem; color: #9090aa; }
+    .notif-time.unread { font-weight: 700; }
+    .notif-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
 
     // ─── Page Header with Grade Theme ───────────────────────────────
     .page-header {
@@ -548,6 +632,17 @@ export class NotificationsComponent implements OnInit {
   currentGrade = signal<number | null>(null);
   // Always use purple theme (KAI brand color)
   currentTheme = computed(() => this.getDefaultTheme());
+
+  // Feed grouping: "New" = unread or within the last 24h; "Earlier" = the rest.
+  private static readonly DAY_MS = 24 * 60 * 60 * 1000;
+  newNotifications = computed(() => {
+    const cutoff = Date.now() - NotificationsComponent.DAY_MS;
+    return this.notifications().filter(n => !n.isRead || new Date(n.creationTime!).getTime() >= cutoff);
+  });
+  earlierNotifications = computed(() => {
+    const cutoff = Date.now() - NotificationsComponent.DAY_MS;
+    return this.notifications().filter(n => n.isRead && new Date(n.creationTime!).getTime() < cutoff);
+  });
 
   constructor() {
     // Append real-time notifications at the top as they arrive
