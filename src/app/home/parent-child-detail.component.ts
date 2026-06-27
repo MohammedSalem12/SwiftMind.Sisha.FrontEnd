@@ -339,7 +339,7 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
     .hero {
       position: relative;
       background: $purple-grad;
-      padding: 1.25rem 1.25rem 1.5rem;
+      padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 1.5rem;
       overflow: hidden;
     }
     .hero-blob {

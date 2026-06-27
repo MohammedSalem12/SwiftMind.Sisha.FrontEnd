@@ -1,7 +1,7 @@
 .student-edit-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: calc(env(safe-area-inset-top, 0px) + 2rem) 2rem 2rem;
 
   .page-header {
     margin-bottom: 2rem;

@@ -1,5 +1,5 @@
 .parent-detail-page {
-  padding: 24px;
+  padding: calc(env(safe-area-inset-top, 0px) + 24px) 24px 24px;
   max-width: 1200px;
   margin: 0 auto;
 }

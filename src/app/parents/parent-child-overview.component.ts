@@ -228,14 +228,25 @@ export class ParentChildOverviewComponent implements OnInit {
     const s = this.student();
     const currentGrade = s?.currentGrade ?? 0;
     const all = this.courses();
-    if (this.activeTab() === 'current') {
-      // Show courses matching current grade or courses with no grade info
-      const currentGradeName = this.getGradeName(currentGrade);
-      return all.filter(c => !c.gradeName || c.gradeName === currentGradeName || c.gradeName.includes(String(currentGrade)));
-    } else {
-      const currentGradeName = this.getGradeName(currentGrade);
-      return all.filter(c => c.gradeName && c.gradeName !== currentGradeName && !c.gradeName.includes(String(currentGrade)));
-    }
+    const wantCurrent = this.activeTab() === 'current';
+    return all.filter(c => this.isCurrentGradeCourse(c, currentGrade) === wantCurrent);
+  }
+
+  /**
+   * Decide whether a course belongs to the student's *current* grade.
+   * Compares grade names tolerantly (Arabic grade labels are spelled out and may
+   * carry a "الصف" prefix, so exact-string / digit matching mis-buckets current
+   * courses into "Previous"). A course with no grade info is treated as current.
+   */
+  private isCurrentGradeCourse(c: CourseInfo, currentGrade: number): boolean {
+    if (!c.gradeName) return true;
+    const norm = (v: string) =>
+      (v || '').replace(/الصف/g, '').replace(/\s+/g, ' ').trim();
+    const cur = norm(this.getGradeName(currentGrade));
+    const g = norm(c.gradeName);
+    if (!cur) return true;
+    return g === cur || g.includes(cur) || cur.includes(g)
+      || (currentGrade > 0 && g.includes(String(currentGrade)));
   }
 
   private getGradeName(grade: number): string {
