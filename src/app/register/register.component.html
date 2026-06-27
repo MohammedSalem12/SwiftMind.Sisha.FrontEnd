@@ -228,11 +228,11 @@
           />
         </div>
 
-        <!-- Teacher-only optional profile (photo + bio), editable later -->
-        <ng-container *ngIf="form.userType === UserRegistrationType.Teacher">
+        <!-- Optional profile photo (student/teacher/parent), editable later -->
+        <ng-container *ngIf="form.userType === UserRegistrationType.Student || form.userType === UserRegistrationType.Teacher || form.userType === UserRegistrationType.Parent">
           <div class="info-bar">
             <i class="fas fa-circle-info"></i>
-            <span>يمكنك إضافة صورة ونبذة الآن أو تخطّيهما وإضافتهما/تعديلهما لاحقاً من ملفك الشخصي · You can add a photo and bio now, or skip and change them later from your profile.</span>
+            <span>يمكنك إضافة صورة الآن أو تخطّيها وإضافتها/تعديلها لاحقاً من ملفك الشخصي · You can add a photo now, or skip and change it later from your profile.</span>
           </div>
 
           <div class="field-group">
@@ -258,7 +258,8 @@
             </div>
           </div>
 
-          <div class="field-group">
+          <!-- Bio is teacher-only -->
+          <div class="field-group" *ngIf="form.userType === UserRegistrationType.Teacher">
             <label for="bio">
               <i class="fas fa-pen"></i>
               نبذة تعريفية (اختياري) · Bio

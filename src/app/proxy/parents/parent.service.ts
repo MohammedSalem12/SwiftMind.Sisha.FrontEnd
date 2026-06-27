@@ -1,4 +1,4 @@
-import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDashboardDto, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, SendMessageToTeacherDto, SubmitAbsenceExcuseDto, UpdateParentDto, UpdateParentStudentDto } from './models';
+import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDashboardDto, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, SendMessageToTeacherDto, SubmitAbsenceExcuseDto, UpdateParentDto, UpdateParentProfileDto, UpdateParentStudentDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -219,6 +219,15 @@ export class ParentService {
     this.restService.request<any, ParentDto>({
       method: 'PUT',
       url: `/api/app/parent/${id}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateMyProfile = (input: UpdateParentProfileDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ParentDto>({
+      method: 'PUT',
+      url: '/api/app/parent/my-profile',
       body: input,
     },
     { apiName: this.apiName,...config });

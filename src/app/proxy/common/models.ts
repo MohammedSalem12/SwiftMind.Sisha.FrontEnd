@@ -45,6 +45,7 @@ export interface UserRegBaseDto {
 }
 
 export interface UserRegParentDto extends UserRegBaseDto {
+  photoUrl?: string;
 }
 
 export interface UserRegSecretaryDto extends UserRegBaseDto {
@@ -55,6 +56,7 @@ export interface UserRegStudentDto extends UserRegBaseDto {
   referralCode?: string;
   government?: string;
   town?: string;
+  photoUrl?: string;
 }
 
 export interface UserRegTeacherDto extends UserRegBaseDto {

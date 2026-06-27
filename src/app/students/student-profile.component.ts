@@ -24,11 +24,20 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
         <div class="blob b1"></div>
         <div class="blob b2"></div>
         <div class="avatar-wrap">
-          <div class="avatar"><span>{{ initials() }}</span></div>
+          <div class="avatar">
+            @if (student()?.photoUrl) { <img [src]="student()!.photoUrl" alt="" /> }
+            @else { <span>{{ initials() }}</span> }
+            <button class="avatar-edit" (click)="toggleProfileEdit()" aria-label="تعديل الصورة">
+              <i class="fas fa-camera"></i>
+            </button>
+          </div>
           <div class="role-badge"><i class="fas fa-graduation-cap"></i> طالب · Student</div>
         </div>
         <div class="header-info">
           <h1 class="user-name">{{ student()?.firstName }} {{ student()?.lastName }}</h1>
+          @if (student()?.statusMessage) {
+            <span class="status-line"><i class="fas fa-quote-right"></i> {{ student()?.statusMessage }}</span>
+          }
           @if (student()?.studentCode) {
             <span class="user-code">{{ student()?.studentCode }}</span>
           }
@@ -55,6 +64,48 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       }
 
       @if (!loading()) {
+
+        <!-- Photo & status editor -->
+        @if (editingProfile()) {
+          <div class="section">
+            <div class="section-title">
+              <i class="fas fa-id-badge"></i> صورتي وحالتي · Photo & Status
+              <button class="edit-loc-btn" (click)="toggleProfileEdit()">
+                <i class="fas fa-times"></i> إلغاء · Cancel
+              </button>
+            </div>
+            <div class="loc-edit-card">
+              <div class="photo-row">
+                <div class="photo-preview">
+                  @if (editPhoto()) { <img [src]="editPhoto()" alt="" /> }
+                  @else { <i class="fas fa-user"></i> }
+                </div>
+                <label class="photo-btn">
+                  @if (photoProcessing()) { <span class="spinner-xs"></span> }
+                  @else { <i class="fas fa-image"></i> }
+                  {{ editPhoto() ? 'تغيير · Change' : 'إضافة صورة · Add' }}
+                  <input type="file" accept="image/*" hidden (change)="onPhotoSelected($event)" />
+                </label>
+                @if (editPhoto()) {
+                  <button type="button" class="photo-remove" (click)="editPhoto.set('')">
+                    <i class="fas fa-trash"></i> إزالة
+                  </button>
+                }
+              </div>
+              <div class="loc-field-body">
+                <label>حالتي (اختياري) · Status message</label>
+                <input class="loc-input" maxlength="140"
+                  [ngModel]="editStatus()" (ngModelChange)="editStatus.set($event)"
+                  placeholder="اكتب حالتك أو هدفك الدراسي... · Share a short status..." />
+              </div>
+              @if (profileSaveError()) { <p class="loc-error">{{ profileSaveError() }}</p> }
+              <button class="loc-save-btn" [disabled]="profileSaving()" (click)="saveProfile()">
+                @if (profileSaving()) { <span class="spinner-xs"></span> } @else { <i class="fas fa-check-circle"></i> }
+                حفظ · Save
+              </button>
+            </div>
+          </div>
+        }
 
         <!-- Quick actions -->
         <div class="section">
@@ -234,10 +285,48 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
     .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
     .avatar-wrap { display:flex; flex-direction:column; align-items:center; gap:.5rem; position:relative; z-index:1; }
     .avatar {
+      position:relative;
       width:80px; height:80px; border-radius:50%;
       background:rgba(255,255,255,.2); border:3px solid rgba(255,255,255,.5);
       display:flex; align-items:center; justify-content:center;
-      font-size:1.8rem; font-weight:800; color:#fff;
+      font-size:1.8rem; font-weight:800; color:#fff; overflow:visible;
+    }
+    .avatar img {
+      width:100%; height:100%; border-radius:50%; object-fit:cover;
+    }
+    .avatar-edit {
+      position:absolute; bottom:-2px; left:-2px;
+      width:28px; height:28px; border-radius:50%;
+      background:#fff; color:#667eea; border:2px solid #764ba2;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.7rem; cursor:pointer; padding:0;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .avatar-edit:active { transform:scale(.92); }
+    .status-line {
+      font-size:.78rem; color:rgba(255,255,255,.9); font-style:italic;
+      max-width:90%; display:flex; align-items:center; gap:.3rem; justify-content:center;
+    }
+    .status-line i { font-size:.6rem; opacity:.6; }
+
+    .photo-row { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+    .photo-preview {
+      width:64px; height:64px; border-radius:50%; flex-shrink:0; overflow:hidden;
+      background:#f0f0f5; border:1.5px solid #e0e0f0;
+      display:flex; align-items:center; justify-content:center; color:#9090aa; font-size:1.3rem;
+    }
+    .photo-preview img { width:100%; height:100%; object-fit:cover; }
+    .photo-btn {
+      display:inline-flex; align-items:center; gap:.4rem; cursor:pointer;
+      background:rgba(102,126,234,.1); border:1.5px solid rgba(102,126,234,.25);
+      color:#667eea; border-radius:12px; padding:.5rem .85rem;
+      font-size:.8rem; font-weight:700; min-height:44px;
+    }
+    .photo-remove {
+      display:inline-flex; align-items:center; gap:.35rem; cursor:pointer;
+      background:rgba(239,68,68,.08); border:1.5px solid rgba(239,68,68,.2);
+      color:#dc2626; border-radius:12px; padding:.5rem .75rem;
+      font-size:.78rem; font-weight:700; min-height:44px;
     }
     .role-badge {
       display:flex; align-items:center; gap:.35rem;
@@ -443,6 +532,14 @@ export class StudentProfileComponent implements OnInit {
   promotionMsg = signal<string | null>(null);
   promotionSuccess = signal(false);
 
+  // Photo + status editing
+  editingProfile = signal(false);
+  editPhoto = signal('');
+  editStatus = signal('');
+  photoProcessing = signal(false);
+  profileSaving = signal(false);
+  profileSaveError = signal<string | null>(null);
+
   // Location editing
   editingLocation = signal(false);
   locSaving = signal(false);
@@ -514,6 +611,68 @@ export class StudentProfileComponent implements OnInit {
       this.promotionSuccess.set(false);
     } finally {
       this.promotionLoading.set(false);
+    }
+  }
+
+  toggleProfileEdit(): void {
+    if (!this.editingProfile()) {
+      const s = this.student();
+      this.editPhoto.set(s?.photoUrl || '');
+      this.editStatus.set(s?.statusMessage || '');
+      this.profileSaveError.set(null);
+    }
+    this.editingProfile.set(!this.editingProfile());
+  }
+
+  async onPhotoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.photoProcessing.set(true);
+    try {
+      this.editPhoto.set(await this.resizeImageToDataUrl(file, 320, 0.8));
+    } catch { this.profileSaveError.set('تعذّر معالجة الصورة · Could not process image'); }
+    finally { this.photoProcessing.set(false); input.value = ''; }
+  }
+
+  private resizeImageToDataUrl(file: File, maxSize: number, quality: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('image load failed'));
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > height && width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
+          else if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('no canvas ctx')); return; }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async saveProfile(): Promise<void> {
+    this.profileSaving.set(true);
+    this.profileSaveError.set(null);
+    try {
+      const updated = await lastValueFrom(this.studentSvc.updateMyProfile({
+        photoUrl: this.editPhoto() || undefined,
+        statusMessage: this.editStatus().trim() || undefined,
+      }));
+      if (updated) this.student.set(updated);
+      this.editingProfile.set(false);
+    } catch (err: any) {
+      this.profileSaveError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ · Error saving');
+    } finally {
+      this.profileSaving.set(false);
     }
   }
 

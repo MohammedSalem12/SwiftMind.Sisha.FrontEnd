@@ -1,4 +1,4 @@
-import type { CreateGroupChangeRequestDto, CreatePromotionRequestDto, CreateUpdateStudentDto, GroupChangeRequestDto, PromotionRequestDto, RequestParentLinkDto, StudentDto } from './models';
+import type { CreateGroupChangeRequestDto, CreatePromotionRequestDto, CreateUpdateStudentDto, GroupChangeRequestDto, PromotionRequestDto, RequestParentLinkDto, StudentDto, UpdateStudentProfileDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -203,6 +203,15 @@ export class StudentService {
     this.restService.request<any, StudentDto>({
       method: 'PUT',
       url: `/api/app/student/${id}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateMyProfile = (input: UpdateStudentProfileDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentDto>({
+      method: 'PUT',
+      url: '/api/app/student/my-profile',
       body: input,
     },
     { apiName: this.apiName,...config });

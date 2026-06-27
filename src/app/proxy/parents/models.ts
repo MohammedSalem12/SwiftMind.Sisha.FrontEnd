@@ -75,6 +75,7 @@ export interface ParentDto extends FullAuditedEntityDto<string> {
   parentCode?: string;
   referralCode?: string;
   fullName?: string;
+  photoUrl?: string;
   parentStudents: ParentStudentDto[];
 }
 
@@ -154,6 +155,10 @@ export interface UpdateParentDto {
   email: string;
   occupation?: string;
   emergencyContact?: string;
+}
+
+export interface UpdateParentProfileDto {
+  photoUrl?: string;
 }
 
 export interface UpdateParentStudentDto {

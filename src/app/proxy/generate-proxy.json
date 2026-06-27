@@ -12402,6 +12402,23 @@
               "name": "IParentAppService",
               "methods": [
                 {
+                  "name": "UpdateMyProfileAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Parents.UpdateParentProfileDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                      "typeSimple": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Parents.ParentDto",
+                    "typeSimple": "SwiftMind.Sesha.Parents.ParentDto"
+                  }
+                },
+                {
                   "name": "GetByUserIdAsync",
                   "parametersOnMethod": [
                     {
@@ -12826,6 +12843,43 @@
             }
           ],
           "actions": {
+            "UpdateMyProfileAsyncByInput": {
+              "uniqueName": "UpdateMyProfileAsyncByInput",
+              "name": "UpdateMyProfileAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/parent/my-profile",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Parents.UpdateParentProfileDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Parents.ParentDto",
+                "typeSimple": "SwiftMind.Sesha.Parents.ParentDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Parents.IParentAppService"
+            },
             "CreateAsyncByInput": {
               "uniqueName": "CreateAsyncByInput",
               "name": "CreateAsync",
@@ -15303,6 +15357,23 @@
                   }
                 },
                 {
+                  "name": "UpdateMyProfileAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Students.UpdateStudentProfileDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                      "typeSimple": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
                   "name": "GetByStudentCodeAsync",
                   "parametersOnMethod": [
                     {
@@ -15692,6 +15763,43 @@
               "supportedVersions": [],
               "parametersOnMethod": [],
               "parameters": [],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "UpdateMyProfileAsyncByInput": {
+              "uniqueName": "UpdateMyProfileAsyncByInput",
+              "name": "UpdateMyProfileAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/student/my-profile",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Students.UpdateStudentProfileDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
               "returnValue": {
                 "type": "SwiftMind.Sesha.Students.StudentDto",
                 "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
@@ -21391,6 +21499,23 @@
               "name": "IParentAppService",
               "methods": [
                 {
+                  "name": "UpdateMyProfileAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Parents.UpdateParentProfileDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                      "typeSimple": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Parents.ParentDto",
+                    "typeSimple": "SwiftMind.Sesha.Parents.ParentDto"
+                  }
+                },
+                {
                   "name": "GetByUserIdAsync",
                   "parametersOnMethod": [
                     {
@@ -22103,6 +22228,43 @@
               },
               "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
+            },
+            "UpdateMyProfileAsyncByInput": {
+              "uniqueName": "UpdateMyProfileAsyncByInput",
+              "name": "UpdateMyProfileAsync",
+              "httpMethod": "PUT",
+              "url": "api/sesha/parents/my-profile",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Parents.UpdateParentProfileDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Parents.UpdateParentProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Parents.ParentDto",
+                "typeSimple": "SwiftMind.Sesha.Parents.ParentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Parents.IParentAppService"
             },
             "GetByUserIdAsyncByUserId": {
               "uniqueName": "GetByUserIdAsyncByUserId",
@@ -22981,6 +23143,23 @@
                   }
                 },
                 {
+                  "name": "UpdateMyProfileAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Students.UpdateStudentProfileDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                      "typeSimple": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Students.StudentDto",
+                    "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+                  }
+                },
+                {
                   "name": "GetByStudentCodeAsync",
                   "parametersOnMethod": [
                     {
@@ -23599,6 +23778,43 @@
               "supportedVersions": [],
               "parametersOnMethod": [],
               "parameters": [],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Students.StudentDto",
+                "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Students.IStudentAppService"
+            },
+            "UpdateMyProfileAsyncByInput": {
+              "uniqueName": "UpdateMyProfileAsyncByInput",
+              "name": "UpdateMyProfileAsync",
+              "httpMethod": "PUT",
+              "url": "api/sesha/students/my-profile",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Students.UpdateStudentProfileDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Students.UpdateStudentProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
               "returnValue": {
                 "type": "SwiftMind.Sesha.Students.StudentDto",
                 "typeSimple": "SwiftMind.Sesha.Students.StudentDto"
@@ -30034,7 +30250,20 @@
       "enumNames": null,
       "enumValues": null,
       "genericArguments": null,
-      "properties": []
+      "properties": [
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
     },
     "SwiftMind.Sesha.Common.UserRegSecretaryDto": {
       "baseType": "SwiftMind.Sesha.Common.UserRegBaseDto",
@@ -30095,6 +30324,18 @@
           "isRequired": false,
           "minLength": 0,
           "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
           "minimum": null,
           "maximum": null,
           "regex": null
@@ -35376,6 +35617,18 @@
           "regex": null
         },
         {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "ParentStudents",
           "jsonName": null,
           "type": "[SwiftMind.Sesha.Parents.ParentStudentDto]",
@@ -36103,6 +36356,27 @@
           "isRequired": false,
           "minLength": 0,
           "maxLength": 256,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Parents.UpdateParentProfileDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
           "minimum": null,
           "maximum": null,
           "regex": null
@@ -38345,6 +38619,63 @@
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StatusMessage",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Students.UpdateStudentProfileDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StatusMessage",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": 140,
           "minimum": null,
           "maximum": null,
           "regex": null

@@ -72,4 +72,11 @@ export interface StudentDto extends ExtensibleAuditedEntityDto<string> {
   government?: string;
   town?: string;
   referralCode?: string;
+  photoUrl?: string;
+  statusMessage?: string;
+}
+
+export interface UpdateStudentProfileDto {
+  photoUrl?: string;
+  statusMessage?: string;
 }

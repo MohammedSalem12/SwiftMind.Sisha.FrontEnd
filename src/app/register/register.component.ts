@@ -260,7 +260,7 @@ export class RegisterComponent implements OnInit {
       switch (this.form.userType!) {
         case UserRegistrationType.Student:
           result = await lastValueFrom(this.userRegSvc.registerStudent(
-            { ...base, grade: Number(this.form.grade), referralCode: this.form.referralCode.trim() || undefined, government: this.form.government || undefined, town: this.form.town || undefined } as UserRegStudentDto,
+            { ...base, grade: Number(this.form.grade), referralCode: this.form.referralCode.trim() || undefined, government: this.form.government || undefined, town: this.form.town || undefined, photoUrl: this.form.photoUrl || undefined } as UserRegStudentDto,
             { skipHandleError: true }
           ));
           break;
@@ -272,7 +272,7 @@ export class RegisterComponent implements OnInit {
           break;
         case UserRegistrationType.Parent:
           result = await lastValueFrom(this.userRegSvc.registerParent(
-            base as UserRegParentDto,
+            { ...base, photoUrl: this.form.photoUrl || undefined } as UserRegParentDto,
             { skipHandleError: true }
           ));
           break;
