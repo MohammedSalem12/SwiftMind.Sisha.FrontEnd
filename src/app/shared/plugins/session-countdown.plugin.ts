@@ -26,6 +26,12 @@ export interface SessionCountdownPlugin {
   start(options: StartCountdownOptions): Promise<StartCountdownResult>;
   /** Cancel the countdown notification for a session. */
   stop(options: { sessionId: string }): Promise<void>;
+  /**
+   * Ensure notifications can be shown (Android 13+ runtime permission; iOS reports
+   * whether Live Activities are enabled). Resolves whether granted. No prompt on
+   * Android < 13 or iOS.
+   */
+  ensurePermission(): Promise<{ granted: boolean }>;
 }
 
 /**

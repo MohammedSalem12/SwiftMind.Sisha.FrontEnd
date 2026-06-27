@@ -19,8 +19,21 @@ public class SessionCountdownPlugin: CAPPlugin, CAPBridgedPlugin {
     public let jsName = "SessionCountdown"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "start", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "stop", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "stop", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "ensurePermission", returnType: CAPPluginReturnPromise)
     ]
+
+    /// Live Activities don't use the notifications permission; they have their own
+    /// system enablement (Settings ▸ KAI ▸ Live Activities). Report that, no prompt.
+    @objc func ensurePermission(_ call: CAPPluginCall) {
+        #if canImport(ActivityKit)
+        if #available(iOS 16.1, *) {
+            call.resolve(["granted": ActivityAuthorizationInfo().areActivitiesEnabled])
+            return
+        }
+        #endif
+        call.resolve(["granted": false])
+    }
 
     @objc func start(_ call: CAPPluginCall) {
         guard let sessionId = call.getString("sessionId"), !sessionId.isEmpty else {

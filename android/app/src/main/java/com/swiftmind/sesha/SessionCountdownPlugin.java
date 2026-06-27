@@ -1,5 +1,6 @@
 package com.swiftmind.sesha;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,10 +14,13 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.getcapacitor.JSObject;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 
 /**
  * SessionCountdownPlugin — shows an OS-rendered live countdown timer in the
@@ -27,15 +31,54 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  * The notification is silent and ongoing (a low-importance channel) so updating it
  * does not buzz the device.
  */
-@CapacitorPlugin(name = "SessionCountdown")
+@CapacitorPlugin(
+    name = "SessionCountdown",
+    permissions = {
+        @Permission(alias = "notifications", strings = { Manifest.permission.POST_NOTIFICATIONS })
+    }
+)
 public class SessionCountdownPlugin extends Plugin {
 
     private static final String CHANNEL_ID = "sesha_countdown";
     private static final String CHANNEL_NAME = "العد التنازلي للحصة — Session Countdown";
+    private static final String PERM_NOTIFICATIONS = "notifications";
 
     @Override
     public void load() {
         createChannel();
+    }
+
+    /**
+     * ensurePermission() — make sure notifications can be posted (Android 13+ runtime
+     * permission). Resolves { granted: boolean }. On Android < 13 notifications need no
+     * runtime grant, so it resolves granted=true without prompting.
+     *
+     * Self-contained on purpose: it does NOT touch the FCM push plugin (whose
+     * getPermissionStates() path crashes), so the countdown can request notifications
+     * independently while push remains disabled.
+     */
+    @PluginMethod
+    public void ensurePermission(PluginCall call) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            resolveGranted(call, true);
+            return;
+        }
+        if (getPermissionState(PERM_NOTIFICATIONS) == PermissionState.GRANTED) {
+            resolveGranted(call, true);
+            return;
+        }
+        requestPermissionForAlias(PERM_NOTIFICATIONS, call, "onNotificationPermission");
+    }
+
+    @PermissionCallback
+    private void onNotificationPermission(PluginCall call) {
+        resolveGranted(call, getPermissionState(PERM_NOTIFICATIONS) == PermissionState.GRANTED);
+    }
+
+    private void resolveGranted(PluginCall call, boolean granted) {
+        JSObject ret = new JSObject();
+        ret.put("granted", granted);
+        call.resolve(ret);
     }
 
     /**

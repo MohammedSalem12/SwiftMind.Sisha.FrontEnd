@@ -46,6 +46,7 @@ export class SessionCountdownService {
   private readonly sessionService = inject(SessionService);
 
   private activeSessionId: string | null = null;
+  private permissionEnsured = false;
   private pollHandle: any = null;
   private resumeListener: { remove: () => void } | null = null;
   private autoSyncStarted = false;
@@ -144,6 +145,21 @@ export class SessionCountdownService {
     if (!isShowable) {
       await this.clear();
       return;
+    }
+
+    // Lazily ensure notification permission the first time we'd actually show a
+    // countdown (Android 13+). Contextual: the prompt appears when a session is
+    // imminent, not at app launch. If declined, there's nothing to show.
+    if (!this.permissionEnsured) {
+      this.permissionEnsured = true;
+      try {
+        const res = await SessionCountdown.ensurePermission();
+        if (res && res.granted === false) {
+          return;
+        }
+      } catch {
+        // Older build without ensurePermission — fall through and try anyway.
+      }
     }
 
     // If a different session was showing, cancel it first.
