@@ -6,6 +6,7 @@ import { AuthService } from '@abp/ng.core';
 import { filter, lastValueFrom } from 'rxjs';
 import { SessionService } from '@proxy/groups';
 import { CurrentUserInfoService } from '@proxy/common';
+import { SessionCountdownService } from './services/session-countdown.service';
 import type { NextSessionDto } from '@proxy/groups/dtos/models';
 
 const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profile'];
@@ -271,6 +272,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   private readonly location = inject(Location);
   private readonly authService = inject(AuthService);
   private readonly sessionService = inject(SessionService);
+  private readonly countdownNotifier = inject(SessionCountdownService);
   private readonly destroyRef = inject(DestroyRef);
   private countdownInterval: any;
 
@@ -319,7 +321,32 @@ export class TopBarComponent implements OnInit, OnDestroy {
           else clearInterval(this.countdownInterval);
         }, 1000);
       }
-    } catch { /* silent */ }
+      // Mirror the next session as an Android live-countdown notification (no-op on web/iOS).
+      this.syncCountdownNotification(session ?? null);
+    } catch {
+      this.syncCountdownNotification(null);
+    }
+  }
+
+  /** Reconcile the OS countdown notification with the current next session. */
+  private syncCountdownNotification(session: NextSessionDto | null): void {
+    if (!session || session.isNow || (session.secondsUntilStart ?? 0) <= 0) {
+      void this.countdownNotifier.sync(null);
+      return;
+    }
+    const sessionId = session.groupScheduleId || session.groupId || session.courseId;
+    if (!sessionId) {
+      void this.countdownNotifier.sync(null);
+      return;
+    }
+    void this.countdownNotifier.sync({
+      id: sessionId,
+      // Backend pre-computes secondsUntilStart; derive an absolute target time.
+      startTimeMillis: Date.now() + session.secondsUntilStart * 1000,
+      title: session.courseName || 'الحصة القادمة',
+      subtitle: session.groupName || session.location || '',
+      deepLink: '/student/today-sessions',
+    });
   }
 
   formatCountdown(): string {
