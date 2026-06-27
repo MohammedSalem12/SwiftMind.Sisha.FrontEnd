@@ -55,6 +55,11 @@ export interface PromotionRequestDto extends FullAuditedEntityDto<string> {
   initiatorType?: string;
 }
 
+export interface RequestParentLinkDto {
+  parentCode: string;
+  relationshipType?: string;
+}
+
 export interface StudentDto extends ExtensibleAuditedEntityDto<string> {
   firstName?: string;
   middleName?: string;

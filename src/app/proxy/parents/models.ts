@@ -105,6 +105,9 @@ export interface ParentStudentDto extends FullAuditedEntityDto {
   studentName?: string;
   studentCode?: string;
   gradeName?: string;
+  parentName?: string;
+  parentCode?: string;
+  initiatedByStudent: boolean;
   linkStatus?: ParentStudentLinkStatus;
 }
 

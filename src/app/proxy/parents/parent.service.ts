@@ -11,6 +11,14 @@ export class ParentService {
   apiName = 'Default';
   
 
+  confirmStudentLinkRequest = (studentId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/parent/confirm-student-link-request/${studentId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   create = (input: CreateParentDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ParentDto>({
       method: 'POST',
@@ -138,6 +146,14 @@ export class ParentService {
     { apiName: this.apiName,...config });
   
 
+  getPendingStudentRequestsForCurrentParent = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ParentStudentDto[]>({
+      method: 'GET',
+      url: '/api/app/parent/pending-student-requests-for-current-parent',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getPickupAuthorizedForStudent = (studentId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ParentStudentDto[]>({
       method: 'GET',
@@ -160,6 +176,14 @@ export class ParentService {
       method: 'POST',
       url: '/api/app/parent/register-parent',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  rejectStudentLinkRequest = (studentId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/parent/reject-student-link-request/${studentId}`,
     },
     { apiName: this.apiName,...config });
   

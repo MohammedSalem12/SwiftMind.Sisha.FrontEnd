@@ -60,8 +60,8 @@ interface RequestItem {
                 (click)="setTab('links')">
           <i class="fas fa-user-plus"></i>
           <span>الربط</span>
-          <span class="badge badge--amber" *ngIf="linkRequests().length > 0">
-            {{ linkRequests().length }}
+          <span class="badge badge--amber" *ngIf="linkRequests().length + studentLinkRequests().length > 0">
+            {{ linkRequests().length + studentLinkRequests().length }}
           </span>
         </button>
         <button class="tab" [class.active]="activeTab() === 'ended'"
@@ -128,12 +128,36 @@ interface RequestItem {
 
         <!-- Links Tab -->
         <div *ngIf="activeTab() === 'links'">
-          <div *ngIf="linkRequests().length === 0" class="empty-state">
+          <div *ngIf="linkRequests().length === 0 && studentLinkRequests().length === 0" class="empty-state">
             <div class="empty-icon">
               <i class="fas fa-user-check"></i>
             </div>
             <h3>لا توجد طلبات ربط معلقة</h3>
             <p>جميع طلبات الربط اكتملت</p>
+          </div>
+
+          <!-- Incoming student-initiated link requests (need parent approval) -->
+          <div class="requests-list" *ngIf="studentLinkRequests().length">
+            <div class="request-card" *ngFor="let link of studentLinkRequests()">
+              <div class="request-icon pending">
+                <i class="fas fa-user-graduate"></i>
+              </div>
+              <div class="request-content">
+                <h3>{{ link.studentName }}</h3>
+                <p class="subtitle">{{ link.studentCode }}</p>
+                <div class="request-details">
+                  <span><i class="fas fa-paper-plane"></i> طلب الطالب ربط حسابك</span>
+                </div>
+              </div>
+              <div class="request-actions">
+                <button class="action-btn approve" (click)="approveStudentLink(link)">
+                  <i class="fas fa-check"></i>
+                </button>
+                <button class="action-btn reject" (click)="rejectStudentLink(link)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="requests-list">
@@ -588,6 +612,7 @@ export class ParentRequestsComponent implements OnInit {
   pendingRequests = signal<RequestItem[]>([]);
   endedRequests = signal<RequestItem[]>([]);
   linkRequests = signal<ParentStudentDto[]>([]);
+  studentLinkRequests = signal<ParentStudentDto[]>([]);
   
   toastMessage = signal('');
   toastType = signal<'success' | 'error'>('success');
@@ -631,12 +656,19 @@ export class ParentRequestsComponent implements OnInit {
         this.parentService.getLinkedStudentsByParentId(parent.id!)
       ).catch(() => []);
 
-      // Link requests = pending or rejected (not yet confirmed)
+      // Link requests = parent-initiated, pending or rejected (waiting on the student)
       const links = (linkedStudents || []).filter(
-        s => s.linkStatus === ParentStudentLinkStatus.Pending ||
-             s.linkStatus === ParentStudentLinkStatus.Rejected
+        s => (s.linkStatus === ParentStudentLinkStatus.Pending ||
+              s.linkStatus === ParentStudentLinkStatus.Rejected) &&
+             !s.initiatedByStudent
       );
       this.linkRequests.set(links);
+
+      // Student-initiated requests awaiting THIS parent's approval
+      const studentRequests = await lastValueFrom(
+        this.parentService.getPendingStudentRequestsForCurrentParent()
+      ).catch(() => []);
+      this.studentLinkRequests.set(studentRequests || []);
 
       const childrenIds = new Set(
         (linkedStudents || [])
@@ -736,6 +768,28 @@ export class ParentRequestsComponent implements OnInit {
     } catch (error: any) {
       console.error('Error rejecting request:', error);
       this.showToast('حدث خطأ أثناء الرفض', 'error');
+    }
+  }
+
+  async approveStudentLink(link: ParentStudentDto): Promise<void> {
+    if (!link.studentId) return;
+    try {
+      await lastValueFrom(this.parentService.confirmStudentLinkRequest(link.studentId));
+      this.showToast('تم قبول طلب الربط', 'success');
+      await this.loadRequests();
+    } catch {
+      this.showToast('حدث خطأ أثناء قبول الطلب', 'error');
+    }
+  }
+
+  async rejectStudentLink(link: ParentStudentDto): Promise<void> {
+    if (!link.studentId) return;
+    try {
+      await lastValueFrom(this.parentService.rejectStudentLinkRequest(link.studentId));
+      this.showToast('تم رفض طلب الربط', 'success');
+      await this.loadRequests();
+    } catch {
+      this.showToast('حدث خطأ أثناء رفض الطلب', 'error');
     }
   }
 
