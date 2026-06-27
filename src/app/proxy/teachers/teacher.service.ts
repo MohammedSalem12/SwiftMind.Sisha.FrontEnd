@@ -96,6 +96,14 @@ export class TeacherService {
     { apiName: this.apiName,...config });
   
 
+  getMyCourses = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CourseDto[]>({
+      method: 'GET',
+      url: '/api/app/teacher/my-courses',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getMyReferralInfo = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, ReferralInfoDto>({
       method: 'GET',

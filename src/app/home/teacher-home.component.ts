@@ -105,9 +105,9 @@ export class TeacherHomeComponent implements OnInit {
       const userInfo = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
       this.teacherName.set(userInfo?.actorName ?? '');
       this.teacherId.set(userInfo?.actorId ?? null);
-      const id = userInfo?.actorId;
-      if (!id) return;
-      const courses = await lastValueFrom(this.teacherService.getTeacherCourses(id, { skipHandleError: true }));
+      // Resolve courses server-side (immune to a stale ActorId claim) so the list always
+      // matches what the teacher just self-enrolled in.
+      const courses = await lastValueFrom(this.teacherService.getMyCourses({ skipHandleError: true }));
       this.courses.set(courses || []);
     } catch (error) {
       console.error('Error loading teacher courses:', error);

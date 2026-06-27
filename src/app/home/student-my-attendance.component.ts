@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { AttendanceService } from '@proxy/attendances';
@@ -20,9 +21,14 @@ import { CurrentUserInfoService } from '@proxy/common';
         <div class="blob b2"></div>
 
         <div class="header-top">
-          <div class="header-title">
-            <h1>سجل الحضور</h1>
-            <p>Attendance Record</p>
+          <div class="hdr-left">
+            <button class="back-btn" (click)="goBack()" type="button" aria-label="رجوع · Back">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+            <div class="header-title">
+              <h1>سجل الحضور</h1>
+              <p>Attendance Record</p>
+            </div>
           </div>
           <!-- Overall circular progress -->
           <div class="avg-circle">
@@ -39,10 +45,14 @@ import { CurrentUserInfoService } from '@proxy/common';
         </div>
 
         @if (!loading() && reports().length > 0) {
+          <div class="period-chip">
+            <i class="fas fa-calendar-day"></i>
+            <span>{{ periodLabel() }}</span>
+          </div>
           <div class="header-stats">
             <div class="hstat">
               <span class="hstat-val">{{ totalDays() }}</span>
-              <span class="hstat-lbl">إجمالي الأيام</span>
+              <span class="hstat-lbl">أيام حتى اليوم</span>
             </div>
             <div class="hstat-sep"></div>
             <div class="hstat">
@@ -159,8 +169,26 @@ import { CurrentUserInfoService } from '@proxy/common';
       position:relative; z-index:1;
       display:flex; align-items:center; justify-content:space-between; gap:1rem;
     }
+    .hdr-left { display:flex; align-items:center; gap:.75rem; min-width:0; }
+    .back-btn {
+      width:40px; height:40px; min-width:40px; flex-shrink:0;
+      background:rgba(255,255,255,.2); border:none; border-radius:12px;
+      color:#fff; font-size:1rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .back-btn:active { background:rgba(255,255,255,.32); }
     .header-title h1 { margin:0; font-size:1.4rem; font-weight:800; color:#fff; }
     .header-title p  { margin:.15rem 0 0; font-size:.78rem; color:rgba(255,255,255,.6); }
+
+    .period-chip {
+      position:relative; z-index:1;
+      display:inline-flex; align-items:center; gap:.4rem;
+      margin-top:.9rem; padding:.35rem .7rem;
+      background:rgba(255,255,255,.14); border-radius:999px;
+      font-size:.74rem; font-weight:600; color:#fff;
+    }
+    .period-chip i { font-size:.72rem; opacity:.85; }
 
     /* Circular progress */
     .avg-circle { position:relative; width:72px; height:72px; flex-shrink:0; }
@@ -296,9 +324,17 @@ import { CurrentUserInfoService } from '@proxy/common';
 export class StudentMyAttendanceComponent implements OnInit {
   private readonly attendanceSvc  = inject(AttendanceService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
+  private readonly router         = inject(Router);
 
   loading = signal(true);
   reports = signal<StudentAttendanceReportDto[]>([]);
+
+  // The report covers the current month up to today (server caps the day count at today).
+  periodLabel = computed(() => {
+    const now = new Date();
+    const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    return `${months[now.getMonth()]} ${now.getFullYear()} · حتى اليوم ${now.getDate()}`;
+  });
 
   totalDays    = computed(() => this.reports().reduce((s, r) => s + r.totalDaysInMonth, 0));
   totalPresent = computed(() => this.reports().reduce((s, r) => s + r.attendedDays, 0));
@@ -336,6 +372,10 @@ export class StudentMyAttendanceComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/student']);
   }
 
   private level(r: StudentAttendanceReportDto): string {

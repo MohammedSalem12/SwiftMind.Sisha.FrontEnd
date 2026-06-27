@@ -17335,6 +17335,14 @@
                   }
                 },
                 {
+                  "name": "GetMyCoursesAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.CourseDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]"
+                  }
+                },
+                {
                   "name": "UpdateMyProfileAsync",
                   "parametersOnMethod": [
                     {
@@ -17857,6 +17865,21 @@
               "returnValue": {
                 "type": "SwiftMind.Sesha.Teachers.TeacherEnrollmentResultDto",
                 "typeSimple": "SwiftMind.Sesha.Teachers.TeacherEnrollmentResultDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
+            },
+            "GetMyCoursesAsync": {
+              "uniqueName": "GetMyCoursesAsync",
+              "name": "GetMyCoursesAsync",
+              "httpMethod": "GET",
+              "url": "api/app/teacher/my-courses",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.CourseDto>",
+                "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]"
               },
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
@@ -24261,6 +24284,14 @@
                   }
                 },
                 {
+                  "name": "GetMyCoursesAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.CourseDto>",
+                    "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]"
+                  }
+                },
+                {
                   "name": "UpdateMyProfileAsync",
                   "parametersOnMethod": [
                     {
@@ -25036,6 +25067,21 @@
                   "descriptorName": ""
                 }
               ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.CourseDto>",
+                "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
+            },
+            "GetMyCoursesAsync": {
+              "uniqueName": "GetMyCoursesAsync",
+              "name": "GetMyCoursesAsync",
+              "httpMethod": "GET",
+              "url": "api/sesha/teachers/my-courses",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
               "returnValue": {
                 "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.CourseDto>",
                 "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]"
