@@ -15,39 +15,21 @@ import type { StudentAttendanceReportDto } from '@proxy/attendances/dtos/models'
 import { ExamGradeService } from '@proxy/exam-grades';
 import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
 import { StudentService } from '@proxy/students';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-course-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="profile-page" dir="rtl">
 
       <!-- Top Bar -->
-      <div class="top-bar">
-        <button class="top-back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="top-bar-text">
-          @if (course()) {
-            <h1>{{ course()!.nameAr || course()!.nameEn }}</h1>
-            <div class="top-chips">
-              @if (course()!.code) {
-                <span class="top-chip">{{ course()!.code }}</span>
-              }
-              @if (course()!.gradeName) {
-                <span class="top-chip">{{ course()!.gradeName }}</span>
-              }
-            </div>
-          } @else if (loading()) {
-            <h1>تحميل...</h1>
-          }
-        </div>
-        <div class="top-icon">
-          <i class="fas fa-book-open"></i>
-        </div>
-      </div>
+      <app-page-header
+        [title]="course() ? (course()!.nameAr || course()!.nameEn || 'المقرر') : 'تحميل...'"
+        [titleEn]="headerSubtitle()"
+        [backTo]="'/student/courses'"></app-page-header>
 
       <!-- Loading -->
       @if (loading()) {
@@ -335,74 +317,6 @@ import { StudentService } from '@proxy/students';
       min-height: 100vh;
       background: #f4f5fb;
       padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-    }
-
-    /* ── Top Bar ─────────────────────────────────── */
-    .top-bar {
-      background: linear-gradient(145deg, $purple-start 0%, $purple-end 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 0.6rem) 1rem 0.6rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      box-shadow: 0 2px 12px rgba(102, 126, 234, 0.25);
-    }
-
-    .top-back-btn {
-      flex-shrink: 0;
-      width: 38px; height: 38px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.15);
-      border: 1.5px solid rgba(255,255,255,0.25);
-      color: #fff;
-      font-size: 0.9rem;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      min-width: 44px; min-height: 44px;
-      transition: background 0.15s;
-      &:active { background: rgba(255,255,255,0.28); }
-    }
-
-    .top-bar-text {
-      flex: 1; min-width: 0;
-      h1 {
-        margin: 0;
-        font-size: 1.05rem;
-        font-weight: 800;
-        color: #fff;
-        line-height: 1.2;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    }
-
-    .top-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.25rem;
-      margin-top: 0.15rem;
-    }
-
-    .top-chip {
-      font-size: 0.62rem;
-      font-weight: 600;
-      background: rgba(255,255,255,0.2);
-      color: #fff;
-      padding: 0.1rem 0.4rem;
-      border-radius: 12px;
-    }
-
-    .top-icon {
-      width: 38px; height: 38px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.15);
-      border: 1.5px solid rgba(255,255,255,0.25);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      i { font-size: 1rem; color: #fff; }
     }
 
     /* ── Loading / Error ──────────────────────────── */
@@ -765,6 +679,12 @@ export class StudentCourseProfileComponent implements OnInit {
     return now.toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' });
   });
 
+  headerSubtitle = computed(() => {
+    const c = this.course();
+    if (!c) return undefined;
+    return [c.code, c.gradeName].filter(Boolean).join(' · ') || undefined;
+  });
+
   statusLabel = computed(() => {
     const e = this.enrollment();
     if (!e) return '';
@@ -1007,7 +927,6 @@ export class StudentCourseProfileComponent implements OnInit {
     }
   }
 
-  goBack(): void { this.router.navigate(['/student/courses']); }
   goToEnroll(): void { this.router.navigate(['/student/enroll', this.courseId()]); }
 
   async unenroll(): Promise<void> {

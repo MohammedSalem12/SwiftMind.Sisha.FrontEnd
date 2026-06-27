@@ -1,33 +1,34 @@
 import { ChangeDetectionStrategy, Component, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { TeacherService } from '@proxy/teachers';
 import type { TeacherDto } from '@proxy/teachers/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teacher-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
-    <div class="card">
-      <div class="card-body">
-        <div *ngIf="loading()">Loading...</div>
-        <div *ngIf="!loading() && teacher()">
-          <div class="d-flex align-items-center gap-3">
-            <div class="avatar-lg">{{ initials }}</div>
-            <div>
-              <h4 class="mb-0">{{ teacher()?.firstName }} {{ teacher()?.lastName }}</h4>
-              <div class="muted">{{ teacher()?.email || '' }}</div>
+    <div dir="rtl">
+      <app-page-header [title]="'تفاصيل المعلم'" [titleEn]="'Teacher Details'" [backTo]="'/teachers'"></app-page-header>
+      <div class="card">
+        <div class="card-body">
+          <div *ngIf="loading()">Loading...</div>
+          <div *ngIf="!loading() && teacher()">
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-lg">{{ initials }}</div>
+              <div>
+                <h4 class="mb-0">{{ teacher()?.firstName }} {{ teacher()?.lastName }}</h4>
+                <div class="muted">{{ teacher()?.email || '' }}</div>
+              </div>
             </div>
-            <div class="ms-auto">
-              <button class="btn btn-outline-secondary" (click)="goBack()">Back</button>
-            </div>
+            <hr />
+            <div><strong>Address:</strong> {{ teacher()?.address || '-' }}</div>
+            <div><strong>Created:</strong> {{ teacher()?.creationTime }}</div>
           </div>
-          <hr />
-          <div><strong>Address:</strong> {{ teacher()?.address || '-' }}</div>
-          <div><strong>Created:</strong> {{ teacher()?.creationTime }}</div>
         </div>
       </div>
     </div>
@@ -36,7 +37,6 @@ import type { TeacherDto } from '@proxy/teachers/models';
 })
 export class TeacherDetailComponent {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private svc = inject(TeacherService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -57,6 +57,4 @@ export class TeacherDetailComponent {
     this.loading.set(true);
     this.svc.get(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: (t) => { this.teacher.set(t); this.loading.set(false); }, error: (e) => { console.error(e); this.loading.set(false); } });
   }
-
-  goBack() { this.router.navigate(['/teachers']); }
 }

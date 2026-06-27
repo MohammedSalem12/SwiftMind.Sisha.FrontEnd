@@ -15,23 +15,26 @@ import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.
 import { CourseService } from '@proxy/courses';
 import { GroupService } from '@proxy/groups';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-parent-child-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="child-detail" dir="rtl">
 
-      <!-- Hero Header -->
+      <app-page-header
+        [title]="!loading() && student() ? getStudentName() : 'ملف الطالب'"
+        [titleEn]="'Student Profile'"
+        [backTo]="'/parent'"></app-page-header>
+
+      <!-- Student Summary Hero -->
       <div class="hero">
         <div class="hero-blob hero-blob-1"></div>
         <div class="hero-blob hero-blob-2"></div>
         <div class="hero-top-row">
-          <button class="back-btn" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
           <div class="hero-avatar">
             <span>{{ getStudentName() | slice:0:1 }}</span>
           </div>
@@ -339,7 +342,7 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
     .hero {
       position: relative;
       background: $purple-grad;
-      padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 1.5rem;
+      padding: 1.25rem 1.25rem 1.5rem;
       overflow: hidden;
     }
     .hero-blob {
@@ -351,16 +354,8 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 
     .hero-top-row {
       position: relative; z-index: 1;
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex; justify-content: flex-start; align-items: center;
       margin-bottom: 1rem;
-    }
-    .back-btn {
-      width: 40px; height: 40px;
-      background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.35);
-      border-radius: 50%; color: #fff; font-size: 0.95rem;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      &:active { background: rgba(255,255,255,0.28); }
     }
     .hero-avatar {
       width: 52px; height: 52px;
@@ -890,10 +885,6 @@ export class ParentChildDetailComponent implements OnInit {
 
   enrollInCourse(): void {
     this.router.navigate(['/parent/enroll-child', this.studentId]);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/parent']);
   }
 
   getOverallAttendancePercent(): number {

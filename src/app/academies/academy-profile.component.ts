@@ -9,32 +9,31 @@ import { AcademyDto, AcademyCourseDto, AcademyMemberDto } from '@proxy/academies
 import { AcademyTeacherStatus } from '@proxy/academies/academy-teacher-status.enum';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CurrentUserActorDto } from '@proxy/common/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-academy-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="blob b1"></div><div class="blob b2"></div>
-        <div class="header-top">
-          <button class="back-btn" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
+      <app-page-header [title]="'ملف الأكاديمية'" [titleEn]="'Academy Profile'" (back)="goBack()">
+        @if (isSupervisor()) {
+          <button ph-actions class="ph-action"
+                  (click)="router.navigate(['/academies', academyId, 'manage'])"
+                  aria-label="إدارة الأكاديمية">
+            <i class="fas fa-cog"></i>
           </button>
-          @if (isSupervisor()) {
-            <button class="manage-btn"
-                    (click)="router.navigate(['/academies', academyId, 'manage'])">
-              <i class="fas fa-cog"></i>
-              إدارة
-            </button>
-          }
-        </div>
+        }
+      </app-page-header>
 
-        @if (!loading() && academy()) {
+      <!-- ── Academy banner ── -->
+      @if (!loading() && academy()) {
+        <div class="academy-banner">
+          <div class="blob b1"></div><div class="blob b2"></div>
           <div class="academy-avatar">
             <i class="fas fa-university"></i>
           </div>
@@ -45,8 +44,8 @@ import { CurrentUserActorDto } from '@proxy/common/models';
           @if (academy()!.code) {
             <span class="code-badge">{{ academy()!.code }}</span>
           }
-        }
-      </div>
+        </div>
+      }
 
       <!-- ── Loading ── -->
       @if (loading()) {
@@ -267,32 +266,16 @@ import { CurrentUserActorDto } from '@proxy/common/models';
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
 
-    /* ── Header ── */
-    .page-header {
+    /* ── Academy banner ── */
+    .academy-banner {
       background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1rem) 1.25rem 2rem;
+      padding:1.25rem 1.25rem 2rem;
       position:relative; overflow:hidden;
       display:flex; flex-direction:column; align-items:center; text-align:center; gap:.4rem;
     }
     .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
     .b1 { width:200px; height:200px; top:-70px; right:-60px; }
     .b2 { width:130px; height:130px; bottom:-50px; left:-25px; }
-
-    .header-top {
-      position:relative; z-index:1; width:100%;
-      display:flex; align-items:center; justify-content:space-between; margin-bottom:.5rem;
-    }
-    .back-btn {
-      width:40px; height:40px; border-radius:50%;
-      background:rgba(255,255,255,.2); border:none; color:#fff;
-      display:flex; align-items:center; justify-content:center; cursor:pointer;
-    }
-    .manage-btn {
-      display:flex; align-items:center; gap:.35rem;
-      background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.3);
-      color:#fff; padding:.4rem .875rem; border-radius:12px;
-      font-size:.8rem; font-weight:700; cursor:pointer;
-    }
 
     .academy-avatar {
       position:relative; z-index:1;

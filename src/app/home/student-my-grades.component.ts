@@ -5,40 +5,47 @@ import { lastValueFrom } from 'rxjs';
 import { ExamGradeService } from '@proxy/exam-grades';
 import { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-my-grades',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
+      <app-page-header
+        [title]="'درجاتي'"
+        [titleEn]="'My Grades'"
+        [backTo]="'/student'"></app-page-header>
 
-        <div class="header-top">
-          <div class="header-title">
-            <h1>درجاتي</h1>
-            <p>My Grades</p>
-          </div>
-          <div class="avg-circle" [class]="avgCircleClass()">
-            <svg viewBox="0 0 44 44" class="circle-svg">
-              <circle cx="22" cy="22" r="18" class="circle-bg"/>
-              <circle cx="22" cy="22" r="18" class="circle-fill"
-                      [style.stroke-dasharray]="circleProgress() + ' 113'"
-                      [style.stroke]="avgColor()"/>
-            </svg>
-            <div class="circle-inner">
-              <span class="circle-val">{{ avg() | number:'1.0-0' }}<small>%</small></span>
+      <!-- ── Summary block ── -->
+      @if (!loading() && grades().length > 0) {
+        <div class="summary-block">
+          <div class="blob b1"></div>
+          <div class="blob b2"></div>
+
+          <div class="summary-top">
+            <div class="summary-heading">
+              <span class="summary-label">المعدل العام</span>
+              <span class="summary-sub">Overall Average</span>
+            </div>
+            <div class="avg-circle" [class]="avgCircleClass()">
+              <svg viewBox="0 0 44 44" class="circle-svg">
+                <circle cx="22" cy="22" r="18" class="circle-bg"/>
+                <circle cx="22" cy="22" r="18" class="circle-fill"
+                        [style.stroke-dasharray]="circleProgress() + ' 113'"
+                        [style.stroke]="avgColor()"/>
+              </svg>
+              <div class="circle-inner">
+                <span class="circle-val">{{ avg() | number:'1.0-0' }}<small>%</small></span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Stats -->
-        @if (!loading() && grades().length > 0) {
+          <!-- Stats -->
           <div class="header-stats">
             <div class="hstat">
               <span class="hstat-val">{{ grades().length }}</span>
@@ -60,8 +67,8 @@ import { CurrentUserInfoService } from '@proxy/common';
               <span class="hstat-lbl">مقرر</span>
             </div>
           </div>
-        }
-      </div>
+        </div>
+      }
 
       <!-- ── Loading ── -->
       @if (loading()) {
@@ -157,22 +164,25 @@ import { CurrentUserInfoService } from '@proxy/common';
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
 
-    /* ── Header ── */
-    .page-header {
+    /* ── Summary block ── */
+    .summary-block {
       background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.1rem) 1.25rem 1.5rem;
+      margin:.75rem 1rem 0; border-radius:18px;
+      padding:1.1rem 1.25rem 1.25rem;
       position:relative; overflow:hidden;
+      box-shadow:0 4px 14px rgba(102,126,234,.25);
     }
     .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
     .b1 { width:200px; height:200px; top:-70px; right:-60px; }
     .b2 { width:130px; height:130px; bottom:-50px; left:-25px; }
 
-    .header-top {
+    .summary-top {
       position:relative; z-index:1;
       display:flex; align-items:center; justify-content:space-between; gap:1rem;
     }
-    .header-title h1 { margin:0; font-size:1.4rem; font-weight:800; color:#fff; }
-    .header-title p  { margin:.15rem 0 0; font-size:.78rem; color:rgba(255,255,255,.6); }
+    .summary-heading { display:flex; flex-direction:column; gap:.15rem; }
+    .summary-label { font-size:1rem; font-weight:800; color:#fff; }
+    .summary-sub   { font-size:.72rem; color:rgba(255,255,255,.6); }
 
     /* Circular progress */
     .avg-circle {

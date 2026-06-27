@@ -1,54 +1,51 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { AttendanceService } from '@proxy/attendances';
 import { StudentAttendanceReportDto } from '@proxy/attendances/dtos/models';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-my-attendance',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
+      <app-page-header
+        [title]="'سجل الحضور'"
+        [titleEn]="'Attendance Record'"
+        [backTo]="'/student'"></app-page-header>
 
-        <div class="header-top">
-          <div class="hdr-left">
-            <button class="back-btn" (click)="goBack()" type="button" aria-label="رجوع · Back">
-              <i class="fas fa-arrow-right"></i>
-            </button>
-            <div class="header-title">
-              <h1>سجل الحضور</h1>
-              <p>Attendance Record</p>
+      <!-- ── Summary block ── -->
+      @if (!loading() && reports().length > 0) {
+        <div class="summary-block">
+          <div class="blob b1"></div>
+          <div class="blob b2"></div>
+
+          <div class="summary-top">
+            <div class="period-chip">
+              <i class="fas fa-calendar-day"></i>
+              <span>{{ periodLabel() }}</span>
+            </div>
+            <!-- Overall circular progress -->
+            <div class="avg-circle">
+              <svg viewBox="0 0 44 44" class="circle-svg">
+                <circle cx="22" cy="22" r="18" class="circle-bg"/>
+                <circle cx="22" cy="22" r="18" class="circle-fill"
+                        [style.stroke-dasharray]="overallCircle() + ' 113'"
+                        [style.stroke]="overallColor()"/>
+              </svg>
+              <div class="circle-inner">
+                <span class="circle-val">{{ overallPct() | number:'1.0-0' }}<small>%</small></span>
+              </div>
             </div>
           </div>
-          <!-- Overall circular progress -->
-          <div class="avg-circle">
-            <svg viewBox="0 0 44 44" class="circle-svg">
-              <circle cx="22" cy="22" r="18" class="circle-bg"/>
-              <circle cx="22" cy="22" r="18" class="circle-fill"
-                      [style.stroke-dasharray]="overallCircle() + ' 113'"
-                      [style.stroke]="overallColor()"/>
-            </svg>
-            <div class="circle-inner">
-              <span class="circle-val">{{ overallPct() | number:'1.0-0' }}<small>%</small></span>
-            </div>
-          </div>
-        </div>
 
-        @if (!loading() && reports().length > 0) {
-          <div class="period-chip">
-            <i class="fas fa-calendar-day"></i>
-            <span>{{ periodLabel() }}</span>
-          </div>
           <div class="header-stats">
             <div class="hstat">
               <span class="hstat-val">{{ totalDays() }}</span>
@@ -70,8 +67,8 @@ import { CurrentUserInfoService } from '@proxy/common';
               <span class="hstat-lbl">مقرر</span>
             </div>
           </div>
-        }
-      </div>
+        </div>
+      }
 
       <!-- ── Loading ── -->
       @if (loading()) {
@@ -155,36 +152,26 @@ import { CurrentUserInfoService } from '@proxy/common';
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
 
-    /* ── Header ── */
-    .page-header {
+    /* ── Summary block ── */
+    .summary-block {
       background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.1rem) 1.25rem 1.5rem;
+      margin:.75rem 1rem 0; border-radius:18px;
+      padding:1.1rem 1.25rem 1.25rem;
       position:relative; overflow:hidden;
+      box-shadow:0 4px 14px rgba(102,126,234,.25);
     }
     .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
     .b1 { width:200px; height:200px; top:-70px; right:-60px; }
     .b2 { width:130px; height:130px; bottom:-50px; left:-25px; }
 
-    .header-top {
+    .summary-top {
       position:relative; z-index:1;
       display:flex; align-items:center; justify-content:space-between; gap:1rem;
     }
-    .hdr-left { display:flex; align-items:center; gap:.75rem; min-width:0; }
-    .back-btn {
-      width:40px; height:40px; min-width:40px; flex-shrink:0;
-      background:rgba(255,255,255,.2); border:none; border-radius:12px;
-      color:#fff; font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      -webkit-tap-highlight-color:transparent;
-    }
-    .back-btn:active { background:rgba(255,255,255,.32); }
-    .header-title h1 { margin:0; font-size:1.4rem; font-weight:800; color:#fff; }
-    .header-title p  { margin:.15rem 0 0; font-size:.78rem; color:rgba(255,255,255,.6); }
 
     .period-chip {
-      position:relative; z-index:1;
       display:inline-flex; align-items:center; gap:.4rem;
-      margin-top:.9rem; padding:.35rem .7rem;
+      padding:.35rem .7rem;
       background:rgba(255,255,255,.14); border-radius:999px;
       font-size:.74rem; font-weight:600; color:#fff;
     }
@@ -324,7 +311,6 @@ import { CurrentUserInfoService } from '@proxy/common';
 export class StudentMyAttendanceComponent implements OnInit {
   private readonly attendanceSvc  = inject(AttendanceService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
-  private readonly router         = inject(Router);
 
   loading = signal(true);
   reports = signal<StudentAttendanceReportDto[]>([]);
@@ -372,10 +358,6 @@ export class StudentMyAttendanceComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
-  }
-
-  goBack(): void {
-    this.router.navigate(['/student']);
   }
 
   private level(r: StudentAttendanceReportDto): string {

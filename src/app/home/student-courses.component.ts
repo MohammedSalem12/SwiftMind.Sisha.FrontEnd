@@ -7,32 +7,26 @@ import { lastValueFrom } from 'rxjs';
 
 import { CourseService } from '@proxy/courses';
 import type { StudentCourseDto } from '@proxy/courses/dtos/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-courses',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, IonicModule],
+  imports: [CommonModule, RouterModule, FormsModule, IonicModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-row">
-          <div class="header-icon">
-            <i class="fas fa-book-open"></i>
-          </div>
-          <div class="header-text">
-            <h1>المقررات الدراسية</h1>
-            <p>Courses · {{ courses().length }} مقرر</p>
-          </div>
-        </div>
+      <app-page-header
+        [title]="'المقررات الدراسية'"
+        [titleEn]="'Courses · ' + courses().length + ' مقرر'"
+        [backTo]="'/student'"></app-page-header>
 
-        <!-- Search -->
+      <!-- Search -->
+      <div class="search-area">
         <ion-searchbar
-          class="header-searchbar"
+          class="page-searchbar"
           [value]="searchText()"
           (ionInput)="searchText.set($any($event).detail.value || '')"
           placeholder="بحث بالاسم أو الكود · Search"
@@ -158,46 +152,8 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
 
-    /* Header */
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + .75rem) 1.25rem 1rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:130px; height:130px; bottom:-50px; left:-30px; }
-
-    .header-row {
-      position:relative; z-index:1;
-      display:flex; align-items:center; gap:.75rem; margin-bottom:.75rem;
-    }
-    .header-icon {
-      width:44px; height:44px; border-radius:50%;
-      background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.25);
-      display:flex; align-items:center; justify-content:center;
-      font-size:1.1rem; color:white; flex-shrink:0;
-    }
-    .header-text h1 { margin:0; font-size:1.15rem; font-weight:800; color:white; }
-    .header-text p { margin:.1rem 0 0; font-size:.72rem; color:rgba(255,255,255,.65); }
-
-    .header-search {
-      position:relative; z-index:1;
-      display:flex; align-items:center; gap:.5rem;
-      background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.2);
-      border-radius:14px; padding:0 .85rem; min-height:44px;
-    }
-    .header-search i { color:rgba(255,255,255,.6); font-size:.8rem; flex-shrink:0; }
-    .header-search input {
-      flex:1; border:none; background:transparent; outline:none;
-      font-size:16px; color:white; min-height:44px; font-family:inherit;
-      &::placeholder { color:rgba(255,255,255,.4); font-size:.82rem; }
-    }
-    .search-clear {
-      border:none; background:none; color:rgba(255,255,255,.5); cursor:pointer;
-      padding:4px; min-width:44px; min-height:44px;
-      display:flex; align-items:center; justify-content:center;
-    }
+    /* Search */
+    .search-area { padding:.6rem 1rem 0; background:#f4f5fb; }
 
     /* Tabs */
     .tabs {
@@ -323,13 +279,13 @@ import type { StudentCourseDto } from '@proxy/courses/dtos/models';
     /* ─── Ionic native component theming ─────────────────────────────── */
     .page { --ion-color-primary:#667eea; }
 
-    ion-searchbar.header-searchbar {
-      position:relative; z-index:1; padding:0; margin-top:.15rem;
-      --background:rgba(255,255,255,.16); --color:#fff;
-      --placeholder-color:rgba(255,255,255,.6); --icon-color:rgba(255,255,255,.7);
-      --clear-button-color:rgba(255,255,255,.8);
-      --border-radius:14px; --box-shadow:none;
-      border:1.5px solid rgba(255,255,255,.2); border-radius:14px;
+    ion-searchbar.page-searchbar {
+      padding:0;
+      --background:#fff; --color:#1a1a2e;
+      --placeholder-color:#9090aa; --icon-color:#9090aa;
+      --clear-button-color:#9090aa;
+      --border-radius:14px; --box-shadow:0 2px 6px rgba(0,0,0,.04);
+      border-radius:14px;
     }
 
     ion-segment.course-tabs {

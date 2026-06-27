@@ -16,25 +16,20 @@ import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
 import { AcademyService } from '@proxy/academies';
 import { lastValueFrom } from 'rxjs';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-course-enrollment',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, PageHeaderComponent],
   template: `
     <div class="enroll-page" dir="rtl">
 
-      <!-- Header -->
-      <div class="enroll-header">
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-text">
-          <span class="header-title">التسجيل في مقرر</span>
-          <span class="header-sub">{{ academyId() ? 'معلمو الأكاديمية فقط · Academy teachers only' : 'اختر المعلم ثم المجموعة' }}</span>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'التسجيل في المقرر'"
+        [titleEn]="academyId() ? 'معلمو الأكاديمية فقط · Academy teachers only' : 'اختر المعلم ثم المجموعة'"
+        (back)="goBack()"></app-page-header>
 
       <!-- Step Indicator -->
       @if (!enrollmentSuccess()) {
@@ -294,26 +289,6 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       direction: rtl;
       padding-bottom: env(safe-area-inset-bottom);
     }
-
-    /* Header */
-    .enroll-header {
-      background: $pg;
-      padding: 1rem 1rem calc(1rem + env(safe-area-inset-top));
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-    }
-    .back-btn {
-      width: 40px; height: 40px;
-      background: rgba(255,255,255,0.2);
-      border: none; border-radius: 50%;
-      color: #fff; font-size: 1rem;
-      cursor: pointer; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .header-text { display: flex; flex-direction: column; }
-    .header-title { color: #fff; font-size: 1.1rem; font-weight: 700; }
-    .header-sub { color: rgba(255,255,255,0.75); font-size: 0.78rem; }
 
     /* Steps */
     .steps-bar {

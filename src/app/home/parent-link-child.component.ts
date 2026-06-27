@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
@@ -9,21 +9,19 @@ import { ParentService } from '@proxy/parents';
 import type { ParentDto } from '@proxy/parents/models';
 import { StudentService } from '@proxy/students';
 import type { StudentDto } from '@proxy/students/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-parent-link-child',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="link-child-page">
-      <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <h1>ربط طالب جديد</h1>
-      </div>
+      <app-page-header
+        [title]="'ربط طالب جديد'"
+        [titleEn]="'Link a Child'"
+        [backTo]="'/parent'"></app-page-header>
 
       <!-- Success Message -->
       <div *ngIf="successMessage()" class="alert success">
@@ -188,44 +186,6 @@ import type { StudentDto } from '@proxy/students/models';
       min-height: 100vh;
       background: #f5f7fa;
       padding-bottom: 100px;
-    }
-
-    /* ─── Header ─── */
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      color: white;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .back-btn {
-      width: 40px;
-      height: 40px;
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-    }
-
-    .back-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    .page-header h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin: 0;
     }
 
     /* ─── Alerts ─── */
@@ -789,7 +749,6 @@ import type { StudentDto } from '@proxy/students/models';
 export class ParentLinkChildComponent implements OnInit, OnDestroy {
   @ViewChild('videoElement') videoRef!: ElementRef<HTMLVideoElement>;
   
-  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly configStateService = inject(ConfigStateService);
   private readonly parentService = inject(ParentService);
@@ -1021,9 +980,5 @@ export class ParentLinkChildComponent implements OnInit, OnDestroy {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
     return parts[0]?.[0]?.toUpperCase() || '?';
-  }
-
-  goBack(): void {
-    this.router.navigate(['/parent']);
   }
 }
