@@ -1,17 +1,12 @@
 <div appPullToRefresh (appPullToRefresh)="refreshData($event)">
-<div class="feeds-hero">
-  <div class="hero-inner">
-    <h1>News & Updates</h1>
-    <p class="subtitle">Latest announcements and posts for your organization.</p>
-
-    <div class="controls">
-      <input placeholder="Search feeds" [value]="filter()" (input)="filter.set($any($event.target).value)" />
-      <button class="btn-primary" (click)="onSearch()">Search</button>
-    </div>
-  </div>
-</div>
+<app-page-header [title]="'النشرات'" [titleEn]="'Feeds'"></app-page-header>
 
 <div class="feeds-container">
+  <div class="controls">
+    <input placeholder="بحث في النشرات · Search feeds" [value]="filter()" (input)="filter.set($any($event.target).value)" />
+    <button class="btn-primary" (click)="onSearch()">بحث · Search</button>
+  </div>
+
   <div *ngIf="loading()" class="loading">Loading feeds…</div>
 
   <div class="grid">

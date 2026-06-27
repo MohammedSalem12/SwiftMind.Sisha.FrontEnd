@@ -1,26 +1,25 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Location } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
 
 import { ExamGradeService } from '@proxy/exam-grades';
 import { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
 import { ParentService } from '@proxy/parents';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-child-grades',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   templateUrl: './child-grades.component.html',
   styleUrls: ['./child-grades.component.scss'],
 })
 export class ChildGradesComponent implements OnInit {
   private readonly route   = inject(ActivatedRoute);
   private readonly router  = inject(Router);
-  private readonly location = inject(Location);
   private readonly examGradeService      = inject(ExamGradeService);
   private readonly parentService         = inject(ParentService);
   private readonly currentUserInfoService = inject(CurrentUserInfoService);
@@ -104,6 +103,4 @@ export class ChildGradesComponent implements OnInit {
   navigateTo(tab: string): void {
     this.router.navigate(['..', tab], { relativeTo: this.route });
   }
-
-  goBack(): void { this.location.back(); }
 }

@@ -7,6 +7,7 @@ import { GroupService } from '@proxy/groups';
 import { ToastService } from '../shared/toast.service';
 import { GroupScheduleEditComponent } from './group-schedule-edit.component';
 import { TeacherService } from '@proxy/teachers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { lastValueFrom } from 'rxjs';
 
 type CourseGroup = {
@@ -22,7 +23,7 @@ type CourseGroup = {
   selector: 'app-course-groups',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, GroupScheduleEditComponent],
+  imports: [CommonModule, FormsModule, GroupScheduleEditComponent, PageHeaderComponent],
   templateUrl: './course-groups.component.html',
   styleUrls: ['./course-groups.component.scss'],
 })
@@ -117,7 +118,6 @@ export class CourseGroupsComponent implements OnInit {
     }
   }
 
-  goBack() { this.router.navigate(['/courses']); }
   onCreateGroup() { this.router.navigate([`/courses/${this.courseId()}/groups/create`]); }
 
   startCreateSchedule(groupId: string) {

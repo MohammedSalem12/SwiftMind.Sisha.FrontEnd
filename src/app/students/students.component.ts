@@ -13,6 +13,7 @@ import { TeacherEnrolledCourseDto } from '@proxy/teachers/models';
 import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import { EnrolledStudentDto } from '@proxy/student-enrollments/dtos/models';
 import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface CourseTab {
   id: string;
@@ -27,27 +28,21 @@ interface CourseTab {
   selector: 'app-students',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterModule, IonicModule, PullToRefreshDirective],
+  imports: [CommonModule, FormsModule, RouterModule, IonicModule, PullToRefreshDirective, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
 
       <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="blob b1"></div><div class="blob b2"></div>
-        <div class="header-content">
-          <div class="header-text">
-            <h1>{{ isTeacher() ? 'طلابي' : 'الطلاب' }}</h1>
-            <p>{{ isTeacher() ? 'الطلاب المسجّلون في مقرراتي' : 'إدارة جميع الطلاب' }}</p>
-            <p class="subtitle-en">{{ isTeacher() ? 'Students in my courses' : 'Manage all students' }}</p>
-          </div>
-          @if (isAdmin()) {
-            <button class="add-btn" (click)="goToAdd()">
-              <i class="fas fa-plus"></i>
-              إضافة طالب
-            </button>
-          }
-        </div>
-      </div>
+      <app-page-header
+        [title]="isTeacher() ? 'طلابي' : 'الطلاب'"
+        [titleEn]="isTeacher() ? 'My Students' : 'Students'"
+        [backTo]="'/'">
+        @if (isAdmin()) {
+          <button ph-actions class="ph-action" (click)="goToAdd()" aria-label="إضافة طالب · Add Student">
+            <i class="fas fa-plus"></i>
+          </button>
+        }
+      </app-page-header>
 
       <!-- ══════════════ TEACHER VIEW ══════════════ -->
       @if (isTeacher()) {
@@ -384,31 +379,6 @@ interface CourseTab {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
-
-    /* ── Header ── */
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1rem) 1.25rem 1.5rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:180px; height:180px; top:-60px; right:-50px; }
-    .b2 { width:120px; height:120px; bottom:-40px; left:-20px; }
-    .header-content {
-      position:relative; z-index:1;
-      display:flex; align-items:center; justify-content:space-between; gap:1rem;
-    }
-    .header-text h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
-    .header-text p  { margin:.15rem 0 0; font-size:.82rem; color:rgba(255,255,255,.8); }
-    .header-text .subtitle-en { font-size:.7rem; color:rgba(255,255,255,.55); margin-top:.05rem; }
-    .add-btn {
-      display:flex; align-items:center; gap:.4rem;
-      background:rgba(255,255,255,.2); border:1.5px solid rgba(255,255,255,.35);
-      color:#fff; padding:.6rem 1rem; border-radius:12px;
-      font-size:.82rem; font-weight:700; cursor:pointer; flex-shrink:0;
-      white-space:nowrap; transition:background .15s;
-    }
-    .add-btn:hover { background:rgba(255,255,255,.3); }
 
     /* ── Course tabs ── */
     .course-tabs-wrap {

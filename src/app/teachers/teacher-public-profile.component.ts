@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
 import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface PublicCourse {
   id: string;
@@ -28,15 +29,17 @@ interface TeacherPublicProfile {
   selector: 'app-teacher-public-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
+      <app-page-header [title]="'ملف المعلم'" [titleEn]="'Teacher Profile'"></app-page-header>
+
+      <!-- Profile hero -->
       <div class="page-header">
         <div class="blob b1"></div>
         <div class="blob b2"></div>
-        <button class="back-btn" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
 
         @if (loading()) {
           <div class="avatar shimmer-circle"></div>
@@ -124,20 +127,13 @@ interface TeacherPublicProfile {
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
     .page-header {
       background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 2rem;
+      padding:1.5rem 1.25rem 2rem;
       position:relative; overflow:hidden;
       display:flex; flex-direction:column; align-items:center; text-align:center; gap:.4rem;
     }
     .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
     .b1 { width:200px; height:200px; top:-70px; right:-60px; }
     .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .back-btn {
-      position:absolute; top:max(1rem,env(safe-area-inset-top,0px)); right:1rem; z-index:2;
-      width:40px; height:40px; border-radius:12px;
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:#fff; font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-    }
     .avatar {
       width:88px; height:88px; border-radius:50%; position:relative; z-index:1; overflow:hidden;
       background:rgba(255,255,255,.2); border:3px solid rgba(255,255,255,.5);
@@ -267,6 +263,4 @@ export class TeacherPublicProfileComponent implements OnInit {
       queryParams: teacherId ? { teacherId } : {},
     });
   }
-
-  goBack(): void { this.router.navigate(['/student/teachers']); }
 }

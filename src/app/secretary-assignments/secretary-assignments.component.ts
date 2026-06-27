@@ -6,27 +6,21 @@ import { lastValueFrom } from 'rxjs';
 import { TeacherService, SecretaryTeacherService } from '@proxy/teachers';
 import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
 import type { SecretaryTeacherDto } from '@proxy/teachers/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-secretary-assignments',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-content">
-          <div class="header-icon-wrap">
-            <i class="fas fa-user-cog"></i>
-          </div>
-          <h1>إدارة ارتباط السكرتارية</h1>
-          <p>Secretary-Teacher Assignments</p>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'تعيين السكرتارية'"
+        [titleEn]="'Secretary Assignments'"
+        [backTo]="'/secretary'"></app-page-header>
 
       <!-- Assign Section -->
       <div class="section">
@@ -146,24 +140,6 @@ import type { SecretaryTeacherDto } from '@proxy/teachers/models';
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
-
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.5rem) 1.25rem 2rem;
-      position:relative; overflow:hidden; text-align:center;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-content { position:relative; z-index:1; }
-    .header-icon-wrap {
-      width:56px; height:56px; border-radius:16px;
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      display:inline-flex; align-items:center; justify-content:center;
-      color:#fff; font-size:1.5rem; margin-bottom:.75rem;
-    }
-    .header-content h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
-    .header-content p { margin:.15rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
 
     .section { padding:1rem 1rem 0; }
     .section-title {

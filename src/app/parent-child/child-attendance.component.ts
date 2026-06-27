@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
 
@@ -9,19 +8,19 @@ import { AttendanceService } from '@proxy/attendances';
 import { StudentAttendanceReportDto } from '@proxy/attendances/dtos/models';
 import { ParentService } from '@proxy/parents';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-child-attendance',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PageHeaderComponent],
   templateUrl: './child-attendance.component.html',
   styleUrls: ['./child-attendance.component.scss'],
 })
 export class ChildAttendanceComponent implements OnInit {
   private readonly route    = inject(ActivatedRoute);
   private readonly router   = inject(Router);
-  private readonly location = inject(Location);
   private readonly attendanceService      = inject(AttendanceService);
   private readonly parentService          = inject(ParentService);
   private readonly currentUserInfoService = inject(CurrentUserInfoService);
@@ -99,6 +98,4 @@ export class ChildAttendanceComponent implements OnInit {
   navigateTo(tab: string): void {
     this.router.navigate(['..', tab], { relativeTo: this.route });
   }
-
-  goBack(): void { this.location.back(); }
 }

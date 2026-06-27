@@ -1,8 +1,5 @@
 .add-teacher-page { display:flex; justify-content:center; padding:1.25rem }
 .form-card { width:100%; max-width:720px; border-radius:10px; box-shadow:0 6px 18px rgba(10,10,20,0.06); overflow:hidden }
-.card-header { padding:16px 20px; background:linear-gradient(90deg,#f8f4e6,#fff); }
-.card-header h2 { margin:0 }
-.card-header .subtitle { margin:6px 0 0; color:#666; font-size:0.95rem }
 .card-body { padding:16px 20px; display:flex; flex-direction:column; gap:12px }
 .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px }
 .field { display:flex; flex-direction:column }

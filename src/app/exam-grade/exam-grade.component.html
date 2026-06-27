@@ -1,13 +1,15 @@
+<app-page-header [title]="'درجات الامتحان'" [titleEn]="'Exam Grades'">
+  <button ph-actions class="ph-action" type="button" (click)="loadStudents()"
+          [disabled]="!selectedCourse()" aria-label="تحديث · Refresh">
+    <i class="fas fa-rotate"></i>
+  </button>
+  <button ph-actions class="ph-action" type="button" (click)="openAddExam()"
+          [disabled]="!selectedCourse()" aria-label="إضافة اختبار · Add Exam">
+    <i class="fas fa-plus"></i>
+  </button>
+</app-page-header>
+
 <div class="exam-grade-page card" dir="rtl">
-  <h2>درجات الاختبار · Exam Grades</h2>
-  <div class="toolbar">
-    <ion-button size="small" (click)="openAddExam()" [disabled]="!selectedCourse()">
-      <i class="fas fa-plus" slot="start"></i> إضافة اختبار · Add Exam
-    </ion-button>
-    <ion-button size="small" fill="outline" (click)="loadStudents()" [disabled]="!selectedCourse()">
-      <i class="fas fa-rotate" slot="start"></i> تحديث · Refresh
-    </ion-button>
-  </div>
 
   <ion-list class="filters" lines="full">
     <ion-item>

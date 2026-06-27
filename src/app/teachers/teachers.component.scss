@@ -1,7 +1,5 @@
-.teachers-hero { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; padding:12px; background:linear-gradient(90deg,#fbfbff,#f4f9ff); border-radius:8px }
-.teachers-hero h1 { margin:0 }
-.hero-controls { display:flex; gap:8px; align-items:center }
-.search { padding:8px 10px; border-radius:8px; border:1px solid #e6eefc }
+.search-row { display:flex; gap:8px; align-items:center; padding:12px; }
+.search { flex:1; padding:10px 12px; border-radius:8px; border:1px solid #e6eefc; font-size:16px; }
 .btn-primary { background:var(--ngx-primary); color:white; border:none; padding:8px 12px; border-radius:8px }
 .btn-outline { border:1px solid #d6dde9; background:transparent; padding:8px 10px; border-radius:8px }
 

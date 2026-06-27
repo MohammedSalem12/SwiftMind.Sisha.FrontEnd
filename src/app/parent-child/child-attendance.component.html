@@ -1,14 +1,7 @@
 <div class="child-page" dir="rtl">
 
-  <!-- Hero Header -->
-  <div class="child-hero">
-    <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
-    <div class="child-hero-avatar">{{ childName().charAt(0) || '؟' }}</div>
-    <div class="child-hero-info">
-      <h1>حضور {{ childName() }}</h1>
-      <p>{{ childCode() }}<span *ngIf="childGrade()"> — {{ childGrade() }}</span></p>
-    </div>
-  </div>
+  <!-- Header -->
+  <app-page-header [title]="'حضور الطالب'" [titleEn]="'Child Attendance'" [backTo]="'/parent'"></app-page-header>
 
   <!-- Tab Nav -->
   <div class="tab-nav">
@@ -24,6 +17,18 @@
   </div>
 
   <div class="page-body">
+
+    <!-- Student identity card -->
+    <div class="id-card" *ngIf="childName()">
+      <div class="id-avatar">{{ childName().charAt(0) || '؟' }}</div>
+      <div class="id-info">
+        <h2 class="id-name">{{ childName() }}</h2>
+        <div class="id-chips">
+          <span class="id-chip id-chip--code" *ngIf="childCode()">{{ childCode() }}</span>
+          <span class="id-chip" *ngIf="childGrade()">{{ childGrade() }}</span>
+        </div>
+      </div>
+    </div>
 
     <!-- Month picker -->
     <div class="month-filter">

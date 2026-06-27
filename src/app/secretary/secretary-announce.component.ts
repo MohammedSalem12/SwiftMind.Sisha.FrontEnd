@@ -1,24 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 import { SecretaryTeacherService } from '@proxy/teachers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-secretary-announce',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <button class="back-btn" (click)="router.navigate(['/secretary'])">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <h1>إعلان للطلاب · Announce to Students</h1>
-      </div>
+      <app-page-header [title]="'إعلان للطلاب'" [titleEn]="'Announce'" [backTo]="'/secretary'"></app-page-header>
 
       <div class="page-body">
         @if (loading()) {
@@ -68,16 +63,6 @@ import { SecretaryTeacherService } from '@proxy/teachers';
   `,
   styles: [`
     .page { min-height: 100vh; background: #f5f5f7; }
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white; padding: 20px 16px 16px; display: flex; align-items: center; gap: 12px;
-    }
-    .page-header h1 { font-size: 18px; margin: 0; font-weight: 600; }
-    .back-btn {
-      background: rgba(255,255,255,.2); border: none; color: white;
-      width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
     .page-body { padding: 16px; }
     .field-group { margin-bottom: 16px; }
     .field-label { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; display: block; i { color: #667eea; margin-left: 4px; } }
@@ -116,7 +101,6 @@ import { SecretaryTeacherService } from '@proxy/teachers';
   `],
 })
 export class SecretaryAnnounceComponent implements OnInit {
-  readonly router = inject(Router);
   private readonly secretaryTeacherService = inject(SecretaryTeacherService);
   private readonly rest = inject(RestService);
 

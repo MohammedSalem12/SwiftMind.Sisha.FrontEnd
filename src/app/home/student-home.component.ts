@@ -20,6 +20,7 @@ import { OfflineBannerComponent } from '../shared/components/offline-banner.comp
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
 import { ActiveSemesterComponent } from '../shared/components/active-semester.component';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 const GRADE_NAMES: Record<number, string> = {
   [-1]: 'رياض أطفال 1',
@@ -42,7 +43,7 @@ const GRADE_NAMES: Record<number, string> = {
   selector: 'app-student-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, FixedToBodyDirective, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, FixedToBodyDirective, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent, PageHeaderComponent],
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.scss'],
 })
@@ -166,6 +167,15 @@ export class StudentHomeComponent implements OnInit {
 
   goProfile(): void {
     this.router.navigate(['/student/profile']);
+  }
+
+  getInitials(name: string | undefined): string {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0]?.[0]?.toUpperCase() || '?';
   }
 
   goTodaySessions(): void {

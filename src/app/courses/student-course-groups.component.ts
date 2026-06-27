@@ -13,12 +13,13 @@ import { CurrentUserInfoService } from '@proxy/common';
 import { EnrollmentRequestInitiator } from '@proxy/enums/enrollment-request-initiator.enum';
 import { TeacherService } from '@proxy/teachers';
 import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-course-groups',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   templateUrl: './student-course-groups.component.html',
   styleUrls: ['./student-course-groups.component.scss'],
 })
@@ -129,10 +130,6 @@ export class StudentCourseGroupsComponent implements OnInit {
     } finally {
       this.submitting.set(false);
     }
-  }
-
-  goBack(): void {
-    this.router.navigate(['/courses']);
   }
 
   goToRequests(): void {

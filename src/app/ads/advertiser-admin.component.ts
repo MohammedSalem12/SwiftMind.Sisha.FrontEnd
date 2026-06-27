@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Location } from '@angular/common';
 import { environment } from '../../environments/environment';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface AdvertiserDto {
   id: string;
@@ -38,21 +38,13 @@ interface CreateAdvertiserForm {
   selector: 'app-advertiser-admin',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-row">
-          <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
-          <div class="header-text">
-            <h1>ادارة المعلنين</h1>
-            <p>Advertiser Management</p>
-          </div>
-          <div class="header-icon"><i class="fas fa-store"></i></div>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'إدارة المعلنين'"
+        [titleEn]="'Advertisers'"
+        [backTo]="'/'"></app-page-header>
 
       <!-- Action Bar -->
       <div class="action-bar">
@@ -311,32 +303,6 @@ interface CreateAdvertiserForm {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
-
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + .75rem) 1.25rem 1rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-row {
-      position:relative; z-index:1; display:flex; align-items:center; gap:.75rem;
-    }
-    .btn-back {
-      width:44px; height:44px; border-radius:12px; border:none;
-      background:rgba(255,255,255,.15); color:#fff; font-size:1.1rem;
-      cursor:pointer; display:flex; align-items:center; justify-content:center;
-      -webkit-tap-highlight-color:transparent; flex-shrink:0;
-    }
-    .header-text { flex:1; }
-    .header-text h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
-    .header-text p { margin:.1rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
-    .header-icon {
-      width:44px; height:44px; border-radius:12px;
-      background:rgba(255,255,255,.15); color:#fff; font-size:1.2rem;
-      display:flex; align-items:center; justify-content:center; flex-shrink:0;
-    }
 
     .action-bar {
       display:flex; align-items:center; justify-content:space-between;
@@ -629,7 +595,6 @@ interface CreateAdvertiserForm {
 })
 export class AdvertiserAdminComponent implements OnInit {
   private readonly http = inject(HttpClient);
-  private readonly location = inject(Location);
   private readonly apiBase = environment.apis?.default?.url || '';
 
   loading = signal(true);
@@ -662,10 +627,6 @@ export class AdvertiserAdminComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.loadAdvertisers();
-  }
-
-  goBack(): void {
-    this.location.back();
   }
 
   totalPages(): number {

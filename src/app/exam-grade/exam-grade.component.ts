@@ -11,11 +11,13 @@ import { ExamGradeService } from '@proxy/exam-grades';
 import { CurrentUserInfoService } from '@proxy/common';
 import { lastValueFrom } from 'rxjs';
 
+import { PageHeaderComponent } from '../shared/components/page-header.component';
+
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-exam-grade',
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, PageHeaderComponent],
   templateUrl: './exam-grade.component.html',
   styleUrls: ['./exam-grade.component.scss'],
   animations: [

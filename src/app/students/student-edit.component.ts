@@ -6,12 +6,13 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { StudentService } from '@proxy/students';
 import type { StudentDto, CreateUpdateStudentDto } from '@proxy/students/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-edit',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PageHeaderComponent],
   templateUrl: './student-edit.component.html',
   styleUrls: ['./student-edit.component.scss']
 })

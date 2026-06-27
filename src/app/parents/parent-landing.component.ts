@@ -9,23 +9,30 @@ import { lastValueFrom } from 'rxjs';
 import { ParentService } from '@proxy/parents';
 import type { ParentStudentDto } from '@proxy/parents/models';
 import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status.enum';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-parent-landing',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, PageHeaderComponent],
   template: `
-    <div class="page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
+    <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-inner">
-          <div class="avatar">
-            <span>{{ getInitials(parentName()) }}</span>
-          </div>
+      <app-page-header
+        [title]="'الرئيسية'"
+        [titleEn]="'Home'"
+        [showBack]="false"></app-page-header>
+
+      <div class="page-scroll" appPullToRefresh (appPullToRefresh)="refreshData($event)">
+
+      <!-- Greeting card -->
+      <div class="greet-card">
+        <div class="greet-avatar">
+          <span>{{ getInitials(parentName()) }}</span>
+        </div>
+        <div class="greet-text">
           <h1>مرحباً {{ parentName() }}</h1>
           <p>اختر ابنك لمتابعة تفاصيله · Select a child</p>
         </div>
@@ -103,32 +110,32 @@ import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status
       </div>
 
       <div style="height:calc(80px + env(safe-area-inset-bottom,0px))"></div>
+      </div>
     </div>
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
 
-    .header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.5rem) 1.25rem 2.5rem;
-      position:relative; overflow:hidden; text-align:center;
+    /* Greeting card */
+    .greet-card {
+      background:#fff; border-radius:18px; margin:.75rem 1rem 0;
+      padding:1.15rem; display:flex; align-items:center; gap:1rem;
+      box-shadow:0 4px 16px rgba(0,0,0,.06);
     }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.06); pointer-events:none; }
-    .b1 { width:220px; height:220px; top:-80px; right:-70px; }
-    .b2 { width:150px; height:150px; bottom:-60px; left:-40px; }
-    .header-inner { position:relative; z-index:1; }
-    .avatar {
-      width:72px; height:72px; border-radius:50%; margin:0 auto .75rem;
-      background:rgba(255,255,255,.18); border:3px solid rgba(255,255,255,.35);
+    .greet-avatar {
+      width:60px; height:60px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,#667eea,#764ba2);
       display:flex; align-items:center; justify-content:center;
-      font-size:1.6rem; font-weight:800; color:#fff;
+      font-size:1.3rem; font-weight:800; color:#fff;
+      box-shadow:0 4px 14px rgba(102,126,234,.3);
     }
-    .header h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
-    .header p { margin:.25rem 0 0; font-size:.78rem; color:rgba(255,255,255,.6); }
+    .greet-text { min-width:0; }
+    .greet-text h1 { margin:0; font-size:1.2rem; font-weight:800; color:#1a1a2e; }
+    .greet-text p { margin:.25rem 0 0; font-size:.78rem; color:#9ca3af; }
 
     .grid {
       display:flex; flex-direction:column; gap:.75rem;
-      padding:0 1rem; margin-top:-1.25rem; position:relative; z-index:2;
+      padding:0 1rem; margin-top:.75rem; position:relative; z-index:2;
     }
 
     .child-card {

@@ -4,29 +4,6 @@ $bg: #f0f2f5; $radius: 14px; $shadow: 0 2px 12px rgba(0,0,0,0.07);
 
 .report-page { min-height: 100vh; background: $bg; direction: rtl; }
 
-.report-hero {
-  background: linear-gradient(135deg, $purple 0%, $purple-dark 100%);
-  padding: 1.5rem 1.25rem 1.75rem; color: white;
-  display: flex; align-items: center; gap: 1rem;
-  .btn-back {
-    background: rgba(255,255,255,0.2); border: none; color: white;
-    width: 40px; height: 40px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; cursor: pointer; flex-shrink: 0;
-    &:hover { background: rgba(255,255,255,0.3); }
-  }
-  .report-hero-icon {
-    width: 52px; height: 52px; flex-shrink: 0;
-    background: rgba(255,255,255,0.25); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem;
-  }
-  .report-hero-info {
-    h1 { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.2rem; }
-    p  { margin: 0; opacity: 0.85; font-size: 0.85rem; }
-  }
-}
-
 .filters-bar {
   background: white; box-shadow: $shadow; padding: 0.875rem 1rem;
   display: flex; gap: 1rem; flex-wrap: wrap;

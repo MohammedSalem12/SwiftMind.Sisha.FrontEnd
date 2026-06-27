@@ -6,6 +6,8 @@ import { RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 import { Clipboard } from '@angular/cdk/clipboard';
 
+import { PageHeaderComponent } from '../shared/components/page-header.component';
+
 interface PointsBalance {
   studentId: string;
   totalEarned: number;
@@ -42,20 +44,12 @@ interface RedeemableAdvertiser {
   selector: 'app-student-points',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="router.navigate(['/student'])">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-text">
-          <span class="header-title">نقاطي ومكافآتي · My Points & Rewards</span>
-          <span class="header-sub">اكسب نقاط واستبدلها بخصومات</span>
-        </div>
-      </div>
+      <app-page-header [title]="'نقاطي'" [titleEn]="'My Points'" [backTo]="'/student'"></app-page-header>
 
       @if (loading()) {
         <div class="loading-area">
@@ -283,19 +277,6 @@ interface RedeemableAdvertiser {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1rem) 1rem 1.25rem;
-      display:flex; align-items:center; gap:.75rem;
-    }
-    .back-btn {
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:#fff; width:40px; height:40px; border-radius:12px;
-      display:flex; align-items:center; justify-content:center; cursor:pointer;
-    }
-    .header-text { display:flex; flex-direction:column; }
-    .header-title { font-size:1.05rem; font-weight:800; color:#fff; }
-    .header-sub { font-size:.72rem; color:rgba(255,255,255,.7); }
 
     .loading-area { padding:1rem; display:flex; flex-direction:column; gap:.5rem; }
     .sk-card { height:100px; border-radius:14px; background:linear-gradient(90deg,#e8e8f0 25%,#f0f0f8 50%,#e8e8f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }

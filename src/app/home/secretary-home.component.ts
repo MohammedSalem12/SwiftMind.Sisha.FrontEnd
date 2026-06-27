@@ -12,12 +12,13 @@ import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 import { ActiveSemesterComponent } from '../shared/components/active-semester.component';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-secretary-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, IonicModule, PullToRefreshDirective, OfflineBannerComponent, DidYouKnowComponent, ActiveSemesterComponent],
+  imports: [CommonModule, IonicModule, PullToRefreshDirective, OfflineBannerComponent, DidYouKnowComponent, ActiveSemesterComponent, PageHeaderComponent],
   template: `
     <div class="secretary-home" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
 
@@ -27,21 +28,18 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
         <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
       }
 
-      <!-- Hero (hidden on mobile - info in top bar) -->
-      <div class="hero hide-on-mobile">
-        <div class="hero-blob hero-blob-1"></div>
-        <div class="hero-blob hero-blob-2"></div>
-        <div class="hero-content">
-          <div class="hero-greeting">
-            <span class="hero-hello">مرحباً،</span>
-            <span class="hero-name">{{ secretaryName() || 'السكرتير' }}</span>
-          </div>
-          <p class="hero-sub">اختر معلماً لعرض مقرراته وإدارة الحضور والدرجات</p>
-          <p class="hero-sub-en">Select a teacher to manage their courses</p>
+      <!-- Header -->
+      <app-page-header [title]="'الرئيسية'" [titleEn]="'Home'" [showBack]="false"></app-page-header>
+
+      <!-- Identity card -->
+      <div class="id-card">
+        <div class="id-avatar">{{ getInitials(secretaryName()) }}</div>
+        <div class="id-body">
+          <span class="id-hello">مرحباً،</span>
+          <span class="id-name">{{ secretaryName() || 'السكرتير' }}</span>
+          <span class="id-sub">اختر معلماً لإدارة الحضور والدرجات · Select a teacher to manage</span>
         </div>
-        <div class="hero-icon">
-          <i class="fas fa-user-tie"></i>
-        </div>
+        <div class="id-role-ic"><i class="fas fa-user-tie"></i></div>
       </div>
 
       <app-did-you-know [role]="'SECRETARY'" />
@@ -167,42 +165,37 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
       padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     }
 
-    /* ── Hero ── */
-    .hero {
-      background: linear-gradient(145deg, var(--grad-start) 0%, var(--grad-end) 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 0.6rem) 1.25rem 0.7rem;
-      position: relative;
-      overflow: hidden;
+    /* ── Identity card (relocated greeting) ── */
+    .id-card {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: .75rem;
+      background: var(--white);
+      margin: .75rem 1rem 0;
+      padding: .85rem 1rem;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
     }
-    .hero-blob {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,.07);
-      pointer-events: none;
-    }
-    .hero-blob-1 { width: 220px; height: 220px; top: -80px; right: -60px; }
-    .hero-blob-2 { width: 140px; height: 140px; bottom: -50px; left: -30px; }
-
-    .hero-content { z-index: 1; }
-    .hero-greeting { display: flex; flex-direction: column; margin-bottom: .35rem; }
-    .hero-hello { font-size: .75rem; color: rgba(255,255,255,.75); }
-    .hero-name  { font-size: 1.1rem; font-weight: 800; color: var(--white); line-height: 1.2; }
-    .hero-sub   { font-size: .85rem; color: rgba(255,255,255,.8); margin: 0; }
-    .hero-sub-en { font-size: .72rem; color: rgba(255,255,255,.55); margin: .1rem 0 0; }
-
-    .hero-icon {
-      z-index: 1;
-      width: 42px; height: 42px; border-radius: 50%;
-      background: rgba(255,255,255,.15);
-      border: 1.5px solid rgba(255,255,255,.25);
-      display: flex; align-items: center; justify-content: center;
+    .id-avatar {
       flex-shrink: 0;
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.05rem; font-weight: 800;
     }
-    .hero-icon i { font-size: 1.1rem; color: var(--white); }
+    .id-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .12rem; }
+    .id-hello { font-size: .72rem; color: var(--text-light); }
+    .id-name  { font-size: 1.02rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
+    .id-sub   { font-size: .72rem; color: var(--text-mid); }
+    .id-role-ic {
+      flex-shrink: 0;
+      width: 42px; height: 42px; border-radius: 12px;
+      background: rgba(102,126,234,.1);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .id-role-ic i { font-size: 1.05rem; color: var(--grad-start); }
 
     /* ── Skeleton shimmer ── */
     .loading-area {
@@ -452,6 +445,15 @@ export class SecretaryHomeComponent implements OnInit {
       this.offline.set(true);
       this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
     }
+  }
+
+  getInitials(name: string | undefined): string {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0]?.[0]?.toUpperCase() || '?';
   }
 
   goToRequests() {

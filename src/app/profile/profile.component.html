@@ -1,5 +1,12 @@
 <div class="profile-page" dir="rtl">
 
+  <!-- Header -->
+  <app-page-header [title]="'الملف الشخصي'" [titleEn]="'My Profile'" [showBack]="true">
+    <button ph-actions class="ph-action" (click)="logout()" aria-label="تسجيل الخروج">
+      <i class="fas fa-sign-out-alt"></i>
+    </button>
+  </app-page-header>
+
   <!-- Loading -->
   <div class="loading-wrap" *ngIf="loading()">
     <div class="spinner-lg"></div>
@@ -7,27 +14,25 @@
 
   <ng-container *ngIf="!loading() && userInfo() as info">
 
-    <!-- Header -->
-    <div class="profile-header" [style.background]="getRoleConfig().bg">
-      <div class="header-inner">
-        <!-- Avatar -->
-        <div class="avatar-wrap">
-          <div class="avatar">{{ getInitials() }}</div>
+    <!-- Body -->
+    <div class="profile-body">
+
+      <!-- Identity card -->
+      <div class="id-card">
+        <div class="id-avatar-wrap">
+          <div class="id-avatar">{{ getInitials() }}</div>
           <div class="role-icon-badge" [style.background]="getRoleConfig().color">
             <i class="fas" [ngClass]="getRoleConfig().icon"></i>
           </div>
         </div>
-
-        <!-- Name & Role -->
-        <h1 class="user-name">{{ info.actorName || info.userName }}</h1>
-        <span class="role-badge" [style.color]="getRoleConfig().color" [style.border-color]="getRoleConfig().color">
-          {{ getRoleConfig().label }}
-        </span>
+        <div class="id-info">
+          <h1 class="id-name">{{ info.actorName || info.userName }}</h1>
+          <span class="id-role-badge" [style.color]="getRoleConfig().color" [style.border-color]="getRoleConfig().color">
+            {{ getRoleConfig().label }}
+          </span>
+        </div>
       </div>
-    </div>
 
-    <!-- Body -->
-    <div class="profile-body">
 
       <!-- User Code card -->
       <div class="info-card" *ngIf="info.actorCode">

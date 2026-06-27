@@ -1,26 +1,22 @@
 import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { StudentService } from '@proxy/students';
 import type { ParentStudentDto } from '@proxy/parents/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-link-parent',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="link-parent-page">
-      <!-- Header (page owns its header) -->
-      <div class="page-header" data-page-header>
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <h1>ربط ولي أمر · Link a parent</h1>
-      </div>
+      <!-- Header -->
+      <app-page-header [title]="'ربط ولي الأمر'" [titleEn]="'Link Parent'" [backTo]="'/student'"></app-page-header>
 
       <div *ngIf="successMessage()" class="alert success">
         <i class="fas fa-check-circle"></i>
@@ -118,18 +114,6 @@ import type { ParentStudentDto } from '@proxy/parents/models';
   `,
   styles: [`
     .link-parent-page { min-height: 100vh; background: #f5f7fa; padding-bottom: 100px; }
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1rem 1rem;
-      display: flex; align-items: center; gap: 1rem; color: white;
-      position: sticky; top: 0; z-index: 100;
-    }
-    .back-btn {
-      width: 40px; height: 40px; min-width: 40px; background: rgba(255,255,255,0.2);
-      border: none; border-radius: 12px; color: white; font-size: 1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .page-header h1 { font-size: 1.15rem; font-weight: 700; margin: 0; }
 
     .alert { display: flex; align-items: center; gap: 0.75rem; margin: 1rem; padding: 1rem; border-radius: 12px; font-size: 0.9rem; }
     .alert.success { background: #d1fae5; color: #065f46; }
@@ -201,7 +185,6 @@ import type { ParentStudentDto } from '@proxy/parents/models';
 export class StudentLinkParentComponent implements OnInit, OnDestroy {
   @ViewChild('videoElement') videoRef!: ElementRef<HTMLVideoElement>;
 
-  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly studentService = inject(StudentService);
 
@@ -344,9 +327,5 @@ export class StudentLinkParentComponent implements OnInit, OnDestroy {
 
   statusLabel(s: number): string {
     return s === 1 ? 'مؤكد · Linked' : s === 2 ? 'مرفوض · Rejected' : 'معلّق · Pending';
-  }
-
-  goBack(): void {
-    this.router.navigate(['/student']);
   }
 }

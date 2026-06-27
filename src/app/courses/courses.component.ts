@@ -8,12 +8,13 @@ import { ListService, PagedResultDto } from '@abp/ng.core';
 import type { CourseDto } from '@proxy/courses/dtos';
 import { CourseService } from '@proxy/courses';
 import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-courses',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, PullToRefreshDirective],
+  imports: [CommonModule, FormsModule, PullToRefreshDirective, PageHeaderComponent],
   templateUrl: './courses.component.html',
   styleUrls: ['./courses.component.scss'],
   providers: [ListService],

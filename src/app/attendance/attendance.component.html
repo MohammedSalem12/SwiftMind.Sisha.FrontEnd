@@ -1,28 +1,10 @@
 <div class="attendance-page" dir="rtl">
 
-  <!-- Hero Header -->
-  <div class="hero">
-    <div class="hero-blob b1"></div>
-    <div class="hero-blob b2"></div>
-    @if (lockedCourseId()) {
-      <ion-button class="back-btn" fill="clear" (click)="goBack()">
-        <i class="fas fa-arrow-right"></i>
-      </ion-button>
-    }
-    <div class="hero-text">
-      @if (academy()) {
-        <div class="hero-academy-tag">
-          <i class="fas fa-university"></i>
-          {{ academy()!.nameAr || academy()!.nameEn }}
-        </div>
-      }
-      <h1>تسجيل الحضور والغياب</h1>
-      <p>Attendance · {{ selectedCourseName() || 'اختر المقرر وسجّل الحضور' }}</p>
-    </div>
-    <div class="hero-icon">
-      <i class="fas fa-clipboard-check"></i>
-    </div>
-  </div>
+  <!-- Header -->
+  <app-page-header
+    [title]="'تسجيل الحضور'"
+    [titleEn]="'Attendance'"
+    (back)="goBack()"></app-page-header>
 
   <!-- Academy context banner -->
   @if (academy() && lockedCourseId()) {

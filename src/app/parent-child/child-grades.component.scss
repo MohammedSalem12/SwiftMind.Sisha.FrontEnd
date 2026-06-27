@@ -4,32 +4,27 @@ $bg: #f0f2f5; $radius: 14px; $shadow: 0 2px 12px rgba(0,0,0,0.07);
 
 .child-page { min-height: 100vh; background: $bg; direction: rtl; }
 
-// ── Hero ──────────────────────────────────────────────────
-.child-hero {
-  background: linear-gradient(135deg, $purple 0%, $purple-dark 100%);
-  padding: calc(env(safe-area-inset-top, 0px) + 1.5rem) 1.25rem 2rem;
-  color: white;
+// ── Student identity card ─────────────────────────────────
+.id-card {
   display: flex; align-items: center; gap: 1rem;
-  position: relative;
-
-  .btn-back {
-    background: rgba(255,255,255,0.2); border: none; color: white;
-    width: 40px; height: 40px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; cursor: pointer; flex-shrink: 0;
-    &:hover { background: rgba(255,255,255,0.3); }
-  }
-  .child-hero-avatar {
-    width: 52px; height: 52px; flex-shrink: 0;
-    background: rgba(255,255,255,0.25);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem; font-weight: 700;
-  }
-  .child-hero-info {
-    h1 { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.2rem; }
-    p  { margin: 0; opacity: 0.85; font-size: 0.85rem; }
-  }
+  background: #fff; border-radius: 16px; border: 1.5px solid #f0f0f0;
+  padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: .875rem;
 }
+.id-avatar {
+  flex-shrink: 0; width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; font-weight: 800; color: #fff;
+}
+.id-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .35rem; }
+.id-name { margin: 0; font-size: 1.1rem; font-weight: 800; color: #1a1a2e; }
+.id-chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+.id-chip {
+  font-size: .72rem; font-weight: 600; color: #555;
+  background: #f4f5fb; border: 1px solid #e8e8f0;
+  padding: .15rem .55rem; border-radius: 10px;
+}
+.id-chip--code { color: #667eea; background: rgba(102,126,234,.08); border-color: rgba(102,126,234,.18); }
 
 // ── Tab nav ───────────────────────────────────────────────
 .tab-nav {

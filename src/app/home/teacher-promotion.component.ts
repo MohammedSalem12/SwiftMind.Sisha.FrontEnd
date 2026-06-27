@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface PricingTier {
   durationMonths: number;
@@ -33,20 +33,12 @@ interface PromotionDto {
   selector: 'app-teacher-promotion',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="router.navigate(['/teacher'])">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-text">
-          <span class="header-title">ترويج المعلم · Teacher Promotion</span>
-          <span class="header-sub">اظهر في مقدمة نتائج البحث للطلاب</span>
-        </div>
-      </div>
+      <app-page-header [title]="'طلبات الترقية'" [titleEn]="'Promotion'" [backTo]="'/teacher'"></app-page-header>
 
       @if (loading()) {
         <div class="loading-area">
@@ -187,19 +179,6 @@ interface PromotionDto {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1rem) 1rem 1.25rem;
-      display:flex; align-items:center; gap:.75rem;
-    }
-    .back-btn {
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:#fff; width:40px; height:40px; border-radius:12px;
-      display:flex; align-items:center; justify-content:center; cursor:pointer;
-    }
-    .header-text { display:flex; flex-direction:column; }
-    .header-title { font-size:1.1rem; font-weight:800; color:#fff; }
-    .header-sub { font-size:.75rem; color:rgba(255,255,255,.7); }
 
     .loading-area { padding:1rem; display:flex; flex-direction:column; gap:.5rem; }
     .sk-card {
@@ -348,7 +327,6 @@ interface PromotionDto {
 export class TeacherPromotionComponent implements OnInit {
   private readonly rest = inject(RestService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
-  readonly router = inject(Router);
 
   loading = signal(true);
   submitting = signal(false);

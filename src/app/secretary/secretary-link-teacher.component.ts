@@ -1,31 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { SecretaryTeacherService, TeacherService } from '@proxy/teachers';
 import type { TeacherAutocompleteDto } from '@proxy/teachers';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-secretary-link-teacher',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div>
-          <h1>ربط بمعلم</h1>
-          <p class="opacity-75 mb-0">ابحث بالاسم أو الكود</p>
-        </div>
-      </div>
+      <app-page-header [title]="'ربط معلم'" [titleEn]="'Link Teacher'" [backTo]="'/secretary'"></app-page-header>
 
       <!-- Search box -->
       <div class="search-section">
@@ -106,24 +98,6 @@ import { CurrentUserInfoService } from '@proxy/common';
       min-height: 100vh;
       background: #f8f9fa;
     }
-
-    /* Header */
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 1.25rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: .875rem;
-    }
-    .back-btn {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(255,255,255,.2); border: none;
-      color: white; font-size: 1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; min-width: 40px;
-    }
-    .page-header h1 { font-size: 1.2rem; font-weight: 700; margin: 0; }
 
     /* Search */
     .search-section {
@@ -226,7 +200,6 @@ import { CurrentUserInfoService } from '@proxy/common';
   `],
 })
 export class SecretaryLinkTeacherComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly teacherService = inject(TeacherService);
   private readonly secretaryTeacherService = inject(SecretaryTeacherService);
   private readonly currentUserInfoService = inject(CurrentUserInfoService);
@@ -289,10 +262,6 @@ export class SecretaryLinkTeacherComponent implements OnInit {
     } finally {
       this.linking.set(null);
     }
-  }
-
-  goBack() {
-    this.router.navigate(['/secretary']);
   }
 
   trackById = (_: number, t: TeacherAutocompleteDto) => t.id;

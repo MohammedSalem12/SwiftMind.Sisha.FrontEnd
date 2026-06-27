@@ -12,89 +12,6 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
 }
 
 // ──────────────────────────────────────────
-// Hero
-// ──────────────────────────────────────────
-.hero {
-  background: $purple-grad;
-  padding: calc(env(safe-area-inset-top, 0px) + 0.6rem) 1.25rem 0.7rem;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-}
-
-.hero-blob {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  pointer-events: none;
-}
-.b1 { width: 220px; height: 220px; top: -80px; right: -60px; }
-.b2 { width: 140px; height: 140px; bottom: -50px; left: -30px; }
-
-.back-btn {
-  flex-shrink: 0;
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  color: #fff;
-  font-size: 1rem;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  z-index: 1;
-  transition: background 0.15s;
-  &:active { background: rgba(255, 255, 255, 0.28); }
-}
-
-.hero-text {
-  flex: 1;
-  z-index: 1;
-  min-width: 0;
-
-  h1 {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #fff;
-    margin: 0 0 0.1rem;
-  }
-
-  p {
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.65);
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
-
-.hero-academy-tag {
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.82);
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-bottom: 0.1rem;
-
-  i { font-size: 0.58rem; }
-}
-
-.hero-icon {
-  z-index: 1;
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-
-  i { font-size: 1.15rem; color: #fff; }
-}
-
-// ──────────────────────────────────────────
 // Academy Context Banner
 // ──────────────────────────────────────────
 .academy-context-banner {
@@ -809,14 +726,6 @@ ion-checkbox.card-check {
 
 /* ─── Native Ionic theming (full-page conversion) ────────────────────────── */
 $pg: linear-gradient(135deg, #667eea, #764ba2);
-
-/* Hero back */
-ion-button.back-btn {
-  --background: rgba(255,255,255,.2); --background-hover: rgba(255,255,255,.3);
-  --color: #fff; --border-radius: 50%; --box-shadow: none;
-  --padding-start: 0; --padding-end: 0;
-  width: 40px; height: 40px; margin: 0;
-}
 
 /* Date input */
 ion-input.field-date {

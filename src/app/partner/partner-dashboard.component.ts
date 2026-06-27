@@ -1,20 +1,21 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { DealCouponService } from '@proxy/advertisements';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-partner-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <h1><i class="fas fa-store"></i> لوحة الشريك · Partner Dashboard</h1>
-      </div>
+      <app-page-header
+        [title]="'لوحة الشريك'"
+        [titleEn]="'Partner'"
+        [showBack]="false"></app-page-header>
 
       <div class="page-body">
         <!-- Scan / Verify Section -->
@@ -96,11 +97,6 @@ import { DealCouponService } from '@proxy/advertisements';
   `,
   styles: [`
     .page { min-height: 100vh; background: #f5f5f7; }
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white; padding: 20px 16px 16px;
-    }
-    .page-header h1 { font-size: 18px; margin: 0; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     .page-body { padding: 16px; }
     .section-card {
       background: white; border-radius: 16px; padding: 16px;
@@ -175,7 +171,6 @@ import { DealCouponService } from '@proxy/advertisements';
   `],
 })
 export class PartnerDashboardComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly couponService = inject(DealCouponService);
 
   loading = signal(false);

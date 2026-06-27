@@ -1,21 +1,9 @@
 <div class="marks-page" dir="rtl">
 
-  <!-- Top Bar -->
-  <div class="top-bar-fixed">
-    <button class="top-back-btn" (click)="goBack()">
-      <i class="fas fa-arrow-right"></i>
-    </button>
-    <div class="top-bar-title">
-      <h1>إدخال الدرجات</h1>
-      <p>Marks Entry</p>
-    </div>
-    @if (isAcademyCourse()) {
-      <span class="top-academy-tag">
-        <i class="fas fa-university"></i>
-        {{ selectedCourse()?.academyName }}
-      </span>
-    }
-  </div>
+  <!-- Header -->
+  <app-page-header
+    [title]="'إدخال الدرجات'"
+    [titleEn]="'Marks Entry'"></app-page-header>
 
   <!-- Academy context banner -->
   @if (isAcademyCourse() && lockedCourseId()) {

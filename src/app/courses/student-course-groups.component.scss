@@ -4,33 +4,11 @@
   direction: rtl;
 }
 
-.page-header {
-  background: var(--ngx-hero-gradient);
-  padding: 1.5rem;
-  color: white;
-}
-
-.header-inner { max-width: 860px; margin: 0 auto; }
-
-.btn-back {
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: white;
-  border-radius: 8px;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-  margin-bottom: 1rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  &:hover { background: rgba(255,255,255,0.3); }
-}
-
-.course-title { font-size: 1.6rem; font-weight: 700; margin: 0 0 0.5rem; }
+.course-info-bar { margin-bottom: 1rem; }
+.course-title { font-size: 1.3rem; font-weight: 700; margin: 0 0 0.5rem; color: #1a202c; }
 .course-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.badge-code { background: rgba(255,255,255,0.25); border-radius: 6px; padding: 0.2rem 0.6rem; font-size: 0.8rem; font-weight: 600; }
-.badge-grade { background: rgba(255,255,255,0.15); border-radius: 6px; padding: 0.2rem 0.6rem; font-size: 0.8rem; }
+.badge-code { background: #ede9fe; color: var(--ngx-primary); border-radius: 6px; padding: 0.2rem 0.6rem; font-size: 0.8rem; font-weight: 600; }
+.badge-grade { background: #e8eaf6; color: #5c6bc0; border-radius: 6px; padding: 0.2rem 0.6rem; font-size: 0.8rem; }
 
 .page-body { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 2rem; }
 

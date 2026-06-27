@@ -15,6 +15,7 @@ import type { GroupScheduleDto } from '@proxy/groups/dtos/models';
 import { Capacitor } from '@capacitor/core';
 import { BarcodeScanner, BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
 import { lastValueFrom } from 'rxjs';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface StudentEntry {
   enrollmentId: string;
@@ -38,7 +39,7 @@ interface GroupOption {
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, PageHeaderComponent],
   templateUrl: './attendance.component.html',
   styleUrls: ['./attendance.component.scss'],
 })

@@ -8,52 +8,45 @@ import { CurrentUserActorDto } from '@proxy/common/models';
 import { SecretaryTeacherService } from '@proxy/teachers';
 import { SecretaryTeacherDto, SecretaryTeacherRequestDto } from '@proxy/teachers/models';
 import { SecretaryTeacherRequestStatus } from '@proxy/teachers/secretary-teacher-request-status.enum';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-secretary-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="header-blobs">
-          <div class="blob b1"></div>
-          <div class="blob b2"></div>
-        </div>
+      <app-page-header [title]="'ملفي الشخصي'" [titleEn]="'My Profile'" [backTo]="'/secretary'">
+        <button ph-actions class="ph-action" (click)="logout()" aria-label="تسجيل الخروج">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </app-page-header>
 
-        <!-- Avatar -->
-        <div class="avatar-wrap">
-          <div class="avatar">
+      <!-- Identity card -->
+      <div class="section">
+        <div class="id-card">
+          <div class="id-avatar">
             <span>{{ initials() }}</span>
           </div>
-          <div class="role-badge">
-            <i class="fas fa-user-tie"></i>
-            سكرتير · Secretary
+          <div class="id-info">
+            <h1 class="id-name">{{ userInfo()?.actorName || 'السكرتير' }}</h1>
+            <div class="id-role"><i class="fas fa-user-tie"></i> سكرتير · Secretary</div>
+            <div class="id-chips">
+              @if (userInfo()?.actorCode) {
+                <span class="id-chip id-chip--code">{{ userInfo()?.actorCode }}</span>
+              }
+              @if (userInfo()?.email) {
+                <span class="id-chip id-chip--email">{{ userInfo()?.email }}</span>
+              }
+              @if (userInfo()?.userName) {
+                <span class="id-chip id-chip--email">&#64;{{ userInfo()?.userName }}</span>
+              }
+            </div>
           </div>
         </div>
-
-        <!-- Name & code -->
-        <div class="header-info">
-          <h1 class="user-name">{{ userInfo()?.actorName || 'السكرتير' }}</h1>
-          @if (userInfo()?.actorCode) {
-            <span class="user-code">{{ userInfo()?.actorCode }}</span>
-          }
-          @if (userInfo()?.email) {
-            <span class="user-email">{{ userInfo()?.email }}</span>
-          }
-          @if (userInfo()?.userName) {
-            <span class="user-username">&#64;{{ userInfo()?.userName }}</span>
-          }
-        </div>
-
-        <!-- Logout -->
-        <button class="logout-btn" (click)="logout()">
-          <i class="fas fa-sign-out-alt"></i>
-          خروج
-        </button>
       </div>
 
       <!-- ── Stats row ── -->
@@ -195,84 +188,33 @@ import { SecretaryTeacherRequestStatus } from '@proxy/teachers/secretary-teacher
       direction: rtl;
     }
 
-    /* ── Header ── */
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 2rem;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.5rem;
+    /* ── Identity card ── */
+    .id-card {
+      display: flex; align-items: center; gap: 1rem;
+      background: #fff; border-radius: 16px; border: 1.5px solid #f0f0f0;
+      padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     }
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.07);
-      pointer-events: none;
-    }
-    .b1 { width: 200px; height: 200px; top: -70px; right: -60px; }
-    .b2 { width: 140px; height: 140px; bottom: -50px; left: -30px; }
-
-    .avatar-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      position: relative;
-      z-index: 1;
-    }
-    .avatar {
-      width: 80px; height: 80px; border-radius: 50%;
-      background: rgba(255,255,255,0.2);
-      border: 3px solid rgba(255,255,255,0.5);
+    .id-avatar {
+      flex-shrink: 0; width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.8rem; font-weight: 800; color: #fff;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      font-size: 1.5rem; font-weight: 800; color: #fff;
     }
-    .role-badge {
-      display: flex; align-items: center; gap: 0.35rem;
-      background: rgba(255,255,255,0.18);
-      color: rgba(255,255,255,0.92);
-      padding: 0.3rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.75rem; font-weight: 600;
-      border: 1px solid rgba(255,255,255,0.25);
+    .id-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+    .id-name { margin: 0; font-size: 1.15rem; font-weight: 800; color: #1a1a2e; }
+    .id-role {
+      display: inline-flex; align-items: center; gap: 0.3rem; align-self: flex-start;
+      background: rgba(102,126,234,0.1); color: #667eea;
+      padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.72rem; font-weight: 700;
     }
-
-    .header-info {
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+    .id-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.1rem; }
+    .id-chip {
+      font-size: 0.72rem; font-weight: 600; color: #555;
+      background: #f4f5fb; border: 1px solid #e8e8f0;
+      padding: 0.15rem 0.55rem; border-radius: 10px;
     }
-    .user-name {
-      margin: 0;
-      font-size: 1.3rem; font-weight: 800; color: #fff;
-    }
-    .user-code {
-      font-size: 0.82rem; font-weight: 600;
-      color: rgba(255,255,255,0.7);
-      background: rgba(255,255,255,0.12);
-      padding: 0.15rem 0.6rem; border-radius: 12px;
-    }
-    .user-email, .user-username {
-      font-size: 0.78rem;
-      color: rgba(255,255,255,0.65);
-    }
-
-    .logout-btn {
-      position: absolute; top: max(1rem, env(safe-area-inset-top, 0px)); left: 1rem;
-      z-index: 2;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: rgba(255,255,255,0.9);
-      padding: 0.4rem 0.875rem; border-radius: 12px;
-      font-size: 0.8rem; font-weight: 600; cursor: pointer;
-      display: flex; align-items: center; gap: 0.35rem;
-      transition: background 0.15s;
-    }
-    .logout-btn:hover { background: rgba(255,255,255,0.25); }
+    .id-chip--code { color: #667eea; background: rgba(102,126,234,0.08); border-color: rgba(102,126,234,0.18); }
+    .id-chip--email { color: #9090aa; font-weight: 500; }
 
     /* ── Stats ── */
     .stats-row {

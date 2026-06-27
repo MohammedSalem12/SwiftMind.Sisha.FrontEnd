@@ -1,14 +1,9 @@
 <div class="page course-groups-page">
-  <div class="header d-flex justify-content-between align-items-center">
-    <div>
-      <h2>Course Groups</h2>
-      <div class="muted">Groups and schedule for course: {{ courseId() }}</div>
-    </div>
-    <div>
-      <button class="btn-outline" (click)="goBack()"><i class="fas fa-arrow-right me-1"></i> رجوع</button>
-      <button class="btn-primary ms-2" (click)="onCreateGroup()">Create Group</button>
-    </div>
-  </div>
+  <app-page-header [title]="'مجموعات المقرر'" [titleEn]="'Course Groups'" [backTo]="'/courses'">
+    <button ph-actions class="ph-action" (click)="onCreateGroup()" aria-label="إنشاء مجموعة · Create group">
+      <i class="fas fa-plus"></i>
+    </button>
+  </app-page-header>
 
   <div class="filters my-3 d-flex gap-2 align-items-center">
     <label class="muted small">Filter by teacher:</label>

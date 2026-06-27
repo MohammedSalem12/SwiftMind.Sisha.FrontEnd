@@ -1,12 +1,13 @@
-<div class="parents-page card">
-  <div class="page-header">
-    <h2>Parents Management</h2>
-    <div class="page-actions">
-      <button class="btn-primary" routerLink="/register">Add Parent</button>
-      <button class="btn-outline" (click)="loadParents()">Refresh</button>
-    </div>
-  </div>
+<app-page-header [title]="'أولياء الأمور'" [titleEn]="'Parents'" [backTo]="'/'" [count]="totalCount()">
+  <button ph-actions class="ph-action" routerLink="/register" aria-label="إضافة ولي أمر · Add parent">
+    <i class="fas fa-plus"></i>
+  </button>
+  <button ph-actions class="ph-action" (click)="loadParents()" aria-label="تحديث · Refresh">
+    <i class="fas fa-rotate-right"></i>
+  </button>
+</app-page-header>
 
+<div class="parents-page card">
   <!-- Filters -->
   <div class="filters-row">
     <div class="filter-group">

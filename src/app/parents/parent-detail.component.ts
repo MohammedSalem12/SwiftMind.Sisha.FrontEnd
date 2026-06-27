@@ -5,12 +5,13 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ParentService } from '@proxy/parents';
 import { StudentService } from '@proxy/students';
 import { lastValueFrom } from 'rxjs';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-parent-detail',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PageHeaderComponent],
   templateUrl: './parent-detail.component.html',
   styleUrls: ['./parent-detail.component.scss']
 })
@@ -176,9 +177,5 @@ export class ParentDetailComponent implements OnInit {
       console.error('Failed to remove student', e);
       alert('Failed to remove student');
     }
-  }
-
-  goBack() {
-    this.router.navigate(['/parents']);
   }
 }

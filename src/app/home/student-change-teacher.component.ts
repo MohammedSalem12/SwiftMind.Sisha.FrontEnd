@@ -12,27 +12,18 @@ import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-change-teacher',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-row">
-          <div class="header-icon"><i class="fas fa-exchange-alt"></i></div>
-          <div class="header-text">
-            <h1>تغيير المعلم · Change Teacher</h1>
-            <p>اختر المعلم والمجموعة الجديدة</p>
-          </div>
-        </div>
-      </div>
+      <app-page-header [title]="'تغيير المعلم'" [titleEn]="'Change Teacher'" [backTo]="'/student'"></app-page-header>
 
       <!-- Success -->
       @if (success()) {
@@ -156,23 +147,6 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
-
-    .page-header {
-      background:linear-gradient(135deg,#667eea,#764ba2);
-      padding:calc(env(safe-area-inset-top,0px) + .75rem) 1.25rem 1rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:180px; height:180px; top:-60px; right:-50px; }
-    .b2 { width:120px; height:120px; bottom:-40px; left:-25px; }
-    .header-row { position:relative; z-index:1; display:flex; align-items:center; gap:.75rem; }
-    .header-icon {
-      width:42px; height:42px; border-radius:50%;
-      background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center;
-      font-size:1rem; color:white; flex-shrink:0;
-    }
-    .header-text h1 { margin:0; font-size:1.1rem; font-weight:800; color:white; }
-    .header-text p { margin:.1rem 0 0; font-size:.72rem; color:rgba(255,255,255,.65); }
 
     .current-teacher-bar {
       margin:.5rem 1rem 0; padding:.6rem .85rem; border-radius:10px;

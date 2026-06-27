@@ -9,32 +9,28 @@ import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import type { CourseDto } from '@proxy/courses/dtos/models';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 import { FormsModule } from '@angular/forms';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-secretary-teacher-courses',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
-      <!-- Hero header with back button -->
-      <div class="hero">
-        <div class="hero-blob hero-blob-1"></div>
-        <div class="hero-blob hero-blob-2"></div>
-        <button class="btn-back" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="hero-content">
-          <div class="hero-greeting">
-            <span class="hero-label">مقررات المعلم</span>
-            <span class="hero-name">{{ teacherName() || 'المعلم' }}</span>
-          </div>
-          <p class="hero-sub">اختر مقرراً لتسجيل الحضور أو الدرجات</p>
-          <p class="hero-sub-en">Select a course to record attendance or marks</p>
-        </div>
+      <!-- Header -->
+      <app-page-header [title]="'مقررات المعلم'" [titleEn]="'Teacher Courses'" [backTo]="'/secretary'"></app-page-header>
+
+      <!-- Teacher name + intro -->
+      <div class="teacher-intro">
         <div class="hero-icon">
           <i class="fas fa-book"></i>
+        </div>
+        <div class="teacher-intro-text">
+          <span class="teacher-intro-name">{{ teacherName() || 'المعلم' }}</span>
+          <span class="teacher-intro-sub">اختر مقرراً لتسجيل الحضور أو الدرجات</span>
+          <span class="teacher-intro-sub-en">Select a course to record attendance or marks</span>
         </div>
       </div>
 
@@ -173,41 +169,21 @@ import { FormsModule } from '@angular/forms';
       padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     }
 
-    /* ── Hero ── */
-    .hero {
+    /* ── Teacher intro ── */
+    .teacher-intro {
       background: linear-gradient(145deg, var(--grad-start) 0%, var(--grad-end) 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 2rem;
-      position: relative;
-      overflow: hidden;
+      padding: 1.25rem;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: .875rem;
     }
-    .hero-blob {
-      position: absolute; border-radius: 50%;
-      background: rgba(255,255,255,.07); pointer-events: none;
-    }
-    .hero-blob-1 { width: 200px; height: 200px; top: -70px; right: -50px; }
-    .hero-blob-2 { width: 120px; height: 120px; bottom: -40px; left: -20px; }
-
-    .btn-back {
-      flex-shrink: 0; z-index: 1;
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(255,255,255,.2); border: none;
-      color: #fff; font-size: 1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      margin-top: .1rem;
-    }
-
-    .hero-content { z-index: 1; flex: 1; }
-    .hero-greeting { display: flex; flex-direction: column; margin-bottom: .35rem; }
-    .hero-label { font-size: .78rem; color: rgba(255,255,255,.7); }
-    .hero-name  { font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1.2; }
-    .hero-sub   { font-size: .82rem; color: rgba(255,255,255,.8); margin: 0; }
-    .hero-sub-en { font-size: .7rem; color: rgba(255,255,255,.55); margin: .1rem 0 0; }
+    .teacher-intro-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .teacher-intro-name { font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1.2; }
+    .teacher-intro-sub { font-size: .82rem; color: rgba(255,255,255,.8); margin-top: .25rem; }
+    .teacher-intro-sub-en { font-size: .7rem; color: rgba(255,255,255,.55); margin-top: .1rem; }
 
     .hero-icon {
-      z-index: 1; flex-shrink: 0;
+      flex-shrink: 0;
       width: 52px; height: 52px; border-radius: 50%;
       background: rgba(255,255,255,.15);
       border: 2px solid rgba(255,255,255,.25);
@@ -463,10 +439,6 @@ export class SecretaryTeacherCoursesComponent implements OnInit {
     const hr = parseInt(h);
     const d = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
     return `${d}:${m}${hr >= 12 ? 'م' : 'ص'}`;
-  }
-
-  goBack(): void {
-    this.router.navigate(['/secretary']);
   }
 
   trackById = (_: number, item: CourseDto) => item.id;

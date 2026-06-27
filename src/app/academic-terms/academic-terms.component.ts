@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface AcademicTermDto {
   id: string;
@@ -36,24 +37,15 @@ interface CopySemesterResultDto {
   selector: 'app-academic-terms',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
-      <!-- Header -->
-      <div class="header">
-        <div class="header-blob header-blob-1"></div>
-        <div class="header-blob header-blob-2"></div>
-        <div class="header-content">
-          <div class="header-text">
-            <h1>الفصول الدراسية</h1>
-            <p class="header-sub">Academic Semesters</p>
-          </div>
-          <button class="add-btn" (click)="openCreateForm()">
-            <i class="fas fa-plus"></i>
-          </button>
-        </div>
-      </div>
+      <app-page-header [title]="'الفصول الدراسية'" [titleEn]="'Academic Terms'" [backTo]="'/'" [count]="terms().length">
+        <button ph-actions class="ph-action" (click)="openCreateForm()" aria-label="إضافة فصل · Add term">
+          <i class="fas fa-plus"></i>
+        </button>
+      </app-page-header>
 
       <!-- Loading -->
       @if (loading()) {
@@ -392,56 +384,6 @@ interface CopySemesterResultDto {
       background: var(--bg);
       padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     }
-
-    /* ── Header ── */
-    .header {
-      background: linear-gradient(145deg, var(--grad-start) 0%, var(--grad-end) 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 1.25rem;
-      position: relative;
-      overflow: hidden;
-    }
-    .header-blob {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,.07);
-      pointer-events: none;
-    }
-    .header-blob-1 { width: 220px; height: 220px; top: -80px; right: -60px; }
-    .header-blob-2 { width: 140px; height: 140px; bottom: -50px; left: -30px; }
-
-    .header-content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .header-text h1 {
-      margin: 0;
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: var(--white);
-    }
-    .header-sub {
-      margin: .15rem 0 0;
-      font-size: .8rem;
-      color: rgba(255,255,255,.7);
-    }
-    .add-btn {
-      width: 44px; height: 44px;
-      border-radius: 14px;
-      border: none;
-      background: rgba(255,255,255,.2);
-      color: var(--white);
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(4px);
-      transition: transform .15s;
-    }
-    .add-btn:active { transform: scale(.92); }
 
     /* ── Loading ── */
     .loading-area {
@@ -864,10 +806,6 @@ interface CopySemesterResultDto {
 
     /* ── Responsive ── */
     @media (min-width: 768px) {
-      .header {
-        padding-right: 2rem;
-        padding-left: 2rem;
-      }
       .terms-list {
         padding: 1.5rem 2rem;
       }

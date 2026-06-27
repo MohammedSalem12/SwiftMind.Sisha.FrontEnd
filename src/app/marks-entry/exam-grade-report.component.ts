@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
@@ -6,6 +6,7 @@ import { lastValueFrom } from 'rxjs';
 import { ExamGradeService } from '@proxy/exam-grades';
 import { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
 import { ExamService } from '@proxy/exams';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface StudentRankEntry {
   studentName: string;
@@ -20,13 +21,12 @@ interface StudentRankEntry {
   selector: 'app-exam-grade-report',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   templateUrl: './exam-grade-report.component.html',
   styleUrls: ['./exam-grade-report.component.scss'],
 })
 export class ExamGradeReportComponent implements OnInit {
   private readonly route        = inject(ActivatedRoute);
-  private readonly location     = inject(Location);
   private readonly examGradeSvc = inject(ExamGradeService);
   private readonly examSvc      = inject(ExamService);
 
@@ -132,6 +132,4 @@ export class ExamGradeReportComponent implements OnInit {
   barWidth(count: number): number {
     return this.entries().length ? Math.round((count / this.entries().length) * 100) : 0;
   }
-
-  goBack(): void { this.location.back(); }
 }

@@ -7,21 +7,19 @@ import { lastValueFrom } from 'rxjs';
 import { MarketerService } from '@proxy/marketers';
 import type { MarketerTeacherDto } from '@proxy/marketers';
 import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-marketer-teachers',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, PageHeaderComponent],
   template: `
     <div class="mk-list-page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
-      <div class="mk-head">
-        <button class="mk-back" (click)="back()"><i class="fas fa-arrow-right"></i></button>
-        <div class="mk-head-txt">
-          <h1>معلميني</h1>
-          <p>My teachers · {{ teachers().length }}</p>
-        </div>
-        <button class="mk-add" (click)="go('/marketer/onboard')"><i class="fas fa-user-plus"></i></button>
-      </div>
+      <app-page-header [title]="'معلميني'" [titleEn]="'My Teachers'" [backTo]="'/marketer'">
+        <button ph-actions class="ph-action" (click)="go('/marketer/onboard')" aria-label="تسجيل معلم · Onboard teacher">
+          <i class="fas fa-user-plus"></i>
+        </button>
+      </app-page-header>
 
       <div *ngIf="loading()" class="mk-skel-list">
         <div class="mk-skel-row" *ngFor="let _ of [1,2,3]"></div>
@@ -59,12 +57,6 @@ import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.dir
   `,
   styles: [`
     .mk-list-page { padding: 12px; padding-bottom: 90px; }
-    .mk-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-    .mk-back, .mk-add { width: 44px; height: 44px; border-radius: 12px; border: none; cursor: pointer; }
-    .mk-back { background: #f3f4f6; color: #374151; }
-    .mk-add { background: var(--ngx-primary, #667eea); color: #fff; margin-inline-start: auto; }
-    .mk-head-txt h1 { margin: 0; font-size: 1.2rem; }
-    .mk-head-txt p { margin: 0; font-size: .8rem; color: #6b7280; }
     .mk-cards { display: flex; flex-direction: column; gap: 10px; }
     .mk-tcard {
       position: relative; overflow: hidden;
@@ -134,5 +126,4 @@ export class MarketerTeachersComponent implements OnInit {
   }
 
   go(path: string): void { void this.router.navigate([path]); }
-  back(): void { void this.router.navigate(['/marketer']); }
 }

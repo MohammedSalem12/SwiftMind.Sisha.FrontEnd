@@ -1,24 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { MarketerService } from '@proxy/marketers';
 import type { MarketerStatsDto } from '@proxy/marketers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-marketer-fees',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="fe-page" dir="rtl">
-      <div class="fe-head">
-        <button class="fe-back" (click)="back()"><i class="fas fa-arrow-right"></i></button>
-        <div>
-          <h1>أرباحي</h1>
-          <p>My fees</p>
-        </div>
-      </div>
+      <app-page-header [title]="'أرباحي'" [titleEn]="'My Fees'" [backTo]="'/marketer'"></app-page-header>
 
       <div *ngIf="loading()" class="fe-skel"></div>
       <div *ngIf="error()" class="fe-error"><i class="fas fa-triangle-exclamation"></i> {{ error() }}
@@ -41,10 +35,6 @@ import type { MarketerStatsDto } from '@proxy/marketers';
   `,
   styles: [`
     .fe-page { padding: 12px; padding-bottom: 90px; }
-    .fe-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-    .fe-back { width: 44px; height: 44px; border-radius: 12px; border: none; background: #f3f4f6; color: #374151; cursor: pointer; }
-    .fe-head h1 { margin: 0; font-size: 1.2rem; }
-    .fe-head p { margin: 0; font-size: .8rem; color: #6b7280; }
     .fe-big { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; border-radius: 18px; padding: 22px; text-align: center; box-shadow: 0 8px 24px rgba(102,126,234,.3); }
     .fe-big-lbl { font-size: .85rem; opacity: .9; }
     .fe-big-val { font-size: 2.4rem; font-weight: 800; margin-top: 6px; }
@@ -62,7 +52,6 @@ import type { MarketerStatsDto } from '@proxy/marketers';
 })
 export class MarketerFeesComponent implements OnInit {
   private readonly marketerService = inject(MarketerService);
-  private readonly router = inject(Router);
 
   loading = signal(false);
   error = signal<string | null>(null);
@@ -81,6 +70,4 @@ export class MarketerFeesComponent implements OnInit {
       this.loading.set(false);
     }
   }
-
-  back(): void { void this.router.navigate(['/marketer']); }
 }

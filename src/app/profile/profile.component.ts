@@ -7,12 +7,13 @@ import { CurrentUserInfoService } from '@proxy/common';
 import { CurrentUserActorDto } from '@proxy/common/models';
 import { lastValueFrom } from 'rxjs';
 import { BiometricService } from '../shared/services/biometric.service';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PageHeaderComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
 })

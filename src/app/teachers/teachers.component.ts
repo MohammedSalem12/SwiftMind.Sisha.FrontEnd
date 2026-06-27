@@ -7,12 +7,13 @@ import { ListService, PagedResultDto } from '@abp/ng.core';
 import type { TeacherDto } from '@proxy/teachers/models';
 import { TeacherService } from '@proxy/teachers';
 import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teachers',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, PullToRefreshDirective],
+  imports: [CommonModule, FormsModule, PullToRefreshDirective, PageHeaderComponent],
   templateUrl: './teachers.component.html',
   styleUrls: ['./teachers.component.scss'],
   providers: [ListService],

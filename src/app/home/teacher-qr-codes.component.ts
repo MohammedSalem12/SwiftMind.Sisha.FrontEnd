@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import * as QRCode from 'qrcode';
 
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
 import type { CourseDto } from '@proxy/courses/dtos/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface CourseQR {
   course: CourseDto;
@@ -24,12 +24,11 @@ interface FullscreenQR {
   selector: 'app-teacher-qr-codes',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   templateUrl: './teacher-qr-codes.component.html',
   styleUrls: ['./teacher-qr-codes.component.scss'],
 })
 export class TeacherQrCodesComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly currentUserService = inject(CurrentUserInfoService);
   private readonly teacherService = inject(TeacherService);
 
@@ -96,10 +95,6 @@ export class TeacherQrCodesComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
-  }
-
-  goBack(): void {
-    this.router.navigate(['/teacher']);
   }
 
   trackByCourseId = (_: number, item: CourseQR) => item.course.id;

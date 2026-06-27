@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
 import { AdvertiserService } from '@proxy/advertisements';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface Partner {
   id: string;
@@ -34,15 +34,10 @@ const TYPE_LABELS: Record<number, { ar: string; en: string; icon: string; color:
   selector: 'app-partners-directory',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <button class="back-btn" (click)="router.navigate(['/'])">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <h1>شركاؤنا · Our Partners</h1>
-      </div>
+      <app-page-header [title]="'شركاؤنا'" [titleEn]="'Partners'"></app-page-header>
 
       <div class="page-body">
         <div class="search-box">
@@ -105,16 +100,6 @@ const TYPE_LABELS: Record<number, { ar: string; en: string; icon: string; color:
   `,
   styles: [`
     .page { min-height: 100vh; background: #f5f5f7; }
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white; padding: 20px 16px 16px; display: flex; align-items: center; gap: 12px;
-    }
-    .page-header h1 { font-size: 18px; margin: 0; font-weight: 600; }
-    .back-btn {
-      background: rgba(255,255,255,.2); border: none; color: white;
-      width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
     .page-body { padding: 16px; }
     .search-box {
       display: flex; align-items: center; gap: 10px;
@@ -167,7 +152,6 @@ const TYPE_LABELS: Record<number, { ar: string; en: string; icon: string; color:
   `],
 })
 export class PartnersDirectoryComponent implements OnInit {
-  readonly router = inject(Router);
   private readonly advertiserService = inject(AdvertiserService);
 
   loading = signal(false);

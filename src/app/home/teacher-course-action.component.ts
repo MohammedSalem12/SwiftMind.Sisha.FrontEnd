@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Location } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
 import { CourseService } from '@proxy/courses';
 import type { CourseDto } from '@proxy/courses/dtos/models';
@@ -10,19 +9,19 @@ import { GroupService } from '@proxy/groups';
 import { AcademyService } from '@proxy/academies';
 import type { AcademyDto } from '@proxy/academies/models';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teacher-course-action',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   templateUrl: './teacher-course-action.component.html',
   styleUrls: ['./teacher-course-action.component.scss'],
 })
 export class TeacherCourseActionComponent implements OnInit {
   private readonly router          = inject(Router);
   private readonly route           = inject(ActivatedRoute);
-  private readonly location        = inject(Location);
   private readonly courseSvc       = inject(CourseService);
   private readonly enrollmentSvc   = inject(StudentEnrollmentService);
   private readonly groupSvc        = inject(GroupService);
@@ -99,10 +98,6 @@ export class TeacherCourseActionComponent implements OnInit {
     this.router.navigate(['/students'], {
       queryParams: { courseId: this.courseId(), ...this.extraParams() }
     });
-  }
-
-  goBack(): void {
-    this.location.back();
   }
 
   async shareCourse(): Promise<void> {

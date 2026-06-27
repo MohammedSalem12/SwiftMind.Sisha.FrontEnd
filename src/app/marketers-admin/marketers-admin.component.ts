@@ -1,26 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { MarketerService } from '@proxy/marketers';
 import type { MarketerStatsDto, RegisterMarketerDto } from '@proxy/marketers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-marketers-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="ma-page" dir="rtl">
-      <div class="ma-head">
-        <button class="ma-back" (click)="back()"><i class="fas fa-arrow-right"></i></button>
-        <div class="ma-head-txt">
-          <h1>المسوّقون</h1>
-          <p>Marketers · {{ stats().length }}</p>
-        </div>
-        <button class="ma-add" (click)="showForm.set(!showForm())"><i class="fas" [class.fa-plus]="!showForm()" [class.fa-times]="showForm()"></i></button>
-      </div>
+      <app-page-header [title]="'المسوّقون'" [titleEn]="'Marketers'" [backTo]="'/'" [count]="stats().length">
+        <button ph-actions class="ph-action" (click)="showForm.set(!showForm())" aria-label="تسجيل مسوّق · Add marketer">
+          <i class="fas" [class.fa-plus]="!showForm()" [class.fa-times]="showForm()"></i>
+        </button>
+      </app-page-header>
 
       <!-- Register form -->
       <section class="ma-card" *ngIf="showForm()">
@@ -79,12 +76,8 @@ import type { MarketerStatsDto, RegisterMarketerDto } from '@proxy/marketers';
   `,
   styles: [`
     .ma-page { padding: 12px; padding-bottom: 100px; }
-    .ma-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-    .ma-back, .ma-add { width: 44px; height: 44px; border-radius: 12px; border: none; cursor: pointer; }
-    .ma-back { background: #f3f4f6; color: #374151; }
-    .ma-add { background: var(--ngx-primary, #667eea); color: #fff; margin-inline-start: auto; }
-    .ma-head-txt h1 { margin: 0; font-size: 1.2rem; }
-    .ma-head-txt p { margin: 0; font-size: .8rem; color: #6b7280; }
+    /* let the shared page-header break out of the page's horizontal padding */
+    .ma-page app-page-header { display: block; margin: -12px -12px 14px; }
     .ma-card { background: #fff; border: 1.5px solid #f0f0f0; border-radius: 16px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
     .ma-title { font-weight: 800; font-size: .9rem; margin-bottom: 10px; display: flex; gap: 8px; align-items: center; }
     .ma-title i { color: var(--ngx-primary, #667eea); }
@@ -124,7 +117,6 @@ import type { MarketerStatsDto, RegisterMarketerDto } from '@proxy/marketers';
 })
 export class MarketersAdminComponent implements OnInit {
   private readonly marketerService = inject(MarketerService);
-  private readonly router = inject(Router);
 
   loading = signal(false);
   error = signal<string | null>(null);
@@ -188,6 +180,4 @@ export class MarketersAdminComponent implements OnInit {
       await this.load();
     } catch (e) { this.fail(e); } finally { this.saving.set(false); }
   }
-
-  back(): void { void this.router.navigate(['/']); }
 }

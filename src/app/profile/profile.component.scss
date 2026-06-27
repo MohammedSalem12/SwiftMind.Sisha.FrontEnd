@@ -24,65 +24,72 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── Header ─── */
-.profile-header {
-  padding: 2.5rem 1.5rem 3.5rem;
-  text-align: center;
+/* ─── Identity card ─── */
+.id-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.id-avatar-wrap {
   position: relative;
+  flex-shrink: 0;
 }
 
-.header-inner {
-  max-width: 480px;
-  margin: 0 auto;
-}
-
-.avatar-wrap {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 1rem;
-}
-
-.avatar {
-  width: 88px;
-  height: 88px;
+.id-avatar {
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: var(--ngx-hero-gradient);
   color: white;
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(51, 102, 255, 0.35);
-  border: 4px solid white;
+  box-shadow: 0 6px 18px rgba(51, 102, 255, 0.3);
 }
 
 .role-icon-badge {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   border: 2px solid white;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.user-name {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1a202c;
-  margin: 0 0 0.5rem;
+.id-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
 }
 
-.role-badge {
+.id-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+.id-role-badge {
   display: inline-block;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   padding: 0.25rem 0.85rem;
   border: 1.5px solid;
@@ -93,8 +100,8 @@
 /* ─── Body ─── */
 .profile-body {
   max-width: 480px;
-  margin: -1.5rem auto 0;
-  padding: 0 1rem;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
 /* ─── Info Cards ─── */
@@ -353,6 +360,5 @@
 
 /* ─── Responsive ─── */
 @media (max-width: 520px) {
-  .profile-header { padding: 2rem 1rem 3rem; }
-  .avatar { width: 76px; height: 76px; font-size: 1.75rem; }
+  .id-avatar { width: 64px; height: 64px; font-size: 1.45rem; }
 }

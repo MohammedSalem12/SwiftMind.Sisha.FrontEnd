@@ -1,14 +1,13 @@
+<app-page-header [title]="'المعلمون'" [titleEn]="'Teachers'" [backTo]="'/'" [count]="totalCount()">
+  <button ph-actions class="ph-action" (click)="goToAddTeacher()" aria-label="إضافة معلم · Add teacher">
+    <i class="fas fa-plus"></i>
+  </button>
+</app-page-header>
+
 <div appPullToRefresh (appPullToRefresh)="refreshData($event)">
-<div class="teachers-hero">
-  <div>
-    <h1>Teachers</h1>
-    <p class="subtitle">List of teachers. Click a teacher to see details.</p>
-  </div>
-  <div class="hero-controls">
-    <input class="search" placeholder="Search by name" [ngModel]="filter()" (ngModelChange)="filter.set($event)" />
-    <button class="btn-primary" (click)="onSearch()">Search</button>
-    <button class="btn-primary" (click)="goToAddTeacher()">Add teacher</button>
-  </div>
+<div class="search-row">
+  <input class="search" placeholder="بحث بالاسم · Search by name" [ngModel]="filter()" (ngModelChange)="filter.set($event)" (keyup.enter)="onSearch()" />
+  <button class="btn-primary" (click)="onSearch()">بحث</button>
 </div>
 
 <div *ngIf="loading()" class="loading">Loading...</div>

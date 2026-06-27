@@ -6,6 +6,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface AdDto {
   id: string;
@@ -36,44 +37,35 @@ interface AdDto {
   selector: 'app-ads-browse',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
       <!-- Header -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-content">
-          <div class="header-top-row">
-            <div>
-              <h1><i class="fas fa-bullhorn"></i> إعلانات</h1>
-              <p>Ads</p>
-            </div>
-            <div class="header-actions">
-              @if (isStudent()) {
-                <a routerLink="/ads/my-coupons" class="header-link-btn">
-                  <i class="fas fa-ticket-alt"></i> كوبوناتي
-                </a>
-              }
-              @if (isAdvertiser()) {
-                <a routerLink="/ads/redeem" class="header-link-btn">
-                  <i class="fas fa-qrcode"></i> استرداد
-                </a>
-              }
-              @if (canCreate()) {
-                <a routerLink="/ads/my" class="header-link-btn">
-                  <i class="fas fa-list"></i> إعلاناتي
-                </a>
-              }
-              @if (isAdmin()) {
-                <a routerLink="/ads/advertisers" class="header-link-btn">
-                  <i class="fas fa-store"></i> المعلنين
-                </a>
-              }
-            </div>
-          </div>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'الإعلانات والعروض'"
+        [titleEn]="'Ads'"
+        [showBack]="false">
+        @if (isStudent()) {
+          <a ph-actions class="ph-action" routerLink="/ads/my-coupons" aria-label="كوبوناتي · My Coupons">
+            <i class="fas fa-ticket-alt"></i>
+          </a>
+        }
+        @if (isAdvertiser()) {
+          <a ph-actions class="ph-action" routerLink="/ads/redeem" aria-label="استرداد · Redeem">
+            <i class="fas fa-qrcode"></i>
+          </a>
+        }
+        @if (canCreate()) {
+          <a ph-actions class="ph-action" routerLink="/ads/my" aria-label="إعلاناتي · My Ads">
+            <i class="fas fa-list"></i>
+          </a>
+        }
+        @if (isAdmin()) {
+          <a ph-actions class="ph-action" routerLink="/ads/advertisers" aria-label="المعلنين · Advertisers">
+            <i class="fas fa-store"></i>
+          </a>
+        }
+      </app-page-header>
 
       <!-- Filters -->
       <div class="filters">
@@ -188,35 +180,6 @@ interface AdDto {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
-
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 1.5rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-content { position:relative; z-index:1; }
-    .header-top-row {
-      display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem;
-    }
-    .header-content h1 {
-      margin:0; font-size:1.4rem; font-weight:800; color:#fff;
-      display:flex; align-items:center; gap:.5rem;
-    }
-    .header-content p { margin:.15rem 0 0; font-size:.8rem; color:rgba(255,255,255,.7); }
-    .header-actions {
-      display:flex; gap:.4rem; flex-wrap:wrap; justify-content:flex-end;
-    }
-    .header-link-btn {
-      display:flex; align-items:center; gap:.25rem;
-      padding:.3rem .6rem; border-radius:10px; flex-shrink:0;
-      background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.25);
-      color:rgba(255,255,255,.9); font-size:.68rem; font-weight:600;
-      text-decoration:none; white-space:nowrap;
-      min-height:32px;
-    }
 
     .filters { padding:.75rem 1rem 0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
     .filter-chips { display:flex; gap:.5rem; padding-bottom:.25rem; }

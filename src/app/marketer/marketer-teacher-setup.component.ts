@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { MarketerService } from '@proxy/marketers';
 import type { MarketerTeacherDto } from '@proxy/marketers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface LocalCourse { id: string; name: string; }
 interface LocalGroup { id: string; name: string; }
@@ -13,16 +14,13 @@ interface LocalGroup { id: string; name: string; }
 @Component({
   selector: 'app-marketer-teacher-setup',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="ts-page" dir="rtl">
-      <div class="ts-head">
-        <button class="ts-back" (click)="back()"><i class="fas fa-arrow-right"></i></button>
-        <div>
-          <h1>إعداد المعلم</h1>
-          <p>{{ teacherName() || 'Teacher setup' }}</p>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'إعداد المعلم'"
+        [titleEn]="teacherName() || 'Teacher Setup'"
+        [backTo]="'/marketer'"></app-page-header>
 
       <!-- 1. Course -->
       <section class="ts-card">
@@ -101,10 +99,6 @@ interface LocalGroup { id: string; name: string; }
   `,
   styles: [`
     .ts-page { padding: 12px; padding-bottom: 100px; }
-    .ts-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .ts-back { width: 44px; height: 44px; border-radius: 12px; border: none; background: #f3f4f6; color: #374151; cursor: pointer; }
-    .ts-head h1 { margin: 0; font-size: 1.15rem; }
-    .ts-head p { margin: 0; font-size: .8rem; color: #6b7280; }
     .ts-card { background: #fff; border: 1.5px solid #f0f0f0; border-radius: 16px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
     .ts-title { font-weight: 800; font-size: .9rem; color: #1a1a2e; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
     .ts-title i { color: var(--ngx-primary, #667eea); }
@@ -133,7 +127,6 @@ interface LocalGroup { id: string; name: string; }
 export class MarketerTeacherSetupComponent implements OnInit {
   private readonly marketerService = inject(MarketerService);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
 
   teacherId = '';
   teacherName = signal<string>('');
@@ -239,6 +232,4 @@ export class MarketerTeacherSetupComponent implements OnInit {
       this.flash('تم تسجيل السكرتير وربطه · Secretary registered & linked');
     } catch (e) { this.fail(e); } finally { this.busy.set(false); }
   }
-
-  back(): void { void this.router.navigate(['/marketer/teachers']); }
 }

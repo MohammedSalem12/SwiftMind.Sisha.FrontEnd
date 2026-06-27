@@ -6,12 +6,13 @@ import { lastValueFrom } from 'rxjs';
 
 import type { CreateUpdateStudentDto } from '@proxy/students';
 import { StudentService } from '@proxy/students';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-add-student',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   templateUrl: './add-student.component.html',
   styleUrls: ['./add-student.component.scss'],
 })

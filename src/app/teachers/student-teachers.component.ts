@@ -6,6 +6,8 @@ import { RestService } from '@abp/ng.core';
 import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 
+import { PageHeaderComponent } from '../shared/components/page-header.component';
+
 interface TeacherCard {
   id: string;
   displayName: string;
@@ -21,21 +23,12 @@ interface TeacherCard {
   selector: 'app-student-teachers',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <button class="back-btn" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
-        <div class="header-content">
-          <div class="header-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-          <h1 class="page-title">معلمو صفّي</h1>
-          <p class="page-subtitle">My Grade Teachers</p>
-        </div>
-      </div>
+      <app-page-header [title]="'معلمو صفّي'" [titleEn]="'My Teachers'" [backTo]="'/student'"></app-page-header>
 
       <!-- Search -->
       @if (!loading() && teachers().length > 0) {
@@ -114,29 +107,6 @@ interface TeacherCard {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 1.5rem;
-      position:relative; overflow:hidden; text-align:center;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .back-btn {
-      position:absolute; top:max(1rem,env(safe-area-inset-top,0px)); right:1rem; z-index:2;
-      width:40px; height:40px; border-radius:12px;
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:#fff; font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .header-content { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:.4rem; }
-    .header-icon {
-      width:56px; height:56px; border-radius:50%;
-      background:rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.4);
-      display:flex; align-items:center; justify-content:center; font-size:1.4rem; color:#fff;
-    }
-    .page-title { margin:0; font-size:1.35rem; font-weight:800; color:#fff; }
-    .page-subtitle { margin:0; font-size:.8rem; color:rgba(255,255,255,.7); }
 
     .search-wrap {
       margin:1rem 1rem 0; position:relative; display:flex; align-items:center;
@@ -245,6 +215,4 @@ export class StudentTeachersComponent implements OnInit {
   openProfile(id: string): void {
     this.router.navigate(['/student/teacher', id]);
   }
-
-  goBack(): void { this.router.navigate(['/student']); }
 }

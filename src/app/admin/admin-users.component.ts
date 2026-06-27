@@ -1,27 +1,25 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { AdminUsersService } from '@proxy/admin-users';
 import type { AdminUserDto } from '@proxy/admin-users/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="users-page" dir="rtl">
       <!-- Header -->
-      <div class="page-header" data-page-header>
-        <button class="back-btn" (click)="goBack()" aria-label="رجوع"><i class="fas fa-arrow-right"></i></button>
-        <div>
-          <h1>المستخدمون</h1>
-          <p class="sub">All Users · {{ totalCount() }}</p>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'المستخدمون'"
+        [titleEn]="'All Users'"
+        [count]="totalCount()"
+        [backTo]="'/'"></app-page-header>
 
       <!-- Search + role filter -->
       <div class="toolbar">
@@ -124,16 +122,8 @@ import type { AdminUserDto } from '@proxy/admin-users/models';
   `,
   styles: [`
     .users-page { min-height:100vh; background:#f5f7fa; padding-bottom:100px; }
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1rem) 1rem 1rem;
-      display:flex; align-items:center; gap:1rem; color:#fff; position:sticky; top:0; z-index:100;
-    }
-    .back-btn { width:40px; height:40px; min-width:40px; background:rgba(255,255,255,.2); border:none; border-radius:12px; color:#fff; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-    .page-header h1 { margin:0; font-size:1.25rem; font-weight:800; }
-    .page-header .sub { margin:.1rem 0 0; font-size:.75rem; opacity:.75; }
 
-    .toolbar { background:#fff; padding:.85rem 1rem; box-shadow:0 2px 8px rgba(0,0,0,.05); position:sticky; top:calc(env(safe-area-inset-top,0px) + 4rem); z-index:50; }
+    .toolbar { background:#fff; padding:.85rem 1rem; box-shadow:0 2px 8px rgba(0,0,0,.05); }
     .search-box { display:flex; align-items:center; gap:.5rem; background:#f1f5f9; border-radius:12px; padding:0 .75rem; }
     .search-box i { color:#94a3b8; }
     .search-box input { flex:1; border:none; background:transparent; padding:.7rem 0; font-size:16px; outline:none; }
@@ -189,7 +179,6 @@ import type { AdminUserDto } from '@proxy/admin-users/models';
   `]
 })
 export class AdminUsersComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly api = inject(AdminUsersService);
 
   private readonly pageSize = 50;
@@ -281,6 +270,4 @@ export class AdminUsersComponent implements OnInit {
     this.toast.set(msg); this.toastOk.set(ok);
     setTimeout(() => this.toast.set(''), 3000);
   }
-
-  goBack(): void { this.router.navigate(['/']); }
 }

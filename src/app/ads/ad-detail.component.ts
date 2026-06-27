@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -6,28 +6,18 @@ import { ActivatedRoute } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-ad-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-row">
-          <button class="btn-back" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
-          <div class="header-text">
-            <h1>تفاصيل الإعلان</h1>
-            <p>Ad Details</p>
-          </div>
-          <div class="header-icon"><i class="fas fa-bullhorn"></i></div>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'تفاصيل الإعلان'"
+        [titleEn]="'Ad Details'"></app-page-header>
 
       @if (loading()) {
         <div class="loading"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
@@ -138,31 +128,6 @@ import { CurrentUserInfoService } from '@proxy/common';
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
 
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 2rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-row { position:relative; z-index:1; display:flex; align-items:center; gap:1rem; }
-    .btn-back {
-      width:40px; height:40px; border-radius:12px;
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:#fff; font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; flex-shrink:0;
-    }
-    .header-text { flex:1; }
-    .header-text h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
-    .header-text p { margin:.1rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
-    .header-icon {
-      width:48px; height:48px; border-radius:14px;
-      background:rgba(255,255,255,.15);
-      display:flex; align-items:center; justify-content:center;
-      color:rgba(255,255,255,.9); font-size:1.3rem; flex-shrink:0;
-    }
-
     .loading { text-align:center; padding:3rem 1rem; color:#9090aa; font-size:.9rem; }
     .error-msg {
       margin:1rem; padding:.75rem; border-radius:12px;
@@ -173,7 +138,7 @@ import { CurrentUserInfoService } from '@proxy/common';
 
     .ad-image {
       width:100%; max-height:220px; object-fit:cover;
-      margin-top:-1rem; border-radius:0 0 16px 16px;
+      border-radius:0 0 16px 16px;
     }
 
     .ad-card {
@@ -260,7 +225,6 @@ import { CurrentUserInfoService } from '@proxy/common';
 export class AdDetailComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly route = inject(ActivatedRoute);
-  private readonly location = inject(Location);
   private readonly apiBase = environment.apis?.default?.url || '';
 
   private readonly currentUserSvc = inject(CurrentUserInfoService);
@@ -308,6 +272,4 @@ export class AdDetailComponent implements OnInit {
       navigator.clipboard.writeText(code).catch(() => {});
     }
   }
-
-  goBack(): void { this.location.back(); }
 }

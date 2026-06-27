@@ -8,34 +8,28 @@ import { AcademyService } from '@proxy/academies';
 import { AcademyCourseDto, AcademyDto } from '@proxy/academies/models';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teacher-academy-courses',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="blob b1"></div><div class="blob b2"></div>
-        <div class="header-top">
-          <button class="back-btn" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
+      <app-page-header
+        [title]="academyName() || 'مقررات الأكاديمية'"
+        [titleEn]="'Academy Courses'"
+        [count]="courses().length"
+        [backTo]="'/teacher'">
+        @if (isSupervisor()) {
+          <button ph-actions class="ph-action" (click)="goToAddCourse()" aria-label="إضافة مقرر · Add course">
+            <i class="fas fa-plus"></i>
           </button>
-          <div class="header-info">
-            <h1>{{ academyName() || 'مقررات الأكاديمية' }}</h1>
-            <p>{{ courses().length }} مقرر · Academy Courses</p>
-          </div>
-          @if (isSupervisor()) {
-            <button class="add-btn" (click)="goToAddCourse()">
-              <i class="fas fa-plus"></i>
-              إضافة مقرر
-            </button>
-          }
-        </div>
-      </div>
+        }
+      </app-page-header>
 
       <!-- ── Loading ── -->
       @if (loading()) {
@@ -188,38 +182,6 @@ import { TeacherService } from '@proxy/teachers';
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
-
-    /* ── Header ── */
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1rem) 1.25rem 1.25rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:180px; height:180px; top:-60px; right:-50px; }
-    .b2 { width:120px; height:120px; bottom:-40px; left:-25px; }
-    .header-top {
-      position:relative; z-index:1;
-      display:flex; align-items:center; gap:.75rem;
-    }
-    .back-btn {
-      width:40px; height:40px; border-radius:50%; flex-shrink:0;
-      background:rgba(255,255,255,.2); border:none; color:#fff;
-      display:flex; align-items:center; justify-content:center;
-      font-size:1rem; cursor:pointer;
-    }
-    .header-info { flex:1; min-width:0; }
-    .header-info h1 {
-      margin:0; font-size:1.1rem; font-weight:800; color:#fff;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-    .header-info p { margin:.1rem 0 0; font-size:.72rem; color:rgba(255,255,255,.7); }
-    .add-btn {
-      display:flex; align-items:center; gap:.35rem;
-      background:rgba(255,255,255,.2); border:1.5px solid rgba(255,255,255,.35);
-      color:#fff; padding:.45rem .875rem; border-radius:12px;
-      font-size:.82rem; font-weight:700; cursor:pointer; flex-shrink:0; min-height:40px;
-    }
 
     /* ── Shimmer ── */
     .shimmer-area { padding:.875rem 1rem 0; display:flex; flex-direction:column; gap:.625rem; }
@@ -524,9 +486,5 @@ export class TeacherAcademyCoursesComponent implements OnInit {
 
   goToAddCourse(): void {
     this.router.navigate(['/academies', this.academyId, 'manage'], { queryParams: { tab: 'courses' } });
-  }
-
-  goBack(): void {
-    this.router.navigate(['/teacher/academies']);
   }
 }

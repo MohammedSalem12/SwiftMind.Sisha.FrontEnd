@@ -7,21 +7,30 @@ import { lastValueFrom } from 'rxjs';
 import { MarketerService } from '@proxy/marketers';
 import type { MarketerStatsDto } from '@proxy/marketers';
 import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-marketer-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, PageHeaderComponent],
   template: `
-    <div class="mk-page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
-      <div class="mk-hero">
-        <div class="mk-hero-top">
-          <div>
-            <div class="mk-hello">لوحة المسوّق · Marketer</div>
-            <div class="mk-name">{{ stats()?.fullName || '—' }}</div>
-            <div class="mk-code" *ngIf="stats()?.marketerCode">{{ stats()?.marketerCode }}</div>
-          </div>
-          <div class="mk-hero-icon"><i class="fas fa-bullhorn"></i></div>
+    <div class="mk-page" dir="rtl">
+      <app-page-header
+        [title]="'لوحة المسوّق'"
+        [titleEn]="'Marketer'"
+        [showBack]="false">
+        <button ph-actions class="ph-action" (click)="load()" aria-label="تحديث · Refresh">
+          <i class="fas fa-sync-alt" [class.fa-spin]="loading()"></i>
+        </button>
+      </app-page-header>
+
+      <div class="mk-body" appPullToRefresh (appPullToRefresh)="refreshData($event)">
+      <!-- Greeting card -->
+      <div class="mk-greet-card">
+        <div class="mk-greet-icon"><i class="fas fa-bullhorn"></i></div>
+        <div class="mk-greet-text">
+          <div class="mk-name">{{ stats()?.fullName || '—' }}</div>
+          <div class="mk-code" *ngIf="stats()?.marketerCode">{{ stats()?.marketerCode }}</div>
         </div>
       </div>
 
@@ -68,24 +77,26 @@ import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.dir
           </button>
         </div>
       </ng-container>
+      </div>
     </div>
   `,
   styles: [`
-    .mk-page { padding: 12px; padding-bottom: 90px; }
-    .mk-hero {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border-radius: 18px; padding: 18px; color: #fff;
-      box-shadow: 0 8px 24px rgba(102,126,234,.3);
+    .mk-page { min-height: 100vh; background: #f4f5fb; }
+    .mk-body { padding: 12px; padding-bottom: 90px; }
+    .mk-greet-card {
+      background: #fff; border-radius: 16px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      border: 1.5px solid #f0f0f0; box-shadow: 0 2px 6px rgba(0,0,0,.04);
     }
-    .mk-hero-top { display: flex; align-items: center; justify-content: space-between; }
-    .mk-hello { font-size: .8rem; opacity: .9; }
-    .mk-name { font-size: 1.3rem; font-weight: 800; margin-top: 2px; }
-    .mk-code { font-size: .75rem; opacity: .85; margin-top: 4px; letter-spacing: .04em; }
-    .mk-hero-icon {
-      width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
-      background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem;
+    .mk-greet-icon {
+      width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(102,126,234,.1); color: #667eea;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
     }
+    .mk-greet-text { min-width: 0; }
+    .mk-name { font-size: 1.2rem; font-weight: 800; color: #1a1a2e; }
+    .mk-code { font-size: .75rem; color: #6b7280; margin-top: 4px; letter-spacing: .04em; }
     .mk-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
     .mk-stat {
       background: #fff; border-radius: 14px; padding: 14px 8px; text-align: center;

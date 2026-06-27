@@ -7,6 +7,7 @@ import { SecretaryTeacherService } from '@proxy/teachers';
 import { AcademyService } from '@proxy/academies';
 import type { AcademyMemberDto } from '@proxy/academies/models';
 import { EnrollmentRequestInitiator } from '@proxy/enums/enrollment-request-initiator.enum';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 type MainTab = 'enrollment' | 'link' | 'academy';
 type SubTab  = 'pending' | 'done';
@@ -15,20 +16,12 @@ type SubTab  = 'pending' | 'done';
   selector: 'app-teacher-my-requests',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="header-text">
-          <h1>طلباتي</h1>
-          <p>My Requests</p>
-        </div>
-        @if (totalPending() > 0) {
-          <span class="header-badge">{{ totalPending() }}</span>
-        }
-      </div>
+      <app-page-header [title]="'طلباتي'" [titleEn]="'My Requests'" [count]="totalPending()" [backTo]="'/teacher'"></app-page-header>
 
       <!-- ── Main tabs ── -->
       <div class="main-tabs">
@@ -257,23 +250,6 @@ type SubTab  = 'pending' | 'done';
       min-height: 100vh;
       background: #f4f5fb;
       direction: rtl;
-    }
-
-    /* ── Header ── */
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1.25rem 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: .875rem;
-    }
-    .header-text { flex: 1; }
-    .header-text h1 { font-size: 1.3rem; font-weight: 700; margin: 0; }
-    .header-text p  { font-size: .8rem; margin: .1rem 0 0; opacity: .75; }
-    .header-badge {
-      background: #ef4444; color: white; border-radius: 20px;
-      padding: .2rem .6rem; font-size: .8rem; font-weight: 700;
     }
 
     /* ── Main tabs ── */

@@ -17,12 +17,13 @@ import type { TeacherDto } from '@proxy/teachers/models';
 import type { StudentDto } from '@proxy/students/models';
 import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
 import { ConfigStateService } from '@abp/ng.core';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, KeyValuePipe],
+  imports: [CommonModule, RouterModule, FormsModule, KeyValuePipe, PageHeaderComponent],
   templateUrl: './student-detail.component.html',
   styleUrls: ['./student-detail.component.scss']
 })

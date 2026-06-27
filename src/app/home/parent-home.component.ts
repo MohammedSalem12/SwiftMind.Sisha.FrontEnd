@@ -20,12 +20,13 @@ import { OfflineBannerComponent } from '../shared/components/offline-banner.comp
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
 import { ActiveSemesterComponent } from '../shared/components/active-semester.component';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-parent-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent, PageHeaderComponent],
   templateUrl: './parent-home.component.html',
   styleUrls: ['./parent-home.component.scss'],
 })

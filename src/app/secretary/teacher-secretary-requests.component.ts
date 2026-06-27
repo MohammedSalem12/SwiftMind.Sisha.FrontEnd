@@ -1,30 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { SecretaryTeacherService } from '@proxy/teachers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teacher-secretary-requests',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-text">
-          <h1>طلبات الربط</h1>
-          <p>طلبات السكرتاريا للربط بحسابك</p>
-        </div>
-        @if (pendingCount() > 0) {
-          <span class="pending-badge">{{ pendingCount() }}</span>
-        }
-      </div>
+      <app-page-header
+        [title]="'طلبات السكرتارية'"
+        [titleEn]="'Secretary Requests'"
+        [count]="pendingCount()"
+        [backTo]="'/teacher'"></app-page-header>
 
       <!-- Tabs -->
       <div class="tabs">
@@ -131,29 +124,6 @@ import { SecretaryTeacherService } from '@proxy/teachers';
   styles: [`
     .page { min-height: 100vh; background: #f4f5fb; direction: rtl; }
 
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1rem 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: .875rem;
-    }
-    .back-btn {
-      width: 40px; height: 40px; min-width: 40px; border-radius: 50%;
-      background: rgba(255,255,255,.2); border: none;
-      color: white; font-size: 1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .header-text { flex: 1; }
-    .header-text h1 { font-size: 1.2rem; font-weight: 700; margin: 0; }
-    .header-text p  { font-size: .8rem; margin: .1rem 0 0; opacity: .8; }
-    .pending-badge {
-      background: #ef4444; color: white; border-radius: 50%;
-      width: 24px; height: 24px; display: flex; align-items: center;
-      justify-content: center; font-size: .75rem; font-weight: 700; flex-shrink: 0;
-    }
-
     /* Tabs */
     .tabs {
       display: flex; background: white;
@@ -250,7 +220,6 @@ import { SecretaryTeacherService } from '@proxy/teachers';
   `],
 })
 export class TeacherSecretaryRequestsComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly secretaryTeacherSvc = inject(SecretaryTeacherService);
 
   loading  = signal(true);
@@ -319,6 +288,4 @@ export class TeacherSecretaryRequestsComponent implements OnInit {
       return new Date(d).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' });
     } catch { return d; }
   }
-
-  goBack() { this.router.navigate(['/teacher']); }
 }

@@ -6,20 +6,15 @@ import { lastValueFrom } from 'rxjs';
 
 import { MarketerService } from '@proxy/marketers';
 import type { OnboardTeacherDto } from '@proxy/marketers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-marketer-onboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="mk-form-page" dir="rtl">
-      <div class="mk-head">
-        <button class="mk-back" (click)="back()"><i class="fas fa-arrow-right"></i></button>
-        <div>
-          <h1>تسجيل معلم</h1>
-          <p>Onboard a teacher</p>
-        </div>
-      </div>
+      <app-page-header [title]="'تسجيل معلم'" [titleEn]="'Onboard Teacher'" [backTo]="'/marketer'"></app-page-header>
 
       <div class="mk-card">
         <label class="mk-label">الاسم الأول · First name <span>*</span></label>
@@ -55,10 +50,6 @@ import type { OnboardTeacherDto } from '@proxy/marketers';
   `,
   styles: [`
     .mk-form-page { padding: 12px; padding-bottom: 90px; }
-    .mk-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .mk-back { width: 44px; height: 44px; border-radius: 12px; border: none; background: #f3f4f6; color: #374151; cursor: pointer; }
-    .mk-head h1 { margin: 0; font-size: 1.2rem; }
-    .mk-head p { margin: 0; font-size: .8rem; color: #6b7280; }
     .mk-card { background: #fff; border-radius: 16px; padding: 16px; border: 1.5px solid #f0f0f0; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
     .mk-label { display: block; font-size: .8rem; font-weight: 700; color: #555; margin: 12px 0 6px; }
     .mk-label span { color: #dc2626; }
@@ -110,9 +101,5 @@ export class MarketerOnboardComponent {
     } finally {
       this.saving.set(false);
     }
-  }
-
-  back(): void {
-    void this.router.navigate(['/marketer']);
   }
 }

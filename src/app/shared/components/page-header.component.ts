@@ -35,6 +35,7 @@ import { Router } from '@angular/router';
   template: `
     <header class="ph-topbar" data-page-header dir="rtl">
       <button
+        *ngIf="showBack"
         class="ph-back"
         type="button"
         (click)="onBack()"
@@ -42,6 +43,7 @@ import { Router } from '@angular/router';
       >
         <i class="fas fa-chevron-right"></i>
       </button>
+      <span class="ph-spacer" *ngIf="!showBack" aria-hidden="true"></span>
 
       <div class="ph-title">
         <h1>
@@ -96,6 +98,13 @@ import { Router } from '@angular/router';
 
       .ph-back:active {
         background: #f0f0f5;
+      }
+
+      /* Keeps the title centred when there is no back button. */
+      .ph-spacer {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
       }
 
       /* Centered title; back (start) and actions (end) are equal-width side
@@ -199,6 +208,9 @@ export class PageHeaderComponent {
 
   /** Optional router target for the back button (string or commands array). */
   @Input() backTo?: string | any[];
+
+  /** Set false on top-level / bottom-nav pages to hide the back button. */
+  @Input() showBack = true;
 
   /** Emitted when back is pressed and no [backTo] is provided and a consumer binds it. */
   @Output() back = new EventEmitter<void>();

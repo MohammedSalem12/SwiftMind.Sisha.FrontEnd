@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface SettlementDto {
   advertisementId: string;
@@ -17,17 +18,12 @@ interface SettlementDto {
   selector: 'app-deal-settlement',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-content">
-          <h1><i class="fas fa-file-invoice-dollar"></i> تقرير التسويات</h1>
-          <p>Deal Settlement Report</p>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'التسويات المالية'"
+        [titleEn]="'Settlements'"></app-page-header>
 
       @if (loading()) {
         <div class="shimmer-area">
@@ -118,17 +114,6 @@ interface SettlementDto {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 1.5rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-content { position:relative; z-index:1; }
-    .header-content h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; display:flex; align-items:center; gap:.5rem; }
-    .header-content p { margin:.1rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
 
     .shimmer-area { padding:1rem; display:flex; flex-direction:column; gap:.75rem; }
     .shimmer-card { height:140px; border-radius:16px; background:linear-gradient(90deg,#e8e8f0 25%,#f0f0f8 50%,#e8e8f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }

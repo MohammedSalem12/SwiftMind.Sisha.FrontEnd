@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -13,6 +13,7 @@ import { GroupService } from '@proxy/groups';
 import { TeacherService } from '@proxy/teachers';
 import { AcademyService } from '@proxy/academies';
 import { lastValueFrom } from 'rxjs';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface StudentGradeEntry {
   enrollmentId: string;
@@ -38,7 +39,7 @@ interface GroupOption {
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, LocalizationPipe, IonicModule],
+  imports: [CommonModule, FormsModule, LocalizationPipe, IonicModule, PageHeaderComponent],
   templateUrl: './marks-entry.component.html',
   styleUrls: ['./marks-entry.component.scss'],
 })
@@ -53,7 +54,6 @@ export class MarksEntryComponent implements OnInit {
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
   private readonly route              = inject(ActivatedRoute);
   private readonly router             = inject(Router);
-  private readonly location           = inject(Location);
   private readonly localization       = inject(LocalizationService);
 
   // Role
@@ -615,8 +615,6 @@ export class MarksEntryComponent implements OnInit {
     const examId = this.selectedExamId();
     if (examId) this.router.navigate(['/marks-entry/report', examId]);
   }
-
-  goBack(): void { this.location.back(); }
 
   /** Shorthand for `this.localization.instant('::' + key, ...params)` */
   private l(key: string, ...params: string[]): string {
