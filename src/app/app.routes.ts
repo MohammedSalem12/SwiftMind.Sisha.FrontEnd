@@ -242,6 +242,12 @@ export const appRoutes: Routes = [
     data: { roles: ['ADMIN'] }
   },
   {
+    path: 'admin/users',
+    loadComponent: () => import('./admin/admin-users.component').then(m => m.AdminUsersComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
     path: 'admin/password-resets',
     loadComponent: () => import('./admin/password-reset-requests.component').then(m => m.PasswordResetRequestsComponent),
     canActivate: [roleGuard],

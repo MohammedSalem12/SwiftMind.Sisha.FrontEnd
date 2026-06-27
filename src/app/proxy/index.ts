@@ -1,5 +1,6 @@
 import * as AcademicTerms from './academic-terms';
 import * as Academies from './academies';
+import * as AdminUsers from './admin-users';
 import * as Advertisements from './advertisements';
 import * as Attendances from './attendances';
 import * as Common from './common';
@@ -29,4 +30,4 @@ import * as StudentEnrollments from './student-enrollments';
 import * as Students from './students';
 import * as Teachers from './teachers';
 import * as Volo from './volo';
-export { AcademicTerms, Academies, Advertisements, Attendances, Common, Contacts, Controllers, Courses, Domain, Enums, ExamGrades, Exams, Feedbacks, Feeds, Grades, GroupSchedules, Groups, Home, KnowledgeCards, Marketers, Microsoft, Notifications, Parents, PasswordResetRequests, RegistrationRequests, Rewards, SocialRegistration, StudentEnrollments, Students, Teachers, Volo };
+export { AcademicTerms, Academies, AdminUsers, Advertisements, Attendances, Common, Contacts, Controllers, Courses, Domain, Enums, ExamGrades, Exams, Feedbacks, Feeds, Grades, GroupSchedules, Groups, Home, KnowledgeCards, Marketers, Microsoft, Notifications, Parents, PasswordResetRequests, RegistrationRequests, Rewards, SocialRegistration, StudentEnrollments, Students, Teachers, Volo };

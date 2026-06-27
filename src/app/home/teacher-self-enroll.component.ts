@@ -20,7 +20,10 @@ import { UnenrollRequestStatus } from '@proxy/teachers';
       <!-- Header -->
       <div class="page-header">
         <div class="blob b1"></div><div class="blob b2"></div>
-        <div class="header-content">
+        <div class="header-content header-row">
+          <button class="back-btn" (click)="goBack()" aria-label="رجوع">
+            <i class="fas fa-arrow-right"></i>
+          </button>
           <div>
             <h1>التسجيل في المقررات</h1>
             <p>اختر المقررات التي تريد التسجيل فيها · Enroll in Courses</p>
@@ -218,6 +221,13 @@ import { UnenrollRequestStatus } from '@proxy/teachers';
     .b1 { width:200px; height:200px; top:-70px; right:-60px; }
     .b2 { width:130px; height:130px; bottom:-50px; left:-25px; }
     .header-content { position:relative; z-index:1; }
+    .header-row { display:flex; align-items:center; gap:.75rem; }
+    .back-btn {
+      width:40px; height:40px; min-width:40px; flex-shrink:0;
+      background:rgba(255,255,255,.2); border:none; border-radius:12px;
+      color:#fff; font-size:1rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+    }
     .header-content h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
     .header-content p  { margin:.2rem 0 0; font-size:.76rem; color:rgba(255,255,255,.7); }
 
