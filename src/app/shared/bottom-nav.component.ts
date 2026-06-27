@@ -112,13 +112,22 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           </a>
         }
 
-        <!-- More tab -->
-        <button class="mn-tab mn-tab-more" (click)="toggleMore()" [class.active]="showMore()"
-                [style.--tab-color]="'#64748b'" [style.--tab-bg]="'rgba(100,116,139,0.16)'">
+        <!-- Account tab — user avatar (opens account menu) -->
+        <button class="mn-tab mn-tab-me" (click)="toggleMore()" [class.active]="showMore()"
+                [style.--tab-color]="'#7c3aed'" [style.--tab-bg]="'rgba(124,58,237,0.16)'"
+                aria-label="حسابي · My account">
           <div class="mn-icon-wrap">
-            <i class="fas fa-ellipsis-h"></i>
+            <div class="mn-avatar" [class.active]="showMore()">
+              @if (userPhoto()) {
+                <img [src]="userPhoto()" alt="" referrerpolicy="no-referrer" />
+              } @else if (userInitials() !== '?') {
+                <span>{{ userInitials() }}</span>
+              } @else {
+                <i class="fas fa-user"></i>
+              }
+            </div>
           </div>
-          <span class="mn-label">المزيد</span>
+          <span class="mn-label">حسابي</span>
           @if (showMore()) { <span class="mn-bar"></span> }
         </button>
 
@@ -130,6 +139,11 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       <div class="more-overlay" (click)="showMore.set(false)"></div>
       <div class="more-sheet" dir="rtl">
         <div class="more-handle"></div>
+
+        <div class="more-title">
+          <span>حسابي</span>
+          <span class="more-title-en">My Account</span>
+        </div>
 
         <!-- Profile row -->
         <a class="more-profile" [routerLink]="profilePath()" (click)="showMore.set(false)">
@@ -513,21 +527,24 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       box-shadow: 0 1px 4px rgba(239,68,68,0.3);
     }
 
-    .mn-avatar-sm {
-      width: 28px; height: 28px;
+    /* Account tab avatar (replaces the old "More" ellipsis) */
+    .mn-avatar {
+      width: 26px; height: 26px;
       border-radius: 50%;
+      overflow: hidden;
       background: linear-gradient(135deg, #7c3aed, #5b21b6);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem; font-weight: 700;
-      border: 2px solid rgba(255,255,255,0.9);
-      box-shadow: 0 1px 4px rgba(124,58,237,0.25);
+      font-size: 0.62rem; font-weight: 800; line-height: 1;
+      box-shadow: 0 1px 4px rgba(124,58,237,0.28);
+      transition: box-shadow 0.2s, transform 0.2s;
     }
-    .mn-tab.active .mn-avatar-sm {
-      box-shadow: 0 2px 8px rgba(124,58,237,0.45);
+    .mn-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mn-avatar i { font-size: 0.85rem; opacity: 1; color: #fff; }
+    .mn-avatar.active {
+      transform: translateY(-1px) scale(1.04);
+      box-shadow: 0 0 0 2px #fff, 0 2px 10px rgba(124,58,237,0.5);
     }
-
-    /* Profile tab avatar */
 
     /* ═══════════════════════════════════════════════════════
        DESKTOP SIDEBAR  (≥ 768px)
@@ -731,6 +748,17 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       margin: 0.25rem auto 0.75rem;
     }
 
+    .more-title {
+      display: flex; align-items: baseline; gap: 0.5rem;
+      padding: 0 0.25rem 0.5rem;
+    }
+    .more-title > span:first-child {
+      font-size: 1.05rem; font-weight: 800; color: #1a202c;
+    }
+    .more-title-en {
+      font-size: 0.72rem; font-weight: 500; color: #9ca3af;
+    }
+
     .more-profile {
       display: flex;
       align-items: center;
@@ -858,6 +886,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   userInitials  = signal('?');
   displayName   = signal('');
   userEmail     = signal('');
+  userPhoto     = signal('');
 
   profilePath      = signal('/profile');
   coreNav          = signal<NavItem[]>([]);
@@ -927,6 +956,11 @@ export class BottomNavComponent implements OnInit, OnDestroy {
         this.userInitials.set(initials);
         this.displayName.set(full);
         this.userEmail.set(cu?.email || '');
+        // Show a real photo if the profile/config exposes one; otherwise the
+        // initials avatar is used. (No extra network call — read from config only.)
+        const photo = cu?.picture || cu?.photoUrl || cu?.avatarUrl
+          || cu?.extraProperties?.['picture'] || cu?.extraProperties?.['photoUrl'] || '';
+        this.userPhoto.set(typeof photo === 'string' ? photo : '');
 
         // Core nav items — role-aware paths resolved AFTER user is loaded
         const homePath     = getRoleHomePath(roles);
