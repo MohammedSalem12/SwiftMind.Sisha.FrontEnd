@@ -8,6 +8,7 @@ import { filter } from 'rxjs';
 import { ToastContainerComponent } from './shared/toast-container.component';
 import { BottomNavComponent } from './shared/bottom-nav.component';
 import { RealtimeNotificationService } from './shared/services/realtime-notification.service';
+import { SessionCountdownService } from './shared/services/session-countdown.service';
 import { SidebarNotificationDirective } from './shared/sidebar-notification.directive';
 import { TopBarComponent } from './shared/top-bar.component';
 import { ServerOfflineOverlayComponent } from './shared/components/server-offline-overlay.component';
@@ -86,6 +87,7 @@ export class AppComponent implements OnInit {
   private readonly oauthService = inject(OAuthService);
   private readonly router = inject(Router);
   private readonly realtimeNotificationService = inject(RealtimeNotificationService);
+  private readonly countdownNotifier = inject(SessionCountdownService);
   readonly serverOffline = inject(ServerOfflineService);
   readonly registerModal = inject(RegisterModalService);
   readonly biometricService = inject(BiometricService);
@@ -141,6 +143,16 @@ export class AppComponent implements OnInit {
             const refMatch = url.match(/[?&]ref=(REF-[0-9A-Fa-f]{8})/i);
             const queryParams = refMatch ? { ref: refMatch[1] } : {};
             this.router.navigate(['/register'], { queryParams });
+            return;
+          }
+          // Countdown notification tap: kai://session?route=/student/today-sessions
+          if (/^kai:\/\/session/.test(url)) {
+            const routeMatch = url.match(/[?&]route=([^&]+)/);
+            const target = routeMatch ? decodeURIComponent(routeMatch[1]) : '/student/today-sessions';
+            // Only allow internal app paths (avoid open-redirect via crafted deep links).
+            if (target.startsWith('/')) {
+              this.router.navigateByUrl(target);
+            }
           }
         });
       });
@@ -152,6 +164,8 @@ export class AppComponent implements OnInit {
       }
       if (event.type === 'logout') {
         this.realtimeNotificationService.disconnect();
+        // Stop polling and remove any live session-countdown notification.
+        void this.countdownNotifier.stopAutoSync();
         // unregisterCurrentToken() is called in the logout patch (app.config.ts)
         // BEFORE tokens are cleared, so we don't repeat it here.
       }

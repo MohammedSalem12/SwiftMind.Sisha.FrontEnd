@@ -304,6 +304,8 @@ export class TopBarComponent implements OnInit, OnDestroy {
       .subscribe((e: NavigationEnd) => this.updateVisibility(e.urlAfterRedirects));
     this.loadNextSession();
     this.loadUserInfo();
+    // Periodic + on-resume reconciliation of the Android countdown notification.
+    this.countdownNotifier.startAutoSync();
   }
 
   ngOnDestroy(): void {
@@ -322,31 +324,10 @@ export class TopBarComponent implements OnInit, OnDestroy {
         }, 1000);
       }
       // Mirror the next session as an Android live-countdown notification (no-op on web/iOS).
-      this.syncCountdownNotification(session ?? null);
+      void this.countdownNotifier.syncFromNextSession(session ?? null);
     } catch {
-      this.syncCountdownNotification(null);
+      void this.countdownNotifier.syncFromNextSession(null);
     }
-  }
-
-  /** Reconcile the OS countdown notification with the current next session. */
-  private syncCountdownNotification(session: NextSessionDto | null): void {
-    if (!session || session.isNow || (session.secondsUntilStart ?? 0) <= 0) {
-      void this.countdownNotifier.sync(null);
-      return;
-    }
-    const sessionId = session.groupScheduleId || session.groupId || session.courseId;
-    if (!sessionId) {
-      void this.countdownNotifier.sync(null);
-      return;
-    }
-    void this.countdownNotifier.sync({
-      id: sessionId,
-      // Backend pre-computes secondsUntilStart; derive an absolute target time.
-      startTimeMillis: Date.now() + session.secondsUntilStart * 1000,
-      title: session.courseName || 'الحصة القادمة',
-      subtitle: session.groupName || session.location || '',
-      deepLink: '/student/today-sessions',
-    });
   }
 
   formatCountdown(): string {

@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
@@ -62,12 +63,14 @@ public class SessionCountdownPlugin extends Plugin {
         Context context = getContext();
         createChannel();
 
-        // Tap opens the app (optionally at a deep link route).
-        Intent launchIntent = new Intent(context, MainActivity.class);
-        launchIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        if (deepLink != null && !deepLink.isEmpty()) {
-            launchIntent.putExtra("deepLink", deepLink);
-        }
+        // Tap opens the app at a deep-link route. We launch a kai:// VIEW intent so it
+        // flows through Capacitor's existing appUrlOpen handler (same path as other deep links).
+        String route = (deepLink != null && !deepLink.isEmpty()) ? deepLink : "/student/today-sessions";
+        Uri uri = Uri.parse("kai://session?route=" + Uri.encode(route));
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW, uri);
+        launchIntent.setPackage(context.getPackageName());
+        launchIntent.setFlags(
+            Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         int piFlags = PendingIntent.FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             piFlags |= PendingIntent.FLAG_IMMUTABLE;

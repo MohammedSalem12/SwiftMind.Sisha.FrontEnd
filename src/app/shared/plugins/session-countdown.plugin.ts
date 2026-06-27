@@ -29,8 +29,9 @@ export interface SessionCountdownPlugin {
 }
 
 /**
- * Native bridge to the Android SessionCountdownPlugin (Java).
- * On non-Android platforms (web) the native methods are absent; callers must
- * guard with Capacitor.getPlatform() === 'android'.
+ * Native bridge to SessionCountdown:
+ *  - Android: a Chronometer notification (SessionCountdownPlugin.java)
+ *  - iOS: an ActivityKit Live Activity (SessionCountdownPlugin.swift)
+ * On web the native methods are absent; callers guard via Capacitor.getPlatform().
  */
 export const SessionCountdown = registerPlugin<SessionCountdownPlugin>('SessionCountdown');
