@@ -22,8 +22,7 @@ type Tab = 'pending' | 'finished';
       <!-- Header -->
       <app-page-header
         [title]="'طلباتي'"
-        [titleEn]="'My Requests'"
-        [backTo]="'/student'"></app-page-header>
+        [titleEn]="'My Requests'"></app-page-header>
 
       <!-- Tabs -->
       <div class="tabs-bar">

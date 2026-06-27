@@ -40,26 +40,34 @@ import { Router } from '@angular/router';
         (click)="onBack()"
         aria-label="رجوع · Back"
       >
-        <i class="fas fa-arrow-right"></i>
+        <i class="fas fa-chevron-right"></i>
       </button>
 
       <div class="ph-title">
-        <div class="ph-title-text">
-          <h1>{{ title }}</h1>
-          <span class="ph-title-en" *ngIf="titleEn">{{ titleEn }}</span>
-        </div>
-        <span class="ph-count" *ngIf="count && count > 0">{{ count }}</span>
+        <h1>
+          {{ title }}
+          <span class="ph-count" *ngIf="count && count > 0">{{ count }}</span>
+        </h1>
+        <span class="ph-title-en" *ngIf="titleEn">{{ titleEn }}</span>
       </div>
 
-      <ng-content select="[ph-actions]"></ng-content>
+      <div class="ph-actions">
+        <ng-content select="[ph-actions]"></ng-content>
+      </div>
     </header>
   `,
   styles: [
     `
-      .ph-topbar {
+      /* Host sticks to the top so the bar stays pinned while the page scrolls
+         (more robust than sticking the inner element). */
+      :host {
+        display: block;
         position: sticky;
         top: 0;
-        z-index: 10;
+        z-index: 50;
+      }
+
+      .ph-topbar {
         display: flex;
         align-items: center;
         gap: 0.4rem;
@@ -90,55 +98,65 @@ import { Router } from '@angular/router';
         background: #f0f0f5;
       }
 
+      /* Centered title; back (start) and actions (end) are equal-width side
+         zones so the title stays optically centred — like a native nav bar. */
       .ph-title {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        min-width: 0;
-      }
-
-      .ph-title-text {
         flex: 1;
         min-width: 0;
         display: flex;
         flex-direction: column;
+        align-items: center;
         justify-content: center;
+        text-align: center;
       }
 
-      .ph-title-text h1 {
+      .ph-title h1 {
         margin: 0;
-        font-size: 1.3rem;
+        font-size: 1.15rem;
         font-weight: 800;
         color: #1a202c;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        max-width: 100%;
         line-height: 1.2;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
       }
 
       .ph-title-en {
-        font-size: 0.7rem;
+        font-size: 0.68rem;
         color: #6b7280;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        max-width: 100%;
         line-height: 1.2;
       }
 
       .ph-count {
         background: #667eea;
         color: #fff;
-        font-size: 0.66rem;
+        font-size: 0.6rem;
         font-weight: 800;
-        min-width: 20px;
-        height: 20px;
-        border-radius: 10px;
-        padding: 0 0.35rem;
-        display: flex;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        padding: 0 0.3rem;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+      }
+
+      .ph-actions {
+        min-width: 40px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.25rem;
       }
 
       /* Styling for projected trailing action buttons. ::ng-deep is required

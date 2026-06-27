@@ -18,8 +18,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       <!-- ── Header ── -->
       <app-page-header
         [title]="'سجل الحضور'"
-        [titleEn]="'Attendance Record'"
-        [backTo]="'/student'"></app-page-header>
+        [titleEn]="'Attendance Record'"></app-page-header>
 
       <!-- ── Summary block ── -->
       @if (!loading() && reports().length > 0) {
@@ -53,12 +52,12 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
             </div>
             <div class="hstat-sep"></div>
             <div class="hstat">
-              <span class="hstat-val" style="color:#86efac">{{ totalPresent() }}</span>
+              <span class="hstat-val" style="color:#16a34a">{{ totalPresent() }}</span>
               <span class="hstat-lbl">حضور</span>
             </div>
             <div class="hstat-sep"></div>
             <div class="hstat">
-              <span class="hstat-val" style="color:#fca5a5">{{ totalAbsent() }}</span>
+              <span class="hstat-val" style="color:#dc2626">{{ totalAbsent() }}</span>
               <span class="hstat-lbl">غياب</span>
             </div>
             <div class="hstat-sep"></div>
@@ -154,15 +153,14 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
 
     /* ── Summary block ── */
     .summary-block {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      background:#fff;
       margin:.75rem 1rem 0; border-radius:18px;
       padding:1.1rem 1.25rem 1.25rem;
       position:relative; overflow:hidden;
-      box-shadow:0 4px 14px rgba(102,126,234,.25);
+      border:1.5px solid #eef0f6;
+      box-shadow:0 2px 10px rgba(0,0,0,.05);
     }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:130px; height:130px; bottom:-50px; left:-25px; }
+    .blob { display:none; }
 
     .summary-top {
       position:relative; z-index:1;
@@ -172,35 +170,35 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
     .period-chip {
       display:inline-flex; align-items:center; gap:.4rem;
       padding:.35rem .7rem;
-      background:rgba(255,255,255,.14); border-radius:999px;
-      font-size:.74rem; font-weight:600; color:#fff;
+      background:rgba(102,126,234,.1); border-radius:999px;
+      font-size:.74rem; font-weight:600; color:#667eea;
     }
     .period-chip i { font-size:.72rem; opacity:.85; }
 
     /* Circular progress */
     .avg-circle { position:relative; width:72px; height:72px; flex-shrink:0; }
     .circle-svg { position:absolute; inset:0; transform:rotate(-90deg); }
-    .circle-bg   { fill:none; stroke:rgba(255,255,255,.2); stroke-width:3.5; }
+    .circle-bg   { fill:none; stroke:#eef0f6; stroke-width:3.5; }
     .circle-fill { fill:none; stroke-width:3.5; stroke-linecap:round;
                    transition:stroke-dasharray .6s ease; }
     .circle-inner {
       position:absolute; inset:0;
       display:flex; align-items:center; justify-content:center;
     }
-    .circle-val { font-size:1.05rem; font-weight:800; color:#fff; line-height:1; }
+    .circle-val { font-size:1.05rem; font-weight:800; color:#1a1a2e; line-height:1; }
     .circle-val small { font-size:.6rem; font-weight:600; }
 
-    /* Header stats */
+    /* Stats */
     .header-stats {
       position:relative; z-index:1;
       display:flex; align-items:center; justify-content:space-around;
-      margin-top:1.1rem; background:rgba(255,255,255,.1);
+      margin-top:1.1rem; background:#f6f7fb;
       border-radius:14px; padding:.75rem .5rem;
     }
     .hstat { display:flex; flex-direction:column; align-items:center; gap:.1rem; }
-    .hstat-val { font-size:1.05rem; font-weight:800; color:#fff; }
-    .hstat-lbl { font-size:.65rem; color:rgba(255,255,255,.65); }
-    .hstat-sep { width:1px; height:28px; background:rgba(255,255,255,.2); }
+    .hstat-val { font-size:1.05rem; font-weight:800; color:#1a1a2e; }
+    .hstat-lbl { font-size:.65rem; color:#9090aa; }
+    .hstat-sep { width:1px; height:28px; background:#e6e8f0; }
 
     /* ── Section title bar ── */
     .section-title-bar {

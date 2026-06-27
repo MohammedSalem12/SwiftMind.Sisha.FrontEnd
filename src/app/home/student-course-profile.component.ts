@@ -28,8 +28,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       <!-- Top Bar -->
       <app-page-header
         [title]="course() ? (course()!.nameAr || course()!.nameEn || 'المقرر') : 'تحميل...'"
-        [titleEn]="headerSubtitle()"
-        [backTo]="'/student/courses'"></app-page-header>
+        [titleEn]="headerSubtitle()"></app-page-header>
 
       <!-- Loading -->
       @if (loading()) {

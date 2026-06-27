@@ -20,8 +20,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       <!-- Header -->
       <app-page-header
         [title]="'المقررات الدراسية'"
-        [titleEn]="'Courses · ' + courses().length + ' مقرر'"
-        [backTo]="'/student'"></app-page-header>
+        [titleEn]="'Courses · ' + courses().length + ' مقرر'"></app-page-header>
 
       <!-- Search -->
       <div class="search-area">
