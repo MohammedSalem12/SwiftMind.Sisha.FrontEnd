@@ -11,35 +11,28 @@ import { CourseService } from '@proxy/courses';
 import { ParentService } from '@proxy/parents';
 import { AuthService } from '@abp/ng.core';
 import { RegisterPromptComponent } from '../shared/components/register-prompt.component';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-academies-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, RegisterPromptComponent],
+  imports: [CommonModule, RouterModule, FormsModule, RegisterPromptComponent, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
-      <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
-        <div class="header-top-row">
-          <!-- Academies is a root bottom-nav tab: no back button here -->
-          @if (canCreate()) {
-            <button class="create-btn" (click)="router.navigate(['/academies/create'])">
-              <i class="fas fa-plus"></i>
-            </button>
-          }
-        </div>
-        <div class="header-content">
-          <div class="header-icon-ring">
-            <i class="fas fa-university"></i>
-          </div>
-          <h1>الأكاديميات</h1>
-          <p>اكتشف وانضم · Discover & Join</p>
-        </div>
+      <!-- ── Header — root bottom-nav tab: no back button ── -->
+      <app-page-header [title]="'الأكاديميات'" [titleEn]="'Academies'" [showBack]="false">
+        @if (canCreate()) {
+          <button ph-actions class="ph-action" (click)="router.navigate(['/academies/create'])"
+                  type="button" aria-label="إنشاء أكاديمية · Create academy">
+            <i class="fas fa-plus"></i>
+          </button>
+        }
+      </app-page-header>
 
-        <!-- Inline search -->
+      <!-- Inline search -->
+      <div class="search-strip">
         <div class="header-search">
           <i class="fas fa-search"></i>
           <input type="text"
@@ -215,52 +208,20 @@ import { RegisterPromptComponent } from '../shared/components/register-prompt.co
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
 
-    /* ── Header ── */
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + .75rem) 1.25rem 1.25rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.06); pointer-events:none; }
-    .b1 { width:220px; height:220px; top:-80px; right:-70px; }
-    .b2 { width:140px; height:140px; bottom:-60px; left:-40px; }
-    .b3 { width:80px; height:80px; top:40%; left:50%; background:rgba(255,255,255,.04); }
-
-    .header-top-row {
-      position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;
-      margin-bottom:.75rem;
-    }
-    .back-btn, .create-btn {
-      width:44px; height:44px; border-radius:14px; flex-shrink:0;
-      background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.2);
-      color:#fff; font-size:1rem; display:flex; align-items:center; justify-content:center;
-      cursor:pointer; -webkit-tap-highlight-color:transparent;
-    }
-    .back-btn:active, .create-btn:active { background:rgba(255,255,255,.25); }
-
-    .header-content {
-      position:relative; z-index:1; text-align:center; margin-bottom:1rem;
-    }
-    .header-icon-ring {
-      width:56px; height:56px; border-radius:50%;
-      background:rgba(255,255,255,.15); border:2px solid rgba(255,255,255,.25);
-      display:flex; align-items:center; justify-content:center;
-      margin:0 auto .6rem; font-size:1.4rem; color:#fff;
-    }
-    .header-content h1 { margin:0; font-size:1.35rem; font-weight:800; color:#fff; }
-    .header-content p { margin:.2rem 0 0; font-size:.75rem; color:rgba(255,255,255,.65); }
-
+    /* ── Search strip (below shared header) ── */
+    .search-strip { padding:.75rem 1rem 0; }
     .header-search {
-      position:relative; z-index:1; display:flex; align-items:center;
-      background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.2);
+      display:flex; align-items:center;
+      background:#fff; border:1.5px solid #ececf2;
       border-radius:14px; padding:0 .875rem; min-height:44px; gap:.5rem;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
     }
-    .header-search i { color:rgba(255,255,255,.6); font-size:.85rem; flex-shrink:0; }
+    .header-search i { color:#9090aa; font-size:.85rem; flex-shrink:0; }
     .header-search input {
       flex:1; border:none; background:transparent; outline:none;
-      font-size:.88rem; color:#fff; min-height:44px;
+      font-size:.88rem; color:#1a1a2e; min-height:44px;
     }
-    .header-search input::placeholder { color:rgba(255,255,255,.45); }
+    .header-search input::placeholder { color:#9090aa; }
 
     /* ── Tabs ── */
     .tabs-bar {
@@ -638,6 +599,4 @@ export class AcademiesListComponent implements OnInit {
   }
 
   trackById = (_: number, item: AcademyDto) => item.id;
-
-  goBack(): void { this.router.navigate(['/student']); }
 }

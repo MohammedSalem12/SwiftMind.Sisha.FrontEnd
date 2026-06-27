@@ -1,32 +1,17 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-about',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
-      <!-- Header -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-row">
-          <button class="btn-back" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
-          <div class="header-text">
-            <h1>عن التطبيق</h1>
-            <p>About KAI</p>
-          </div>
-          <div class="header-icon">
-            <i class="fas fa-info-circle"></i>
-          </div>
-        </div>
-      </div>
+      <app-page-header [title]="'عن التطبيق'" [titleEn]="'About'"></app-page-header>
 
       <!-- App Logo & Name -->
       <div class="app-brand">
@@ -167,34 +152,6 @@ import { RouterModule } from '@angular/router';
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
 
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 2rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-row {
-      position:relative; z-index:1;
-      display:flex; align-items:center; gap:1rem;
-    }
-    .btn-back {
-      width:40px; height:40px; border-radius:12px;
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:#fff; font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; flex-shrink:0;
-    }
-    .header-text { flex:1; }
-    .header-text h1 { margin:0; font-size:1.4rem; font-weight:800; color:#fff; }
-    .header-text p { margin:.15rem 0 0; font-size:.82rem; color:rgba(255,255,255,.7); }
-    .header-icon {
-      width:48px; height:48px; border-radius:14px;
-      background:rgba(255,255,255,.15);
-      display:flex; align-items:center; justify-content:center;
-      color:rgba(255,255,255,.9); font-size:1.3rem; flex-shrink:0;
-    }
-
     /* Brand section */
     .app-brand {
       display:flex; flex-direction:column; align-items:center;
@@ -286,7 +243,4 @@ import { RouterModule } from '@angular/router';
     }
   `],
 })
-export class AboutComponent {
-  private readonly location = inject(Location);
-  goBack(): void { this.location.back(); }
-}
+export class AboutComponent {}

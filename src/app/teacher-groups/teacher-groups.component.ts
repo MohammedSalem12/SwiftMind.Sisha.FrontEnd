@@ -1,4 +1,4 @@
-import { AuthService, ConfigStateService, LocalizationPipe, LocalizationService } from '@abp/ng.core';
+import { AuthService, LocalizationPipe, LocalizationService } from '@abp/ng.core';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -8,18 +8,18 @@ import { CurrentUserInfoService } from '@proxy/common';
 import { GroupService } from '@proxy/groups';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teacher-groups',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, LocalizationPipe, PullToRefreshDirective],
+  imports: [CommonModule, RouterModule, LocalizationPipe, PullToRefreshDirective, PageHeaderComponent],
   templateUrl: './teacher-groups.component.html',
   styleUrls: ['./teacher-groups.component.scss'],
 })
 export class TeacherGroupsComponent implements OnInit {
   private authService        = inject(AuthService);
-  private configStateService = inject(ConfigStateService);
   private currentUserService = inject(CurrentUserInfoService);
   private groupService       = inject(GroupService);
   private router             = inject(Router);
@@ -312,17 +312,6 @@ export class TeacherGroupsComponent implements OnInit {
     const qp: any = {};
     if (this.courseId()) qp['courseId'] = this.courseId();
     this.router.navigate(['/teacher-groups/add-schedule', group.groupId], { queryParams: qp });
-  }
-
-  goBack() {
-    const currentUser = this.configStateService.getOne('currentUser') as any;
-    const roles: string[] = currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [];
-    const isSecretary = roles.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'secretary');
-    if (isSecretary) {
-      this.router.navigate(['/secretary']);
-    } else {
-      this.router.navigate(['/teacher']);
-    }
   }
 
   editSchedule(scheduleId: string) {
