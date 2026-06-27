@@ -97,48 +97,52 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
       }
 
       <!-- Quick Actions -->
+      <div class="section-label">
+        <i class="fas fa-bolt"></i>
+        <span>إجراءات سريعة · Quick Actions</span>
+      </div>
       <div class="quick-actions">
-        <button class="qa-btn" (click)="goToLinkTeacher()">
-          <i class="fas fa-user-plus"></i>
-          <div class="qa-text">
-            <span>ربط معلم جديد</span>
+        <button class="qa-btn qa-link" (click)="goToLinkTeacher()">
+          <span class="qa-ic"><i class="fas fa-user-plus"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">ربط معلم جديد</span>
             <span class="qa-en">Link Teacher</span>
-          </div>
+          </span>
         </button>
-        <button class="qa-btn qa-btn-requests" (click)="goToRequests()">
-          <i class="fas fa-paper-plane"></i>
-          <div class="qa-text">
-            <span>طلباتي</span>
+        <button class="qa-btn qa-req" (click)="goToRequests()">
+          <span class="qa-ic"><i class="fas fa-paper-plane"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">طلباتي</span>
             <span class="qa-en">My Requests</span>
-          </div>
+          </span>
         </button>
-        <button class="qa-btn qa-btn-announce" (click)="goToAnnounce()">
-          <i class="fas fa-bullhorn"></i>
-          <div class="qa-text">
-            <span>إعلان للطلاب</span>
+        <button class="qa-btn qa-ann" (click)="goToAnnounce()">
+          <span class="qa-ic"><i class="fas fa-bullhorn"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">إعلان للطلاب</span>
             <span class="qa-en">Announce</span>
-          </div>
+          </span>
         </button>
-        <button class="qa-btn qa-btn-schedule" (click)="goToScheduleOverview()">
-          <i class="fas fa-calendar-alt"></i>
-          <div class="qa-text">
-            <span>جدول المعلمين</span>
+        <button class="qa-btn qa-sched" (click)="goToScheduleOverview()">
+          <span class="qa-ic"><i class="fas fa-calendar-alt"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">جدول المعلمين</span>
             <span class="qa-en">Schedule</span>
-          </div>
+          </span>
         </button>
-        <button class="qa-btn qa-btn-bulk" (click)="goToBulkAttendance()">
-          <i class="fas fa-clipboard-list"></i>
-          <div class="qa-text">
-            <span>حضور جماعي</span>
+        <button class="qa-btn qa-bulk" (click)="goToBulkAttendance()">
+          <span class="qa-ic"><i class="fas fa-clipboard-list"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">حضور جماعي</span>
             <span class="qa-en">Bulk Attendance</span>
-          </div>
+          </span>
         </button>
-        <button class="qa-btn qa-btn-reports" (click)="goToReports()">
-          <i class="fas fa-chart-bar"></i>
-          <div class="qa-text">
-            <span>تقارير (تصدير)</span>
+        <button class="qa-btn qa-rep" (click)="goToReports()">
+          <span class="qa-ic"><i class="fas fa-chart-bar"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">تقارير (تصدير)</span>
             <span class="qa-en">Reports (Export)</span>
-          </div>
+          </span>
         </button>
       </div>
 
@@ -315,33 +319,51 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
 
     .teacher-card-arrow { flex-shrink: 0; color: var(--text-light); font-size: .9rem; }
 
-    /* ── Inline quick actions ── */
+    /* ── Quick actions — responsive card grid (2 cols mobile, 3 desktop) ── */
     .quick-actions {
-      padding: 0 1rem .5rem;
-      display: flex;
-      gap: .75rem;
+      padding: 0 1rem 1rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: .7rem;
     }
     .qa-btn {
-      flex: 1;
       display: flex; align-items: center; gap: .6rem;
-      padding: .75rem 1rem;
-      border: none; border-radius: 14px; cursor: pointer;
-      font-weight: 700; font-size: .85rem; color: var(--white);
-      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
-      box-shadow: 0 3px 12px rgba(0,0,0,.15);
+      padding: .8rem .75rem;
+      border: none; border-radius: 16px; cursor: pointer;
+      background: var(--white);
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      text-align: right;
+      min-height: 64px;
+      width: 100%;
       transition: transform .15s, box-shadow .15s;
+      -webkit-tap-highlight-color: transparent;
     }
     .qa-btn:active { transform: scale(.97); box-shadow: 0 1px 6px rgba(0,0,0,.1); }
-    .qa-btn i { font-size: 1rem; flex-shrink: 0; }
-    .qa-btn-reports { background: linear-gradient(135deg, #f093fb, #f5576c); }
-    .qa-btn-enrollment { background: linear-gradient(135deg, #10b981, #059669); }
-    .qa-btn-course { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-    .qa-btn-group { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .qa-btn-announce { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-    .qa-btn-schedule { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
-    .qa-btn-bulk { background: linear-gradient(135deg, #10b981, #047857); }
-    .qa-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
-    .qa-en { font-size: .65rem; font-weight: 500; opacity: .85; }
+
+    .qa-ic {
+      flex-shrink: 0;
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.05rem;
+    }
+    .qa-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+    .qa-ar {
+      font-size: .82rem; font-weight: 700; color: var(--text-dark);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .qa-en { font-size: .62rem; font-weight: 500; color: var(--text-light); }
+
+    /* per-action accent on the icon tile */
+    .qa-link  .qa-ic { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .qa-req   .qa-ic { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .qa-ann   .qa-ic { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .qa-sched .qa-ic { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+    .qa-bulk  .qa-ic { background: linear-gradient(135deg, #10b981, #047857); }
+    .qa-rep   .qa-ic { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+    @media (min-width: 768px) {
+      .quick-actions { grid-template-columns: repeat(3, 1fr); }
+    }
 
     /* ── Collapsible toggle ── */
     .section-label--toggle {
