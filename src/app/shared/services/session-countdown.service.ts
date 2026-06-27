@@ -38,10 +38,10 @@ export interface UpcomingSession {
  */
 @Injectable({ providedIn: 'root' })
 export class SessionCountdownService {
-  /** How far ahead a session must be to surface the countdown (90 minutes). */
-  private static readonly LEAD_TIME_MS = 90 * 60 * 1000;
-  /** Re-evaluate the next session this often (5 minutes). */
-  private static readonly POLL_INTERVAL_MS = 5 * 60 * 1000;
+  /** How far ahead a session must be to surface the countdown (15 minutes). */
+  private static readonly LEAD_TIME_MS = 15 * 60 * 1000;
+  /** Re-evaluate the next session this often (2 minutes) so the 15-min window is caught promptly. */
+  private static readonly POLL_INTERVAL_MS = 2 * 60 * 1000;
 
   private readonly sessionService = inject(SessionService);
 
