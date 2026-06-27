@@ -92,7 +92,12 @@ export class RegisterComponent implements OnInit {
     referralCode: '',
     government: '',
     town: '',
+    bio: '',
+    photoUrl: '',
   };
+
+  // Teacher-only optional profile photo handling.
+  photoProcessing = signal(false);
 
   readonly governorates = EGYPT_GOVERNORATES_LIST;
   private readonly govSignal = signal('');
@@ -151,6 +156,55 @@ export class RegisterComponent implements OnInit {
     this.form.government = gov;
     this.form.town = '';
     this.govSignal.set(gov);
+  }
+
+  /** Teacher optional photo: read, resize to a small base64 JPEG, store on the form. */
+  async onPhotoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.error.set('الرجاء اختيار صورة صحيحة · Please select a valid image');
+      input.value = '';
+      return;
+    }
+    this.photoProcessing.set(true);
+    try {
+      this.form.photoUrl = await this.resizeImageToDataUrl(file, 320, 0.8);
+    } catch {
+      this.error.set('تعذّر معالجة الصورة · Could not process image');
+    } finally {
+      this.photoProcessing.set(false);
+      input.value = '';
+    }
+  }
+
+  removePhoto(): void {
+    this.form.photoUrl = '';
+  }
+
+  private resizeImageToDataUrl(file: File, maxSize: number, quality: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('read error'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('decode error'));
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > height && width > maxSize) { height = Math.round((height * maxSize) / width); width = maxSize; }
+          else if (height > maxSize) { width = Math.round((width * maxSize) / height); height = maxSize; }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('no ctx')); return; }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   selectRole(type: UserRegistrationType): void {
@@ -212,7 +266,7 @@ export class RegisterComponent implements OnInit {
           break;
         case UserRegistrationType.Teacher:
           result = await lastValueFrom(this.userRegSvc.registerTeacher(
-            base as UserRegTeacherDto,
+            { ...base, bio: this.form.bio.trim() || undefined, photoUrl: this.form.photoUrl || undefined } as UserRegTeacherDto,
             { skipHandleError: true }
           ));
           break;

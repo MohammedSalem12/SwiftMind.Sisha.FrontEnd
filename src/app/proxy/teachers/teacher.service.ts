@@ -1,4 +1,4 @@
-import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherCardDto, TeacherDashboardDto, TeacherDto, TeacherEnrolledCourseDto, TeacherEnrollmentResultDto, TeacherFilterDto, TeacherPublicProfileDto, TeacherUnenrollRequestDto } from './models';
+import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherCardDto, TeacherDashboardDto, TeacherDto, TeacherEnrolledCourseDto, TeacherEnrollmentResultDto, TeacherFilterDto, TeacherPublicProfileDto, TeacherUnenrollRequestDto, UpdateTeacherProfileDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -184,6 +184,15 @@ export class TeacherService {
     this.restService.request<any, TeacherDto>({
       method: 'PUT',
       url: `/api/app/teacher/${id}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateMyProfile = (input: UpdateTeacherProfileDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherDto>({
+      method: 'PUT',
+      url: '/api/app/teacher/my-profile',
       body: input,
     },
     { apiName: this.apiName,...config });

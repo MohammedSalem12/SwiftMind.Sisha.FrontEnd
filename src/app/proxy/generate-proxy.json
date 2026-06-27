@@ -16925,6 +16925,23 @@
                   }
                 },
                 {
+                  "name": "UpdateMyProfileAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                      "typeSimple": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Teachers.TeacherDto",
+                    "typeSimple": "SwiftMind.Sesha.Teachers.TeacherDto"
+                  }
+                },
+                {
                   "name": "GetTeachersForMyGradeAsync",
                   "parametersOnMethod": [],
                   "returnValue": {
@@ -17467,6 +17484,43 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.CourseDto>",
                 "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
+            },
+            "UpdateMyProfileAsyncByInput": {
+              "uniqueName": "UpdateMyProfileAsyncByInput",
+              "name": "UpdateMyProfileAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/teacher/my-profile",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Teachers.TeacherDto",
+                "typeSimple": "SwiftMind.Sesha.Teachers.TeacherDto"
               },
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
@@ -23589,6 +23643,23 @@
                   }
                 },
                 {
+                  "name": "UpdateMyProfileAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                      "typeSimple": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "SwiftMind.Sesha.Teachers.TeacherDto",
+                    "typeSimple": "SwiftMind.Sesha.Teachers.TeacherDto"
+                  }
+                },
+                {
                   "name": "GetTeachersForMyGradeAsync",
                   "parametersOnMethod": [],
                   "returnValue": {
@@ -24350,6 +24421,43 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<SwiftMind.Sesha.Courses.Dtos.CourseDto>",
                 "typeSimple": "[SwiftMind.Sesha.Courses.Dtos.CourseDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
+            },
+            "UpdateMyProfileAsyncByInput": {
+              "uniqueName": "UpdateMyProfileAsyncByInput",
+              "name": "UpdateMyProfileAsync",
+              "httpMethod": "PUT",
+              "url": "api/sesha/teachers/my-profile",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                  "typeSimple": "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "SwiftMind.Sesha.Teachers.TeacherDto",
+                "typeSimple": "SwiftMind.Sesha.Teachers.TeacherDto"
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Teachers.ITeacherAppService"
@@ -28184,6 +28292,18 @@
           "regex": null
         },
         {
+          "name": "TeacherStudentCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "FirstName",
           "jsonName": null,
           "type": "System.String",
@@ -29038,7 +29158,32 @@
       "enumNames": null,
       "enumValues": null,
       "genericArguments": null,
-      "properties": []
+      "properties": [
+        {
+          "name": "Bio",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
     },
     "SwiftMind.Sesha.Contacts.ContactCheckInputDto": {
       "baseType": null,
@@ -37846,6 +37991,30 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Bio",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -39001,6 +39170,39 @@
       ],
       "genericArguments": null,
       "properties": null
+    },
+    "SwiftMind.Sesha.Teachers.UpdateTeacherProfileDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Bio",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
     },
     "System.Nullable<T0>": {
       "baseType": "System.ValueType",

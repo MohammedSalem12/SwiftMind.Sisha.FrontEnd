@@ -76,6 +76,8 @@ export interface TeacherAutocompleteDto {
   isPromoted: boolean;
   government?: string;
   town?: string;
+  photoUrl?: string;
+  bio?: string;
 }
 
 export interface TeacherCardDto {
@@ -194,4 +196,9 @@ export interface TeacherUnenrollRequestDto extends EntityDto<string> {
   rejectionReason?: string;
   processedAt?: string;
   creationTime?: string;
+}
+
+export interface UpdateTeacherProfileDto {
+  bio?: string;
+  photoUrl?: string;
 }

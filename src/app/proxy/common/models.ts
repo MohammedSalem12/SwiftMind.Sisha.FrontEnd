@@ -58,6 +58,8 @@ export interface UserRegStudentDto extends UserRegBaseDto {
 }
 
 export interface UserRegTeacherDto extends UserRegBaseDto {
+  bio?: string;
+  photoUrl?: string;
 }
 
 export interface UserRegistrationResultDto {

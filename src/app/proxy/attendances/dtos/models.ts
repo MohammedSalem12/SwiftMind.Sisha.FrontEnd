@@ -51,6 +51,7 @@ export interface StudentAttendanceReportDto extends ExtensibleEntityDto<string> 
 export interface StudentAttendanceStatusDto {
   studentId?: string;
   studentCode?: string;
+  teacherStudentCode?: string;
   firstName?: string;
   middleName?: string;
   lastName?: string;
