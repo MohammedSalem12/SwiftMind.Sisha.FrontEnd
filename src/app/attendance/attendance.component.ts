@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AttendanceService } from '@proxy/attendances';
 import { CurrentUserInfoService } from '@proxy/common';
@@ -50,6 +50,7 @@ export class AttendanceComponent implements OnInit {
   private readonly academySvc = inject(AcademyService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly location = inject(Location);
 
   // Role state
@@ -100,6 +101,14 @@ export class AttendanceComponent implements OnInit {
   groups = signal<GroupOption[]>([]);
   selectedGroupId = signal<string | null>(null);
   effectiveTeacherId = signal<string | null>(null);
+
+  // The currently selected group, and whether it still has no schedule set.
+  // Attendance is schedule-driven, so a group with no schedule must be set up first.
+  selectedGroup = computed(() => this.groups().find(g => g.id === this.selectedGroupId()) ?? null);
+  selectedGroupHasNoSchedule = computed(() => {
+    const g = this.selectedGroup();
+    return !!g && (g.schedules?.length ?? 0) === 0;
+  });
 
   // Schedule dates (computed from selected group's schedule)
   scheduleDates = signal<{ date: string; label: string }[]>([]);
@@ -323,6 +332,12 @@ export class AttendanceComponent implements OnInit {
     }
 
     await this.loadStudents();
+  }
+
+  /** Navigate to set up the selected group's weekly schedule, then return to take attendance. */
+  goSetSchedule(): void {
+    const gid = this.selectedGroupId();
+    if (gid) this.router.navigate(['/teacher-groups/add-schedule', gid]);
   }
 
   private _currentSchedules: GroupScheduleDto[] = [];

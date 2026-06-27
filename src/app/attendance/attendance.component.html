@@ -127,16 +127,19 @@
       </div>
     }
 
-    <!-- Date picker fallback (only when group selected but no schedule dates) -->
-    @if (selectedGroupId() && scheduleDates().length === 0) {
-      <div class="field-group">
-        <label class="field-label">
-          <i class="fas fa-calendar-alt"></i> التاريخ · Date
-        </label>
-        <ion-input class="field-date"
-          type="date"
-          [value]="attendanceDate()"
-          (ionInput)="onDateChange($any($event).detail.value)"></ion-input>
+    <!-- No schedule set for the selected group → guide the teacher to set it first -->
+    @if (selectedGroupId() && selectedGroupHasNoSchedule()) {
+      <div class="no-schedule-notice">
+        <div class="nsn-icon"><i class="fas fa-calendar-plus"></i></div>
+        <div class="nsn-text">
+          <strong>لم يتم تحديد جدول لهذه المجموعة</strong>
+          <span>عيّن جدول الحصص أولاً حتى تتمكن من تسجيل الحضور.</span>
+          <small>No schedule set for this group — add the weekly schedule first to take attendance.</small>
+        </div>
+        <button type="button" class="nsn-btn" (click)="goSetSchedule()">
+          <i class="fas fa-calendar-alt"></i>
+          تعيين الجدول · Set Schedule
+        </button>
       </div>
     }
   </div>
@@ -168,7 +171,7 @@
   }
 
   <!-- No students -->
-  @if (selectedCourseId() && selectedGroupId() && students().length === 0 && !loading()) {
+  @if (selectedCourseId() && selectedGroupId() && !selectedGroupHasNoSchedule() && students().length === 0 && !loading()) {
     <div class="empty-state empty-state--warning">
       <i class="fas fa-user-slash"></i>
       <p>لا يوجد طلاب مسجلون في هذا المقرر</p>
@@ -177,7 +180,7 @@
   }
 
   <!-- Students section -->
-  @if (students().length > 0 && !loading()) {
+  @if (students().length > 0 && !loading() && !selectedGroupHasNoSchedule()) {
 
     <!-- Find student: name / external (StudentCode) / internal (TeacherStudentCode) / QR -->
     <div class="att-find-bar">
