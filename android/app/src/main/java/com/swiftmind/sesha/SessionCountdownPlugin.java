@@ -7,14 +7,15 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.JSObject;
-import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
@@ -63,16 +64,39 @@ public class SessionCountdownPlugin extends Plugin {
             resolveGranted(call, true);
             return;
         }
-        if (getPermissionState(PERM_NOTIFICATIONS) == PermissionState.GRANTED) {
+        if (isNotificationGranted()) {
             resolveGranted(call, true);
             return;
         }
-        requestPermissionForAlias(PERM_NOTIFICATIONS, call, "onNotificationPermission");
+        try {
+            requestPermissionForAlias(PERM_NOTIFICATIONS, call, "onNotificationPermission");
+        } catch (Throwable t) {
+            // Never let a permission hiccup crash the app — the countdown is optional.
+            resolveGranted(call, false);
+        }
     }
 
     @PermissionCallback
     private void onNotificationPermission(PluginCall call) {
-        resolveGranted(call, getPermissionState(PERM_NOTIFICATIONS) == PermissionState.GRANTED);
+        resolveGranted(call, isNotificationGranted());
+    }
+
+    /**
+     * Direct Android permission check. We deliberately avoid Capacitor's
+     * getPermissionState()/getPermissionStates() here because that path can throw a
+     * NullPointerException on some devices/configs (the same path the FCM push plugin
+     * crashes on). The countdown is optional, so it must never crash the app.
+     */
+    private boolean isNotificationGranted() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return true;
+        }
+        try {
+            return ContextCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED;
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     private void resolveGranted(PluginCall call, boolean granted) {
