@@ -175,6 +175,12 @@ export const appRoutes: Routes = [
   },
   // Redirect ABP's default account/login to our custom login page
   { path: 'account/login', redirectTo: '/login', pathMatch: 'full' },
+  // Shadow ABP's account/manage with our wrapper so it gets the unified header.
+  {
+    path: 'account/manage',
+    loadComponent: () => import('./account/account-manage.component').then(m => m.AccountManageComponent),
+    canActivate: [authGuard],
+  },
   {
     path: 'account',
     loadChildren: () => import('@abp/ng.account').then(m => m.createRoutes()),
