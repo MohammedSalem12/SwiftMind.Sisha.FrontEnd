@@ -11,6 +11,7 @@ import { StudentDto } from '@proxy/students/models';
 import { ParentStudentDto } from '@proxy/parents/models';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
+import { ImageCropService } from '../shared/services/image-crop.service';
 
 @Component({
   selector: 'app-student-profile',
@@ -515,6 +516,7 @@ export class StudentProfileComponent implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly studentSvc     = inject(StudentService);
+  private readonly imageCrop      = inject(ImageCropService);
   loading  = signal(true);
   userInfo = signal<CurrentUserActorDto | null>(null);
   student  = signal<StudentDto | null>(null);
@@ -618,36 +620,14 @@ export class StudentProfileComponent implements OnInit {
   async onPhotoSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
+    input.value = '';
     if (!file) return;
     this.photoProcessing.set(true);
     try {
-      this.editPhoto.set(await this.resizeImageToDataUrl(file, 320, 0.8));
+      const cropped = await this.imageCrop.crop(file, { size: 320, quality: 0.8 });
+      if (cropped) this.editPhoto.set(cropped);
     } catch { this.profileSaveError.set('تعذّر معالجة الصورة · Could not process image'); }
-    finally { this.photoProcessing.set(false); input.value = ''; }
-  }
-
-  private resizeImageToDataUrl(file: File, maxSize: number, quality: number): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = () => reject(reader.error);
-      reader.onload = () => {
-        const img = new Image();
-        img.onerror = () => reject(new Error('image load failed'));
-        img.onload = () => {
-          let { width, height } = img;
-          if (width > height && width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
-          else if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
-          const canvas = document.createElement('canvas');
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) { reject(new Error('no canvas ctx')); return; }
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        };
-        img.src = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
+    finally { this.photoProcessing.set(false); }
   }
 
   async saveProfile(): Promise<void> {

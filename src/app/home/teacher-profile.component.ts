@@ -10,6 +10,7 @@ import { TeacherService, SecretaryTeacherService } from '@proxy/teachers';
 import { TeacherDto, TeacherEnrolledCourseDto, SecretaryInfoDto } from '@proxy/teachers/models';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
+import { ImageCropService } from '../shared/services/image-crop.service';
 
 @Component({
   selector: 'app-teacher-profile',
@@ -566,6 +567,7 @@ export class TeacherProfileComponent implements OnInit {
   private readonly teacherSvc     = inject(TeacherService);
   private readonly secretarySvc   = inject(SecretaryTeacherService);
   private readonly restSvc        = inject(RestService);
+  private readonly imageCrop      = inject(ImageCropService);
   loading         = signal(true);
   userInfo        = signal<CurrentUserActorDto | null>(null);
   teacherInfo     = signal<TeacherDto | null>(null);
@@ -692,8 +694,8 @@ export class TeacherProfileComponent implements OnInit {
     this.profileSaveError.set(null);
     this.photoProcessing.set(true);
     try {
-      const dataUrl = await this.resizeImageToDataUrl(file, 320, 0.8);
-      this.photoUrl.set(dataUrl);
+      const dataUrl = await this.imageCrop.crop(file, { size: 320, quality: 0.8 });
+      if (dataUrl) this.photoUrl.set(dataUrl);
     } catch (e) {
       console.error('[TeacherProfile] photo processing error:', e);
       this.profileSaveError.set('تعذّر معالجة الصورة · Could not process image');
@@ -705,30 +707,6 @@ export class TeacherProfileComponent implements OnInit {
 
   removePhoto(): void {
     this.photoUrl.set(null);
-  }
-
-  private resizeImageToDataUrl(file: File, maxSize: number, quality: number): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = () => reject(reader.error);
-      reader.onload = () => {
-        const img = new Image();
-        img.onerror = () => reject(new Error('image load failed'));
-        img.onload = () => {
-          let { width, height } = img;
-          if (width > height && width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
-          else if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
-          const canvas = document.createElement('canvas');
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) { reject(new Error('no canvas context')); return; }
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        };
-        img.src = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
   }
 
   async saveProfile(): Promise<void> {

@@ -7,6 +7,7 @@ import { CurrentUserInfoService } from '@proxy/common';
 import { CurrentUserActorDto } from '@proxy/common/models';
 import { lastValueFrom } from 'rxjs';
 import { BiometricService } from '../shared/services/biometric.service';
+import { ImageCropService } from '../shared/services/image-crop.service';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
@@ -21,6 +22,7 @@ export class ProfileComponent implements OnInit {
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly authService = inject(AuthService);
   private readonly biometricSvc = inject(BiometricService);
+  private readonly imageCrop = inject(ImageCropService);
 
   loading = signal(true);
   userInfo = signal<CurrentUserActorDto | null>(null);
@@ -52,33 +54,12 @@ export class ProfileComponent implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
     this.photoProcessing.set(true);
-    try { this.editPhoto.set(await this.resizeImageToDataUrl(file, 320, 0.8)); }
+    try {
+      const cropped = await this.imageCrop.crop(file, { size: 320, quality: 0.8 });
+      if (cropped) this.editPhoto.set(cropped);
+    }
     catch { this.photoError.set('تعذّر معالجة الصورة · Could not process image'); }
     finally { this.photoProcessing.set(false); input.value = ''; }
-  }
-
-  private resizeImageToDataUrl(file: File, maxSize: number, quality: number): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = () => reject(reader.error);
-      reader.onload = () => {
-        const img = new Image();
-        img.onerror = () => reject(new Error('image load failed'));
-        img.onload = () => {
-          let { width, height } = img;
-          if (width > height && width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
-          else if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
-          const canvas = document.createElement('canvas');
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) { reject(new Error('no canvas ctx')); return; }
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        };
-        img.src = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
   }
 
   async savePhoto(): Promise<void> {

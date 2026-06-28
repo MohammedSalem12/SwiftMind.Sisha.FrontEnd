@@ -11,6 +11,7 @@ import { AuthService, ConfigStateService } from '@abp/ng.core';
 import { Capacitor } from '@capacitor/core';
 import { lastValueFrom } from 'rxjs';
 import { AuthRedirectService } from '../shared/services/auth-redirect.service';
+import { ImageCropService } from '../shared/services/image-crop.service';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
 import { environment } from '../../environments/environment';
 
@@ -29,6 +30,7 @@ export class RegisterComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
   private readonly configState = inject(ConfigStateService);
+  private readonly imageCrop = inject(ImageCropService);
 
   UserRegistrationType = UserRegistrationType;
 
@@ -170,7 +172,8 @@ export class RegisterComponent implements OnInit {
     }
     this.photoProcessing.set(true);
     try {
-      this.form.photoUrl = await this.resizeImageToDataUrl(file, 320, 0.8);
+      const cropped = await this.imageCrop.crop(file, { size: 320, quality: 0.8 });
+      if (cropped) this.form.photoUrl = cropped;
     } catch {
       this.error.set('تعذّر معالجة الصورة · Could not process image');
     } finally {
@@ -181,30 +184,6 @@ export class RegisterComponent implements OnInit {
 
   removePhoto(): void {
     this.form.photoUrl = '';
-  }
-
-  private resizeImageToDataUrl(file: File, maxSize: number, quality: number): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = () => reject(new Error('read error'));
-      reader.onload = () => {
-        const img = new Image();
-        img.onerror = () => reject(new Error('decode error'));
-        img.onload = () => {
-          let { width, height } = img;
-          if (width > height && width > maxSize) { height = Math.round((height * maxSize) / width); width = maxSize; }
-          else if (height > maxSize) { width = Math.round((width * maxSize) / height); height = maxSize; }
-          const canvas = document.createElement('canvas');
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) { reject(new Error('no ctx')); return; }
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        };
-        img.src = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
   }
 
   selectRole(type: UserRegistrationType): void {
