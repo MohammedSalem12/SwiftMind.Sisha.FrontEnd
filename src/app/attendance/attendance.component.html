@@ -249,10 +249,10 @@
     <!-- Attendance mode toggle (per session) — Ionic segment -->
     <ion-segment class="mode-segment" [value]="attendanceMode()" (ionChange)="setMode($any($event).detail.value)">
       <ion-segment-button value="absentees">
-        <ion-label><i class="fas fa-user-check"></i> الحاضر افتراضي · Absentees</ion-label>
+        <ion-label><i class="fas fa-user-xmark"></i> تسجيل الغياب</ion-label>
       </ion-segment-button>
       <ion-segment-button value="attendees">
-        <ion-label><i class="fas fa-user-plus"></i> تحديد الحاضرين · Attendees</ion-label>
+        <ion-label><i class="fas fa-user-check"></i> تسجيل الحضور</ion-label>
       </ion-segment-button>
     </ion-segment>
 
@@ -307,7 +307,7 @@
         <div class="att-actions-row">
           <span class="att-counter"><i class="fas fa-user-check"></i> {{ markedCount() }} / {{ students().length }} حاضر</span>
           <ion-button class="att-finalize" (click)="finalizeAttendees()" [disabled]="saving()">
-            <i class="fas fa-save" style="margin-inline-end:.4rem"></i> حفظ الحضور · Finalize
+            <i class="fas fa-save" style="margin-inline-end:.4rem"></i> حفظ الحضور
           </ion-button>
         </div>
       </div>
@@ -390,7 +390,7 @@
                 (click)="togglePresent(s)"
                 [disabled]="saving()">
                 <i class="fas" [class.fa-check]="isPresent(s.enrollmentId)" [class.fa-circle]="!isPresent(s.enrollmentId)" style="margin-inline-end:.3rem"></i>
-                {{ isPresent(s.enrollmentId) ? 'حاضر' : 'تعليم' }}
+                {{ isPresent(s.enrollmentId) ? 'حاضر' : 'تحديد حاضر' }}
               </ion-button>
             }
           </div>

@@ -612,14 +612,12 @@ $purple-grad: linear-gradient(135deg, $purple-start, $purple-end);
   width: 48px; height: 48px; flex-shrink: 0; border: none; border-radius: 12px;
   background: var(--ngx-primary, #667eea); color: #fff; font-size: 1.1rem; cursor: pointer;
 }
-.att-actions-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.att-counter { font-size: .85rem; font-weight: 700; color: #15803d; }
-.att-counter i { margin-inline-end: 4px; }
-.att-finalize {
-  min-height: 44px; padding: 0 16px; border: none; border-radius: 12px;
-  background: var(--ngx-primary, #667eea); color: #fff; font-weight: 700; cursor: pointer;
-  display: flex; align-items: center; gap: 6px;
+.att-actions-row { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.att-counter {
+  align-self: center; font-size: .82rem; font-weight: 700; color: #15803d;
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 999px; padding: 4px 14px;
 }
+.att-counter i { margin-inline-end: 4px; }
 .att-finalize:disabled { opacity: .5; cursor: not-allowed; }
 
 .card-present { border-color: #22c55e !important; background: #f0fdf4 !important; }
@@ -768,13 +766,14 @@ ion-button.att-scan-btn {
 }
 ion-button.att-finalize {
   --background: linear-gradient(135deg, #22c55e, #16a34a); --color: #fff;
-  --border-radius: 12px; --box-shadow: none; font-weight: 700; margin: 0;
+  --border-radius: 12px; --box-shadow: none; --padding-top: 18px; --padding-bottom: 18px;
+  font-weight: 700; font-size: .95rem; text-transform: none; margin: 0; width: 100%; height: 48px;
 }
 
 /* Per-student toggle */
 ion-button.btn-toggle-compact {
   --border-radius: 10px; --box-shadow: none; font-size: .75rem; font-weight: 700;
-  margin: 0; flex-shrink: 0; min-width: 78px;
+  text-transform: none; margin: 0; flex-shrink: 0; min-width: 96px;
 }
 ion-button.btn-compact-absent  { --background: rgba(239,68,68,.1);  --color: #dc2626; }
 ion-button.btn-compact-present { --background: rgba(34,197,94,.12); --color: #16a34a; }
