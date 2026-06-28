@@ -58,6 +58,7 @@ export class StudentHomeComponent implements OnInit {
   private readonly apiBase        = environment.apis?.default?.url || '';
 
   studentName        = signal('');
+  userPhoto          = signal('');
   gradeName          = signal('');
   courses            = signal<StudentCourseDto[]>([]);
   promoAds           = signal<any[]>([]);
@@ -77,6 +78,7 @@ export class StudentHomeComponent implements OnInit {
     try {
       const userInfo = await lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo());
       this.studentName.set(userInfo?.actorName || '');
+      this.userPhoto.set(userInfo?.photoUrl || '');
       if (userInfo?.currentGrade) {
         this.gradeName.set(GRADE_NAMES[userInfo.currentGrade] || `الصف ${userInfo.currentGrade}`);
       }

@@ -33,7 +33,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
 
       <!-- Identity card -->
       <div class="id-card">
-        <div class="id-avatar">{{ getInitials(secretaryName()) }}</div>
+        <div class="id-avatar">@if (userPhoto()) { <img [src]="userPhoto()" alt="" /> } @else { {{ getInitials(secretaryName()) }} }</div>
         <div class="id-body">
           <span class="id-hello">مرحباً،</span>
           <span class="id-name">{{ secretaryName() || 'السكرتير' }}</span>
@@ -184,7 +184,9 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.05rem; font-weight: 800;
+      overflow: hidden;
     }
+    .id-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     .id-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .12rem; }
     .id-hello { font-size: .72rem; color: var(--text-light); }
     .id-name  { font-size: 1.02rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
@@ -391,6 +393,7 @@ export class SecretaryHomeComponent implements OnInit {
   teachers = signal<SecretaryTeacherDto[]>([]);
   loading = signal(false);
   secretaryName = signal<string>('');
+  userPhoto = signal('');
   teachersExpanded = signal(true);
   offline = signal(false);
   offlineLastUpdated = signal('');
@@ -411,6 +414,7 @@ export class SecretaryHomeComponent implements OnInit {
     try {
       const info = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
       this.secretaryName.set(info?.actorName ?? '');
+      this.userPhoto.set(info?.photoUrl || '');
     } catch { /* silent */ }
   }
 

@@ -42,6 +42,7 @@ export class TeacherHomeComponent implements OnInit {
 
   loading          = signal(false);
   teacherName      = signal<string>('');
+  userPhoto        = signal('');
   teacherId        = signal<string | null>(null);
   referralCode     = signal<string>('');
   copied           = signal(false);
@@ -105,6 +106,7 @@ export class TeacherHomeComponent implements OnInit {
     try {
       const userInfo = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
       this.teacherName.set(userInfo?.actorName ?? '');
+      this.userPhoto.set(userInfo?.photoUrl || '');
       this.teacherId.set(userInfo?.actorId ?? null);
       // Resolve courses server-side (immune to a stale ActorId claim) so the list always
       // matches what the teacher just self-enrolled in.

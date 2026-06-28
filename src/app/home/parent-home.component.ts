@@ -14,6 +14,7 @@ import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { ParentStudentLinkStatus } from '@proxy/enums/parent-student-link-status.enum';
 import { StudentService } from '@proxy/students';
+import { CurrentUserInfoService } from '@proxy/common';
 import type { PromotionRequestDto } from '@proxy/students/models';
 import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
@@ -37,9 +38,11 @@ export class ParentHomeComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
   private readonly studentService = inject(StudentService);
+  private readonly currentUserService = inject(CurrentUserInfoService);
   private readonly cache = inject(OfflineCacheService);
 
   parentName = signal('');
+  userPhoto = signal('');
   referralCode = signal('');
   copied = signal(false);
   children = signal<ParentStudentDto[]>([]);
@@ -66,6 +69,7 @@ export class ParentHomeComponent implements OnInit {
       this.loadPendingRequestsCount(),
       this.loadPendingPromotions(),
       this.loadReferralCode(),
+      this.loadUserPhoto(),
     ]);
     if (!this.offline()) {
       this.cache.set(this.CACHE_KEY, {
@@ -255,6 +259,13 @@ export class ParentHomeComponent implements OnInit {
   goToMessageTeacher() { this.router.navigate(['/parent/message-teacher']); }
   goToAbsenceExcuse() { this.router.navigate(['/parent/absence-excuse']); }
   goToChildSchedule(studentId: string) { this.router.navigate(['/parent/child-schedule', studentId]); }
+
+  private async loadUserPhoto(): Promise<void> {
+    try {
+      const info = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo({ skipHandleError: true }));
+      this.userPhoto.set(info?.photoUrl || '');
+    } catch { /* ignore */ }
+  }
 
   private async loadReferralCode(): Promise<void> {
     try {

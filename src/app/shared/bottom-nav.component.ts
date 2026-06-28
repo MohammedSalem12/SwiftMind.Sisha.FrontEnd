@@ -8,6 +8,7 @@ import { ROLES } from '../route.provider';
 import { RealtimeNotificationService } from './services/realtime-notification.service';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { SecretaryTeacherService } from '@proxy/teachers';
+import { CurrentUserInfoService } from '@proxy/common';
 
 interface NavItem {
   path: string;
@@ -867,6 +868,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   private readonly realtimeSvc         = inject(RealtimeNotificationService);
   private readonly enrollmentSvc       = inject(EnrollmentRequestService);
   private readonly secretaryTeacherSvc = inject(SecretaryTeacherService);
+  private readonly currentUserInfoSvc  = inject(CurrentUserInfoService);
   private readonly destroyRef = inject(DestroyRef);
 
   private notifEffect = effect(() => {
@@ -961,6 +963,11 @@ export class BottomNavComponent implements OnInit, OnDestroy {
         const photo = cu?.picture || cu?.photoUrl || cu?.avatarUrl
           || cu?.extraProperties?.['picture'] || cu?.extraProperties?.['photoUrl'] || '';
         this.userPhoto.set(typeof photo === 'string' ? photo : '');
+        // Resolve the real profile photo (entity for student/teacher/parent,
+        // Identity ExtraProperties for secretary/admin) so the account avatar shows it.
+        lastValueFrom(this.currentUserInfoSvc.getCurrentUserActorInfo({ skipHandleError: true }))
+          .then(info => { if (info?.photoUrl) this.userPhoto.set(info.photoUrl); })
+          .catch(() => { /* keep initials */ });
 
         // Core nav items — role-aware paths resolved AFTER user is loaded
         const homePath     = getRoleHomePath(roles);

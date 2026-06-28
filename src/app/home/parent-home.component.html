@@ -16,7 +16,7 @@
   <!-- Identity card -->
   <div class="id-card">
     <div class="id-top">
-      <div class="id-avatar">{{ getInitials(parentName()) }}</div>
+      <div class="id-avatar">@if (userPhoto()) { <img [src]="userPhoto()" alt="" /> } @else { {{ getInitials(parentName()) }} }</div>
       <div class="id-body">
         <span class="id-hello">مرحباً،</span>
         <span class="id-name">{{ parentName() || 'ولي الأمر' }}</span>

@@ -27,7 +27,7 @@
 
   <!-- Identity card -->
   <div class="id-card" (click)="goProfile()">
-    <div class="id-avatar">{{ getInitials(studentName()) }}</div>
+    <div class="id-avatar">@if (userPhoto()) { <img [src]="userPhoto()" alt="" /> } @else { {{ getInitials(studentName()) }} }</div>
     <div class="id-body">
       <span class="id-hello">مرحباً،</span>
       <span class="id-name">{{ studentName() || 'الطالب' }}</span>
