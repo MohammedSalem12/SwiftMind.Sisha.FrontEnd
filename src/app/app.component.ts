@@ -45,12 +45,9 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     }
   `,
   styles: [`
-    /* Reserve space for fixed top bar on mobile */
-    @media (max-width: 767px) {
-      .app-content {
-        padding-top: calc(48px + env(safe-area-inset-top, 0px));
-      }
-    }
+    /* The global purple top-bar is hidden on mobile now that every page has its
+       own sticky app-page-header (which owns the safe-area top inset), so no
+       top offset is reserved here. */
 
     /* Reserve space for fixed bottom nav — only when nav is visible */
     .app-content {

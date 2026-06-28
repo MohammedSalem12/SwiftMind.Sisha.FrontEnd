@@ -50,12 +50,14 @@ const HIDE_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
   `,
   styles: [`
     .top-bar {
+      /* Retired: every page now has its own sticky app-page-header. The component
+         stays mounted (drives the session-countdown sync) but renders nothing. */
+      display: none;
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       z-index: 1500;
-      display: flex;
       align-items: center;
       gap: .5rem;
       height: 48px;
