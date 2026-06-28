@@ -1,16 +1,11 @@
 import { CommonModule, Location } from '@angular/common';
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
-  OnDestroy,
   Output,
-  ViewChild,
   inject,
-  signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -38,7 +33,7 @@ import { Router } from '@angular/router';
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header #bar class="ph-topbar" data-page-header dir="rtl">
+    <header class="ph-topbar" data-page-header dir="rtl">
       <button
         *ngIf="showBack"
         class="ph-back"
@@ -62,16 +57,18 @@ import { Router } from '@angular/router';
         <ng-content select="[ph-actions]"></ng-content>
       </div>
     </header>
-    <!-- Reserves in-flow space on mobile where the bar is position:fixed. -->
-    <div class="ph-spacerfix" [style.height.px]="barHeight()" aria-hidden="true"></div>
   `,
   styles: [
     `
+      /* Sticky host pins the bar to the top while the page scrolls. Sticky (not
+         fixed) so it isn't trapped by transformed ancestors (route animations,
+         pull-to-refresh, ion-content) — which previously made it scroll away and
+         fall behind content. High z-index keeps it above page content. */
       :host {
         display: block;
         position: sticky;
         top: 0;
-        z-index: 50;
+        z-index: 100;
       }
 
       .ph-topbar {
@@ -82,22 +79,6 @@ import { Router } from '@angular/router';
         padding: 0.55rem 0.6rem;
         padding-top: calc(0.55rem + env(safe-area-inset-top, 0px));
         border-bottom: 1px solid #ececf2;
-      }
-
-      /* Desktop: in-flow sticky host needs no spacer. */
-      .ph-spacerfix { display: none; }
-
-      /* Mobile: pin the bar to the absolute top of the viewport (immune to
-         iOS Safari's collapsing URL bar) and reserve its height in-flow. */
-      @media (max-width: 767px) {
-        :host { position: static; }
-        .ph-topbar {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-        }
-        .ph-spacerfix { display: block; }
       }
 
       .ph-back {
@@ -214,29 +195,9 @@ import { Router } from '@angular/router';
     `,
   ],
 })
-export class PageHeaderComponent implements AfterViewInit, OnDestroy {
+export class PageHeaderComponent {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
-
-  @ViewChild('bar') private bar?: ElementRef<HTMLElement>;
-  /** Measured height of the fixed bar — drives the in-flow spacer on mobile. */
-  readonly barHeight = signal(56);
-  private resizeObserver?: ResizeObserver;
-
-  ngAfterViewInit(): void {
-    const el = this.bar?.nativeElement;
-    if (!el) return;
-    const measure = () => this.barHeight.set(el.offsetHeight || 56);
-    measure();
-    if (typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(measure);
-      this.resizeObserver.observe(el);
-    }
-  }
-
-  ngOnDestroy(): void {
-    this.resizeObserver?.disconnect();
-  }
 
   /** Arabic title (required). */
   @Input({ required: true }) title!: string;
