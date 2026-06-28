@@ -29419,6 +29419,18 @@
           "regex": null
         },
         {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "CourseId",
           "jsonName": null,
           "type": "System.Guid",
@@ -29597,6 +29609,18 @@
         },
         {
           "name": "FullName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhotoUrl",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -35144,6 +35168,18 @@
           "regex": null
         },
         {
+          "name": "StudentPhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "StudentCode",
           "jsonName": null,
           "type": "System.String",
@@ -36009,6 +36045,18 @@
         },
         {
           "name": "StudentCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StudentPhotoUrl",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -38281,6 +38329,18 @@
           "regex": null
         },
         {
+          "name": "StudentPhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "CourseId",
           "jsonName": null,
           "type": "System.Guid",
@@ -38463,6 +38523,18 @@
         },
         {
           "name": "StudentName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StudentPhotoUrl",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -39184,6 +39256,18 @@
         },
         {
           "name": "TeacherCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TeacherPhotoUrl",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",

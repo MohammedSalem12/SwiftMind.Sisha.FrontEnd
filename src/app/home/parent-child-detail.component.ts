@@ -34,7 +34,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       <div class="hero">
         <div class="hero-top-row">
           <div class="hero-avatar">
-            <span>{{ getStudentName() | slice:0:1 }}</span>
+            @if (student()?.photoUrl) { <img [src]="student()!.photoUrl" alt="" /> } @else { <span>{{ getStudentName() | slice:0:1 }}</span> }
           </div>
         </div>
 
@@ -356,9 +356,10 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
     }
     .hero-avatar {
       width: 52px; height: 52px;
-      background: $purple-grad; border: none;
+      background: $purple-grad; border: none; overflow: hidden;
       border-radius: 50%; display: flex; align-items: center; justify-content: center;
       span { font-size: 1.4rem; font-weight: 800; color: #fff; }
+      img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     }
     .hero-info { position: relative; z-index: 1; margin-bottom: 1.25rem; }
     .hero-name { font-size: 1.45rem; font-weight: 800; color: #1a1a2e; margin: 0 0 0.5rem; }

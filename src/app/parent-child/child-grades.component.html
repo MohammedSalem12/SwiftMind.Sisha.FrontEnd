@@ -20,7 +20,7 @@
 
     <!-- Student identity card -->
     <div class="id-card" *ngIf="childName()">
-      <div class="id-avatar">{{ childName().charAt(0) || '؟' }}</div>
+      <div class="id-avatar">@if (childPhoto()) { <img [src]="childPhoto()" alt="" /> } @else { {{ childName().charAt(0) || '؟' }} }</div>
       <div class="id-info">
         <h2 class="id-name">{{ childName() }}</h2>
         <div class="id-chips">

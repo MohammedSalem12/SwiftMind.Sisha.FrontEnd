@@ -119,7 +119,7 @@
           <!-- Child Header -->
           <div class="child-header">
             <div class="child-avatar">
-              <span>{{ getInitials(child.studentName) }}</span>
+              @if (child.studentPhotoUrl) { <img [src]="child.studentPhotoUrl" alt="" /> } @else { <span>{{ getInitials(child.studentName) }}</span> }
             </div>
             <div class="child-info">
               <h3 class="child-name">{{ child.studentName }}</h3>

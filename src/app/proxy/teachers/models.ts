@@ -48,6 +48,7 @@ export interface SecretaryTeacherDto extends CreationAuditedEntityDto<string> {
   teacherId?: string;
   teacherName?: string;
   teacherCode?: string;
+  teacherPhotoUrl?: string;
 }
 
 export interface SecretaryTeacherRequestDto extends CreationAuditedEntityDto<string> {

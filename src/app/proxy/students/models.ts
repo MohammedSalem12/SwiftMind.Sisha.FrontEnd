@@ -29,6 +29,7 @@ export interface CreateUpdateStudentDto {
 export interface GroupChangeRequestDto extends FullAuditedEntityDto<string> {
   studentId?: string;
   studentName?: string;
+  studentPhotoUrl?: string;
   courseId?: string;
   courseName?: string;
   fromGroupId?: string;
@@ -46,6 +47,7 @@ export interface GroupChangeRequestDto extends FullAuditedEntityDto<string> {
 export interface PromotionRequestDto extends FullAuditedEntityDto<string> {
   studentId?: string;
   studentName?: string;
+  studentPhotoUrl?: string;
   studentCode?: string;
   fromGrade: number;
   toGrade: number;

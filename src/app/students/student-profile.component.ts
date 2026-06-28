@@ -251,7 +251,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
               @for (p of parents(); track p.parentId) {
                 <div class="list-row">
                   <div class="list-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
-                    <i class="fas fa-user-shield"></i>
+                    @if (p.parent?.photoUrl) { <img [src]="p.parent!.photoUrl" alt="" /> } @else { <i class="fas fa-user-shield"></i> }
                   </div>
                   <div class="list-info">
                     <span class="list-name">{{ p.parent?.fullName || p.parent?.firstName }}</span>
@@ -393,9 +393,10 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       padding:.875rem; box-shadow:0 2px 8px rgba(0,0,0,.04);
     }
     .list-avatar {
-      width:44px; height:44px; border-radius:50%; flex-shrink:0;
+      width:44px; height:44px; border-radius:50%; flex-shrink:0; overflow:hidden;
       display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem;
     }
+    .list-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
     .list-info { flex:1; min-width:0; }
     .list-name { display:block; font-size:.95rem; font-weight:700; color:#1a1a2e; }
     .list-sub { display:block; font-size:.75rem; color:#9090aa; margin-top:.1rem; }

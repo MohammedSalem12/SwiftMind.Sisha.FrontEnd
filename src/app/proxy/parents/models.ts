@@ -14,6 +14,7 @@ export interface ChildCourseDto {
 export interface ChildSummaryDto {
   studentId?: string;
   studentName?: string;
+  studentPhotoUrl?: string;
   studentCode?: string;
   currentGrade: number;
   gradeName?: string;
@@ -105,6 +106,7 @@ export interface ParentStudentDto extends FullAuditedEntityDto {
   parent: ParentDto;
   studentName?: string;
   studentCode?: string;
+  studentPhotoUrl?: string;
   gradeName?: string;
   parentName?: string;
   parentCode?: string;

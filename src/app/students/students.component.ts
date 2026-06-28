@@ -99,7 +99,11 @@ interface CourseTab {
             @if (isStudentDto(codeResult())) {
               <div class="code-result-card">
                 <div class="student-avatar">
-                  <span>{{ initials(codeResult()!) }}</span>
+                  @if (getAvatarUrl(codeResult())) {
+                    <img [src]="getAvatarUrl(codeResult())" alt="" />
+                  } @else {
+                    <span>{{ initials(codeResult()!) }}</span>
+                  }
                 </div>
                 <div class="student-info">
                   <span class="student-name">{{ codeResult()?.firstName }} {{ codeResult()?.lastName }}</span>
@@ -339,7 +343,11 @@ interface CourseTab {
               @for (s of students(); track s.id) {
                 <div class="student-row student-row-action">
                   <div class="student-avatar">
-                    <span>{{ initials(s) }}</span>
+                    @if (getAvatarUrl(s)) {
+                      <img [src]="getAvatarUrl(s)" alt="" />
+                    } @else {
+                      <span>{{ initials(s) }}</span>
+                    }
                   </div>
                   <div class="student-info">
                     <span class="student-name">{{ s.firstName }} {{ s.lastName }}</span>
@@ -487,7 +495,9 @@ interface CourseTab {
       background:linear-gradient(135deg,#667eea,#764ba2);
       display:flex; align-items:center; justify-content:center;
       color:#fff; font-size:1rem; font-weight:700;
+      overflow:hidden;
     }
+    .student-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
     .student-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:.1rem; }
     .student-name { font-size:.95rem; font-weight:700; color:#1a1a2e; }
     .student-meta { font-size:.75rem; color:#9090aa; }
@@ -840,6 +850,10 @@ export class StudentsComponent implements OnInit {
 
   initials(s: any): string {
     return ((s?.firstName?.[0] || '') + (s?.lastName?.[0] || '')).toUpperCase() || '?';
+  }
+
+  getAvatarUrl(s: any): string | undefined {
+    return s?.photoUrl || undefined;
   }
 
   attColor(pct: number): string {

@@ -118,7 +118,7 @@
       @for (child of children(); track child.studentId) {
         <div class="child-card ion-activatable" (click)="viewChildDetails(child)">
           <div class="child-card-icon">
-            <span>{{ getInitials(child.studentName) }}</span>
+            @if (child.studentPhotoUrl) { <img [src]="child.studentPhotoUrl" alt="" /> } @else { <span>{{ getInitials(child.studentName) }}</span> }
           </div>
           <div class="child-card-body">
             <div class="child-name">{{ child.studentName }}</div>

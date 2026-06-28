@@ -38,6 +38,7 @@ export interface StudentAttendanceReportDto extends ExtensibleEntityDto<string> 
   studentNameAr?: string;
   studentNameEn?: string;
   displayName?: string;
+  photoUrl?: string;
   courseId?: string;
   courseNameAr?: string;
   courseNameEn?: string;
@@ -56,6 +57,7 @@ export interface StudentAttendanceStatusDto {
   middleName?: string;
   lastName?: string;
   fullName?: string;
+  photoUrl?: string;
   enrollmentId?: string;
   attendanceId?: string;
   date?: string;

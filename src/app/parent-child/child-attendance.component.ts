@@ -27,6 +27,7 @@ export class ChildAttendanceComponent implements OnInit {
 
   studentId      = signal<string>('');
   childName      = signal<string>('');
+  childPhoto     = signal<string>('');
   childCode      = signal<string>('');
   childGrade     = signal<string>('');
   selectedMonth  = signal<string>('');
@@ -61,6 +62,7 @@ export class ChildAttendanceComponent implements OnInit {
       const child = (children as any[]).find(c => c.studentId === this.studentId());
       if (child) {
         this.childName.set(child.studentName || '');
+        this.childPhoto.set(child.studentPhotoUrl || '');
         this.childCode.set(child.studentCode || '');
         this.childGrade.set(child.gradeName || '');
       }

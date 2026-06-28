@@ -16,6 +16,7 @@ interface ParentDashboardDto {
 
 interface ChildDashboardDto {
   studentName: string;
+  studentPhotoUrl?: string;
   studentCode: string;
   currentGrade: number;
   gradeName: string;

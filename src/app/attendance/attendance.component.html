@@ -353,7 +353,11 @@
               <ion-checkbox class="card-check" [checked]="s.selected" (ionChange)="toggleSelect(i)"></ion-checkbox>
             }
             <div class="avatar" [class.avatar-absent]="s.isAbsent">
-              {{ s.studentName.charAt(0) }}
+              @if (s.photoUrl) {
+                <img [src]="s.photoUrl" alt="" />
+              } @else {
+                {{ s.studentName.charAt(0) }}
+              }
             </div>
             <div class="card-info">
               <span class="student-name">{{ s.studentName }}</span>

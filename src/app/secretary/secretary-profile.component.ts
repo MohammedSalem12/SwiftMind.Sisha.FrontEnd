@@ -196,7 +196,11 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
               @for (t of teachers(); track t.id) {
                 <button class="teacher-row" (click)="goToTeacher(t)">
                   <div class="teacher-avatar">
-                    <i class="fas fa-chalkboard-teacher"></i>
+                    @if (t.teacherPhotoUrl) {
+                      <img [src]="t.teacherPhotoUrl" alt="" />
+                    } @else {
+                      <i class="fas fa-chalkboard-teacher"></i>
+                    }
                   </div>
                   <div class="teacher-info">
                     <span class="teacher-name">{{ t.teacherName || 'معلم' }}</span>
@@ -404,7 +408,9 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       background: linear-gradient(135deg, #667eea, #764ba2);
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 1rem;
+      overflow: hidden;
     }
+    .teacher-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     .teacher-info { flex: 1; min-width: 0; }
     .teacher-name {
       display: block; font-size: 0.95rem; font-weight: 700; color: #1a1a2e;

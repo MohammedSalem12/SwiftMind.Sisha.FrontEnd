@@ -15,7 +15,10 @@
 <div class="teachers-list">
   <div *ngFor="let t of teachers(); trackBy: trackById" class="teacher-row">
     <div class="left">
-      <div class="avatar">{{ (t.firstName?.[0]||'') + (t.lastName?.[0]||'') }}</div>
+      <div class="avatar">
+        <img *ngIf="t.photoUrl" [src]="t.photoUrl" alt="" />
+        <span *ngIf="!t.photoUrl">{{ (t.firstName?.[0]||'') + (t.lastName?.[0]||'') }}</span>
+      </div>
       <div class="info">
         <div class="name">{{ t.firstName }} {{ t.lastName }}</div>
         <div class="meta small muted">{{ t.address || '-' }}</div>

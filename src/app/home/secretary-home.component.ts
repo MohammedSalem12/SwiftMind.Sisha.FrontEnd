@@ -74,7 +74,11 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
             @for (t of teachers(); track t.id) {
               <button class="teacher-card ion-activatable" (click)="goToTeacherCourses(t)">
                 <div class="teacher-card-icon">
-                  <i class="fas fa-chalkboard-teacher"></i>
+                  @if (t.teacherPhotoUrl) {
+                    <img [src]="t.teacherPhotoUrl" alt="" />
+                  } @else {
+                    <i class="fas fa-chalkboard-teacher"></i>
+                  }
                 </div>
                 <div class="teacher-card-body">
                   <div class="teacher-name">{{ t.teacherName }}</div>
@@ -293,8 +297,10 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       width: 48px; height: 48px; border-radius: 14px;
       background: linear-gradient(135deg, rgba(102,126,234,.12), rgba(118,75,162,.12));
       display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
     }
     .teacher-card-icon i { font-size: 1.2rem; color: var(--grad-start); }
+    .teacher-card-icon img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
     .teacher-card-body { flex: 1; min-width: 0; }
 

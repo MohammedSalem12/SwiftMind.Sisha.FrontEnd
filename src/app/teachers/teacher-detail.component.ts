@@ -19,7 +19,12 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
           <div *ngIf="loading()">Loading...</div>
           <div *ngIf="!loading() && teacher()">
             <div class="d-flex align-items-center gap-3">
-              <div class="avatar-lg">{{ initials }}</div>
+              <div class="avatar-lg">
+                <ng-container *ngIf="teacher()?.photoUrl; else initialsTpl">
+                  <img [src]="teacher()?.photoUrl" alt="" />
+                </ng-container>
+                <ng-template #initialsTpl>{{ initials }}</ng-template>
+              </div>
               <div>
                 <h4 class="mb-0">{{ teacher()?.firstName }} {{ teacher()?.lastName }}</h4>
                 <div class="muted">{{ teacher()?.email || '' }}</div>
@@ -33,7 +38,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       </div>
     </div>
   `,
-  styles: [`.avatar-lg{width:56px;height:56px;border-radius:8px;background:#f1f3f5;display:flex;align-items:center;justify-content:center;font-weight:700}`]
+  styles: [`.avatar-lg{width:56px;height:56px;border-radius:8px;background:#f1f3f5;display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden}.avatar-lg img{width:100%;height:100%;border-radius:50%;object-fit:cover}`]
 })
 export class TeacherDetailComponent {
   private route = inject(ActivatedRoute);

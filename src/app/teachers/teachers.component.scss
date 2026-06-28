@@ -6,7 +6,8 @@
 .teachers-list { display:flex; flex-direction:column; gap:8px }
 .teacher-row { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:white; border-radius:8px; box-shadow: 0 6px 18px rgba(12,28,55,0.04); }
 .teacher-row .left { display:flex; align-items:center; gap:12px }
-.teacher-row .avatar { width:56px; height:56px; border-radius:10px; background:linear-gradient(135deg,#7aa1ff,#bfe2ff); display:flex; align-items:center; justify-content:center; color:white; font-weight:700 }
+.teacher-row .avatar { width:56px; height:56px; border-radius:10px; background:linear-gradient(135deg,#7aa1ff,#bfe2ff); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; overflow:hidden }
+.teacher-row .avatar img { width:100%; height:100%; border-radius:inherit; object-fit:cover }
 .teacher-row .info { display:flex; flex-direction:column }
 .teacher-row .name { font-weight:700 }
 .teacher-row .meta { color:#667 }

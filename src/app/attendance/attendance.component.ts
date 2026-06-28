@@ -23,6 +23,7 @@ interface StudentEntry {
   studentCode: string;
   teacherStudentCode: string;
   studentName: string;
+  photoUrl: string;
   isAbsent: boolean;
   attendanceId: string | null;
   selected: boolean;
@@ -478,6 +479,7 @@ export class AttendanceComponent implements OnInit {
         studentName:
           item.fullName ||
           `${item.firstName || ''} ${item.lastName || ''}`.trim(),
+        photoUrl: item.photoUrl || '',
         isAbsent: item.isAbsent,
         attendanceId: item.attendanceId || null,
         selected: false,
