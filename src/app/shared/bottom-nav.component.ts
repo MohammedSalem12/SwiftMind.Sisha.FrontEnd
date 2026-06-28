@@ -149,8 +149,13 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
         <!-- Profile row -->
         <a class="more-profile" [routerLink]="profilePath()" (click)="showMore.set(false)">
           <div class="more-avatar">
-            @if (userInitials() !== '?') { <span>{{ userInitials() }}</span> }
-            @else { <i class="fas fa-user"></i> }
+            @if (userPhoto()) {
+              <img [src]="userPhoto()" alt="" referrerpolicy="no-referrer" />
+            } @else if (userInitials() !== '?') {
+              <span>{{ userInitials() }}</span>
+            } @else {
+              <i class="fas fa-user"></i>
+            }
           </div>
           <div class="more-profile-info">
             <span class="more-profile-name">{{ displayName() || 'مستخدم' }}</span>
@@ -418,8 +423,13 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       <!-- User profile footer -->
       <div class="dn-user">
         <div class="dn-user-avatar">
-          @if (userInitials() !== '?') { <span>{{ userInitials() }}</span> }
-          @else { <i class="fas fa-user"></i> }
+          @if (userPhoto()) {
+            <img [src]="userPhoto()" alt="" referrerpolicy="no-referrer" />
+          } @else if (userInitials() !== '?') {
+            <span>{{ userInitials() }}</span>
+          } @else {
+            <i class="fas fa-user"></i>
+          }
         </div>
         <div class="dn-user-info">
           <p class="dn-user-name">{{ displayName() || 'مستخدم' }}</p>
@@ -671,11 +681,12 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       background: rgba(0,0,0,0.15);
     }
     .dn-user-avatar {
-      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; overflow: hidden;
       background: linear-gradient(135deg, #7c3aed, #5b21b6);
       color: #fff; display: flex; align-items: center; justify-content: center;
       font-size: 0.85rem; font-weight: 700;
     }
+    .dn-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .dn-user-info { flex: 1; min-width: 0; }
     .dn-user-name {
       margin: 0; font-size: 0.82rem; font-weight: 600; color: #fff;
@@ -772,6 +783,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     .more-avatar {
       width: 44px; height: 44px;
       border-radius: 50%;
+      overflow: hidden;
       background: linear-gradient(135deg, #667eea, #764ba2);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
@@ -779,6 +791,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       flex-shrink: 0;
       box-shadow: 0 2px 8px rgba(102,126,234,0.3);
     }
+    .more-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .more-profile-info {
       flex: 1; min-width: 0;
       display: flex; flex-direction: column;
