@@ -29,7 +29,11 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       <div class="section">
         <div class="id-card">
           <div class="id-avatar">
-            <span>{{ initials() }}</span>
+            @if (userInfo()?.photoUrl) { <img [src]="userInfo()!.photoUrl" alt="" /> }
+            @else { <span>{{ initials() }}</span> }
+            <button class="avatar-edit" (click)="toggleEdit()" aria-label="تعديل الصورة">
+              <i class="fas fa-camera"></i>
+            </button>
           </div>
           <div class="id-info">
             <h1 class="id-name">{{ userInfo()?.actorName || 'السكرتير' }}</h1>
@@ -48,6 +52,40 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
           </div>
         </div>
       </div>
+
+      <!-- ── Photo editor ── -->
+      @if (editingPhoto()) {
+        <div class="section">
+          <div class="section-title">
+            <i class="fas fa-id-badge"></i> صورتي · My Photo
+            <button class="edit-cancel" (click)="toggleEdit()"><i class="fas fa-times"></i> إلغاء</button>
+          </div>
+          <div class="photo-card">
+            <div class="photo-row">
+              <div class="photo-preview">
+                @if (editPhoto()) { <img [src]="editPhoto()" alt="" /> }
+                @else { <i class="fas fa-user"></i> }
+              </div>
+              <label class="photo-btn">
+                @if (photoProcessing()) { <span class="spinner-xs"></span> }
+                @else { <i class="fas fa-image"></i> }
+                {{ editPhoto() ? 'تغيير · Change' : 'إضافة صورة · Add' }}
+                <input type="file" accept="image/*" hidden (change)="onPhotoSelected($event)" />
+              </label>
+              @if (editPhoto()) {
+                <button type="button" class="photo-remove" (click)="editPhoto.set('')">
+                  <i class="fas fa-trash"></i> إزالة
+                </button>
+              }
+            </div>
+            @if (photoError()) { <p class="photo-err">{{ photoError() }}</p> }
+            <button class="photo-save" [disabled]="photoSaving()" (click)="savePhoto()">
+              @if (photoSaving()) { <span class="spinner-xs"></span> } @else { <i class="fas fa-check-circle"></i> }
+              حفظ · Save
+            </button>
+          </div>
+        </div>
+      }
 
       <!-- ── Stats row ── -->
       @if (!loading()) {
@@ -195,11 +233,35 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     }
     .id-avatar {
+      position: relative;
       flex-shrink: 0; width: 72px; height: 72px; border-radius: 50%;
       background: linear-gradient(135deg, #667eea, #764ba2);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; font-weight: 800; color: #fff;
     }
+    .id-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .avatar-edit {
+      position: absolute; bottom: -2px; left: -2px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #fff; color: #667eea; border: 2px solid #764ba2;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; cursor: pointer; padding: 0;
+    }
+    .avatar-edit:active { transform: scale(0.92); }
+
+    /* Photo editor */
+    .edit-cancel { margin-right: auto; background: none; border: none; color: #667eea; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+    .photo-card { background: #fff; border-radius: 16px; border: 1.5px solid #eef0f6; padding: 1.1rem; display: flex; flex-direction: column; gap: 0.75rem; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+    .photo-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .photo-preview { width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; overflow: hidden; background: #f0f0f5; border: 1.5px solid #e0e0f0; display: flex; align-items: center; justify-content: center; color: #9090aa; font-size: 1.3rem; }
+    .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-btn { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; background: rgba(102,126,234,.1); border: 1.5px solid rgba(102,126,234,.25); color: #667eea; border-radius: 12px; padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 700; min-height: 44px; }
+    .photo-remove { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; background: rgba(239,68,68,.08); border: 1.5px solid rgba(239,68,68,.2); color: #dc2626; border-radius: 12px; padding: 0.5rem 0.75rem; font-size: 0.78rem; font-weight: 700; min-height: 44px; }
+    .photo-err { color: #dc2626; font-size: 0.75rem; margin: 0; }
+    .photo-save { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border: none; border-radius: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 0.88rem; font-weight: 700; cursor: pointer; min-height: 48px; }
+    .photo-save:disabled { opacity: 0.6; cursor: not-allowed; }
+    .spinner-xs { width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .id-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
     .id-name { margin: 0; font-size: 1.15rem; font-weight: 800; color: #1a1a2e; }
     .id-role {
@@ -385,6 +447,70 @@ export class SecretaryProfileComponent implements OnInit {
   userInfo = signal<CurrentUserActorDto | null>(null);
   teachers = signal<SecretaryTeacherDto[]>([]);
   requests = signal<SecretaryTeacherRequestDto[]>([]);
+
+  // Photo editing
+  editingPhoto    = signal(false);
+  editPhoto       = signal('');
+  photoProcessing = signal(false);
+  photoSaving     = signal(false);
+  photoError      = signal<string | null>(null);
+
+  toggleEdit(): void {
+    if (!this.editingPhoto()) {
+      this.editPhoto.set(this.userInfo()?.photoUrl || '');
+      this.photoError.set(null);
+    }
+    this.editingPhoto.set(!this.editingPhoto());
+  }
+
+  async onPhotoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.photoProcessing.set(true);
+    try { this.editPhoto.set(await this.resizeImageToDataUrl(file, 320, 0.8)); }
+    catch { this.photoError.set('تعذّر معالجة الصورة · Could not process image'); }
+    finally { this.photoProcessing.set(false); input.value = ''; }
+  }
+
+  private resizeImageToDataUrl(file: File, maxSize: number, quality: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('image load failed'));
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > height && width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
+          else if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('no canvas ctx')); return; }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async savePhoto(): Promise<void> {
+    this.photoSaving.set(true);
+    this.photoError.set(null);
+    try {
+      await lastValueFrom(this.currentUserSvc.updateMyPhoto({ photoUrl: this.editPhoto() || undefined }));
+      const info = await lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo());
+      this.userInfo.set(info);
+      this.editingPhoto.set(false);
+    } catch (err: any) {
+      this.photoError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ · Error saving');
+    } finally {
+      this.photoSaving.set(false);
+    }
+  }
 
   pendingRequests  = () => this.requests().filter(r => r.status === SecretaryTeacherRequestStatus.Pending).length;
   approvedRequests = () => this.requests().filter(r => r.status === SecretaryTeacherRequestStatus.Approved).length;

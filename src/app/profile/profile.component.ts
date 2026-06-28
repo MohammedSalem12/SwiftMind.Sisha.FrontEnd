@@ -32,6 +32,70 @@ export class ProfileComponent implements OnInit {
   passwordInput = '';
   biometricError = signal<string | null>(null);
 
+  // Photo editing (stored on the Identity user)
+  editingPhoto    = signal(false);
+  editPhoto       = signal('');
+  photoProcessing = signal(false);
+  photoSaving     = signal(false);
+  photoError      = signal<string | null>(null);
+
+  togglePhotoEdit(): void {
+    if (!this.editingPhoto()) {
+      this.editPhoto.set(this.userInfo()?.photoUrl || '');
+      this.photoError.set(null);
+    }
+    this.editingPhoto.set(!this.editingPhoto());
+  }
+
+  async onPhotoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.photoProcessing.set(true);
+    try { this.editPhoto.set(await this.resizeImageToDataUrl(file, 320, 0.8)); }
+    catch { this.photoError.set('تعذّر معالجة الصورة · Could not process image'); }
+    finally { this.photoProcessing.set(false); input.value = ''; }
+  }
+
+  private resizeImageToDataUrl(file: File, maxSize: number, quality: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('image load failed'));
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > height && width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
+          else if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('no canvas ctx')); return; }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async savePhoto(): Promise<void> {
+    this.photoSaving.set(true);
+    this.photoError.set(null);
+    try {
+      await lastValueFrom(this.currentUserSvc.updateMyPhoto({ photoUrl: this.editPhoto() || undefined }));
+      const info = await lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo());
+      this.userInfo.set(info);
+      this.editingPhoto.set(false);
+    } catch (err: any) {
+      this.photoError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ · Error saving');
+    } finally {
+      this.photoSaving.set(false);
+    }
+  }
+
   readonly roleConfig: Record<string, { label: string; color: string; bg: string; icon: string }> = {
     STUDENT:    { label: 'طالب',     color: '#22c55e', bg: '#f0fdf4', icon: 'fa-graduation-cap' },
     TEACHER:    { label: 'معلم',     color: '#3366ff', bg: '#f5f3ff', icon: 'fa-chalkboard-teacher' },

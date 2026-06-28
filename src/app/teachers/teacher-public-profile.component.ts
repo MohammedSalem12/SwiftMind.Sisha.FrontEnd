@@ -36,11 +36,8 @@ interface TeacherPublicProfile {
       <!-- Header -->
       <app-page-header [title]="'ملف المعلم'" [titleEn]="'Teacher Profile'"></app-page-header>
 
-      <!-- Profile hero -->
+      <!-- Profile card -->
       <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-
         @if (loading()) {
           <div class="avatar shimmer-circle"></div>
         } @else {
@@ -126,35 +123,37 @@ interface TeacherPublicProfile {
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
     .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:1.5rem 1.25rem 2rem;
+      background:#fff;
+      border:1.5px solid #eef0f6;
+      border-radius:18px;
+      box-shadow:0 2px 10px rgba(0,0,0,.05);
+      margin:.75rem 1rem 0;
+      padding:1.1rem 1.25rem 1.25rem;
       position:relative; overflow:hidden;
       display:flex; flex-direction:column; align-items:center; text-align:center; gap:.4rem;
     }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
+    .blob { display:none; }
     .avatar {
       width:88px; height:88px; border-radius:50%; position:relative; z-index:1; overflow:hidden;
-      background:rgba(255,255,255,.2); border:3px solid rgba(255,255,255,.5);
+      background:linear-gradient(135deg,#667eea,#764ba2); border:none;
       display:flex; align-items:center; justify-content:center;
       font-size:2rem; font-weight:800; color:#fff;
     }
     .avatar img { width:100%; height:100%; object-fit:cover; }
-    .shimmer-circle { background:rgba(255,255,255,.25); }
+    .shimmer-circle { background:#eef0f6; }
     .role-badge {
       position:relative; z-index:1;
       display:inline-flex; align-items:center; gap:.35rem;
-      background:rgba(255,255,255,.18); color:rgba(255,255,255,.92);
+      background:rgba(102,126,234,.08); color:#667eea;
       padding:.3rem .75rem; border-radius:20px; font-size:.75rem; font-weight:600;
-      border:1px solid rgba(255,255,255,.25);
+      border:1px solid rgba(102,126,234,.18);
     }
-    .t-name { margin:.1rem 0 0; font-size:1.4rem; font-weight:800; color:#fff; position:relative; z-index:1; }
+    .t-name { margin:.1rem 0 0; font-size:1.4rem; font-weight:800; color:#1a1a2e; position:relative; z-index:1; }
     .t-code {
-      font-size:.82rem; font-weight:600; color:rgba(255,255,255,.85);
-      background:rgba(255,255,255,.12); padding:.15rem .6rem; border-radius:12px; position:relative; z-index:1;
+      font-size:.82rem; font-weight:600; color:#667eea;
+      background:rgba(102,126,234,.08); padding:.15rem .6rem; border-radius:12px; position:relative; z-index:1;
     }
-    .t-loc { font-size:.78rem; color:rgba(255,255,255,.7); position:relative; z-index:1; }
+    .t-loc { font-size:.78rem; color:#9090aa; position:relative; z-index:1; }
 
     .section { padding:1rem 1rem 0; }
     .section-title {

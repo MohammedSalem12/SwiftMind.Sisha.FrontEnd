@@ -1,7 +1,7 @@
 <div class="tg-page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
 
   <!-- ── Header ── -->
-  <app-page-header [title]="'مجموعاتي'" [titleEn]="'My Groups'" [backTo]="'/teacher'">
+  <app-page-header [title]="'مجموعاتي'" [titleEn]="'My Groups'" (back)="goBack()">
     <a ph-actions class="ph-action"
        [routerLink]="['create']"
        [queryParams]="courseId() ? { courseId: courseId() } : {}"

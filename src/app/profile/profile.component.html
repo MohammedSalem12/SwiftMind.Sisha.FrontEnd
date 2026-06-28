@@ -20,7 +20,13 @@
       <!-- Identity card -->
       <div class="id-card">
         <div class="id-avatar-wrap">
-          <div class="id-avatar">{{ getInitials() }}</div>
+          <div class="id-avatar">
+            <img *ngIf="info.photoUrl" [src]="info.photoUrl" alt="" />
+            <span *ngIf="!info.photoUrl">{{ getInitials() }}</span>
+            <button class="avatar-edit" (click)="togglePhotoEdit()" type="button" aria-label="تعديل الصورة">
+              <i class="fas fa-camera"></i>
+            </button>
+          </div>
           <div class="role-icon-badge" [style.background]="getRoleConfig().color">
             <i class="fas" [ngClass]="getRoleConfig().icon"></i>
           </div>
@@ -31,6 +37,31 @@
             {{ getRoleConfig().label }}
           </span>
         </div>
+      </div>
+
+      <!-- Photo editor -->
+      <div class="info-card photo-card" *ngIf="editingPhoto()">
+        <div class="photo-row">
+          <div class="photo-preview">
+            <img *ngIf="editPhoto()" [src]="editPhoto()" alt="" />
+            <i class="fas fa-user" *ngIf="!editPhoto()"></i>
+          </div>
+          <label class="photo-btn">
+            <span class="spinner-xs" *ngIf="photoProcessing()"></span>
+            <i class="fas fa-image" *ngIf="!photoProcessing()"></i>
+            {{ editPhoto() ? 'تغيير · Change' : 'إضافة صورة · Add' }}
+            <input type="file" accept="image/*" hidden (change)="onPhotoSelected($event)" />
+          </label>
+          <button type="button" class="photo-remove" *ngIf="editPhoto()" (click)="editPhoto.set('')">
+            <i class="fas fa-trash"></i> إزالة
+          </button>
+        </div>
+        <p class="photo-err" *ngIf="photoError()">{{ photoError() }}</p>
+        <button class="photo-save" [disabled]="photoSaving()" (click)="savePhoto()" type="button">
+          <span class="spinner-xs" *ngIf="photoSaving()"></span>
+          <i class="fas fa-check-circle" *ngIf="!photoSaving()"></i>
+          حفظ · Save
+        </button>
       </div>
 
 

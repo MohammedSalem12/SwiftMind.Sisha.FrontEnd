@@ -6257,6 +6257,23 @@
                     "type": "SwiftMind.Sesha.Common.CurrentUserActorDto",
                     "typeSimple": "SwiftMind.Sesha.Common.CurrentUserActorDto"
                   }
+                },
+                {
+                  "name": "UpdateMyPhotoAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "SwiftMind.Sesha.Common.UpdateUserPhotoDto, SwiftMind.Sesha.Application.Contracts",
+                      "type": "SwiftMind.Sesha.Common.UpdateUserPhotoDto",
+                      "typeSimple": "SwiftMind.Sesha.Common.UpdateUserPhotoDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
                 }
               ]
             }
@@ -6273,6 +6290,43 @@
               "returnValue": {
                 "type": "SwiftMind.Sesha.Common.CurrentUserActorDto",
                 "typeSimple": "SwiftMind.Sesha.Common.CurrentUserActorDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "SwiftMind.Sesha.Common.ICurrentUserInfoAppService"
+            },
+            "UpdateMyPhotoAsyncByInput": {
+              "uniqueName": "UpdateMyPhotoAsyncByInput",
+              "name": "UpdateMyPhotoAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/current-user-info/my-photo",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Common.UpdateUserPhotoDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Common.UpdateUserPhotoDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UpdateUserPhotoDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "SwiftMind.Sesha.Common.UpdateUserPhotoDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UpdateUserPhotoDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": false,
               "implementFrom": "SwiftMind.Sesha.Common.ICurrentUserInfoAppService"
@@ -6299,6 +6353,43 @@
               "returnValue": {
                 "type": "SwiftMind.Sesha.Common.CurrentUserActorDto",
                 "typeSimple": "SwiftMind.Sesha.Common.CurrentUserActorDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "SwiftMind.Sesha.Common.CurrentUserInfoController"
+            },
+            "UpdateMyPhotoAsyncByInput": {
+              "uniqueName": "UpdateMyPhotoAsyncByInput",
+              "name": "UpdateMyPhotoAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/current-user/my-photo",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "SwiftMind.Sesha.Common.UpdateUserPhotoDto, SwiftMind.Sesha.Application.Contracts",
+                  "type": "SwiftMind.Sesha.Common.UpdateUserPhotoDto",
+                  "typeSimple": "SwiftMind.Sesha.Common.UpdateUserPhotoDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "PhotoUrl",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "SwiftMind.Sesha.Common.CurrentUserInfoController"
@@ -29704,6 +29795,18 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -29983,6 +30086,27 @@
           "isRequired": false,
           "minLength": 0,
           "maxLength": 128,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "SwiftMind.Sesha.Common.UpdateUserPhotoDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PhotoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
           "minimum": null,
           "maximum": null,
           "regex": null

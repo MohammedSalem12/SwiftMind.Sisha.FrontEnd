@@ -43,6 +43,13 @@ export class TeacherGroupsComponent implements OnInit {
   courseId   = signal<string | null>(null);
   courseName = signal<string | null>(null);
 
+  // Role (drives where the back button returns)
+  isSecretary = signal(false);
+
+  goBack(): void {
+    this.router.navigate([this.isSecretary() ? '/secretary' : '/teacher']);
+  }
+
   ngOnInit() {
     this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       this.courseId.set(params['courseId'] || null);
@@ -77,6 +84,7 @@ export class TeacherGroupsComponent implements OnInit {
       const isSecretary =
         currentUserActor.userRoles?.some(role => role.toLowerCase() === 'secretary') ||
         currentUserActor.actorType?.toLowerCase() === 'secretary';
+      this.isSecretary.set(!!isSecretary);
 
       if (!isTeacher && !isSecretary) {
         this.error.set(this.l('TeacherGroups:TeachersOnly'));

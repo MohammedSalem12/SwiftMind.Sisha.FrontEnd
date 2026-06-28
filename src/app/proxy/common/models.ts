@@ -11,6 +11,7 @@ export interface CurrentUserActorDto {
   email?: string;
   currentGrade?: number;
   linkedStudentIds: string[];
+  photoUrl?: string;
 }
 
 export interface RegisterUserDto {
@@ -34,6 +35,10 @@ export interface RegisterUserDto {
   hireDate?: string;
   position?: string;
   responsibilities?: string;
+}
+
+export interface UpdateUserPhotoDto {
+  photoUrl?: string;
 }
 
 export interface UserRegBaseDto {
