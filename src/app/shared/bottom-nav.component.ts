@@ -58,8 +58,9 @@ function getRoleRequestsPath(roles: string[]): string {
 
 function getSecondaryItems(roles: string[]): SecondaryItem[] {
   if (roles.includes(ROLES.ADMIN)) return [
+    // Enrollment requests moved here from the bottom bar (المعلمون took its slot).
+    { path: '/enrollment-requests',  label: 'طلبات الالتحاق',      labelEn: 'Enrollment Requests', icon: 'fas fa-clipboard-list' },
     { path: '/students',             label: 'الطلاب',              labelEn: 'Students',           icon: 'fas fa-user-graduate' },
-    { path: '/teachers',             label: 'المعلمون',             labelEn: 'Teachers',           icon: 'fas fa-chalkboard-teacher' },
     { path: '/parents',              label: 'أولياء الأمور',       labelEn: 'Parents',            icon: 'fas fa-users-cog' },
     { path: '/courses',              label: 'المقررات',             labelEn: 'Courses',            icon: 'fas fa-book' },
     { path: '/ads/admin',            label: 'إدارة الإعلانات',     labelEn: 'Ads Management',     icon: 'fas fa-bullhorn' },
@@ -1015,12 +1016,16 @@ export class BottomNavComponent implements OnInit, OnDestroy {
           ]);
         } else {
           const isParent = roles.includes(ROLES.PARENT);
+          const isAdmin  = roles.includes(ROLES.ADMIN);
           this.coreNav.set([
             { path: homePath,         label: 'الرئيسية',    labelEn: 'Home',          icon: 'fas fa-home' },
-            // Students get "My Teachers" in the bottom bar (more important); Requests
-            // moves to the account menu (see getSecondaryItems). Other roles keep Requests.
+            // Students & admins get "المعلمون / Teachers" in the bottom bar (more important);
+            // Requests moves to the account menu (see getSecondaryItems). Parent has no
+            // teachers list, so it (and other roles) keep Requests in the bar.
             ...(isStudent
-              ? [{ path: '/student/teachers', label: 'معلمو صفّي', labelEn: 'My Teachers', icon: 'fas fa-chalkboard-teacher' }]
+              ? [{ path: '/student/teachers', label: 'المعلمون', labelEn: 'Teachers', icon: 'fas fa-chalkboard-teacher' }]
+              : isAdmin
+              ? [{ path: '/teachers', label: 'المعلمون', labelEn: 'Teachers', icon: 'fas fa-chalkboard-teacher' }]
               : [{ path: requestsPath, label: 'طلباتي', labelEn: 'Requests', icon: 'fas fa-clipboard-list', badge: 'requests' as const }]
             ),
             // Students & Teachers get Academies in core nav
