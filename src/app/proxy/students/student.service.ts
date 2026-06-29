@@ -1,4 +1,4 @@
-import type { CreateGroupChangeRequestDto, CreatePromotionRequestDto, CreateUpdateStudentDto, GroupChangeRequestDto, PromotionRequestDto, StudentDto } from './models';
+import type { CreateGroupChangeRequestDto, CreatePromotionRequestDto, CreateUpdateStudentDto, GroupChangeRequestDto, PromotionRequestDto, RequestParentLinkDto, StudentDto, UpdateStudentProfileDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -129,6 +129,14 @@ export class StudentService {
     { apiName: this.apiName,...config });
   
 
+  getSentParentLinkRequestsForCurrentStudent = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ParentStudentDto[]>({
+      method: 'GET',
+      url: '/api/app/student/sent-parent-link-requests-for-current-student',
+    },
+    { apiName: this.apiName,...config });
+  
+
   promoteToNextGrade = (studentId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, StudentDto>({
       method: 'POST',
@@ -173,6 +181,15 @@ export class StudentService {
     { apiName: this.apiName,...config });
   
 
+  requestParentLink = (input: RequestParentLinkDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ParentStudentDto>({
+      method: 'POST',
+      url: '/api/app/student/request-parent-link',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
   requestPromotion = (input: CreatePromotionRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PromotionRequestDto>({
       method: 'POST',
@@ -186,6 +203,15 @@ export class StudentService {
     this.restService.request<any, StudentDto>({
       method: 'PUT',
       url: `/api/app/student/${id}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateMyProfile = (input: UpdateStudentProfileDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentDto>({
+      method: 'PUT',
+      url: '/api/app/student/my-profile',
       body: input,
     },
     { apiName: this.apiName,...config });

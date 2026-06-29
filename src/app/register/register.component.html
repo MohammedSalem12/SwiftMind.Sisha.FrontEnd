@@ -25,7 +25,7 @@
       <div class="role-grid">
         <button
           *ngFor="let role of roles"
-          class="role-card"
+          class="role-card ion-activatable"
           [style.--card-color]="role.color"
           [style.--card-bg]="role.bg"
           [style.--card-border]="role.border"
@@ -39,6 +39,7 @@
             <span class="role-desc">{{ role.description }}</span>
           </div>
           <i class="fas fa-chevron-left role-arrow"></i>
+          <ion-ripple-effect></ion-ripple-effect>
         </button>
       </div>
 
@@ -160,16 +161,16 @@
             الصف الدراسي
           </label>
           <div class="select-wrap">
-            <select
-              id="grade"
+            <ion-select
               name="grade"
-              class="field-input field-select"
-              [(ngModel)]="form.grade"
-              required>
-              <option value="">-- اختر الصف --</option>
-              <option *ngFor="let g of gradeOptions()" [value]="g.value">{{ g.label }}</option>
-            </select>
-            <i class="fas fa-chevron-down select-chevron"></i>
+              class="field-input ion-select-field"
+              interface="alert"
+              placeholder="-- اختر الصف --"
+              cancelText="إلغاء"
+              okText="اختيار"
+              [(ngModel)]="form.grade">
+              <ion-select-option *ngFor="let g of gradeOptions()" [value]="g.value">{{ g.label }}</ion-select-option>
+            </ion-select>
           </div>
         </div>
 
@@ -181,26 +182,30 @@
           </label>
           <p class="field-hint">حدد موقعك لنعرض لك أقرب المعلمين · Set your location to find nearby teachers</p>
           <div class="select-wrap">
-            <select
+            <ion-select
               name="government"
-              class="field-input field-select"
+              class="field-input ion-select-field"
+              interface="alert"
+              placeholder="-- المحافظة · Governorate --"
+              cancelText="إلغاء"
+              okText="اختيار"
               [(ngModel)]="form.government"
               (ngModelChange)="onGovernorateChange($event)">
-              <option value="">-- المحافظة · Governorate --</option>
-              <option *ngFor="let g of governorates" [value]="g">{{ g }}</option>
-            </select>
-            <i class="fas fa-chevron-down select-chevron"></i>
+              <ion-select-option *ngFor="let g of governorates" [value]="g">{{ g }}</ion-select-option>
+            </ion-select>
           </div>
           <div class="select-wrap" style="margin-top:.4rem;">
-            <select
+            <ion-select
               name="town"
-              class="field-input field-select"
+              class="field-input ion-select-field"
+              interface="alert"
+              [placeholder]="form.government ? '-- المركز / الحي · District --' : '-- اختر المحافظة أولاً --'"
+              cancelText="إلغاء"
+              okText="اختيار"
               [(ngModel)]="form.town"
               [disabled]="!form.government">
-              <option value="">{{ form.government ? '-- المركز / الحي · District --' : '-- اختر المحافظة أولاً --' }}</option>
-              <option *ngFor="let d of districts()" [value]="d">{{ d }}</option>
-            </select>
-            <i class="fas fa-chevron-down select-chevron"></i>
+              <ion-select-option *ngFor="let d of districts()" [value]="d">{{ d }}</ion-select-option>
+            </ion-select>
           </div>
         </div>
 
@@ -222,6 +227,54 @@
             style="text-align:center; letter-spacing:.1em; font-family:monospace;"
           />
         </div>
+
+        <!-- Optional profile photo (student/teacher/parent), editable later -->
+        <ng-container *ngIf="form.userType === UserRegistrationType.Student || form.userType === UserRegistrationType.Teacher || form.userType === UserRegistrationType.Parent">
+          <div class="info-bar">
+            <i class="fas fa-circle-info"></i>
+            <span>يمكنك إضافة صورة الآن أو تخطّيها وإضافتها/تعديلها لاحقاً من ملفك الشخصي · You can add a photo now, or skip and change it later from your profile.</span>
+          </div>
+
+          <div class="field-group">
+            <label>
+              <i class="fas fa-camera"></i>
+              صورة الملف الشخصي (اختياري) · Profile photo
+            </label>
+            <div class="photo-row">
+              <div class="photo-preview">
+                <img *ngIf="form.photoUrl" [src]="form.photoUrl" alt="preview" />
+                <i *ngIf="!form.photoUrl" class="fas fa-user"></i>
+              </div>
+              <label class="photo-btn">
+                <span *ngIf="photoProcessing()" class="spinner-sm"></span>
+                <i *ngIf="!photoProcessing()" class="fas fa-image"></i>
+                {{ form.photoUrl ? 'تغيير · Change' : 'إضافة صورة · Add' }}
+                <input type="file" accept="image/*" hidden (change)="onPhotoSelected($event)" />
+              </label>
+              <button *ngIf="form.photoUrl" type="button" class="photo-remove" (click)="removePhoto()">
+                <i class="fas fa-trash"></i>
+                إزالة · Remove
+              </button>
+            </div>
+          </div>
+
+          <!-- Bio is teacher-only -->
+          <div class="field-group" *ngIf="form.userType === UserRegistrationType.Teacher">
+            <label for="bio">
+              <i class="fas fa-pen"></i>
+              نبذة تعريفية (اختياري) · Bio
+            </label>
+            <textarea
+              id="bio"
+              name="bio"
+              class="field-input"
+              rows="3"
+              maxlength="1000"
+              [(ngModel)]="form.bio"
+              placeholder="عرّف بنفسك وخبرتك التدريسية... · Tell students about yourself and your teaching experience..."
+            ></textarea>
+          </div>
+        </ng-container>
 
         <!-- Error message -->
         <div class="error-bar" *ngIf="error()">

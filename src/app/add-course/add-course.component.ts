@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
@@ -11,36 +12,24 @@ import { GradeDto } from '@proxy/grades/dtos/models';
 import { AcademyService } from '@proxy/academies';
 import { AcademyDto } from '@proxy/academies/models';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-add-course',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IonicModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
-      <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-content">
-          <div class="header-text">
-            @if (academy()) {
-              <div class="academy-badge">
-                <i class="fas fa-university"></i>
-                {{ academy()!.nameAr || academy()!.nameEn }}
-              </div>
-            }
-            <h1>إضافة مقرر</h1>
-            <p>{{ academy() ? 'إضافة مقرر جديد للأكاديمية' : 'إنشاء مقرر دراسي جديد' }}</p>
-            <p class="sub-en">{{ academy() ? 'Add a new course to the academy' : 'Create a new course' }}</p>
-          </div>
-          <div class="header-icon">
-            <i class="fas fa-book-open"></i>
-          </div>
+      <app-page-header [title]="'إنشاء مقرر'" [titleEn]="'Create Course'" [backTo]="'/courses'"></app-page-header>
+
+      @if (academy()) {
+        <div class="academy-banner">
+          <i class="fas fa-university"></i>
+          <span>{{ academy()!.nameAr || academy()!.nameEn }}</span>
         </div>
-      </div>
+      }
 
       <!-- ── Loading / checking access ── -->
       @if (checkingAccess()) {
@@ -132,14 +121,14 @@ import { CurrentUserInfoService } from '@proxy/common';
               @if (loadingGrades()) {
                 <div class="select-shimmer"></div>
               } @else {
-                <select class="field-input field-select" name="gradeId"
+                <ion-select class="field-input ion-select-field" name="gradeId"
+                        interface="action-sheet" placeholder="— بدون صف محدد —" cancelText="إلغاء"
                         [ngModel]="model().gradeId"
                         (ngModelChange)="setField('gradeId', $event || null)">
-                  <option value="">— بدون صف محدد —</option>
                   @for (g of grades(); track g.id) {
-                    <option [value]="g.id">{{ g.name }}</option>
+                    <ion-select-option [value]="g.id">{{ g.name }}</ion-select-option>
                   }
-                </select>
+                </ion-select>
               }
             </div>
 
@@ -177,37 +166,14 @@ import { CurrentUserInfoService } from '@proxy/common';
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
 
-    /* ── Header ── */
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.1rem) 1.25rem 1.75rem;
-      position:relative; overflow:hidden;
+    /* ── Academy context banner ── */
+    .academy-banner {
+      display:flex; align-items:center; gap:.5rem;
+      margin:1rem 1rem 0; padding:.7rem .9rem; border-radius:12px;
+      background:rgba(102,126,234,.08); border:1.5px solid rgba(102,126,234,.18);
+      color:#5a67d8; font-size:.82rem; font-weight:700;
     }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:130px; height:130px; bottom:-50px; left:-25px; }
-    .header-content {
-      position:relative; z-index:1;
-      display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;
-    }
-    .header-text { flex:1; }
-    .academy-badge {
-      display:inline-flex; align-items:center; gap:.4rem;
-      background:rgba(255,255,255,.18); color:rgba(255,255,255,.95);
-      padding:.3rem .75rem; border-radius:20px;
-      font-size:.72rem; font-weight:700;
-      border:1px solid rgba(255,255,255,.25);
-      margin-bottom:.5rem;
-    }
-    .header-text h1 { margin:0; font-size:1.35rem; font-weight:800; color:#fff; }
-    .header-text p   { margin:.15rem 0 0; font-size:.82rem; color:rgba(255,255,255,.8); }
-    .header-text .sub-en { font-size:.7rem; color:rgba(255,255,255,.55); margin-top:.05rem; }
-    .header-icon {
-      width:52px; height:52px; border-radius:50%; flex-shrink:0;
-      background:rgba(255,255,255,.18); border:2px solid rgba(255,255,255,.3);
-      display:flex; align-items:center; justify-content:center;
-      font-size:1.3rem; color:#fff;
-    }
+    .academy-banner i { color:#667eea; }
 
     /* ── Checking access ── */
     .checking-state {

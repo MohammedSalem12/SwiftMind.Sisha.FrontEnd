@@ -1,13 +1,9 @@
+<app-page-header
+  [title]="'تعديل بيانات الطالب'"
+  [titleEn]="'Edit Student'"
+  [backTo]="'/students'"></app-page-header>
+
 <div class="student-edit-page">
-  <div class="page-header">
-    <div class="back-nav">
-      <button class="btn-back" routerLink="/students/{{ studentId() }}">
-        <i class="fas fa-arrow-right"></i> العودة للملف الشخصي
-      </button>
-    </div>
-    <h1>Edit Student Profile</h1>
-    <p class="subtitle" *ngIf="student()">{{ getFullName() }}</p>
-  </div>
 
   <div *ngIf="loading()" class="loading-container">
     <div class="spinner"></div>

@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AttendanceService } from '@proxy/attendances';
 import { CurrentUserInfoService } from '@proxy/common';
@@ -11,13 +12,18 @@ import { TeacherService } from '@proxy/teachers';
 import { AcademyService } from '@proxy/academies';
 import type { AcademyDto } from '@proxy/academies/models';
 import type { GroupScheduleDto } from '@proxy/groups/dtos/models';
+import { Capacitor } from '@capacitor/core';
+import { BarcodeScanner, BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
 import { lastValueFrom } from 'rxjs';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface StudentEntry {
   enrollmentId: string;
   studentId: string;
   studentCode: string;
+  teacherStudentCode: string;
   studentName: string;
+  photoUrl: string;
   isAbsent: boolean;
   attendanceId: string | null;
   selected: boolean;
@@ -34,7 +40,7 @@ interface GroupOption {
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IonicModule, PageHeaderComponent],
   templateUrl: './attendance.component.html',
   styleUrls: ['./attendance.component.scss'],
 })
@@ -46,11 +52,41 @@ export class AttendanceComponent implements OnInit {
   private readonly academySvc = inject(AcademyService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly location = inject(Location);
 
   // Role state
   isTeacher = signal(false);
   teacherId = signal<string | null>(null);
+
+  // ── Attendance marking mode (per-session) ──
+  // 'absentees' (Mode A): all present by default, mark the absentees (existing behavior)
+  // 'attendees' (Mode B): all unmarked, mark attendees via tap/search/QR; finalize → rest become absent
+  attendanceMode = signal<'absentees' | 'attendees'>('absentees');
+  markedPresent = signal<Set<string>>(new Set());
+  attSearch = signal('');
+  scanning = signal(false);
+  qrSupported = signal(Capacitor.isNativePlatform() || typeof (globalThis as any).BarcodeDetector !== 'undefined');
+  markedCount = computed(() => this.markedPresent().size);
+
+  // List search — filter the roster by name, external (StudentCode) or internal
+  // (TeacherStudentCode) code. Works in both attendance modes.
+  listSearch = signal('');
+  filteredStudents = computed(() => {
+    const q = this.listSearch().trim().toLowerCase();
+    const list = this.students();
+    if (!q) return list;
+    return list.filter(s =>
+      (s.studentName || '').toLowerCase().includes(q) ||
+      (s.studentCode || '').toLowerCase().includes(q) ||
+      (s.teacherStudentCode || '').toLowerCase().includes(q));
+  });
+  private scanFillsSearch = false;
+
+  private scanStream: MediaStream | null = null;
+  private scanRAF = 0;
+  private lastScanValue = '';
+  private lastScanAt = 0;
 
   // Locked mode: when arriving with ?courseId= the dropdown becomes a read-only label
   lockedCourseId = signal<string | null>(null);
@@ -67,6 +103,14 @@ export class AttendanceComponent implements OnInit {
   groups = signal<GroupOption[]>([]);
   selectedGroupId = signal<string | null>(null);
   effectiveTeacherId = signal<string | null>(null);
+
+  // The currently selected group, and whether it still has no schedule set.
+  // Attendance is schedule-driven, so a group with no schedule must be set up first.
+  selectedGroup = computed(() => this.groups().find(g => g.id === this.selectedGroupId()) ?? null);
+  selectedGroupHasNoSchedule = computed(() => {
+    const g = this.selectedGroup();
+    return !!g && (g.schedules?.length ?? 0) === 0;
+  });
 
   // Schedule dates (computed from selected group's schedule)
   scheduleDates = signal<{ date: string; label: string }[]>([]);
@@ -292,6 +336,12 @@ export class AttendanceComponent implements OnInit {
     await this.loadStudents();
   }
 
+  /** Navigate to set up the selected group's weekly schedule, then return to take attendance. */
+  goSetSchedule(): void {
+    const gid = this.selectedGroupId();
+    if (gid) this.router.navigate(['/teacher-groups/add-schedule', gid]);
+  }
+
   private _currentSchedules: GroupScheduleDto[] = [];
 
   private computeScheduleDates(schedules?: GroupScheduleDto[]): void {
@@ -425,9 +475,11 @@ export class AttendanceComponent implements OnInit {
         enrollmentId: item.enrollmentId,
         studentId: item.studentId,
         studentCode: item.studentCode || '',
+        teacherStudentCode: item.teacherStudentCode || '',
         studentName:
           item.fullName ||
           `${item.firstName || ''} ${item.lastName || ''}`.trim(),
+        photoUrl: item.photoUrl || '',
         isAbsent: item.isAbsent,
         attendanceId: item.attendanceId || null,
         selected: false,
@@ -571,7 +623,218 @@ export class AttendanceComponent implements OnInit {
     setTimeout(() => this.message.set(null), 5000);
   }
 
-  goBack(): void { this.location.back(); }
+  // ── Mode B: mark attendees ──────────────────────────────────
+  setMode(mode: 'absentees' | 'attendees'): void {
+    this.attendanceMode.set(mode);
+    if (mode === 'attendees') {
+      this.markedPresent.set(new Set());
+    } else {
+      this.stopScan();
+    }
+  }
+
+  isPresent(enrollmentId: string): boolean {
+    return this.markedPresent().has(enrollmentId);
+  }
+
+  togglePresent(s: StudentEntry): void {
+    this.markedPresent.update(set => {
+      const next = new Set(set);
+      if (next.has(s.enrollmentId)) next.delete(s.enrollmentId);
+      else next.add(s.enrollmentId);
+      return next;
+    });
+  }
+
+  markPresentByValue(value: string): void {
+    const v = (value || '').trim().toLowerCase();
+    if (!v) return;
+    const match = this.students().find(s =>
+      (s.studentCode || '').toLowerCase() === v ||
+      (s.teacherStudentCode || '').toLowerCase() === v ||
+      (s.studentName || '').toLowerCase() === v ||
+      (s.studentId || '').toLowerCase() === v ||
+      (s.enrollmentId || '').toLowerCase() === v);
+    if (match) {
+      this.markedPresent.update(set => new Set(set).add(match.enrollmentId));
+      this.showMessage(`تم تعليم ${match.studentName} حاضراً · Present`, 'success');
+      this.attSearch.set('');
+    } else {
+      this.showMessage(`لم يتم العثور على طالب بالكود: ${value}`, 'error');
+    }
+  }
+
+  async startScan(): Promise<void> {
+    // Native devices: use the ML Kit native scanner (full-screen, fast, works offline).
+    if (Capacitor.isNativePlatform()) {
+      await this.scanNative();
+      return;
+    }
+    // Browser / WebView fallback: BarcodeDetector.
+    if (!this.qrSupported()) {
+      this.showMessage('مسح QR غير مدعوم على هذا الجهاز · QR scan not supported here', 'error');
+      return;
+    }
+    try {
+      this.scanning.set(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      this.scanStream = stream;
+      // wait a tick for the video element to render
+      setTimeout(async () => {
+        const video = document.getElementById('att-scan-video') as HTMLVideoElement | null;
+        if (!video) { this.stopScan(); return; }
+        video.srcObject = stream;
+        try { await video.play(); } catch { /* autoplay */ }
+        const detector = new (globalThis as any).BarcodeDetector({ formats: ['qr_code'] });
+        const tick = async () => {
+          if (!this.scanning()) return;
+          try {
+            const codes = await detector.detect(video);
+            if (codes && codes.length) this.handleScan(String(codes[0].rawValue ?? ''));
+          } catch { /* per-frame errors ignored */ }
+          this.scanRAF = requestAnimationFrame(tick);
+        };
+        this.scanRAF = requestAnimationFrame(tick);
+      }, 100);
+    } catch (e) {
+      console.error('scan start failed', e);
+      this.showMessage('تعذّر فتح الكاميرا · Camera unavailable', 'error');
+      this.stopScan();
+    }
+  }
+
+  /** Native (Capacitor) QR scanning via ML Kit — scans repeatedly until cancelled. */
+  private async scanNative(): Promise<void> {
+    try {
+      const perm = await BarcodeScanner.requestPermissions();
+      if (perm.camera !== 'granted' && perm.camera !== 'limited') {
+        this.showMessage('تم رفض إذن الكاميرا · Camera permission denied', 'error');
+        return;
+      }
+
+      // Android: ensure Google's barcode module is installed (downloaded on demand).
+      if (Capacitor.getPlatform() === 'android') {
+        try {
+          const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
+          if (!available) {
+            this.showMessage('جاري تجهيز الماسح... · Preparing scanner...', 'success');
+            await BarcodeScanner.installGoogleBarcodeScannerModule();
+          }
+        } catch { /* best effort — scan() may still work */ }
+      }
+
+      // Scan repeatedly so the teacher can mark many students; cancel ends the loop.
+      let keepScanning = true;
+      while (keepScanning) {
+        const { barcodes } = await BarcodeScanner.scan({ formats: [BarcodeFormat.QrCode] });
+        if (!barcodes || barcodes.length === 0) {
+          keepScanning = false;
+          break;
+        }
+        this.handleScan(barcodes[0].rawValue ?? '');
+      }
+    } catch (e) {
+      console.error('native scan failed', e);
+      this.showMessage('تعذّر فتح الماسح · Scanner unavailable', 'error');
+    }
+  }
+
+  private extractCode(raw: string): string {
+    let value = raw;
+    try {
+      const obj = JSON.parse(raw);
+      value = obj.studentCode || obj.teacherStudentCode || obj.code || obj.studentId || obj.id || raw;
+    } catch { /* plain string code */ }
+    return String(value);
+  }
+
+  private handleScan(raw: string): void {
+    if (!raw) return;
+    const now = Date.now();
+    // ignore the same code re-detected within 2.5s (continuous frames)
+    if (raw === this.lastScanValue && now - this.lastScanAt < 2500) return;
+    this.lastScanValue = raw;
+    this.lastScanAt = now;
+    const value = this.extractCode(raw);
+    if (this.scanFillsSearch) {
+      // QR search: drop the scanned code into the list filter to locate the student.
+      this.scanFillsSearch = false;
+      this.listSearch.set(value);
+      this.stopScan();
+    } else {
+      this.markPresentByValue(value);
+    }
+  }
+
+  /** Scan a QR code and place its value into the list search filter (find a student). */
+  async scanToFilter(): Promise<void> {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const perm = await BarcodeScanner.requestPermissions();
+        if (perm.camera !== 'granted' && perm.camera !== 'limited') {
+          this.showMessage('تم رفض إذن الكاميرا · Camera permission denied', 'error');
+          return;
+        }
+        const { barcodes } = await BarcodeScanner.scan({ formats: [BarcodeFormat.QrCode] });
+        if (barcodes && barcodes.length) {
+          this.listSearch.set(this.extractCode(barcodes[0].rawValue ?? ''));
+        }
+      } catch {
+        this.showMessage('تعذّر فتح الماسح · Scanner unavailable', 'error');
+      }
+      return;
+    }
+    // Browser/WebView: reuse the live-camera scanner but fill the search instead of marking.
+    this.scanFillsSearch = true;
+    this.startScan();
+  }
+
+  stopScan(): void {
+    this.scanning.set(false);
+    if (this.scanRAF) cancelAnimationFrame(this.scanRAF);
+    this.scanRAF = 0;
+    if (this.scanStream) {
+      this.scanStream.getTracks().forEach(t => t.stop());
+      this.scanStream = null;
+    }
+  }
+
+  async finalizeAttendees(): Promise<void> {
+    const marked = this.markedPresent();
+    const list = this.students();
+    const toAbsent = list.filter(s => !marked.has(s.enrollmentId) && !s.isAbsent);
+    const toPresent = list.filter(s => marked.has(s.enrollmentId) && s.isAbsent);
+    if (toAbsent.length === 0 && toPresent.length === 0) {
+      this.showMessage('لا تغييرات للحفظ · Nothing to save', 'error');
+      return;
+    }
+    if (!confirm(`سيتم تعليم ${marked.size} حاضر و ${toAbsent.length} غائب. متابعة؟`)) return;
+
+    this.stopScan();
+    this.saving.set(true);
+    this.message.set(null);
+    try {
+      for (const s of toAbsent) {
+        try {
+          await lastValueFrom(this.attendanceSvc.create(
+            { enrollmentId: s.enrollmentId, date: new Date(this.attendanceDate()).toISOString(), isAbsent: true, note: '--' },
+            { skipHandleError: true }));
+        } catch { /* continue */ }
+      }
+      for (const s of toPresent) {
+        if (s.attendanceId) {
+          try { await lastValueFrom(this.attendanceSvc.delete(s.attendanceId, { skipHandleError: true })); } catch { /* continue */ }
+        }
+      }
+      await this.loadStudents();
+      this.markedPresent.set(new Set());
+      this.showMessage(`تم الحفظ: ${marked.size} حاضر · ${toAbsent.length} غائب`, 'success');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  goBack(): void { this.stopScan(); this.location.back(); }
 
   trackByEnrollment = (_: number, item: StudentEntry) => item.enrollmentId;
 }

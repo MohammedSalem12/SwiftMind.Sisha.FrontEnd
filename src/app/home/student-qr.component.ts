@@ -1,21 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import * as QRCode from 'qrcode';
 
 import { StudentService } from '@proxy/students';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-qr',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   templateUrl: './student-qr.component.html',
   styleUrls: ['./student-qr.component.scss'],
 })
 export class StudentQrComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly studentService = inject(StudentService);
 
   loading = signal(false);
@@ -56,9 +55,5 @@ export class StudentQrComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
-  }
-
-  goBack(): void {
-    this.router.navigate(['/student']);
   }
 }

@@ -1,20 +1,7 @@
 <div class="enroll-page" dir="rtl">
 
   <!-- Header -->
-  <div class="page-header">
-    <div class="header-inner">
-      <button class="btn-back" (click)="goBack()">
-        <i class="fas fa-arrow-right"></i> رجوع
-      </button>
-      <div class="course-info" *ngIf="course()">
-        <h1 class="course-title">{{ course()?.nameAr }}</h1>
-        <div class="course-badges">
-          <span class="badge-code">{{ course()?.code }}</span>
-          <span class="badge-grade">{{ course()?.gradeName }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <app-page-header [title]="'مجموعات الطالب'" [titleEn]="'My Groups'" [backTo]="'/student'"></app-page-header>
 
   <!-- Loading -->
   <div *ngIf="loading()" class="center-state">
@@ -23,6 +10,15 @@
   </div>
 
   <div *ngIf="!loading()" class="page-body">
+
+    <!-- Course info -->
+    <div class="course-info-bar" *ngIf="course()">
+      <h2 class="course-title">{{ course()?.nameAr }}</h2>
+      <div class="course-badges">
+        <span class="badge-code">{{ course()?.code }}</span>
+        <span class="badge-grade">{{ course()?.gradeName }}</span>
+      </div>
+    </div>
 
     <!-- Success Banner -->
     <div *ngIf="successMessage()" class="success-banner">

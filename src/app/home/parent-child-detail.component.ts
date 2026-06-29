@@ -15,25 +15,26 @@ import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.
 import { CourseService } from '@proxy/courses';
 import { GroupService } from '@proxy/groups';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-parent-child-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="child-detail" dir="rtl">
 
-      <!-- Hero Header -->
+      <app-page-header
+        [title]="!loading() && student() ? getStudentName() : 'ملف الطالب'"
+        [titleEn]="'Student Profile'"
+        [backTo]="'/parent'"></app-page-header>
+
+      <!-- Student Summary Card -->
       <div class="hero">
-        <div class="hero-blob hero-blob-1"></div>
-        <div class="hero-blob hero-blob-2"></div>
         <div class="hero-top-row">
-          <button class="back-btn" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
           <div class="hero-avatar">
-            <span>{{ getStudentName() | slice:0:1 }}</span>
+            @if (student()?.photoUrl) { <img [src]="student()!.photoUrl" alt="" /> } @else { <span>{{ getStudentName() | slice:0:1 }}</span> }
           </div>
         </div>
 
@@ -335,52 +336,44 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
       padding-bottom: calc(88px + env(safe-area-inset-bottom));
     }
 
-    /* ── Hero ── */
+    /* ── Hero (white content card) ── */
     .hero {
       position: relative;
-      background: $purple-grad;
-      padding: 1.25rem 1.25rem 1.5rem;
+      background: #fff;
+      border: 1.5px solid #eef0f6;
+      border-radius: 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+      margin: 0.75rem 1rem 0;
+      padding: 1.1rem 1.25rem 1.25rem;
       overflow: hidden;
     }
-    .hero-blob {
-      position: absolute; border-radius: 50%;
-      opacity: 0.12; background: #fff; pointer-events: none;
-    }
-    .hero-blob-1 { width: 200px; height: 200px; top: -60px; left: -60px; }
-    .hero-blob-2 { width: 130px; height: 130px; bottom: -40px; right: -30px; }
+    .hero-blob { display: none; }
 
     .hero-top-row {
       position: relative; z-index: 1;
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex; justify-content: flex-start; align-items: center;
       margin-bottom: 1rem;
-    }
-    .back-btn {
-      width: 40px; height: 40px;
-      background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.35);
-      border-radius: 50%; color: #fff; font-size: 0.95rem;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      &:active { background: rgba(255,255,255,0.28); }
     }
     .hero-avatar {
       width: 52px; height: 52px;
-      background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4);
+      background: $purple-grad; border: none; overflow: hidden;
       border-radius: 50%; display: flex; align-items: center; justify-content: center;
       span { font-size: 1.4rem; font-weight: 800; color: #fff; }
+      img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     }
     .hero-info { position: relative; z-index: 1; margin-bottom: 1.25rem; }
-    .hero-name { font-size: 1.45rem; font-weight: 800; color: #fff; margin: 0 0 0.5rem; }
+    .hero-name { font-size: 1.45rem; font-weight: 800; color: #1a1a2e; margin: 0 0 0.5rem; }
     .hero-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
     .hero-chip {
       display: inline-flex; align-items: center; gap: 0.3rem;
-      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
-      color: #fff; border-radius: 20px; padding: 0.2rem 0.55rem;
-      font-size: 0.68rem; font-weight: 500;
+      background: rgba(102,126,234,0.08); border: 1px solid rgba(102,126,234,0.18);
+      color: #667eea; border-radius: 20px; padding: 0.2rem 0.55rem;
+      font-size: 0.68rem; font-weight: 600;
       i { font-size: 0.6rem; }
     }
     .hero-skeleton {
       height: 28px; width: 180px;
-      background: rgba(255,255,255,0.2); border-radius: 8px;
+      background: #eef0f6; border-radius: 8px;
       margin-bottom: 1.25rem;
       animation: pulse 1.4s ease-in-out infinite;
     }
@@ -389,18 +382,17 @@ import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
     /* Stats Row */
     .stats-row {
       position: relative; z-index: 1;
-      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 16px; padding: 0.85rem 0.5rem;
+      background: #f6f7fb; border: 1px solid #eef0f6;
+      border-radius: 14px; padding: 0.85rem 0.5rem;
       display: flex; align-items: center; justify-content: space-around;
-      backdrop-filter: blur(4px);
     }
     .stat-box { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; flex: 1; }
-    .stat-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.3); }
-    .stat-val { font-size: 1.35rem; font-weight: 800; color: #fff; }
-    .stat-val--green { color: #6ee7b7; }
-    .stat-val--blue  { color: #93c5fd; }
-    .stat-val--red   { color: #fca5a5; }
-    .stat-lbl { font-size: 0.65rem; color: rgba(255,255,255,0.75); font-weight: 500; text-align: center; }
+    .stat-divider { width: 1px; height: 36px; background: #e6e8f0; }
+    .stat-val { font-size: 1.35rem; font-weight: 800; color: #1a1a2e; }
+    .stat-val--green { color: #16a34a; }
+    .stat-val--blue  { color: #2563eb; }
+    .stat-val--red   { color: #dc2626; }
+    .stat-lbl { font-size: 0.65rem; color: #9090aa; font-weight: 500; text-align: center; }
 
     /* ── Tabs ── */
     .tabs-bar {
@@ -890,10 +882,6 @@ export class ParentChildDetailComponent implements OnInit {
 
   enrollInCourse(): void {
     this.router.navigate(['/parent/enroll-child', this.studentId]);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/parent']);
   }
 
   getOverallAttendancePercent(): number {

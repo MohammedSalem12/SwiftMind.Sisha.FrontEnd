@@ -13,10 +13,35 @@ export class PushNotificationService {
   private readonly router = inject(Router);
 
   private currentToken: string | null = null;
+  private initialized = false;
 
-  /** Call once after login on native platforms. */
+  // ⚠️ Native FCM push is temporarily DISABLED. The @capacitor/push-notifications
+  // requestPermissions()/register() path throws a native NullPointerException inside
+  // getPermissionStates() that surfaces on a posted main-thread Runnable — it CANNOT be
+  // caught from JS, so it hard-crashes the app (it crashed on login, then on the
+  // notifications screen once gated). Real-time in-app notifications still work via
+  // SignalR (realtime-notification.service). Flip this back to true once the native
+  // plugin/Firebase config is fixed and verified on a device.
+  private static readonly PUSH_ENABLED = false;
+
+  /**
+   * Initialize push notifications. Safe to call multiple times — it runs at
+   * most once per app session (the notifications screen calls this on every
+   * visit). Gated behind a user-initiated screen visit rather than login so the
+   * native permission request can never race the post-login navigation, which
+   * crashed the plugin (NPE in getPermissionStates).
+   */
   async initialize(): Promise<void> {
-    if (!Capacitor.isNativePlatform()) return;
+    if (!Capacitor.isNativePlatform() || this.initialized) return;
+    this.initialized = true;
+
+    if (!PushNotificationService.PUSH_ENABLED) {
+      // Native push disabled — avoid the crashing requestPermissions()/register() path.
+      // In-app notifications continue to arrive over SignalR.
+      console.info('[PushNotifications] native push disabled — using SignalR only');
+      return;
+    }
+
     try {
       const permissionStatus = await PushNotifications.requestPermissions();
       if (permissionStatus.receive !== 'granted') return;

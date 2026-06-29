@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { effect } from '@angular/core';
 
@@ -8,28 +7,22 @@ import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestInitiator } from '@proxy/enums/enrollment-request-initiator.enum';
 import { RealtimeNotificationService } from '../shared/services/realtime-notification.service';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teacher-enrollment-requests',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="requests-page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-info">
-          <h1>طلبات التسجيل</h1>
-          <p>Enrollment Requests</p>
-        </div>
-        @if (pendingRequests().length > 0) {
-          <span class="header-badge">{{ pendingRequests().length }}</span>
-        }
-      </div>
+      <app-page-header
+        [title]="'طلبات التسجيل'"
+        [titleEn]="'Enrollment Requests'"
+        [count]="pendingRequests().length"
+        [backTo]="'/teacher'"></app-page-header>
 
       <!-- Loading -->
       @if (loading()) {
@@ -114,28 +107,6 @@ import { RealtimeNotificationService } from '../shared/services/realtime-notific
       background: #f4f3ff;
       direction: rtl;
       padding-bottom: calc(24px + env(safe-area-inset-bottom));
-    }
-
-    /* Header */
-    .page-header {
-      background: $purple-grad;
-      padding: 1.25rem 1.25rem 1.5rem;
-      display: flex; align-items: center; gap: 0.875rem;
-      position: sticky; top: 0; z-index: 10;
-    }
-    .back-btn {
-      width: 40px; height: 40px; flex-shrink: 0;
-      background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.35);
-      border-radius: 50%; color: #fff; font-size: 0.95rem;
-      display: flex; align-items: center; justify-content: center; cursor: pointer;
-      &:active { background: rgba(255,255,255,0.28); }
-    }
-    .header-info { flex: 1; h1 { font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0; } p { font-size: 0.72rem; color: rgba(255,255,255,0.7); margin: 0; } }
-    .header-badge {
-      background: #ef4444; color: #fff;
-      font-size: 0.75rem; font-weight: 700;
-      min-width: 24px; height: 24px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center; padding: 0 6px;
     }
 
     /* Loading */
@@ -233,7 +204,6 @@ import { RealtimeNotificationService } from '../shared/services/realtime-notific
   `]
 })
 export class TeacherEnrollmentRequestsComponent implements OnInit, OnDestroy {
-  private readonly router = inject(Router);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
   private readonly realtimeService = inject(RealtimeNotificationService);
 
@@ -306,9 +276,5 @@ export class TeacherEnrollmentRequestsComponent implements OnInit, OnDestroy {
     this.toastMessage.set(message);
     this.toastType.set(type);
     setTimeout(() => this.toastMessage.set(''), 3000);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/teacher']);
   }
 }

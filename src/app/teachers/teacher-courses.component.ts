@@ -6,13 +6,15 @@ import { CourseService } from '@proxy/courses';
 import { StudentEnrollmentService as EnrollmentService } from '@proxy/student-enrollments';
 import { TeacherService } from '@proxy/teachers';
 import type { CourseDto } from '../proxy/courses/dtos/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teacher-courses',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
+    <app-page-header [title]="'مقررات المعلم'" [titleEn]="'Teacher Courses'" [backTo]="'/teacher'"></app-page-header>
     <div class="teacher-courses">
       <div class="header d-flex align-items-center justify-content-between mb-3">
         <div>
@@ -53,6 +55,7 @@ import type { CourseDto } from '../proxy/courses/dtos/models';
     </div>
   `,
   styles: [`
+    .teacher-courses { padding: 1rem; }
     .teacher-courses .empty-state { border: 1px dashed #e9ecef; border-radius: 8px; }
     .teacher-courses .empty-illustration { font-size: 48px }
     .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem }

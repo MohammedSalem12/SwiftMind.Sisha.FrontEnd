@@ -1,32 +1,26 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { TeacherService } from '@proxy/teachers';
 import type { TeacherEnrolledCourseDto, TeacherEnrollmentResultDto } from '@proxy/teachers';
 import { UnenrollRequestStatus } from '@proxy/teachers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 
 @Component({
   selector: 'app-teacher-self-enroll',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
-      <!-- Header -->
-      <div class="page-header">
-        <div class="blob b1"></div><div class="blob b2"></div>
-        <div class="header-content">
-          <div>
-            <h1>التسجيل في المقررات</h1>
-            <p>اختر المقررات التي تريد التسجيل فيها · Enroll in Courses</p>
-          </div>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'التسجيل في المقررات'"
+        [titleEn]="'اختر المقررات التي تريد التسجيل فيها · Enroll in Courses'"
+        [backTo]="'/teacher'"></app-page-header>
 
       <!-- Result banners -->
       @if (enrollResult()) {
@@ -207,19 +201,6 @@ import { UnenrollRequestStatus } from '@proxy/teachers';
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
-
-    /* ── Header ── */
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.1rem) 1.25rem 1.5rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:130px; height:130px; bottom:-50px; left:-25px; }
-    .header-content { position:relative; z-index:1; }
-    .header-content h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
-    .header-content p  { margin:.2rem 0 0; font-size:.76rem; color:rgba(255,255,255,.7); }
 
     /* ── Banners ── */
     .banner {
@@ -422,7 +403,6 @@ import { UnenrollRequestStatus } from '@proxy/teachers';
   `],
 })
 export class TeacherSelfEnrollComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly teacherService = inject(TeacherService);
 
   courses = signal<TeacherEnrolledCourseDto[]>([]);
@@ -538,10 +518,6 @@ export class TeacherSelfEnrollComponent implements OnInit {
     } finally {
       this.requestingUnenroll.set(null);
     }
-  }
-
-  goBack() {
-    this.router.navigate(['/teacher']);
   }
 
   trackById = (_: number, item: TeacherEnrolledCourseDto) => item.id;

@@ -1,16 +1,14 @@
 <div class="grades-page">
   <!-- Header -->
-  <div class="page-header">
-    <div class="header-content">
-      <div class="header-icon">
-        <i class="fas fa-chart-line"></i>
-      </div>
-      <div>
-        <h1>درجات الطلاب</h1>
-        <p>عرض وتتبع أداء الطلاب الأكاديمي</p>
-      </div>
-    </div>
-  </div>
+  <app-page-header
+    [title]="'درجات الطلاب'"
+    [titleEn]="'Students Grades'"
+    [count]="totalCount()"
+    [backTo]="'/'">
+    <button ph-actions class="ph-action" (click)="goToAddStudent()" aria-label="إضافة طالب · Add Student">
+      <i class="fas fa-plus"></i>
+    </button>
+  </app-page-header>
 
   <!-- Search and Filters -->
   <div class="filters-section">
@@ -142,14 +140,4 @@
       <i class="fas fa-chevron-left"></i>
     </button>
   </div>
-
-  <!-- Floating Action Button -->
-  <button
-    class="fab-add"
-    title="إضافة طالب"
-    (click)="goToAddStudent()"
-    aria-label="إضافة طالب"
-  >
-    <i class="fas fa-plus"></i>
-  </button>
 </div>

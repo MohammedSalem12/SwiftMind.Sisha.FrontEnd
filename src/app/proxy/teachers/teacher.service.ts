@@ -1,4 +1,4 @@
-import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherDashboardDto, TeacherDto, TeacherEnrolledCourseDto, TeacherEnrollmentResultDto, TeacherFilterDto, TeacherUnenrollRequestDto } from './models';
+import type { CreateUpdateTeacherDto, TeacherAutocompleteDto, TeacherCardDto, TeacherDashboardDto, TeacherDto, TeacherEnrolledCourseDto, TeacherEnrollmentResultDto, TeacherFilterDto, TeacherPublicProfileDto, TeacherUnenrollRequestDto, UpdateTeacherProfileDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -96,6 +96,14 @@ export class TeacherService {
     { apiName: this.apiName,...config });
   
 
+  getMyCourses = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CourseDto[]>({
+      method: 'GET',
+      url: '/api/app/teacher/my-courses',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getMyReferralInfo = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, ReferralInfoDto>({
       method: 'GET',
@@ -108,6 +116,14 @@ export class TeacherService {
     this.restService.request<any, TeacherUnenrollRequestDto[]>({
       method: 'GET',
       url: '/api/app/teacher/pending-unenroll-requests',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPublicProfile = (teacherId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherPublicProfileDto>({
+      method: 'GET',
+      url: `/api/app/teacher/public-profile/${teacherId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -134,6 +150,14 @@ export class TeacherService {
       method: 'GET',
       url: '/api/app/teacher/teachers-by-search',
       params: { searchPrefix, maxResults },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getTeachersForMyGrade = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherCardDto[]>({
+      method: 'GET',
+      url: '/api/app/teacher/teachers-for-my-grade',
     },
     { apiName: this.apiName,...config });
   
@@ -168,6 +192,15 @@ export class TeacherService {
     this.restService.request<any, TeacherDto>({
       method: 'PUT',
       url: `/api/app/teacher/${id}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateMyProfile = (input: UpdateTeacherProfileDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TeacherDto>({
+      method: 'PUT',
+      url: '/api/app/teacher/my-profile',
       body: input,
     },
     { apiName: this.apiName,...config });

@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { CourseService } from '@proxy/courses';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
@@ -27,22 +28,22 @@ const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربع�
   selector: 'app-parent-child-overview',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="header">
-        <button class="back-btn" (click)="router.navigate(['/parent'])">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-info">
-          <h1>{{ student()?.firstName }} {{ student()?.lastName }}</h1>
+      <app-page-header [title]="'نظرة عامة'" [titleEn]="'Child Overview'" [backTo]="'/parent'"></app-page-header>
+
+      <!-- Student identity -->
+      @if (student()) {
+        <div class="child-id">
+          <span class="child-id-name">{{ student()?.firstName }} {{ student()?.lastName }}</span>
           @if (student()?.studentCode) {
-            <span class="header-code">{{ student()?.studentCode }}</span>
+            <span class="child-id-code">{{ student()?.studentCode }}</span>
           }
         </div>
-      </div>
+      }
 
       <!-- Loading -->
       @if (loading()) {
@@ -114,22 +115,15 @@ const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربع�
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
 
-    .header {
-      background:linear-gradient(135deg,#667eea,#764ba2);
-      padding:calc(env(safe-area-inset-top,0px) + .6rem) 1rem .75rem;
-      display:flex; align-items:center; gap:.75rem;
+    .child-id {
+      display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+      padding:.75rem 1rem .25rem;
     }
-    .back-btn {
-      width:40px; height:40px; border-radius:50%; flex-shrink:0;
-      background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.25);
-      color:#fff; font-size:.9rem; display:flex; align-items:center; justify-content:center;
-      cursor:pointer; min-width:44px; min-height:44px;
-    }
-    .header-info { flex:1; }
-    .header h1 { margin:0; font-size:1.1rem; font-weight:800; color:#fff; }
-    .header-code {
-      font-size:.72rem; color:rgba(255,255,255,.6);
-      background:rgba(255,255,255,.12); padding:.1rem .5rem; border-radius:8px;
+    .child-id-name { font-size:1rem; font-weight:800; color:#1a1a2e; }
+    .child-id-code {
+      font-size:.72rem; color:#667eea;
+      background:rgba(102,126,234,.08); border:1px solid rgba(102,126,234,.18);
+      padding:.1rem .5rem; border-radius:8px;
     }
 
     .tabs {
@@ -228,14 +222,25 @@ export class ParentChildOverviewComponent implements OnInit {
     const s = this.student();
     const currentGrade = s?.currentGrade ?? 0;
     const all = this.courses();
-    if (this.activeTab() === 'current') {
-      // Show courses matching current grade or courses with no grade info
-      const currentGradeName = this.getGradeName(currentGrade);
-      return all.filter(c => !c.gradeName || c.gradeName === currentGradeName || c.gradeName.includes(String(currentGrade)));
-    } else {
-      const currentGradeName = this.getGradeName(currentGrade);
-      return all.filter(c => c.gradeName && c.gradeName !== currentGradeName && !c.gradeName.includes(String(currentGrade)));
-    }
+    const wantCurrent = this.activeTab() === 'current';
+    return all.filter(c => this.isCurrentGradeCourse(c, currentGrade) === wantCurrent);
+  }
+
+  /**
+   * Decide whether a course belongs to the student's *current* grade.
+   * Compares grade names tolerantly (Arabic grade labels are spelled out and may
+   * carry a "الصف" prefix, so exact-string / digit matching mis-buckets current
+   * courses into "Previous"). A course with no grade info is treated as current.
+   */
+  private isCurrentGradeCourse(c: CourseInfo, currentGrade: number): boolean {
+    if (!c.gradeName) return true;
+    const norm = (v: string) =>
+      (v || '').replace(/الصف/g, '').replace(/\s+/g, ' ').trim();
+    const cur = norm(this.getGradeName(currentGrade));
+    const g = norm(c.gradeName);
+    if (!cur) return true;
+    return g === cur || g.includes(cur) || cur.includes(g)
+      || (currentGrade > 0 && g.includes(String(currentGrade)));
   }
 
   private getGradeName(grade: number): string {

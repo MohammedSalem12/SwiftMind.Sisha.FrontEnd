@@ -13,6 +13,7 @@ import com.google.firebase.FirebaseApp;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(SessionCountdownPlugin.class);
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
         createNotificationChannel();

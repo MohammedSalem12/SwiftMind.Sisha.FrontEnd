@@ -80,6 +80,15 @@ export class GroupService {
     { apiName: this.apiName,...config });
   
 
+  setAutoAccept = (id: string, enabled: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, GroupDto>({
+      method: 'POST',
+      url: `/api/app/group/${id}/set-auto-accept`,
+      params: { enabled },
+    },
+    { apiName: this.apiName,...config });
+  
+
   toggleCourseStopped = (courseId: string, stopped: boolean, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',

@@ -13,7 +13,20 @@ export class BiometricService {
   /** Controls biometric lock overlay visibility */
   readonly isLocked = signal(false);
 
-  lock(): void { this.isLocked.set(true); }
+  /**
+   * True while the OS biometric/credential prompt is showing (and briefly after).
+   * The biometric prompt backgrounds then foregrounds the app, which would
+   * otherwise re-trigger the resume lock right after a successful unlock.
+   */
+  private authInProgress = false;
+  get isAuthenticating(): boolean { return this.authInProgress; }
+
+  lock(): void {
+    // Don't re-lock while an authentication is in progress (the OS prompt's
+    // background→foreground cycle must not re-lock the freshly-unlocked app).
+    if (this.authInProgress) return;
+    this.isLocked.set(true);
+  }
   unlock(): void { this.isLocked.set(false); }
 
   async isEnabled(): Promise<boolean> {
@@ -36,6 +49,7 @@ export class BiometricService {
 
   async authenticate(): Promise<boolean> {
     if (!Capacitor.isNativePlatform()) return false;
+    this.authInProgress = true;
     try {
       console.log('[Biometric] calling authenticate()...');
       await BiometricAuth.authenticate({
@@ -45,10 +59,15 @@ export class BiometricService {
         iosFallbackTitle: 'استخدم كلمة المرور · Use Password',
       });
       console.log('[Biometric] authenticate() succeeded');
+      this.unlock();
       return true;
     } catch (e) {
       console.warn('[Biometric] authenticate() failed:', e);
       return false;
+    } finally {
+      // Keep the guard up briefly so the resume event fired when the OS prompt
+      // closes doesn't immediately re-lock the app.
+      setTimeout(() => { this.authInProgress = false; }, 1500);
     }
   }
 

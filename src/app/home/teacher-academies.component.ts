@@ -8,28 +8,22 @@ import { lastValueFrom } from 'rxjs';
 import { AcademyService } from '@proxy/academies';
 import type { AcademyDto, AcademyMemberDto } from '@proxy/academies/models';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teacher-academies',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-info">
-          <h1>الأكاديميات · Academies</h1>
-        </div>
-        <button class="add-btn" (click)="goToCreate()">
+      <app-page-header [title]="'أكاديمياتي'" [titleEn]="'My Academies'" [backTo]="'/teacher'">
+        <button ph-actions class="ph-action" (click)="goToCreate()" aria-label="جديد · New">
           <i class="fas fa-plus"></i>
-          <span>جديد</span>
         </button>
-      </div>
+      </app-page-header>
 
       <!-- Search bar -->
       <div class="search-area">
@@ -240,27 +234,6 @@ import { CurrentUserInfoService } from '@proxy/common';
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
-
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      color:white; padding:calc(.75rem + env(safe-area-inset-top)) 1rem .75rem;
-      display:flex; align-items:center; gap:.75rem;
-      position:sticky; top:0; z-index:50;
-    }
-    .back-btn {
-      width:40px; height:40px; border-radius:50%;
-      background:rgba(255,255,255,.2); border:none; color:white;
-      font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; flex-shrink:0;
-    }
-    .header-info { flex:1; min-width:0; }
-    .header-info h1 { font-size:1.1rem; font-weight:700; margin:0; }
-    .add-btn {
-      display:inline-flex; align-items:center; gap:.35rem;
-      background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.35);
-      color:white; border-radius:20px; padding:.45rem .9rem;
-      font-size:.82rem; font-weight:600; cursor:pointer; min-height:40px;
-    }
 
     /* Search */
     .search-area { padding:.75rem 1rem 0; }
@@ -558,9 +531,5 @@ export class TeacherAcademiesComponent implements OnInit {
 
   goToCreate(): void {
     this.router.navigate(['/academies/create']);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/teacher']);
   }
 }

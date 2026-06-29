@@ -1,4 +1,4 @@
-import { AuthService, ConfigStateService, LocalizationPipe, LocalizationService } from '@abp/ng.core';
+import { AuthService, LocalizationPipe, LocalizationService } from '@abp/ng.core';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -7,18 +7,19 @@ import { lastValueFrom } from 'rxjs';
 import { CurrentUserInfoService } from '@proxy/common';
 import { GroupService } from '@proxy/groups';
 import type { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teacher-groups',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, LocalizationPipe],
+  imports: [CommonModule, RouterModule, LocalizationPipe, PullToRefreshDirective, PageHeaderComponent],
   templateUrl: './teacher-groups.component.html',
   styleUrls: ['./teacher-groups.component.scss'],
 })
 export class TeacherGroupsComponent implements OnInit {
   private authService        = inject(AuthService);
-  private configStateService = inject(ConfigStateService);
   private currentUserService = inject(CurrentUserInfoService);
   private groupService       = inject(GroupService);
   private router             = inject(Router);
@@ -30,6 +31,8 @@ export class TeacherGroupsComponent implements OnInit {
   loading = signal<boolean>(false);
   error   = signal<string | null>(null);
   groups  = signal<GroupWithSchedulesDto[]>([]);
+  // groupId -> auto-accept join requests enabled
+  autoAccept = signal<Record<string, boolean>>({});
 
   // Teacher info
   teacherName = signal<string | null>(null);
@@ -40,11 +43,22 @@ export class TeacherGroupsComponent implements OnInit {
   courseId   = signal<string | null>(null);
   courseName = signal<string | null>(null);
 
+  // Role (drives where the back button returns)
+  isSecretary = signal(false);
+
+  goBack(): void {
+    this.router.navigate([this.isSecretary() ? '/secretary' : '/teacher']);
+  }
+
   ngOnInit() {
     this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       this.courseId.set(params['courseId'] || null);
     });
     this.loadCurrentUserAndGroups();
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try { await this.loadCurrentUserAndGroups(); } finally { e.complete(); }
   }
 
   private async loadCurrentUserAndGroups() {
@@ -70,6 +84,7 @@ export class TeacherGroupsComponent implements OnInit {
       const isSecretary =
         currentUserActor.userRoles?.some(role => role.toLowerCase() === 'secretary') ||
         currentUserActor.actorType?.toLowerCase() === 'secretary';
+      this.isSecretary.set(!!isSecretary);
 
       if (!isTeacher && !isSecretary) {
         this.error.set(this.l('TeacherGroups:TeachersOnly'));
@@ -112,6 +127,7 @@ export class TeacherGroupsComponent implements OnInit {
     this.error.set(null);
 
     try {
+      await this.loadAutoAcceptMap();
       const filterCourseId = this.courseId();
 
       if (filterCourseId) {
@@ -244,6 +260,33 @@ export class TeacherGroupsComponent implements OnInit {
     }
   }
 
+  private async loadAutoAcceptMap() {
+    try {
+      const all = await lastValueFrom(this.groupService.getList());
+      const map: Record<string, boolean> = {};
+      (all?.items ?? []).forEach(g => { if (g.id) map[g.id] = !!g.autoAcceptJoinRequests; });
+      this.autoAccept.set(map);
+    } catch {
+      // non-fatal — toggle just defaults to off until reload
+    }
+  }
+
+  async toggleAutoAccept(group: GroupWithSchedulesDto) {
+    const id = group.groupId;
+    if (!id) return;
+    const next = !this.autoAccept()[id];
+    // optimistic update
+    this.autoAccept.update(m => ({ ...m, [id]: next }));
+    try {
+      await lastValueFrom(this.groupService.setAutoAccept(id, next));
+    } catch (err) {
+      // revert on failure
+      this.autoAccept.update(m => ({ ...m, [id]: !next }));
+      console.error('Error toggling auto-accept:', err);
+      this.error.set(this.l('TeacherGroups:ErrorUpdatingGroup'));
+    }
+  }
+
   clearFilter() {
     this.courseId.set(null);
     this.courseName.set(null);
@@ -277,17 +320,6 @@ export class TeacherGroupsComponent implements OnInit {
     const qp: any = {};
     if (this.courseId()) qp['courseId'] = this.courseId();
     this.router.navigate(['/teacher-groups/add-schedule', group.groupId], { queryParams: qp });
-  }
-
-  goBack() {
-    const currentUser = this.configStateService.getOne('currentUser') as any;
-    const roles: string[] = currentUser?.roles || currentUser?.roleNames || currentUser?.userRoles || [];
-    const isSecretary = roles.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'secretary');
-    if (isSecretary) {
-      this.router.navigate(['/secretary']);
-    } else {
-      this.router.navigate(['/teacher']);
-    }
   }
 
   editSchedule(scheduleId: string) {

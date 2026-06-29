@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
 import { AcademyService } from '@proxy/academies';
@@ -15,6 +17,7 @@ import { OfflineBannerComponent } from '../shared/components/offline-banner.comp
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
 import { ActiveSemesterComponent } from '../shared/components/active-semester.component';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface AcademyCourseGroup {
   academy: AcademyDto;
@@ -25,7 +28,7 @@ interface AcademyCourseGroup {
   selector: 'app-teacher-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent, PageHeaderComponent],
   templateUrl: './teacher-home.component.html',
   styleUrls: ['./teacher-home.component.scss'],
 })
@@ -39,6 +42,7 @@ export class TeacherHomeComponent implements OnInit {
 
   loading          = signal(false);
   teacherName      = signal<string>('');
+  userPhoto        = signal('');
   teacherId        = signal<string | null>(null);
   referralCode     = signal<string>('');
   copied           = signal(false);
@@ -89,15 +93,24 @@ export class TeacherHomeComponent implements OnInit {
     } catch { /* no sessions */ }
   }
 
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try {
+      await Promise.all([this.loadCourses(), this.loadAcademies(), this.loadNextSession(), this.loadReferralCode()]);
+    } finally {
+      e.complete();
+    }
+  }
+
   private async loadCourses(): Promise<void> {
     this.loading.set(true);
     try {
       const userInfo = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
       this.teacherName.set(userInfo?.actorName ?? '');
+      this.userPhoto.set(userInfo?.photoUrl || '');
       this.teacherId.set(userInfo?.actorId ?? null);
-      const id = userInfo?.actorId;
-      if (!id) return;
-      const courses = await lastValueFrom(this.teacherService.getTeacherCourses(id, { skipHandleError: true }));
+      // Resolve courses server-side (immune to a stale ActorId claim) so the list always
+      // matches what the teacher just self-enrolled in.
+      const courses = await lastValueFrom(this.teacherService.getMyCourses({ skipHandleError: true }));
       this.courses.set(courses || []);
     } catch (error) {
       console.error('Error loading teacher courses:', error);
@@ -201,6 +214,15 @@ export class TeacherHomeComponent implements OnInit {
 
   goToProfile(): void {
     this.router.navigate(['/teacher/profile']);
+  }
+
+  getInitials(name: string | undefined): string {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0]?.[0]?.toUpperCase() || '?';
   }
 
   goTodaySessions(): void {

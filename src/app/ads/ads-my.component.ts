@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface AdDto {
   id: string;
@@ -22,24 +23,17 @@ interface AdDto {
   selector: 'app-ads-my',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-content">
-          <div class="header-top">
-            <div>
-              <h1><i class="fas fa-bullhorn"></i> إعلاناتي</h1>
-              <p>My Ads</p>
-            </div>
-            <a routerLink="/ads/create" class="btn-create">
-              <i class="fas fa-plus"></i> إنشاء
-            </a>
-          </div>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'إعلاناتي'"
+        [titleEn]="'My Ads'"
+        [showBack]="false">
+        <a ph-actions class="ph-action" routerLink="/ads/create" aria-label="إنشاء إعلان · Create Ad">
+          <i class="fas fa-plus"></i>
+        </a>
+      </app-page-header>
 
       @if (loading()) {
         <div class="shimmer-area">
@@ -144,28 +138,6 @@ interface AdDto {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
-
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 1.5rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-content { position:relative; z-index:1; }
-    .header-top { display:flex; justify-content:space-between; align-items:center; }
-    .header-top h1 {
-      margin:0; font-size:1.3rem; font-weight:800; color:#fff;
-      display:flex; align-items:center; gap:.5rem;
-    }
-    .header-top p { margin:.1rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
-    .btn-create {
-      padding:.5rem 1rem; border-radius:12px;
-      background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.3);
-      color:#fff; font-size:.8rem; font-weight:600; text-decoration:none;
-      display:flex; align-items:center; gap:.35rem; min-height:40px;
-    }
 
     .stats-row { display:flex; gap:.5rem; padding:1rem 1rem 0; }
     .stat-card {

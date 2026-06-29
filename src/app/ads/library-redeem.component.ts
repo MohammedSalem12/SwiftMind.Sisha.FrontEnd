@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface CouponDto {
   id: string;
@@ -34,17 +35,12 @@ interface RedemptionDto {
   selector: 'app-library-redeem',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-content">
-          <h1><i class="fas fa-cash-register"></i> استبدال الكوبونات</h1>
-          <p>Redeem Coupons</p>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'استبدال'"
+        [titleEn]="'Redeem'"></app-page-header>
 
       <!-- Redeem Section -->
       <div class="section">
@@ -147,18 +143,6 @@ interface RedemptionDto {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
-
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 1.5rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-content { position:relative; z-index:1; }
-    .header-content h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; display:flex; align-items:center; gap:.5rem; }
-    .header-content p { margin:.1rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
 
     .section { padding:1rem 1rem 0; }
     .section-title {

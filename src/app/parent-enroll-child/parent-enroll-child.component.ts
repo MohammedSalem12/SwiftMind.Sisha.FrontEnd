@@ -18,6 +18,7 @@ import { TeacherInfoModalService } from '../shared/services/teacher-info-modal.s
 import { StudentService } from '@proxy/students';
 import type { StudentDto } from '@proxy/students/models';
 import { lastValueFrom } from 'rxjs';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 type Step = 'course' | 'teacher' | 'group' | 'success';
 
@@ -25,21 +26,14 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
   selector: 'app-parent-enroll-child',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="enroll-page" dir="rtl">
 
-      <!-- Hero Header -->
-      <div class="hero-header">
-        <button class="back-btn" (click)="onBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="hero-text">
-          <h1><i class="fas fa-user-plus me-2"></i>تسجيل في مقرر</h1>
-          <p *ngIf="student()">{{ getStudentName() }} — {{ student()!.studentCode }} · الصف {{ student()!.currentGrade }}</p>
-          <p *ngIf="!student()">تسجيل ابنك في مقرر دراسي</p>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'تسجيل في مقرر'"
+        [titleEn]="student() ? getStudentName() + ' — ' + student()!.studentCode + ' · الصف ' + student()!.currentGrade : 'تسجيل ابنك في مقرر دراسي'"
+        (back)="onBack()"></app-page-header>
 
       <!-- Step Indicator -->
       <div class="step-bar" *ngIf="step() !== 'success'">
@@ -252,29 +246,6 @@ type Step = 'course' | 'teacher' | 'group' | 'success';
       min-height: 100vh;
       background: #f4f6fb;
       padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    /* ── Hero ─────────────────────────────────────────────── */
-    .hero-header {
-      background: var(--ngx-hero-gradient);
-      padding: 1.25rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .back-btn {
-      background: rgba(255,255,255,0.2);
-      border: none; color: white;
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; cursor: pointer; flex-shrink: 0;
-      touch-action: manipulation;
-    }
-    .hero-text {
-      flex: 1;
-      h1 { font-size: 1.1rem; font-weight: 700; color: white; margin: 0 0 0.15rem; }
-      p  { font-size: 0.8rem; color: rgba(255,255,255,0.85); margin: 0; }
     }
 
     /* ── Step Bar ─────────────────────────────────────────── */

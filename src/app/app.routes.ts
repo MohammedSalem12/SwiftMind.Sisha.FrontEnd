@@ -102,6 +102,12 @@ export const appRoutes: Routes = [
     data: { roles: ['STUDENT'] }
   },
   {
+    path: 'student/link-parent',
+    loadComponent: () => import('./home/student-link-parent.component').then(m => m.StudentLinkParentComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
     path: 'student/courses',
     loadComponent: () => import('./home/student-courses.component').then(m => m.StudentCoursesComponent),
     canActivate: [roleGuard],
@@ -169,6 +175,12 @@ export const appRoutes: Routes = [
   },
   // Redirect ABP's default account/login to our custom login page
   { path: 'account/login', redirectTo: '/login', pathMatch: 'full' },
+  // Shadow ABP's account/manage with our wrapper so it gets the unified header.
+  {
+    path: 'account/manage',
+    loadComponent: () => import('./account/account-manage.component').then(m => m.AccountManageComponent),
+    canActivate: [authGuard],
+  },
   {
     path: 'account',
     loadChildren: () => import('@abp/ng.account').then(m => m.createRoutes()),
@@ -236,6 +248,12 @@ export const appRoutes: Routes = [
     data: { roles: ['ADMIN'] }
   },
   {
+    path: 'admin/users',
+    loadComponent: () => import('./admin/admin-users.component').then(m => m.AdminUsersComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
     path: 'admin/password-resets',
     loadComponent: () => import('./admin/password-reset-requests.component').then(m => m.PasswordResetRequestsComponent),
     canActivate: [roleGuard],
@@ -292,6 +310,18 @@ export const appRoutes: Routes = [
   {
     path: 'student/enroll/:id',
     loadComponent: () => import('./courses/course-enrollment.component').then(m => m.CourseEnrollmentComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'student/teachers',
+    loadComponent: () => import('./teachers/student-teachers.component').then(m => m.StudentTeachersComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'student/teacher/:id',
+    loadComponent: () => import('./teachers/teacher-public-profile.component').then(m => m.TeacherPublicProfileComponent),
     canActivate: [roleGuard],
     data: { roles: ['STUDENT'] }
   },
@@ -461,6 +491,18 @@ export const appRoutes: Routes = [
     loadChildren: () => import('./marks-entry/marks-entry.routes').then(m => m.marksEntryRoutes),
     canActivate: [roleGuard],
     data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
+  },
+  {
+    path: 'marketer',
+    loadChildren: () => import('./marketer/marketer.routes').then(m => m.marketerRoutes),
+    canActivate: [roleGuard],
+    data: { roles: ['MARKETER'] }
+  },
+  {
+    path: 'marketers-admin',
+    loadComponent: () => import('./marketers-admin/marketers-admin.component').then(m => m.MarketersAdminComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
   },
   {
     path: 'parents',

@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
@@ -35,16 +35,11 @@ interface RequestItem {
   selector: 'app-parent-requests',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="requests-page">
       <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <h1>طلباتي</h1>
-      </div>
+      <app-page-header [title]="'الطلبات'" [titleEn]="'Requests'" [backTo]="'/parent'"></app-page-header>
 
       <!-- Tabs -->
       <div class="tabs-container">
@@ -60,8 +55,8 @@ interface RequestItem {
                 (click)="setTab('links')">
           <i class="fas fa-user-plus"></i>
           <span>الربط</span>
-          <span class="badge badge--amber" *ngIf="linkRequests().length > 0">
-            {{ linkRequests().length }}
+          <span class="badge badge--amber" *ngIf="linkRequests().length + studentLinkRequests().length > 0">
+            {{ linkRequests().length + studentLinkRequests().length }}
           </span>
         </button>
         <button class="tab" [class.active]="activeTab() === 'ended'"
@@ -128,12 +123,36 @@ interface RequestItem {
 
         <!-- Links Tab -->
         <div *ngIf="activeTab() === 'links'">
-          <div *ngIf="linkRequests().length === 0" class="empty-state">
+          <div *ngIf="linkRequests().length === 0 && studentLinkRequests().length === 0" class="empty-state">
             <div class="empty-icon">
               <i class="fas fa-user-check"></i>
             </div>
             <h3>لا توجد طلبات ربط معلقة</h3>
             <p>جميع طلبات الربط اكتملت</p>
+          </div>
+
+          <!-- Incoming student-initiated link requests (need parent approval) -->
+          <div class="requests-list" *ngIf="studentLinkRequests().length">
+            <div class="request-card" *ngFor="let link of studentLinkRequests()">
+              <div class="request-icon pending">
+                <i class="fas fa-user-graduate"></i>
+              </div>
+              <div class="request-content">
+                <h3>{{ link.studentName }}</h3>
+                <p class="subtitle">{{ link.studentCode }}</p>
+                <div class="request-details">
+                  <span><i class="fas fa-paper-plane"></i> طلب الطالب ربط حسابك</span>
+                </div>
+              </div>
+              <div class="request-actions">
+                <button class="action-btn approve" (click)="approveStudentLink(link)">
+                  <i class="fas fa-check"></i>
+                </button>
+                <button class="action-btn reject" (click)="rejectStudentLink(link)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="requests-list">
@@ -215,44 +234,6 @@ interface RequestItem {
       min-height: 100vh;
       background: #f5f7fa;
       padding-bottom: 100px;
-    }
-
-    /* ─── Header ─── */
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      color: white;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .back-btn {
-      width: 40px;
-      height: 40px;
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-    }
-
-    .back-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    .page-header h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin: 0;
     }
 
     /* ─── Tabs ─── */
@@ -576,7 +557,6 @@ interface RequestItem {
   `]
 })
 export class ParentRequestsComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly configStateService = inject(ConfigStateService);
   private readonly enrollmentRequestService = inject(EnrollmentRequestService);
   private readonly parentService = inject(ParentService);
@@ -588,6 +568,7 @@ export class ParentRequestsComponent implements OnInit {
   pendingRequests = signal<RequestItem[]>([]);
   endedRequests = signal<RequestItem[]>([]);
   linkRequests = signal<ParentStudentDto[]>([]);
+  studentLinkRequests = signal<ParentStudentDto[]>([]);
   
   toastMessage = signal('');
   toastType = signal<'success' | 'error'>('success');
@@ -631,12 +612,19 @@ export class ParentRequestsComponent implements OnInit {
         this.parentService.getLinkedStudentsByParentId(parent.id!)
       ).catch(() => []);
 
-      // Link requests = pending or rejected (not yet confirmed)
+      // Link requests = parent-initiated, pending or rejected (waiting on the student)
       const links = (linkedStudents || []).filter(
-        s => s.linkStatus === ParentStudentLinkStatus.Pending ||
-             s.linkStatus === ParentStudentLinkStatus.Rejected
+        s => (s.linkStatus === ParentStudentLinkStatus.Pending ||
+              s.linkStatus === ParentStudentLinkStatus.Rejected) &&
+             !s.initiatedByStudent
       );
       this.linkRequests.set(links);
+
+      // Student-initiated requests awaiting THIS parent's approval
+      const studentRequests = await lastValueFrom(
+        this.parentService.getPendingStudentRequestsForCurrentParent()
+      ).catch(() => []);
+      this.studentLinkRequests.set(studentRequests || []);
 
       const childrenIds = new Set(
         (linkedStudents || [])
@@ -739,15 +727,33 @@ export class ParentRequestsComponent implements OnInit {
     }
   }
 
+  async approveStudentLink(link: ParentStudentDto): Promise<void> {
+    if (!link.studentId) return;
+    try {
+      await lastValueFrom(this.parentService.confirmStudentLinkRequest(link.studentId));
+      this.showToast('تم قبول طلب الربط', 'success');
+      await this.loadRequests();
+    } catch {
+      this.showToast('حدث خطأ أثناء قبول الطلب', 'error');
+    }
+  }
+
+  async rejectStudentLink(link: ParentStudentDto): Promise<void> {
+    if (!link.studentId) return;
+    try {
+      await lastValueFrom(this.parentService.rejectStudentLinkRequest(link.studentId));
+      this.showToast('تم رفض طلب الربط', 'success');
+      await this.loadRequests();
+    } catch {
+      this.showToast('حدث خطأ أثناء رفض الطلب', 'error');
+    }
+  }
+
   private showToast(message: string, type: 'success' | 'error'): void {
     this.toastMessage.set(message);
     this.toastType.set(type);
     setTimeout(() => {
       this.toastMessage.set('');
     }, 3000);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/parent']);
   }
 }

@@ -1,16 +1,17 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { FeedService } from '@proxy/feeds';
 import type { FeedDto } from '@proxy/feeds/dtos/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-feed-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   templateUrl: './feed-detail.component.html',
   styles: [`
     .feed-detail { max-width: 880px; margin: 1rem auto; padding: 0 1rem }
@@ -27,7 +28,6 @@ export class FeedDetailComponent implements OnInit {
   private readonly svc = inject(FeedService);
   private readonly route = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
-  private readonly location = inject(Location);
   private readonly destroyRef = inject(DestroyRef);
 
   feed = signal<FeedDto | null>(null);
@@ -57,8 +57,4 @@ export class FeedDetailComponent implements OnInit {
   }
 
   trackByIdx = (i: number) => i;
-
-  goBack() {
-    try { this.location.back(); } catch { window.history.back(); }
-  }
 }

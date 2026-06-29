@@ -1,40 +1,27 @@
-<div class="tg-page" dir="rtl">
+<div class="tg-page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
 
-  <!-- ── Hero ── -->
-  <div class="hero">
-    <div class="hero-blob hero-blob-1"></div>
-    <div class="hero-blob hero-blob-2"></div>
+  <!-- ── Header ── -->
+  <app-page-header [title]="'مجموعاتي'" [titleEn]="'My Groups'" (back)="goBack()">
+    <a ph-actions class="ph-action"
+       [routerLink]="['create']"
+       [queryParams]="courseId() ? { courseId: courseId() } : {}"
+       aria-label="إنشاء مجموعة · Create group">
+      <i class="fas fa-plus"></i>
+    </a>
+  </app-page-header>
 
-    <div class="hero-content">
-      <button class="back-btn" (click)="goBack()">
-        <i class="fas fa-arrow-right"></i>
-      </button>
-      <div class="hero-text">
-        <h1 class="hero-title">مجموعاتي</h1>
-        <p class="hero-sub">My Groups</p>
-        @if (courseName()) {
-          <div class="filter-pill">
-            <i class="fas fa-book-open"></i>
-            <span>{{ courseName() }}</span>
-            <button class="filter-clear" (click)="clearFilter()">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        }
+  <!-- ── Course filter pill ── -->
+  @if (courseName()) {
+    <div class="filter-strip">
+      <div class="filter-pill">
+        <i class="fas fa-book-open"></i>
+        <span>{{ courseName() }}</span>
+        <button class="filter-clear" (click)="clearFilter()">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
     </div>
-
-    <div class="hero-side">
-      @if (teacherName()) {
-        <div class="teacher-avatar">{{ teacherName()!.charAt(0) }}</div>
-      }
-      <button class="btn-new"
-        [routerLink]="['create']"
-        [queryParams]="courseId() ? { courseId: courseId() } : {}">
-        <i class="fas fa-plus"></i>
-      </button>
-    </div>
-  </div>
+  }
 
   <!-- ── Stats strip ── -->
   @if (!loading() && groups().length > 0) {
@@ -151,6 +138,19 @@
                 </button>
               </div>
             }
+
+            <!-- Auto-accept join requests -->
+            <button type="button" class="auto-accept-row"
+                    [class.on]="autoAccept()[g.groupId!]"
+                    (click)="toggleAutoAccept(g)">
+              <div class="aa-text">
+                <i class="fas fa-user-check"></i>
+                <span>قبول طلبات الانضمام تلقائياً · Auto-accept join requests</span>
+              </div>
+              <span class="aa-switch" [class.on]="autoAccept()[g.groupId!]">
+                <span class="aa-knob"></span>
+              </span>
+            </button>
 
             <!-- Actions -->
             <div class="group-actions">

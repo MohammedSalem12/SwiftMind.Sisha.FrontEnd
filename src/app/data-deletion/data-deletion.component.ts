@@ -1,27 +1,16 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-data-deletion',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-row">
-          <button class="btn-back" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
-          <div class="header-text">
-            <h1>حذف البيانات</h1>
-            <p>Data Deletion</p>
-          </div>
-          <div class="header-icon"><i class="fas fa-trash-alt"></i></div>
-        </div>
-      </div>
+      <app-page-header [title]="'حذف البيانات'" [titleEn]="'Delete My Data'"></app-page-header>
 
       <div class="content">
         <div class="card">
@@ -57,30 +46,6 @@ import { CommonModule, Location } from '@angular/common';
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 2rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-row { position:relative; z-index:1; display:flex; align-items:center; gap:1rem; }
-    .btn-back {
-      width:40px; height:40px; border-radius:12px;
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:#fff; font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; flex-shrink:0;
-    }
-    .header-text { flex:1; }
-    .header-text h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
-    .header-text p { margin:.1rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
-    .header-icon {
-      width:48px; height:48px; border-radius:14px;
-      background:rgba(255,255,255,.15);
-      display:flex; align-items:center; justify-content:center;
-      color:rgba(255,255,255,.9); font-size:1.3rem; flex-shrink:0;
-    }
     .content { padding:1rem; }
     .card {
       background:#fff; border-radius:16px; padding:1.25rem;
@@ -93,7 +58,4 @@ import { CommonModule, Location } from '@angular/common';
     .card li { font-size:.85rem; color:#555; line-height:1.8; }
   `],
 })
-export class DataDeletionComponent {
-  private readonly location = inject(Location);
-  goBack(): void { this.location.back(); }
-}
+export class DataDeletionComponent {}

@@ -7,28 +7,19 @@ import { environment } from '../../environments/environment';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
 import { AdvertiserService } from '@proxy/advertisements';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-ads-create',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-row">
-          <button class="btn-back" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
-          <div class="header-text">
-            <h1>إنشاء إعلان جديد</h1>
-            <p>Create New Ad</p>
-          </div>
-          <div class="header-icon"><i class="fas fa-plus-circle"></i></div>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'إنشاء إعلان'"
+        [titleEn]="'Create Ad'"
+        [backTo]="'/ads/my'"></app-page-header>
 
       <div class="form-area">
         <!-- Ad Type -->
@@ -271,33 +262,6 @@ import { AdvertiserService } from '@proxy/advertisements';
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
-
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 2rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-row {
-      position:relative; z-index:1; display:flex; align-items:center; gap:1rem;
-    }
-    .btn-back {
-      width:40px; height:40px; border-radius:12px;
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:#fff; font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; flex-shrink:0;
-    }
-    .header-text { flex:1; }
-    .header-text h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
-    .header-text p { margin:.1rem 0 0; font-size:.78rem; color:rgba(255,255,255,.7); }
-    .header-icon {
-      width:48px; height:48px; border-radius:14px;
-      background:rgba(255,255,255,.15);
-      display:flex; align-items:center; justify-content:center;
-      color:rgba(255,255,255,.9); font-size:1.3rem; flex-shrink:0;
-    }
 
     .form-area { padding:1rem; display:flex; flex-direction:column; gap:1rem; }
 
@@ -566,6 +530,4 @@ export class AdsCreateComponent implements OnInit {
       this.saving.set(false);
     }
   }
-
-  goBack(): void { this.location.back(); }
 }

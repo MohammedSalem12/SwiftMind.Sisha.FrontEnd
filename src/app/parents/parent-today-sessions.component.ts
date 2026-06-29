@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
 import { ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
@@ -12,6 +11,7 @@ import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.
 import { GroupService } from '@proxy/groups';
 import { TeacherService } from '@proxy/teachers';
 import { CourseService } from '@proxy/courses';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 const DAYS_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
@@ -35,20 +35,13 @@ interface ChildSessions {
   selector: 'app-parent-today-sessions',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
-      <div class="header">
-        <button class="back-btn" (click)="router.navigate(['/parent'])">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-info">
-          <h1>حصص اليوم · Today's Sessions</h1>
-          <span class="header-day">{{ todayName }}</span>
-        </div>
-        <div class="header-time">{{ currentTime() }}</div>
-      </div>
+      <app-page-header [title]="'جلسات اليوم'" [titleEn]="titleEn" [backTo]="'/parent'">
+        <div ph-actions class="header-time" [attr.title]="todayName">{{ currentTime() }}</div>
+      </app-page-header>
 
       @if (loading()) {
         <div class="load-area">
@@ -118,24 +111,10 @@ interface ChildSessions {
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
 
-    .header {
-      background:linear-gradient(135deg,#667eea,#764ba2);
-      padding:calc(env(safe-area-inset-top,0px) + .6rem) 1rem .75rem;
-      display:flex; align-items:center; gap:.75rem;
-    }
-    .back-btn {
-      width:40px; height:40px; border-radius:50%; flex-shrink:0;
-      background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.25);
-      color:#fff; font-size:.9rem; display:flex; align-items:center; justify-content:center;
-      cursor:pointer; min-width:44px; min-height:44px;
-    }
-    .header-info { flex:1; }
-    .header h1 { margin:0; font-size:1.05rem; font-weight:800; color:#fff; }
-    .header-day { font-size:.72rem; color:rgba(255,255,255,.6); }
     .header-time {
-      font-size:1.1rem; font-weight:800; color:#fff;
-      background:rgba(255,255,255,.15); padding:.3rem .65rem; border-radius:10px;
-      font-variant-numeric:tabular-nums;
+      font-size:.95rem; font-weight:800; color:#667eea;
+      background:rgba(102,126,234,.1); padding:.3rem .6rem; border-radius:10px;
+      font-variant-numeric:tabular-nums; white-space:nowrap;
     }
 
     .load-area { padding:1rem; display:flex; flex-direction:column; gap:.75rem; }
@@ -228,7 +207,6 @@ interface ChildSessions {
   `],
 })
 export class ParentTodaySessionsComponent implements OnInit, OnDestroy {
-  readonly router = inject(Router);
   private readonly configSvc = inject(ConfigStateService);
   private readonly parentSvc = inject(ParentService);
   private readonly enrollmentSvc = inject(EnrollmentRequestService);
@@ -239,6 +217,7 @@ export class ParentTodaySessionsComponent implements OnInit, OnDestroy {
   loading = signal(true);
   childSessions = signal<ChildSessions[]>([]);
   currentTime = signal('');
+  titleEn = "Today's Sessions";
   todayName = DAYS_AR[new Date().getDay()];
   private timer: any;
   private nowMins = 0;

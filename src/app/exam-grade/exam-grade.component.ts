@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { StudentService } from '@proxy/students';
 import { TeacherService } from '@proxy/teachers';
@@ -10,11 +11,13 @@ import { ExamGradeService } from '@proxy/exam-grades';
 import { CurrentUserInfoService } from '@proxy/common';
 import { lastValueFrom } from 'rxjs';
 
+import { PageHeaderComponent } from '../shared/components/page-header.component';
+
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-exam-grade',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IonicModule, PageHeaderComponent],
   templateUrl: './exam-grade.component.html',
   styleUrls: ['./exam-grade.component.scss'],
   animations: [
@@ -133,7 +136,6 @@ export class ExamGradeComponent implements OnInit {
 
   async submitAddExam() {
     try {
-      debugger ;
       const courseId = this.addExamModel.courseId || this.selectedCourse();
       const teacherId = this.currentUserId(); // Use current user's actor_id
       if (!courseId || !teacherId || !this.addExamModel.name) {

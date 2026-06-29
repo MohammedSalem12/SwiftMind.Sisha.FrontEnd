@@ -1,3 +1,10 @@
+// ============================================================
+// PRODUCTION environment
+//   Frontend: Firebase Hosting (sesha-9999.web.app)
+//   Backend: public HTTPS (currently the ngrok static tunnel → DB: Sesha_Staging)
+//   Used by `npm run build:prod` (ng build --configuration production).
+//   Test counterpart: environment.ts
+// ============================================================
 import { Environment } from '@abp/ng.core';
 
 // Frontend production URL (Firebase hosting)
@@ -36,4 +43,8 @@ export const environment = {
       rootNamespace: 'SwiftMind.Sesha',
     },
   },
+  // Social login (must match the test env). Google OAuth client must list
+  // https://sesha-9999.web.app as an Authorized JavaScript origin.
+  googleClientId: '1092548471447-c3m8tge7gh1tuiipvtcdnd1aohvs8a67.apps.googleusercontent.com',
+  facebookAppId: 'YOUR_FACEBOOK_APP_ID', // TODO: set from your Meta app
 } as Environment;

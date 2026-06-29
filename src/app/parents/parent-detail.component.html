@@ -1,9 +1,6 @@
-<div class="parent-detail-page card" *ngIf="!loading()">
-  <div class="page-header">
-    <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right me-1"></i> رجوع للقائمة</button>
-    <h2>Parent Details</h2>
-  </div>
+<app-page-header [title]="'بيانات الولي'" [titleEn]="'Parent Details'" [backTo]="'/parents'"></app-page-header>
 
+<div class="parent-detail-page card" *ngIf="!loading()">
   <div *ngIf="parent()" class="parent-info">
     <!-- Parent Basic Info -->
     <div class="info-section">

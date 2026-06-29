@@ -1,17 +1,11 @@
 <div class="qr-page" dir="rtl">
 
-  <!-- Compact Header -->
-  <div class="hero-header">
-    <button class="back-btn" (click)="goBack()">
-      <i class="fas fa-arrow-right"></i>
-    </button>
-    <div class="hero-text">
-      <h1><i class="fas fa-qrcode"></i> رموز QR · QR Codes</h1>
-    </div>
-    <button class="refresh-btn" (click)="loadQRCodes()" [disabled]="loading()">
+  <!-- Header -->
+  <app-page-header [title]="'رموز QR'" [titleEn]="'QR Codes'" [backTo]="'/teacher'">
+    <button ph-actions class="ph-action" (click)="loadQRCodes()" [disabled]="loading()" aria-label="تحديث · Refresh">
       <i class="fas fa-sync-alt" [class.fa-spin]="loading()"></i>
     </button>
-  </div>
+  </app-page-header>
 
   <!-- Loading -->
   <div *ngIf="loading()" class="loading-state">
@@ -45,15 +39,32 @@
           <span *ngIf="item.course.gradeName" class="course-grade">{{ item.course.gradeName }}</span>
         </div>
       </div>
-      <div class="qr-image-wrap">
+      <button class="qr-image-wrap" type="button" (click)="openFullscreen(item)" title="عرض بملء الشاشة">
         <img [src]="item.qrDataUrl" alt="QR Code" class="qr-image" />
-      </div>
+        <span class="qr-expand-badge"><i class="fas fa-expand"></i></span>
+      </button>
       <div class="qr-url">
         <i class="fas fa-link me-1"></i>
         <span>{{ item.enrollUrl }}</span>
       </div>
-      <p class="qr-hint">امسح الرمز بكاميرا الهاتف للتسجيل في المقرر</p>
+      <p class="qr-hint"><i class="fas fa-expand"></i> اضغط على الرمز لعرضه بملء الشاشة · Tap to enlarge</p>
     </div>
   </div>
+
+  <!-- Full-screen QR overlay -->
+  @if (fullscreen(); as fs) {
+    <div class="qr-fs" (click)="closeFullscreen()">
+      <button class="qr-fs-close" (click)="closeFullscreen(); $event.stopPropagation()" aria-label="إغلاق · Close" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="qr-fs-inner" (click)="$event.stopPropagation()">
+        <h2 class="qr-fs-title">{{ fs.course.nameAr || fs.course.nameEn }}</h2>
+        @if (fs.course.code) { <span class="qr-fs-code">{{ fs.course.code }}</span> }
+        <img [src]="fs.dataUrl" alt="QR Code" class="qr-fs-img" />
+        <p class="qr-fs-hint">امسح الرمز للتسجيل في المقرر · Scan to enroll</p>
+        <span class="qr-fs-url">{{ fs.enrollUrl }}</span>
+      </div>
+    </div>
+  }
 
 </div>

@@ -3,7 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { FixedToBodyDirective } from '../shared/directives/fixed-to-body.directive';
 
 import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
@@ -17,6 +20,7 @@ import { OfflineBannerComponent } from '../shared/components/offline-banner.comp
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 import { PromoAdsBarComponent } from '../shared/components/promo-ads-bar.component';
 import { ActiveSemesterComponent } from '../shared/components/active-semester.component';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 const GRADE_NAMES: Record<number, string> = {
   [-1]: 'رياض أطفال 1',
@@ -39,7 +43,7 @@ const GRADE_NAMES: Record<number, string> = {
   selector: 'app-student-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent],
+  imports: [CommonModule, RouterModule, IonicModule, PullToRefreshDirective, FixedToBodyDirective, SessionTimerComponent, OfflineBannerComponent, DidYouKnowComponent, PromoAdsBarComponent, ActiveSemesterComponent, PageHeaderComponent],
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.scss'],
 })
@@ -54,6 +58,7 @@ export class StudentHomeComponent implements OnInit {
   private readonly apiBase        = environment.apis?.default?.url || '';
 
   studentName        = signal('');
+  userPhoto          = signal('');
   gradeName          = signal('');
   courses            = signal<StudentCourseDto[]>([]);
   promoAds           = signal<any[]>([]);
@@ -73,6 +78,7 @@ export class StudentHomeComponent implements OnInit {
     try {
       const userInfo = await lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo());
       this.studentName.set(userInfo?.actorName || '');
+      this.userPhoto.set(userInfo?.photoUrl || '');
       if (userInfo?.currentGrade) {
         this.gradeName.set(GRADE_NAMES[userInfo.currentGrade] || `الصف ${userInfo.currentGrade}`);
       }
@@ -106,6 +112,14 @@ export class StudentHomeComponent implements OnInit {
       this.promoAds.set(cached.promoAds || []);
       this.offline.set(true);
       this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
+    }
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try {
+      await Promise.all([this.loadCourses(), this.loadNextSession(), this.loadPromoAds()]);
+    } finally {
+      e.complete();
     }
   }
 
@@ -155,6 +169,15 @@ export class StudentHomeComponent implements OnInit {
 
   goProfile(): void {
     this.router.navigate(['/student/profile']);
+  }
+
+  getInitials(name: string | undefined): string {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0]?.[0]?.toUpperCase() || '?';
   }
 
   goTodaySessions(): void {

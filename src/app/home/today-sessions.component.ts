@@ -4,14 +4,18 @@ import { SessionService } from '@proxy/groups';
 import { CurrentUserInfoService } from '@proxy/common';
 import type { NextSessionDto } from '@proxy/groups/dtos/models';
 import { lastValueFrom } from 'rxjs';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-today-sessions',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="ts-page" dir="rtl">
+
+      <!-- Header -->
+      <app-page-header [title]="'جلسات اليوم'" [titleEn]="'Today\\'s Sessions'" [backTo]="'/teacher'"></app-page-header>
 
       <!-- Loading -->
       @if (loading()) {

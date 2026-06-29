@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { ConfigStateService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
@@ -11,6 +12,8 @@ import { TeacherService, SecretaryTeacherService } from '@proxy/teachers';
 import { TeacherEnrolledCourseDto } from '@proxy/teachers/models';
 import { StudentEnrollmentService } from '@proxy/student-enrollments';
 import { EnrolledStudentDto } from '@proxy/student-enrollments/dtos/models';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface CourseTab {
   id: string;
@@ -25,27 +28,21 @@ interface CourseTab {
   selector: 'app-students',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, IonicModule, PullToRefreshDirective, PageHeaderComponent],
   template: `
-    <div class="page" dir="rtl">
+    <div class="page" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
 
       <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="blob b1"></div><div class="blob b2"></div>
-        <div class="header-content">
-          <div class="header-text">
-            <h1>{{ isTeacher() ? 'طلابي' : 'الطلاب' }}</h1>
-            <p>{{ isTeacher() ? 'الطلاب المسجّلون في مقرراتي' : 'إدارة جميع الطلاب' }}</p>
-            <p class="subtitle-en">{{ isTeacher() ? 'Students in my courses' : 'Manage all students' }}</p>
-          </div>
-          @if (isAdmin()) {
-            <button class="add-btn" (click)="goToAdd()">
-              <i class="fas fa-plus"></i>
-              إضافة طالب
-            </button>
-          }
-        </div>
-      </div>
+      <app-page-header
+        [title]="isTeacher() ? 'طلابي' : 'الطلاب'"
+        [titleEn]="isTeacher() ? 'My Students' : 'Students'"
+        [backTo]="'/'">
+        @if (isAdmin()) {
+          <button ph-actions class="ph-action" (click)="goToAdd()" aria-label="إضافة طالب · Add Student">
+            <i class="fas fa-plus"></i>
+          </button>
+        }
+      </app-page-header>
 
       <!-- ══════════════ TEACHER VIEW ══════════════ -->
       @if (isTeacher()) {
@@ -102,7 +99,11 @@ interface CourseTab {
             @if (isStudentDto(codeResult())) {
               <div class="code-result-card">
                 <div class="student-avatar">
-                  <span>{{ initials(codeResult()!) }}</span>
+                  @if (getAvatarUrl(codeResult())) {
+                    <img [src]="getAvatarUrl(codeResult())" alt="" />
+                  } @else {
+                    <span>{{ initials(codeResult()!) }}</span>
+                  }
                 </div>
                 <div class="student-info">
                   <span class="student-name">{{ codeResult()?.firstName }} {{ codeResult()?.lastName }}</span>
@@ -169,7 +170,7 @@ interface CourseTab {
             @if (activeCourse()!.loaded && filteredStudents().length > 0) {
               <div class="students-list">
                 @for (s of filteredStudents(); track s.studentId) {
-                  <div class="student-card-rich" (click)="showDetails({id: s.studentId})">
+                  <div class="student-card-rich ion-activatable" (click)="showDetails({id: s.studentId})">
                     <div class="scr-top">
                       <div class="student-avatar">
                         <span>{{ (s.studentName || '?').charAt(0).toUpperCase() }}</span>
@@ -189,6 +190,7 @@ interface CourseTab {
                       <span class="scr-chip chip-absent"><i class="fas fa-times-circle"></i> {{ s.absentDays }} غياب</span>
                       <span class="scr-chip chip-total"><i class="fas fa-calendar"></i> {{ s.totalDays }} يوم</span>
                     </div>
+                    <ion-ripple-effect></ion-ripple-effect>
                   </div>
                 }
               </div>
@@ -270,7 +272,7 @@ interface CourseTab {
             @if (activeCourse()!.loaded && filteredStudents().length > 0) {
               <div class="students-list">
                 @for (s of filteredStudents(); track s.studentId) {
-                  <div class="student-card-rich" (click)="showDetails({id: s.studentId})">
+                  <div class="student-card-rich ion-activatable" (click)="showDetails({id: s.studentId})">
                     <div class="scr-top">
                       <div class="student-avatar">
                         <span>{{ (s.studentName || '?').charAt(0).toUpperCase() }}</span>
@@ -290,6 +292,7 @@ interface CourseTab {
                       <span class="scr-chip chip-absent"><i class="fas fa-times-circle"></i> {{ s.absentDays }} غياب</span>
                       <span class="scr-chip chip-total"><i class="fas fa-calendar"></i> {{ s.totalDays }} يوم</span>
                     </div>
+                    <ion-ripple-effect></ion-ripple-effect>
                   </div>
                 }
               </div>
@@ -340,7 +343,11 @@ interface CourseTab {
               @for (s of students(); track s.id) {
                 <div class="student-row student-row-action">
                   <div class="student-avatar">
-                    <span>{{ initials(s) }}</span>
+                    @if (getAvatarUrl(s)) {
+                      <img [src]="getAvatarUrl(s)" alt="" />
+                    } @else {
+                      <span>{{ initials(s) }}</span>
+                    }
                   </div>
                   <div class="student-info">
                     <span class="student-name">{{ s.firstName }} {{ s.lastName }}</span>
@@ -380,31 +387,6 @@ interface CourseTab {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
-
-    /* ── Header ── */
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1rem) 1.25rem 1.5rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:180px; height:180px; top:-60px; right:-50px; }
-    .b2 { width:120px; height:120px; bottom:-40px; left:-20px; }
-    .header-content {
-      position:relative; z-index:1;
-      display:flex; align-items:center; justify-content:space-between; gap:1rem;
-    }
-    .header-text h1 { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
-    .header-text p  { margin:.15rem 0 0; font-size:.82rem; color:rgba(255,255,255,.8); }
-    .header-text .subtitle-en { font-size:.7rem; color:rgba(255,255,255,.55); margin-top:.05rem; }
-    .add-btn {
-      display:flex; align-items:center; gap:.4rem;
-      background:rgba(255,255,255,.2); border:1.5px solid rgba(255,255,255,.35);
-      color:#fff; padding:.6rem 1rem; border-radius:12px;
-      font-size:.82rem; font-weight:700; cursor:pointer; flex-shrink:0;
-      white-space:nowrap; transition:background .15s;
-    }
-    .add-btn:hover { background:rgba(255,255,255,.3); }
 
     /* ── Course tabs ── */
     .course-tabs-wrap {
@@ -451,14 +433,14 @@ interface CourseTab {
     .search-row { display:flex; gap:.5rem; flex-wrap:wrap; }
     .grade-select {
       padding:.7rem .75rem; border-radius:12px; border:1.5px solid #e9ecef;
-      background:#fff; font-size:.82rem; font-family:inherit; color:#1a1a2e;
+      background:#fff; font-size:16px; font-family:inherit; color:#1a1a2e;
       min-height:44px; min-width:120px; outline:none;
     }
     .grade-select:focus { border-color:#667eea; }
     .search-input {
       flex:1; padding:.7rem .875rem; border-radius:12px;
       border:1.5px solid #e9ecef; background:#fff;
-      font-size:.88rem; min-height:44px;
+      font-size:16px; min-height:44px;
       outline:none; transition:border-color .15s;
     }
     .search-input:focus { border-color:#667eea; }
@@ -513,7 +495,9 @@ interface CourseTab {
       background:linear-gradient(135deg,#667eea,#764ba2);
       display:flex; align-items:center; justify-content:center;
       color:#fff; font-size:1rem; font-weight:700;
+      overflow:hidden;
     }
+    .student-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
     .student-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:.1rem; }
     .student-name { font-size:.95rem; font-weight:700; color:#1a1a2e; }
     .student-meta { font-size:.75rem; color:#9090aa; }
@@ -526,11 +510,13 @@ interface CourseTab {
 
     /* Rich student card */
     .student-card-rich {
+      position:relative; overflow:hidden;
       background:#fff; border-radius:14px; border:1.5px solid #f0f0f0;
       padding:.875rem; box-shadow:0 2px 6px rgba(0,0,0,.04);
       cursor:pointer; transition:transform .1s;
     }
     .student-card-rich:active { transform:scale(.98); }
+    .student-card-rich ion-ripple-effect { color: rgba(102,126,234,.3); }
     .scr-top { display:flex; align-items:center; gap:.75rem; }
     .scr-att-ring {
       width:42px; height:42px; border-radius:50%; flex-shrink:0;
@@ -554,7 +540,7 @@ interface CourseTab {
     /* Secretary row actions */
     .row-actions { display:flex; gap:.4rem; flex-shrink:0; }
     .action-icon-btn {
-      width:36px; height:36px; border-radius:10px; border:none;
+      width:44px; height:44px; border-radius:10px; border:none;
       cursor:pointer; display:flex; align-items:center; justify-content:center;
       font-size:.85rem; transition:transform .15s;
     }
@@ -564,7 +550,7 @@ interface CourseTab {
 
     /* Code result detail button */
     .detail-btn {
-      width:40px; height:40px; border-radius:50%; flex-shrink:0;
+      width:44px; height:44px; border-radius:50%; flex-shrink:0;
       background:rgba(102,126,234,.1); border:none; cursor:pointer;
       color:#667eea; font-size:.9rem;
       display:flex; align-items:center; justify-content:center;
@@ -813,6 +799,16 @@ export class StudentsComponent implements OnInit {
   }
 
   // ── Secretary: student list ─────────────────────────────────────────────────
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try {
+      if (this.isTeacher()) await this.loadTeacherCourses();
+      else if (this.isSecretary()) await this.loadSecretaryCourses();
+      else await this.loadStudents();
+    } finally {
+      e.complete();
+    }
+  }
+
   async loadStudents(): Promise<void> {
     this.loading.set(true);
     try {
@@ -854,6 +850,10 @@ export class StudentsComponent implements OnInit {
 
   initials(s: any): string {
     return ((s?.firstName?.[0] || '') + (s?.lastName?.[0] || '')).toUpperCase() || '?';
+  }
+
+  getAvatarUrl(s: any): string | undefined {
+    return s?.photoUrl || undefined;
   }
 
   attColor(pct: number): string {

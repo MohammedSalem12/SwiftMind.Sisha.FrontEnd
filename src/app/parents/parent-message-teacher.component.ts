@@ -1,22 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { ParentService } from '@proxy/parents';
 import { RestService } from '@abp/ng.core';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-parent-message-teacher',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <button class="back-btn" (click)="router.navigate(['/parent'])"><i class="fas fa-arrow-right"></i></button>
-        <h1>رسالة للمعلم · Message Teacher</h1>
-      </div>
+      <app-page-header [title]="'رسالة للمعلم'" [titleEn]="'Message Teacher'" [backTo]="'/parent'"></app-page-header>
       <div class="page-body">
         @if (loading()) {
           <div class="loading-state"><div class="spinner"></div></div>
@@ -61,9 +58,6 @@ import { RestService } from '@abp/ng.core';
   `,
   styles: [`
     .page { min-height:100vh; background:#f5f5f7; }
-    .page-header { background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:20px 16px 16px; display:flex; align-items:center; gap:12px; }
-    .page-header h1 { font-size:18px; margin:0; font-weight:600; }
-    .back-btn { background:rgba(255,255,255,.2); border:none; color:white; width:36px; height:36px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; }
     .page-body { padding:16px; }
     .field-group { margin-bottom:14px; }
     .field-label { font-size:13px; font-weight:600; color:#555; margin-bottom:5px; display:block; i { color:#667eea; margin-left:4px; } }
@@ -81,7 +75,6 @@ import { RestService } from '@abp/ng.core';
   `],
 })
 export class ParentMessageTeacherComponent implements OnInit {
-  readonly router = inject(Router);
   private readonly parentService = inject(ParentService);
   private readonly rest = inject(RestService);
 

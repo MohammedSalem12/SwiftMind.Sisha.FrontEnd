@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
 import { CurrentUserInfoService } from '@proxy/common';
@@ -15,56 +16,53 @@ import type { TeacherAutocompleteDto } from '@proxy/teachers/models';
 import { AcademyService } from '@proxy/academies';
 import { lastValueFrom } from 'rxjs';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-course-enrollment',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IonicModule, PageHeaderComponent],
   template: `
     <div class="enroll-page" dir="rtl">
 
-      <!-- Header -->
-      <div class="enroll-header">
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-text">
-          <span class="header-title">التسجيل في مقرر</span>
-          <span class="header-sub">{{ academyId() ? 'معلمو الأكاديمية فقط · Academy teachers only' : 'اختر المعلم ثم المجموعة' }}</span>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'التسجيل في المقرر'"
+        [titleEn]="academyId() ? 'معلمو الأكاديمية فقط · Academy teachers only' : 'اختر المعلم ثم المجموعة'"
+        (back)="goBack()"></app-page-header>
 
       <!-- Step Indicator -->
       @if (!enrollmentSuccess()) {
-        <div class="steps-bar">
-          <div class="step" [class.step--active]="!selectedTeacher()" [class.step--done]="!!selectedTeacher()">
-            <div class="step-dot">
-              @if (selectedTeacher()) { <i class="fas fa-check"></i> } @else { 1 }
-            </div>
-            <span class="step-label">المعلم</span>
+        <div class="stepper">
+          <div class="stp" [class.stp--active]="!selectedTeacher()" [class.stp--done]="!!selectedTeacher()">
+            <span class="stp-dot">
+              @if (selectedTeacher()) { <ion-icon name="checkmark"></ion-icon> } @else { 1 }
+            </span>
+            <span class="stp-text">المعلم</span>
           </div>
-          <div class="step-line" [class.step-line--done]="!!selectedTeacher()"></div>
-          <div class="step" [class.step--active]="!!selectedTeacher()">
-            <div class="step-dot">2</div>
-            <span class="step-label">المجموعة</span>
+          <span class="stp-bar" [class.stp-bar--done]="!!selectedTeacher()"></span>
+          <div class="stp" [class.stp--active]="!!selectedTeacher()">
+            <span class="stp-dot">2</span>
+            <span class="stp-text">المجموعة</span>
           </div>
         </div>
       }
 
+      <div class="enroll-body">
+
       <!-- Error Banner -->
       @if (errorMessage()) {
-        <div class="error-banner">
-          <i class="fas fa-exclamation-triangle"></i> {{ errorMessage() }}
+        <div class="error-banner" role="alert">
+          <ion-icon name="alert-circle"></ion-icon>
+          <span>{{ errorMessage() }}</span>
         </div>
       }
 
       <!-- Loading -->
       @if (loading()) {
         <div class="loading-area">
-          <div class="sk-card"></div>
-          <div class="sk-card"></div>
-          <div class="sk-card"></div>
+          <ion-spinner name="crescent" class="enroll-spinner"></ion-spinner>
+          <span class="loading-text">جاري التحميل...</span>
         </div>
       }
 
@@ -72,80 +70,115 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       @if (!loading() && !selectedTeacher() && !enrollmentSuccess()) {
         <div class="step-content">
           <!-- Filter panel -->
-          <div class="filter-panel">
+          <ion-card class="filter-card">
+            <ion-searchbar
+              class="enroll-searchbar"
+              [value]="filterNameCode()"
+              (ionInput)="filterNameCode.set($any($event).detail.value || '')"
+              placeholder="ابحث باسم المعلم أو كوده"
+              search-icon="search-outline"
+              [animated]="true"></ion-searchbar>
+
             <div class="filter-row">
-              <div class="filter-field">
-                <label class="filter-lbl"><i class="fas fa-map-marker-alt"></i> المحافظة</label>
-                <select class="filter-select"
-                        [ngModel]="filterGovernment()"
-                        (ngModelChange)="filterGovernment.set($event); filterTown.set(''); onLocationFilterChange()">
-                  <option value="">كل المحافظات</option>
+              <ion-item class="filter-item" lines="none">
+                <ion-icon name="location-outline" slot="start" class="filter-ico"></ion-icon>
+                <ion-select
+                  label="المحافظة"
+                  label-placement="stacked"
+                  interface="alert"
+                  [interfaceOptions]="{ header: 'المحافظة', cssClass: 'enroll-select-alert' }"
+                  okText="اختيار" cancelText="إلغاء"
+                  placeholder="كل المحافظات"
+                  [value]="filterGovernment()"
+                  (ionChange)="filterGovernment.set($any($event).detail.value); filterTown.set(''); onLocationFilterChange()">
+                  <ion-select-option value="">كل المحافظات</ion-select-option>
                   @for (g of governorates; track g) {
-                    <option [value]="g">{{ g }}</option>
+                    <ion-select-option [value]="g">{{ g }}</ion-select-option>
                   }
-                </select>
-              </div>
-              <div class="filter-field">
-                <label class="filter-lbl"><i class="fas fa-city"></i> المركز / الحي</label>
-                <select class="filter-select"
-                        [ngModel]="filterTown()"
-                        (ngModelChange)="filterTown.set($event); onLocationFilterChange()"
-                        [disabled]="!filterGovernment()">
-                  <option value="">{{ filterGovernment() ? 'كل المراكز' : '-- اختر المحافظة أولاً --' }}</option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item class="filter-item" lines="none">
+                <ion-icon name="business-outline" slot="start" class="filter-ico"></ion-icon>
+                <ion-select
+                  label="المركز / الحي"
+                  label-placement="stacked"
+                  interface="alert"
+                  [interfaceOptions]="{ header: 'المركز / الحي', cssClass: 'enroll-select-alert' }"
+                  okText="اختيار" cancelText="إلغاء"
+                  [placeholder]="filterGovernment() ? 'كل المراكز' : 'اختر المحافظة أولاً'"
+                  [disabled]="!filterGovernment()"
+                  [value]="filterTown()"
+                  (ionChange)="filterTown.set($any($event).detail.value); onLocationFilterChange()">
+                  <ion-select-option value="">كل المراكز</ion-select-option>
                   @for (d of districts(); track d) {
-                    <option [value]="d">{{ d }}</option>
+                    <ion-select-option [value]="d">{{ d }}</ion-select-option>
                   }
-                </select>
-              </div>
+                </ion-select>
+              </ion-item>
             </div>
-            <div class="filter-field">
-              <label class="filter-lbl"><i class="fas fa-search"></i> بحث بالاسم أو الكود</label>
-              <input class="filter-input" type="text"
-                     [ngModel]="filterNameCode()"
-                     (ngModelChange)="filterNameCode.set($event)"
-                     placeholder="اسم المعلم أو كوده" />
-            </div>
+
             @if (locationFilterLoading()) {
               <div class="filter-loading">
-                <span class="spinner-xs"></span> جاري البحث...
+                <ion-spinner name="dots"></ion-spinner> جاري البحث...
               </div>
             }
-          </div>
+          </ion-card>
 
           <div class="section-lbl">
-            <i class="fas fa-chalkboard-teacher"></i>
+            <ion-icon name="school-outline"></ion-icon>
             <span>اختر المعلم</span>
             <span class="lbl-count">{{ filteredTeachers().length }}</span>
           </div>
 
           @if (filteredTeachers().length === 0 && !locationFilterLoading()) {
             <div class="empty-state">
-              <i class="fas fa-user-slash"></i>
+              <ion-icon name="person-remove-outline"></ion-icon>
               <p>{{ teachers().length === 0 ? 'لا يوجد معلمون متاحون لهذا المقرر حالياً' : 'لا يوجد معلمون بهذه المعايير' }}</p>
             </div>
           }
 
-          <div class="teachers-grid">
+          <div class="teachers-list">
             @for (t of filteredTeachers(); track t.id) {
-              <div class="teacher-card" [class.teacher-promoted]="t.isPromoted" (click)="selectTeacher(t)">
-                @if (t.isPromoted) {
-                  <div class="promoted-badge"><i class="fas fa-crown"></i> مميز</div>
-                }
-                <button class="info-btn" (click)="openTeacherInfo(t.id!); $event.stopPropagation()" title="معلومات المعلم">
-                  <i class="fas fa-info-circle"></i>
-                </button>
-                <div class="teacher-avatar">{{ getInitials(t.displayName) }}</div>
-                <div class="teacher-name">{{ t.displayName }}</div>
-                @if (t.government || t.town) {
-                  <div class="teacher-location">
-                    <i class="fas fa-map-marker-alt"></i>
-                    {{ [t.government, t.town].filter(Boolean).join(' — ') }}
+              <ion-card class="teacher-card ion-activatable" [class.teacher-promoted]="t.isPromoted" button (click)="selectTeacher(t)">
+                <div class="tc-row">
+                  <ion-avatar class="tc-avatar">
+                    @if ($any(t).photoUrl) {
+                      <img [src]="$any(t).photoUrl" [alt]="t.displayName" />
+                    } @else {
+                      <span class="tc-initials">{{ getInitials(t.displayName) }}</span>
+                    }
+                  </ion-avatar>
+                  <div class="tc-info">
+                    <div class="tc-name-row">
+                      <span class="teacher-name">{{ t.displayName }}</span>
+                      @if (t.isPromoted) {
+                        <ion-chip class="promoted-chip" outline="false">
+                          <ion-icon name="star"></ion-icon>
+                          <ion-label>مميز</ion-label>
+                        </ion-chip>
+                      }
+                    </div>
+                    @if (t.government || t.town) {
+                      <ion-chip class="loc-chip" outline="false">
+                        <ion-icon name="location-outline"></ion-icon>
+                        <ion-label>{{ [t.government, t.town].filter(Boolean).join(' — ') }}</ion-label>
+                      </ion-chip>
+                    }
+                    @if ($any(t).bio) {
+                      <p class="teacher-bio">{{ $any(t).bio }}</p>
+                    }
                   </div>
-                }
-                <button class="select-btn">
-                  اختيار <i class="fas fa-chevron-left"></i>
-                </button>
-              </div>
+                  <ion-button class="info-btn" fill="clear" shape="round" (click)="openTeacherInfo(t.id!); $event.stopPropagation()" title="معلومات المعلم">
+                    <ion-icon name="information-circle-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+                <div class="tc-cta">
+                  <span class="tc-cta-text">اختيار المعلم</span>
+                  <ion-icon name="chevron-back-outline"></ion-icon>
+                </div>
+                <ion-ripple-effect></ion-ripple-effect>
+              </ion-card>
             }
           </div>
         </div>
@@ -156,78 +189,93 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
         <div class="step-content">
 
           <!-- Selected teacher bar -->
-          <div class="selected-teacher-bar">
-            <div class="st-avatar">{{ getInitials(selectedTeacher()?.displayName) }}</div>
+          <ion-card class="selected-teacher-bar">
+            <ion-avatar class="st-avatar">
+              @if ($any(selectedTeacher()).photoUrl) {
+                <img [src]="$any(selectedTeacher()).photoUrl" [alt]="selectedTeacher()?.displayName" />
+              } @else {
+                <span class="st-initials">{{ getInitials(selectedTeacher()?.displayName) }}</span>
+              }
+            </ion-avatar>
             <div class="st-info">
               <span class="st-lbl">المعلم المختار</span>
               <span class="st-name">{{ selectedTeacher()?.displayName }}</span>
             </div>
-            <button class="change-btn" (click)="backToTeachers()">تغيير</button>
-          </div>
+            <ion-button class="change-btn" fill="outline" size="small" (click)="backToTeachers()">
+              <ion-icon name="swap-horizontal-outline" slot="start"></ion-icon>
+              تغيير
+            </ion-button>
+          </ion-card>
 
           <!-- Teacher code input — only shown when groups are available -->
           @if (groups().length > 0) {
-            <div class="code-card">
-              <label class="code-label">
-                <i class="fas fa-key"></i> رمز الطالب الداخلي
-                <span class="optional-tag">اختياري</span>
-              </label>
-              <input
+            <ion-card class="code-card">
+              <div class="code-label">
+                <ion-icon name="key-outline"></ion-icon>
+                <span>رمز الطالب الداخلي</span>
+                <ion-chip class="optional-chip" outline="false"><ion-label>اختياري</ion-label></ion-chip>
+              </div>
+              <ion-input
                 class="code-input"
                 type="text"
+                fill="outline"
                 [(ngModel)]="teacherStudentCodeInput"
                 placeholder="أدخل الرمز إن زودك به المعلم"
-                maxlength="32" />
-            </div>
+                [maxlength]="32"></ion-input>
+            </ion-card>
           }
 
           <div class="section-lbl">
-            <i class="fas fa-users"></i>
+            <ion-icon name="people-outline"></ion-icon>
             <span>اختر المجموعة</span>
             <span class="lbl-count">{{ groups().length }}</span>
           </div>
 
           @if (groups().length === 0) {
             <div class="empty-state">
-              <i class="fas fa-calendar-times"></i>
+              <ion-icon name="calendar-clear-outline"></ion-icon>
               <p>لا توجد مجموعات متاحة لهذا المعلم حالياً</p>
             </div>
           }
 
           <div class="groups-list">
             @for (g of groups(); track g.groupId) {
-              <div class="group-card">
-                <div class="group-top">
-                  <div>
-                    <div class="group-name">{{ g.name }}</div>
-                    <div class="group-code"><i class="fas fa-hashtag"></i> {{ g.groupCode }}</div>
-                  </div>
-                </div>
-
-                @if (g.schedules && g.schedules.length > 0) {
-                  <div class="schedules">
-                    @for (s of g.schedules; track s.dayOfWeek) {
-                      <div class="schedule-row">
-                        <i class="fas fa-calendar-day"></i>
-                        <span class="sch-day">{{ getDayName(s.dayOfWeek) }}</span>
-                        <i class="fas fa-clock"></i>
-                        <span>{{ formatTime(s.startTime) }} - {{ formatTime(s.endTime) }}</span>
-                        @if (s.location) {
-                          <span class="sch-loc"><i class="fas fa-map-marker-alt"></i> {{ s.location }}</span>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-
-                <button class="join-btn" (click)="selectGroup(g)" [disabled]="submitting()">
-                  @if (submitting()) {
-                    <i class="fas fa-spinner fa-spin"></i> جاري الإرسال...
-                  } @else {
-                    <i class="fas fa-user-plus"></i> انضم للمجموعة
+              <ion-card class="group-card">
+                <ion-card-header>
+                  <ion-card-title class="group-name">{{ g.name }}</ion-card-title>
+                  <ion-chip class="group-code" outline="false">
+                    <ion-icon name="pricetag-outline"></ion-icon>
+                    <ion-label>{{ g.groupCode }}</ion-label>
+                  </ion-chip>
+                </ion-card-header>
+                <ion-card-content>
+                  @if (g.schedules && g.schedules.length > 0) {
+                    <div class="schedules">
+                      @for (s of g.schedules; track s.dayOfWeek) {
+                        <div class="schedule-row">
+                          <ion-icon name="calendar-outline" class="sch-ico"></ion-icon>
+                          <span class="sch-day">{{ getDayName(s.dayOfWeek) }}</span>
+                          <span class="sch-time">
+                            <ion-icon name="time-outline"></ion-icon>
+                            {{ formatTime(s.startTime) }} - {{ formatTime(s.endTime) }}
+                          </span>
+                          @if (s.location) {
+                            <span class="sch-loc"><ion-icon name="location-outline"></ion-icon> {{ s.location }}</span>
+                          }
+                        </div>
+                      }
+                    </div>
                   }
-                </button>
-              </div>
+
+                  <ion-button class="join-btn" expand="block" (click)="selectGroup(g)" [disabled]="submitting()">
+                    @if (submitting()) {
+                      <ion-spinner name="crescent" slot="start"></ion-spinner> جاري الإرسال...
+                    } @else {
+                      <ion-icon name="person-add-outline" slot="start"></ion-icon> انضم للمجموعة
+                    }
+                  </ion-button>
+                </ion-card-content>
+              </ion-card>
             }
           </div>
         </div>
@@ -236,344 +284,347 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       <!-- Success Screen -->
       @if (enrollmentSuccess()) {
         <div class="success-screen">
-          <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="success-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
           <h2>تم إرسال الطلب!</h2>
           <p>سيتم مراجعة طلب التسجيل من قبل المعلم والموافقة عليه قريباً</p>
           <p class="success-en">Your enrollment request has been sent successfully</p>
           <div class="success-actions">
-            <button class="sa-btn sa-btn--outline" (click)="goBack()">
-              <i class="fas fa-home"></i> الرئيسية
-            </button>
-            <button class="sa-btn sa-btn--primary" (click)="goToRequests()">
-              <i class="fas fa-clipboard-list"></i> طلباتي
-            </button>
+            <ion-button class="sa-btn" fill="outline" expand="block" (click)="goBack()">
+              <ion-icon name="home-outline" slot="start"></ion-icon> الرئيسية
+            </ion-button>
+            <ion-button class="sa-btn" expand="block" (click)="goToRequests()">
+              <ion-icon name="clipboard-outline" slot="start"></ion-icon> طلباتي
+            </ion-button>
           </div>
         </div>
       }
 
+      </div>
     </div>
   `,
   styles: [`
     $pg: linear-gradient(135deg, #667eea, #764ba2);
     $ps: #667eea;
     $pe: #764ba2;
+    $surface: #ffffff;
+    $bg: #f5f4fb;
+    $line: #ece9fb;
+    $ink: #1a1d29;
+    $muted: #7a7f8c;
 
     .enroll-page {
       min-height: 100vh;
-      background: #f4f3ff;
+      background: $bg;
       direction: rtl;
-      padding-bottom: env(safe-area-inset-bottom);
+      --ion-color-primary: #667eea;
+      --ion-color-primary-rgb: 102,126,234;
+    }
+    .enroll-body {
+      padding: 0 0 calc(env(safe-area-inset-bottom) + 1.25rem);
+      max-width: 560px;
+      margin: 0 auto;
     }
 
-    /* Header */
-    .enroll-header {
-      background: $pg;
-      padding: 1rem 1rem calc(1rem + env(safe-area-inset-top));
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-    }
-    .back-btn {
-      width: 40px; height: 40px;
-      background: rgba(255,255,255,0.2);
-      border: none; border-radius: 50%;
-      color: #fff; font-size: 1rem;
-      cursor: pointer; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .header-text { display: flex; flex-direction: column; }
-    .header-title { color: #fff; font-size: 1.1rem; font-weight: 700; }
-    .header-sub { color: rgba(255,255,255,0.75); font-size: 0.78rem; }
-
-    /* Steps */
-    .steps-bar {
+    /* ── Stepper ─────────────────────────────────────────────── */
+    .stepper {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0;
-      padding: 1rem 2rem;
-      background: #fff;
-      border-bottom: 1px solid #e9e6ff;
+      padding: 0.9rem 1.5rem 1rem;
+      background: $surface;
+      border-bottom: 1px solid $line;
+      position: sticky; top: 0; z-index: 5;
     }
-    .step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .step-dot {
+    .stp { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
+    .stp-dot {
       width: 30px; height: 30px;
       border-radius: 50%;
-      background: #e9e6ff;
-      color: #9ca3af;
-      font-size: 0.8rem;
-      font-weight: 700;
+      background: #eceaf9;
+      color: #a3a8b8;
+      font-size: 0.82rem; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
+      ion-icon { font-size: 1rem; }
     }
-    .step--active .step-dot { background: $pg; color: #fff; }
-    .step--done .step-dot { background: #22c55e; color: #fff; }
-    .step-label { font-size: 0.72rem; color: #6b7280; font-weight: 500; }
-    .step--active .step-label { color: $pe; font-weight: 700; }
-    .step-line {
-      flex: 1;
-      height: 2px;
-      background: #e9e6ff;
-      margin: 0 0.5rem;
-      margin-bottom: 0.9rem;
-      min-width: 40px;
-      transition: background 0.3s ease;
+    .stp--active .stp-dot { background: $pg; color: #fff; box-shadow: 0 4px 12px rgba(102,126,234,0.35); }
+    .stp--done .stp-dot { background: #22c55e; color: #fff; }
+    .stp-text { font-size: 0.72rem; color: $muted; font-weight: 600; }
+    .stp--active .stp-text { color: $pe; }
+    .stp-bar {
+      flex: 0 1 80px; height: 3px; border-radius: 3px;
+      background: #eceaf9;
+      margin: 0 0.6rem 1.1rem;
+      transition: background 0.25s ease;
     }
-    .step-line--done { background: #22c55e; }
+    .stp-bar--done { background: #22c55e; }
 
-    /* Error */
+    /* ── Error ───────────────────────────────────────────────── */
     .error-banner {
-      margin: 0.75rem 1rem;
+      margin: 0.85rem 1rem 0;
       background: #fef2f2;
       border: 1px solid #fecaca;
       color: #dc2626;
-      border-radius: 10px;
-      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      padding: 0.75rem 0.9rem;
       font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      display: flex; align-items: center; gap: 0.5rem;
+      ion-icon { font-size: 1.1rem; flex-shrink: 0; }
     }
 
-    /* Loading */
-    .loading-area { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
-    @keyframes shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
-    .sk-card {
-      height: 80px; border-radius: 14px;
-      background: linear-gradient(90deg, #e9e6ff 25%, #f4f3ff 50%, #e9e6ff 75%);
-      background-size: 600px 100%;
-      animation: shimmer 1.5s infinite;
+    /* ── Loading ─────────────────────────────────────────────── */
+    .loading-area {
+      padding: 3rem 1rem; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 0.6rem;
     }
+    .enroll-spinner { width: 44px; height: 44px; --color: #667eea; }
+    .loading-text { color: $muted; font-size: 0.9rem; }
 
-    /* Section label */
+    /* ── Section label ───────────────────────────────────────── */
     .section-lbl {
       display: flex; align-items: center; gap: 0.5rem;
-      padding: 0 1rem;
-      margin: 1rem 0 0.5rem;
-      font-size: 0.85rem; font-weight: 600; color: #374151;
-      i { color: $ps; }
+      padding: 0 1.1rem;
+      margin: 1.25rem 0 0.65rem;
+      font-size: 0.9rem; font-weight: 700; color: $ink;
+      ion-icon { color: $ps; font-size: 1.1rem; }
     }
     .lbl-count {
-      background: $pg; color: #fff;
-      border-radius: 20px; padding: 0.1rem 0.5rem;
-      font-size: 0.7rem; font-weight: 700;
+      background: rgba(102,126,234,0.12); color: $pe;
+      border-radius: 20px; padding: 0.05rem 0.55rem;
+      font-size: 0.72rem; font-weight: 800;
+      min-width: 1.4rem; text-align: center;
     }
 
-    /* Empty */
+    /* ── Empty ───────────────────────────────────────────────── */
     .empty-state {
-      text-align: center; padding: 2.5rem 1rem; color: #9ca3af;
-      i { font-size: 2.5rem; color: #c4b5fd; display: block; margin-bottom: 0.75rem; }
-      p { font-size: 0.9rem; color: #6b7280; margin: 0; }
+      text-align: center; padding: 2.75rem 1.5rem; color: $muted;
+      ion-icon { font-size: 3rem; color: #c4b9f2; display: block; margin: 0 auto 0.75rem; }
+      p { font-size: 0.9rem; color: $muted; margin: 0; line-height: 1.6; }
     }
 
-    /* Filter panel */
-    .filter-panel {
-      margin: 0.75rem 1rem 0;
-      background: #fff; border-radius: 14px;
-      padding: 0.85rem; border: 1.5px solid #e9e6ff;
-      display: flex; flex-direction: column; gap: 0.6rem;
+    /* ── Filter card ─────────────────────────────────────────── */
+    ion-card.filter-card {
+      margin: 0.85rem 1rem 0;
+      background: $surface;
+      border-radius: 18px;
+      border: 1px solid $line;
+      box-shadow: 0 4px 18px rgba(102,126,234,0.07);
+      padding: 0.75rem;
+      display: flex; flex-direction: column; gap: 0.55rem;
+    }
+    ion-searchbar.enroll-searchbar {
+      --background: #f5f4fb; --border-radius: 12px; --box-shadow: none;
+      --color: #{$ink}; --placeholder-color: #9aa0ae; --icon-color: #667eea;
+      padding: 0;
+      min-height: 48px;
+      font-size: 16px;
     }
     .filter-row { display: flex; gap: 0.5rem; }
-    .filter-field { flex: 1; display: flex; flex-direction: column; gap: 0.3rem; }
-    .filter-lbl {
-      font-size: 0.72rem; font-weight: 600; color: #6b7280;
-      display: flex; align-items: center; gap: 0.3rem;
-      i { color: $ps; }
+    .filter-item {
+      flex: 1; margin: 0;
+      border: 1px solid $line; border-radius: 12px;
+      --background: #fafaff; --border-radius: 12px; --min-height: 56px;
+      --padding-start: 0.6rem; --inner-padding-end: 0.4rem;
+      --highlight-color-focused: #667eea;
+      font-size: 16px;
     }
-    .filter-select, .filter-input {
-      border: 1px solid #e0e0e0; border-radius: 8px;
-      padding: 0.5rem 0.6rem; font-size: 0.82rem;
-      width: 100%; box-sizing: border-box; background: #fff;
-      &:focus { outline: none; border-color: $ps; box-shadow: 0 0 0 2px rgba(102,126,234,0.15); }
-    }
+    .filter-ico { color: #667eea; font-size: 1.05rem; margin-inline-end: 0.45rem; }
+    ion-select { font-size: 0.92rem; --placeholder-color: #9aa0ae; }
     .filter-loading {
       display: flex; align-items: center; gap: 0.4rem;
-      font-size: 0.78rem; color: #667eea;
+      font-size: 0.8rem; color: #667eea; padding: 0.15rem 0.25rem;
+      ion-spinner { width: 18px; height: 18px; --color: #667eea; }
     }
-    .spinner-xs {
-      width: 12px; height: 12px;
-      border: 2px solid #667eea; border-top-color: transparent;
-      border-radius: 50%; animation: spin .7s linear infinite;
-      display: inline-block;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Teachers */
-    .teachers-grid {
-      padding: 0 1rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
+    /* ── Teachers ────────────────────────────────────────────── */
+    .teachers-list {
+      padding: 0 1rem; display: flex; flex-direction: column; gap: 0.7rem;
     }
-    .teacher-card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 1.1rem 0.75rem;
-      display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      border: 1.5px solid #e9e6ff;
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      position: relative;
-      text-align: center;
-      &:active { transform: scale(0.97); }
+    ion-card.teacher-card {
+      margin: 0; --background: #{$surface};
+      border-radius: 18px;
+      border: 1px solid $line;
+      box-shadow: 0 3px 14px rgba(20,20,50,0.05);
+      padding: 0.85rem 0.9rem 0.7rem;
+      text-align: start;
+      position: relative; overflow: hidden;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      &:active { transform: scale(0.99); }
     }
-    .teacher-avatar {
-      width: 52px; height: 52px;
-      border-radius: 50%;
+    ion-card.teacher-card.teacher-promoted {
+      border-color: #f6c64d;
+      box-shadow: 0 4px 16px rgba(245,158,11,0.18);
+    }
+    .tc-row { display: flex; align-items: flex-start; gap: 0.75rem; }
+    ion-avatar.tc-avatar {
+      width: 56px; height: 56px; flex-shrink: 0;
       background: $pg;
-      color: #fff;
-      font-size: 1.1rem; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
+      img { width: 100%; height: 100%; object-fit: cover; }
     }
+    .tc-initials { color: #fff; font-size: 1.2rem; font-weight: 700; }
+    .tc-info { flex: 1; min-width: 0; }
+    .tc-name-row { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
     .teacher-name {
-      font-size: 0.85rem; font-weight: 600; color: #1a202c;
-      line-height: 1.3;
+      font-size: 1rem; font-weight: 700; color: $ink; line-height: 1.3;
     }
-    .teacher-location {
-      font-size: 0.68rem; color: #9ca3af; display: flex; align-items: center; gap: 0.2rem;
-      i { font-size: 0.58rem; color: #667eea; }
+    ion-chip.promoted-chip {
+      margin: 0; height: 22px; --background: #fff7e6; --color: #b45309;
+      font-size: 0.68rem; font-weight: 700;
+      ion-icon { color: #f59e0b; font-size: 0.8rem; }
+      ion-label { margin-inline: 0.2rem; }
     }
-    .teacher-promoted {
-      border-color: #f59e0b;
-      box-shadow: 0 2px 12px rgba(245,158,11,.2);
+    ion-chip.loc-chip {
+      margin: 0.3rem 0 0; height: 24px;
+      --background: rgba(102,126,234,0.09); --color: #5b62c9;
+      font-size: 0.72rem; font-weight: 600;
+      ion-icon { color: #667eea; font-size: 0.85rem; }
+      ion-label { margin-inline: 0.15rem; }
     }
-    .promoted-badge {
-      position: absolute; top: -1px; right: -1px;
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      color: #fff; font-size: .6rem; font-weight: 700;
-      padding: .15rem .45rem; border-radius: 0 13px 0 10px;
-      display: flex; align-items: center; gap: .2rem;
+    .teacher-bio {
+      font-size: 0.8rem; color: #6b6f7e; line-height: 1.55; margin: 0.45rem 0 0;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .promoted-badge i { font-size: .55rem; }
-    .info-btn {
-      position: absolute; top: .4rem; left: .4rem;
-      width: 28px; height: 28px; border-radius: 50%;
-      background: rgba(102,126,234,.08); border: none; color: #667eea;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: .75rem; z-index: 1;
-    }
-    .info-btn:active { background: rgba(102,126,234,.18); }
-    .select-btn {
-      background: $pg; color: #fff;
-      border: none; border-radius: 8px;
-      padding: 0.35rem 0.9rem; font-size: 0.75rem; font-weight: 600;
-      cursor: pointer; width: 100%;
-      display: flex; align-items: center; justify-content: center; gap: 0.3rem;
-      min-height: 36px;
-    }
-
-    /* Selected teacher bar */
-    .selected-teacher-bar {
-      margin: 0.75rem 1rem;
-      background: #fff;
-      border-radius: 12px;
-      padding: 0.75rem 1rem;
-      display: flex; align-items: center; gap: 0.75rem;
-      border: 1.5px solid #e9e6ff;
-      box-shadow: 0 2px 6px rgba(102,126,234,0.1);
-    }
-    .st-avatar {
+    ion-button.info-btn {
+      flex-shrink: 0; margin: -0.2rem -0.3rem 0 0;
       width: 40px; height: 40px;
-      border-radius: 50%; background: $pg; color: #fff;
-      font-size: 0.9rem; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      --color: #667eea; --background: rgba(102,126,234,0.08);
+      --padding-start: 0; --padding-end: 0;
+      ion-icon { font-size: 1.25rem; }
     }
-    .st-info { flex: 1; display: flex; flex-direction: column; gap: 0.1rem; }
-    .st-lbl { font-size: 0.68rem; color: #9ca3af; }
-    .st-name { font-size: 0.88rem; font-weight: 600; color: #1a202c; }
-    .change-btn {
-      background: none; border: 1.5px solid $ps; color: $ps;
-      border-radius: 8px; padding: 0.3rem 0.75rem;
-      font-size: 0.78rem; font-weight: 600; cursor: pointer;
-      min-height: 36px;
+    .tc-cta {
+      display: flex; align-items: center; justify-content: flex-end; gap: 0.25rem;
+      margin-top: 0.55rem; padding-top: 0.55rem;
+      border-top: 1px dashed $line;
+      color: $pe; font-size: 0.82rem; font-weight: 700;
+      ion-icon { font-size: 1rem; }
+    }
+    .tc-cta-text { color: $pe; }
+
+    /* ── Selected teacher bar ────────────────────────────────── */
+    ion-card.selected-teacher-bar {
+      margin: 0.85rem 1rem 0;
+      background: $surface;
+      border-radius: 16px;
+      border: 1px solid $line;
+      box-shadow: 0 3px 14px rgba(102,126,234,0.09);
+      padding: 0.7rem 0.85rem;
+      display: flex; align-items: center; gap: 0.7rem;
+    }
+    ion-avatar.st-avatar {
+      width: 44px; height: 44px; flex-shrink: 0; background: $pg;
+      display: flex; align-items: center; justify-content: center;
+      img { width: 100%; height: 100%; object-fit: cover; }
+    }
+    .st-initials { color: #fff; font-size: 0.95rem; font-weight: 700; }
+    .st-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+    .st-lbl { font-size: 0.68rem; color: $muted; font-weight: 600; }
+    .st-name { font-size: 0.92rem; font-weight: 700; color: $ink; }
+    ion-button.change-btn {
+      --color: #667eea; --border-color: #c7cbf3; --border-radius: 10px;
+      font-weight: 700; margin: 0; --padding-start: 0.7rem; --padding-end: 0.7rem;
+      height: 38px;
+      ion-icon { font-size: 0.95rem; }
     }
 
-    /* Code input */
-    .code-card {
-      margin: 0 1rem 0.5rem;
-      background: #fff; border-radius: 12px;
-      padding: 0.85rem 1rem;
-      border: 1.5px solid #e9e6ff;
+    /* ── Code input ──────────────────────────────────────────── */
+    ion-card.code-card {
+      margin: 0.7rem 1rem 0;
+      background: $surface; border-radius: 16px;
+      border: 1px solid $line; box-shadow: 0 3px 14px rgba(20,20,50,0.04);
+      padding: 0.85rem 0.9rem;
     }
     .code-label {
       display: flex; align-items: center; gap: 0.4rem;
-      font-size: 0.82rem; font-weight: 600; color: #374151;
-      margin-bottom: 0.5rem;
-      i { color: $ps; }
+      font-size: 0.85rem; font-weight: 700; color: $ink;
+      margin-bottom: 0.55rem;
+      ion-icon { color: $ps; font-size: 1rem; }
     }
-    .optional-tag {
-      background: #ede9fe; color: $pe;
-      border-radius: 6px; padding: 0.1rem 0.4rem;
-      font-size: 0.68rem; font-weight: 500; margin-right: auto;
+    ion-chip.optional-chip {
+      margin: 0 0 0 auto; height: 20px;
+      --background: #ede9fe; --color: #{$pe};
+      font-size: 0.66rem; font-weight: 700;
+      ion-label { margin-inline: 0.35rem; }
     }
-    .code-input {
-      width: 100%; border: 1px solid #e0e0e0; border-radius: 8px;
-      padding: 0.55rem 0.85rem; font-size: 0.88rem;
-      direction: rtl; box-sizing: border-box;
-      &:focus { outline: none; border-color: $ps; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+    ion-input.code-input {
+      --background: #fafaff; --border-radius: 12px; --color: #{$ink};
+      --border-color: #{$line}; --highlight-color-focused: #667eea;
+      --padding-start: 0.85rem; --padding-end: 0.85rem;
+      font-size: 16px; direction: rtl;
     }
 
-    /* Groups */
-    .groups-list { padding: 0 1rem; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
-    .group-card {
-      background: #fff; border-radius: 14px;
-      padding: 1rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      border: 1.5px solid #e9e6ff;
+    /* ── Groups ──────────────────────────────────────────────── */
+    .groups-list { padding: 0 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    ion-card.group-card {
+      margin: 0; --background: #{$surface};
+      border-radius: 18px;
+      border: 1px solid $line;
+      box-shadow: 0 3px 14px rgba(20,20,50,0.05);
+      overflow: hidden;
     }
-    .group-top { margin-bottom: 0.75rem; }
-    .group-name { font-size: 0.95rem; font-weight: 700; color: #1a202c; }
-    .group-code { font-size: 0.75rem; color: #9ca3af; margin-top: 0.15rem; i { font-size: 0.65rem; } }
-    .schedules { margin-bottom: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    ion-card.group-card ion-card-header {
+      padding: 0.9rem 0.95rem 0.4rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+    }
+    .group-name { font-size: 1rem; font-weight: 700; color: $ink; }
+    ion-chip.group-code {
+      margin: 0; flex-shrink: 0; height: 24px;
+      --background: rgba(118,75,162,0.1); --color: #{$pe};
+      font-size: 0.74rem; font-weight: 700;
+      ion-icon { color: $pe; font-size: 0.82rem; }
+      ion-label { margin-inline: 0.15rem; }
+    }
+    ion-card.group-card ion-card-content { padding: 0 0.95rem 0.95rem; }
+    .schedules { margin-bottom: 0.85rem; display: flex; flex-direction: column; gap: 0.45rem; }
     .schedule-row {
-      display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem;
-      background: #f4f3ff; border-radius: 8px; padding: 0.45rem 0.75rem;
-      font-size: 0.78rem; color: #374151;
-      i { color: $pe; font-size: 0.72rem; }
+      display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem;
+      background: #f5f4fb; border-radius: 12px; padding: 0.55rem 0.75rem;
+      font-size: 0.8rem; color: #3b3f4d;
+      ion-icon { color: $pe; font-size: 0.92rem; vertical-align: -2px; }
     }
-    .sch-day { font-weight: 600; }
-    .sch-loc { color: #9ca3af; margin-right: auto; }
-    .join-btn {
-      width: 100%; background: $pg; color: #fff;
-      border: none; border-radius: 10px; padding: 0.75rem;
-      font-size: 0.9rem; font-weight: 700; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
-      min-height: 48px;
-      &:disabled { opacity: 0.7; cursor: not-allowed; }
-      &:active:not(:disabled) { opacity: 0.88; }
+    .sch-ico { color: $pe; }
+    .sch-day { font-weight: 700; color: $ink; }
+    .sch-time { display: inline-flex; align-items: center; gap: 0.25rem; }
+    .sch-loc {
+      color: $muted; margin-inline-start: auto;
+      display: inline-flex; align-items: center; gap: 0.2rem;
+    }
+    ion-button.join-btn {
+      margin: 0; font-weight: 800; font-size: 0.92rem;
+      height: 50px;
+      --background: linear-gradient(135deg, #667eea, #764ba2);
+      --background-activated: #5b6fd6;
+      --color: #fff; --border-radius: 14px;
+      --box-shadow: 0 6px 16px rgba(102,126,234,0.3);
+      ion-icon { font-size: 1.1rem; }
+      ion-spinner { width: 20px; height: 20px; }
     }
 
-    /* Success */
+    /* ── Success ─────────────────────────────────────────────── */
     .success-screen {
       display: flex; flex-direction: column; align-items: center;
-      padding: 3rem 2rem; text-align: center;
+      padding: 3.5rem 2rem; text-align: center;
     }
     .success-icon {
-      font-size: 4.5rem; color: #22c55e;
       margin-bottom: 1rem;
-      animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+      animation: popIn 0.45s cubic-bezier(0.175,0.885,0.32,1.275);
+      ion-icon { font-size: 5rem; color: #22c55e; }
     }
     @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-    .success-screen h2 { font-size: 1.4rem; font-weight: 800; color: #1a202c; margin: 0 0 0.5rem; }
-    .success-screen p { font-size: 0.88rem; color: #6b7280; margin: 0; }
-    .success-en { font-size: 0.78rem; color: #9ca3af; margin-top: 0.25rem !important; }
-    .success-actions { display: flex; gap: 0.75rem; margin-top: 2rem; width: 100%; max-width: 320px; }
-    .sa-btn {
-      flex: 1; border-radius: 12px; padding: 0.75rem 1rem;
-      font-size: 0.88rem; font-weight: 700; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
-      min-height: 48px; border: none;
+    .success-screen h2 { font-size: 1.45rem; font-weight: 800; color: $ink; margin: 0 0 0.5rem; }
+    .success-screen p { font-size: 0.9rem; color: $muted; margin: 0; line-height: 1.6; max-width: 320px; }
+    .success-en { font-size: 0.78rem; color: #a3a8b8; margin-top: 0.35rem !important; }
+    .success-actions { display: flex; gap: 0.7rem; margin-top: 2.25rem; width: 100%; max-width: 340px; }
+    ion-button.sa-btn {
+      flex: 1; margin: 0; height: 50px;
+      --border-radius: 14px; font-weight: 800; font-size: 0.9rem;
+      ion-icon { font-size: 1.05rem; }
     }
-    .sa-btn--primary { background: $pg; color: #fff; }
-    .sa-btn--outline { background: #fff; color: $pe; border: 1.5px solid $pe; }
+    ion-button.sa-btn[fill="outline"] { --color: #{$pe}; --border-color: #c7b9e8; }
+    ion-button.sa-btn:not([fill]) {
+      --background: linear-gradient(135deg, #667eea, #764ba2);
+      --color: #fff; --box-shadow: 0 6px 16px rgba(102,126,234,0.3);
+    }
   `]
 })
 export class CourseEnrollmentComponent implements OnInit {
@@ -622,13 +673,19 @@ export class CourseEnrollmentComponent implements OnInit {
     return result;
   });
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
     const aId = this.route.snapshot.queryParamMap.get('academyId');
+    const tId = this.route.snapshot.queryParamMap.get('teacherId');
     if (id) {
       this.courseId.set(id);
       if (aId) this.academyId.set(aId);
-      this.loadTeachers();
+      await this.loadTeachers();
+      // Pre-select the teacher when arriving from a teacher's public profile
+      if (tId) {
+        const match = this.teachers().find(t => t.id === tId);
+        if (match) this.selectTeacher(match);
+      }
     }
   }
 
@@ -649,6 +706,10 @@ export class CourseEnrollmentComponent implements OnInit {
           studentTown = student?.town || undefined;
         }
       } catch { /* ignore - location is optional */ }
+
+      // Auto-select the student's own governorate & center as the default teacher filter.
+      if (studentGov && !this.filterGovernment()) this.filterGovernment.set(studentGov);
+      if (studentTown && !this.filterTown()) this.filterTown.set(studentTown);
 
       const teachers = await lastValueFrom(
         this.restSvc.request<void, TeacherAutocompleteDto[]>({
@@ -673,6 +734,11 @@ export class CourseEnrollmentComponent implements OnInit {
         }
       } else {
         this.teachers.set(teachers || []);
+      }
+
+      // Apply the auto-selected location filter now that the teachers are loaded.
+      if (this.filterGovernment() || this.filterTown()) {
+        await this.onLocationFilterChange();
       }
     } catch {
       this.errorMessage.set('حدث خطأ أثناء تحميل المعلمين');

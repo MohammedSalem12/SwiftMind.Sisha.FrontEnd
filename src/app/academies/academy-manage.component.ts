@@ -9,29 +9,21 @@ import type { AcademyDto, AcademyMemberDto } from '@proxy/academies/models';
 import { CourseService } from '@proxy/courses';
 import type { CourseDto, CreateUpdateCourseDto } from '@proxy/courses/dtos/models';
 import type { AcademyCourseDto } from '@proxy/academies/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-academy-manage',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="academy-manage-page" dir="rtl">
       <!-- Header -->
-      <div class="page-header">
-        <div class="header-content">
-          <button class="btn-back" (click)="router.navigate(['/academies', academyId, 'profile'])">
-            <i class="fas fa-arrow-right"></i>
-          </button>
-          <div class="header-icon">
-            <i class="fas fa-cogs"></i>
-          </div>
-          <div>
-            <h1>إدارة الأكاديمية</h1>
-            <p *ngIf="academy()">{{ academy()!.nameAr }}</p>
-          </div>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'إدارة الأكاديمية'"
+        [titleEn]="academy()?.nameAr || ''"
+        [backTo]="['/academies', academyId, 'profile']">
+      </app-page-header>
 
       <!-- Stats Cards -->
       <div class="stats-grid" *ngIf="!loading()">
@@ -330,62 +322,6 @@ import type { AcademyCourseDto } from '@proxy/academies/models';
       background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
       padding: 0;
       direction: rtl;
-    }
-
-    // ─── Page Header ───────────────────────────────────────────────
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + .75rem) 1rem .75rem;
-      color: white;
-      position: relative;
-      overflow: hidden;
-
-      .header-content {
-        display: flex;
-        align-items: center;
-        gap: .75rem;
-        position: relative;
-        z-index: 1;
-      }
-
-      .btn-back {
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        cursor: pointer;
-        color: white;
-        flex-shrink: 0;
-      }
-
-      .header-icon {
-        width: 42px;
-        height: 42px;
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        flex-shrink: 0;
-      }
-
-      h1 {
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin: 0;
-      }
-
-      p {
-        margin: 0;
-        opacity: 0.75;
-        font-size: .75rem;
-      }
     }
 
     // ─── Stats Grid ─────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDashboardDto, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, SendMessageToTeacherDto, SubmitAbsenceExcuseDto, UpdateParentDto, UpdateParentStudentDto } from './models';
+import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDashboardDto, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, SendMessageToTeacherDto, SubmitAbsenceExcuseDto, UpdateParentDto, UpdateParentProfileDto, UpdateParentStudentDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -9,6 +9,14 @@ import type { ReferralInfoDto } from '../common/models';
 })
 export class ParentService {
   apiName = 'Default';
+  
+
+  confirmStudentLinkRequest = (studentId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/parent/confirm-student-link-request/${studentId}`,
+    },
+    { apiName: this.apiName,...config });
   
 
   create = (input: CreateParentDto, config?: Partial<Rest.Config>) =>
@@ -138,6 +146,14 @@ export class ParentService {
     { apiName: this.apiName,...config });
   
 
+  getPendingStudentRequestsForCurrentParent = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ParentStudentDto[]>({
+      method: 'GET',
+      url: '/api/app/parent/pending-student-requests-for-current-parent',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getPickupAuthorizedForStudent = (studentId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ParentStudentDto[]>({
       method: 'GET',
@@ -160,6 +176,14 @@ export class ParentService {
       method: 'POST',
       url: '/api/app/parent/register-parent',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  rejectStudentLinkRequest = (studentId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/parent/reject-student-link-request/${studentId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -195,6 +219,15 @@ export class ParentService {
     this.restService.request<any, ParentDto>({
       method: 'PUT',
       url: `/api/app/parent/${id}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateMyProfile = (input: UpdateParentProfileDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ParentDto>({
+      method: 'PUT',
+      url: '/api/app/parent/my-profile',
       body: input,
     },
     { apiName: this.apiName,...config });

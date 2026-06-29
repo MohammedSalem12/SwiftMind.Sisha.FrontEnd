@@ -3,25 +3,18 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { SecretaryTeacherService } from '@proxy/teachers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-secretary-requests',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-text">
-          <h1>طلبات الربط</h1>
-          <p>الطلبات المرسلة للمعلمين</p>
-        </div>
-      </div>
+      <app-page-header [title]="'الطلبات'" [titleEn]="'Requests'" [backTo]="'/secretary'"></app-page-header>
 
       <!-- Loading shimmer -->
       @if (loading()) {
@@ -99,23 +92,6 @@ import { SecretaryTeacherService } from '@proxy/teachers';
   `,
   styles: [`
     .page { min-height: 100vh; background: #f4f5fb; direction: rtl; }
-
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1rem 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: .875rem;
-    }
-    .back-btn {
-      width: 40px; height: 40px; min-width: 40px; border-radius: 50%;
-      background: rgba(255,255,255,.2); border: none;
-      color: white; font-size: 1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .header-text h1 { font-size: 1.2rem; font-weight: 700; margin: 0; }
-    .header-text p { font-size: .8rem; margin: .1rem 0 0; opacity: .8; }
 
     /* Shimmer */
     .shimmer-list { padding: .75rem; display: flex; flex-direction: column; gap: .625rem; }
@@ -225,6 +201,5 @@ export class SecretaryRequestsComponent implements OnInit {
     } catch { return d; }
   }
 
-  goBack()          { this.router.navigate(['/secretary']); }
   goToLinkTeacher() { this.router.navigate(['/secretary/link-teacher']); }
 }

@@ -1,29 +1,29 @@
 <div class="parent-dashboard" dir="rtl">
 
-  <!-- Hero Header -->
-  <div class="hero-header">
-    <button class="back-btn" (click)="goBack()" aria-label="رجوع">
-      <i class="fas fa-arrow-right"></i>
-    </button>
-    <div class="hero-text">
-      @if (dashboard()) {
-        <h1>مرحباً {{ dashboard()!.parentName }}</h1>
-        <p>لوحة متابعة الأبناء · Children Dashboard</p>
-      } @else {
-        <h1>لوحة متابعة الأبناء</h1>
-        <p>Children Dashboard</p>
-      }
-    </div>
-    @if (dashboard(); as d) {
-      <div class="children-count-badge">
-        <i class="fas fa-child"></i>
-        <span>{{ d.totalChildren }}</span>
-      </div>
-    }
-    <button class="refresh-btn" (click)="loadDashboard()" [disabled]="loading()" aria-label="تحديث">
+  <!-- Header -->
+  <app-page-header
+    [title]="'لوحة المتابعة'"
+    [titleEn]="'Dashboard'"
+    [backTo]="'/parent'">
+    <button ph-actions class="ph-action" (click)="loadDashboard()" [disabled]="loading()" aria-label="تحديث · Refresh">
       <i class="fas fa-sync-alt" [class.fa-spin]="loading()"></i>
     </button>
-  </div>
+  </app-page-header>
+
+  <!-- Greeting card -->
+  @if (dashboard()) {
+    <div class="greet-card">
+      <div class="greet-avatar"><span>{{ getInitials(dashboard()!.parentName) }}</span></div>
+      <div class="greet-text">
+        <h2>مرحباً {{ dashboard()!.parentName }}</h2>
+        <p>لوحة متابعة الأبناء · Children Dashboard</p>
+      </div>
+      <div class="children-count-badge">
+        <i class="fas fa-child"></i>
+        <span>{{ dashboard()!.totalChildren }}</span>
+      </div>
+    </div>
+  }
 
   <!-- Loading Skeleton -->
   @if (loading()) {
@@ -119,7 +119,7 @@
           <!-- Child Header -->
           <div class="child-header">
             <div class="child-avatar">
-              <span>{{ getInitials(child.studentName) }}</span>
+              @if (child.studentPhotoUrl) { <img [src]="child.studentPhotoUrl" alt="" /> } @else { <span>{{ getInitials(child.studentName) }}</span> }
             </div>
             <div class="child-info">
               <h3 class="child-name">{{ child.studentName }}</h3>

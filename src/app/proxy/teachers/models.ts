@@ -2,6 +2,7 @@ import type { CreationAuditedEntityDto, EntityDto, ExtensibleAuditedEntityDto, F
 import type { SecretaryTeacherRequestStatus } from './secretary-teacher-request-status.enum';
 import type { UnenrollRequestStatus } from './unenroll-request-status.enum';
 import type { TeacherPromotionStatus } from './teacher-promotion-status.enum';
+import type { CourseDto } from '../courses/dtos/models';
 
 export interface CreateSecretaryTeacherDto {
   secretaryUserId?: string;
@@ -23,6 +24,8 @@ export interface CreateUpdateTeacherDto {
   password?: string;
   government?: string;
   town?: string;
+  bio?: string;
+  photoUrl?: string;
 }
 
 export interface PromotionPricingDto {
@@ -45,6 +48,7 @@ export interface SecretaryTeacherDto extends CreationAuditedEntityDto<string> {
   teacherId?: string;
   teacherName?: string;
   teacherCode?: string;
+  teacherPhotoUrl?: string;
 }
 
 export interface SecretaryTeacherRequestDto extends CreationAuditedEntityDto<string> {
@@ -73,6 +77,19 @@ export interface TeacherAutocompleteDto {
   isPromoted: boolean;
   government?: string;
   town?: string;
+  photoUrl?: string;
+  bio?: string;
+}
+
+export interface TeacherCardDto {
+  id?: string;
+  displayName?: string;
+  teacherCode?: string;
+  bio?: string;
+  photoUrl?: string;
+  government?: string;
+  town?: string;
+  courseCount: number;
 }
 
 export interface TeacherDashboardAbsentDto {
@@ -111,6 +128,8 @@ export interface TeacherDto extends ExtensibleAuditedEntityDto<string> {
   referralCode?: string;
   government?: string;
   town?: string;
+  bio?: string;
+  photoUrl?: string;
   sameArea: boolean;
   isPromoted: boolean;
 }
@@ -157,6 +176,17 @@ export interface TeacherPromotionDto extends FullAuditedEntityDto<string> {
   rejectionReason?: string;
 }
 
+export interface TeacherPublicProfileDto {
+  id?: string;
+  displayName?: string;
+  teacherCode?: string;
+  bio?: string;
+  photoUrl?: string;
+  government?: string;
+  town?: string;
+  courses: CourseDto[];
+}
+
 export interface TeacherUnenrollRequestDto extends EntityDto<string> {
   teacherId?: string;
   teacherName?: string;
@@ -167,4 +197,9 @@ export interface TeacherUnenrollRequestDto extends EntityDto<string> {
   rejectionReason?: string;
   processedAt?: string;
   creationTime?: string;
+}
+
+export interface UpdateTeacherProfileDto {
+  bio?: string;
+  photoUrl?: string;
 }

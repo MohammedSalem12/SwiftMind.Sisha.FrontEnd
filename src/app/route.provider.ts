@@ -18,6 +18,7 @@ export const ROLES = {
   ADMIN: 'ADMIN',
   SECRETARY: 'SECRETARY',
   ADVERTISER: 'ADVERTISER',
+  MARKETER: 'MARKETER',
 } as const;
 
 // ─── Route definitions ────────────────────────────────────────────────────────
@@ -68,10 +69,17 @@ const MENU_ITEMS: MenuItemConfig[] = [
   { path: '/enrollment-requests',name: 'طلبات التسجيل', iconClass: 'fas fa-clipboard-list', order: 7, roles: [ROLES.TEACHER, ROLES.ADMIN, ROLES.SECRETARY] },
   { path: '/exam-grade',         name: 'درجات الاختبار',iconClass: 'fas fa-clipboard',      order: 8, roles: [ROLES.TEACHER, ROLES.ADMIN, ROLES.SECRETARY] },
 
+  // ── Marketer ─────────────────────────────────────────────────────────────────
+  { path: '/marketer',          name: 'لوحة المسوّق', iconClass: 'fas fa-home',                order: 1, roles: [ROLES.MARKETER] },
+  { path: '/marketer/teachers', name: 'معلميني',       iconClass: 'fas fa-chalkboard-teacher',  order: 2, roles: [ROLES.MARKETER] },
+  { path: '/marketer/onboard',  name: 'تسجيل معلم',   iconClass: 'fas fa-user-plus',           order: 3, roles: [ROLES.MARKETER] },
+  { path: '/marketer/fees',     name: 'أرباحي',        iconClass: 'fas fa-coins',               order: 4, roles: [ROLES.MARKETER] },
+
   // ── Admin + Secretary only ────────────────────────────────────────────────────
   { path: '/teachers', name: 'المعلمين',       iconClass: 'fas fa-chalkboard-teacher', order: 9,  roles: [ROLES.ADMIN, ROLES.SECRETARY] },
   { path: '/parents',  name: 'أولياء الأمور',  iconClass: 'fas fa-users-cog',          order: 10, roles: [ROLES.ADMIN, ROLES.SECRETARY] },
   { path: '/courses',  name: 'المقررات',        iconClass: 'fas fa-book',               order: 11, roles: [ROLES.ADMIN, ROLES.SECRETARY] },
+  { path: '/marketers-admin', name: 'المسوّقون', iconClass: 'fas fa-bullhorn',          order: 12, roles: [ROLES.ADMIN] },
 
   // ── Shared (all authenticated) ───────────────────────────────────────────────
   { path: '/feeds',          name: 'النشرات',      iconClass: 'fas fa-rss',      order: 90 },

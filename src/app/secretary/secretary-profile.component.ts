@@ -8,53 +8,85 @@ import { CurrentUserActorDto } from '@proxy/common/models';
 import { SecretaryTeacherService } from '@proxy/teachers';
 import { SecretaryTeacherDto, SecretaryTeacherRequestDto } from '@proxy/teachers/models';
 import { SecretaryTeacherRequestStatus } from '@proxy/teachers/secretary-teacher-request-status.enum';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
+import { ImageCropService } from '../shared/services/image-crop.service';
 
 @Component({
   selector: 'app-secretary-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="header-blobs">
-          <div class="blob b1"></div>
-          <div class="blob b2"></div>
-        </div>
-
-        <!-- Avatar -->
-        <div class="avatar-wrap">
-          <div class="avatar">
-            <span>{{ initials() }}</span>
-          </div>
-          <div class="role-badge">
-            <i class="fas fa-user-tie"></i>
-            سكرتير · Secretary
-          </div>
-        </div>
-
-        <!-- Name & code -->
-        <div class="header-info">
-          <h1 class="user-name">{{ userInfo()?.actorName || 'السكرتير' }}</h1>
-          @if (userInfo()?.actorCode) {
-            <span class="user-code">{{ userInfo()?.actorCode }}</span>
-          }
-          @if (userInfo()?.email) {
-            <span class="user-email">{{ userInfo()?.email }}</span>
-          }
-          @if (userInfo()?.userName) {
-            <span class="user-username">&#64;{{ userInfo()?.userName }}</span>
-          }
-        </div>
-
-        <!-- Logout -->
-        <button class="logout-btn" (click)="logout()">
+      <app-page-header [title]="'ملفي الشخصي'" [titleEn]="'My Profile'" [backTo]="'/secretary'">
+        <button ph-actions class="ph-action" (click)="logout()" aria-label="تسجيل الخروج">
           <i class="fas fa-sign-out-alt"></i>
-          خروج
         </button>
+      </app-page-header>
+
+      <!-- Identity card -->
+      <div class="section">
+        <div class="id-card">
+          <div class="id-avatar">
+            @if (userInfo()?.photoUrl) { <img [src]="userInfo()!.photoUrl" alt="" /> }
+            @else { <span>{{ initials() }}</span> }
+            <button class="avatar-edit" (click)="toggleEdit()" aria-label="تعديل الصورة">
+              <i class="fas fa-camera"></i>
+            </button>
+          </div>
+          <div class="id-info">
+            <h1 class="id-name">{{ userInfo()?.actorName || 'السكرتير' }}</h1>
+            <div class="id-role"><i class="fas fa-user-tie"></i> سكرتير · Secretary</div>
+            <div class="id-chips">
+              @if (userInfo()?.actorCode) {
+                <span class="id-chip id-chip--code">{{ userInfo()?.actorCode }}</span>
+              }
+              @if (userInfo()?.email) {
+                <span class="id-chip id-chip--email">{{ userInfo()?.email }}</span>
+              }
+              @if (userInfo()?.userName) {
+                <span class="id-chip id-chip--email">&#64;{{ userInfo()?.userName }}</span>
+              }
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- ── Photo editor ── -->
+      @if (editingPhoto()) {
+        <div class="section">
+          <div class="section-title">
+            <i class="fas fa-id-badge"></i> صورتي · My Photo
+            <button class="edit-cancel" (click)="toggleEdit()"><i class="fas fa-times"></i> إلغاء</button>
+          </div>
+          <div class="photo-card">
+            <div class="photo-row">
+              <div class="photo-preview">
+                @if (editPhoto()) { <img [src]="editPhoto()" alt="" /> }
+                @else { <i class="fas fa-user"></i> }
+              </div>
+              <label class="photo-btn">
+                @if (photoProcessing()) { <span class="spinner-xs"></span> }
+                @else { <i class="fas fa-image"></i> }
+                {{ editPhoto() ? 'تغيير · Change' : 'إضافة صورة · Add' }}
+                <input type="file" accept="image/*" hidden (change)="onPhotoSelected($event)" />
+              </label>
+              @if (editPhoto()) {
+                <button type="button" class="photo-remove" (click)="editPhoto.set('')">
+                  <i class="fas fa-trash"></i> إزالة
+                </button>
+              }
+            </div>
+            @if (photoError()) { <p class="photo-err">{{ photoError() }}</p> }
+            <button class="photo-save" [disabled]="photoSaving()" (click)="savePhoto()">
+              @if (photoSaving()) { <span class="spinner-xs"></span> } @else { <i class="fas fa-check-circle"></i> }
+              حفظ · Save
+            </button>
+          </div>
+        </div>
+      }
 
       <!-- ── Stats row ── -->
       @if (!loading()) {
@@ -165,7 +197,11 @@ import { SecretaryTeacherRequestStatus } from '@proxy/teachers/secretary-teacher
               @for (t of teachers(); track t.id) {
                 <button class="teacher-row" (click)="goToTeacher(t)">
                   <div class="teacher-avatar">
-                    <i class="fas fa-chalkboard-teacher"></i>
+                    @if (t.teacherPhotoUrl) {
+                      <img [src]="t.teacherPhotoUrl" alt="" />
+                    } @else {
+                      <i class="fas fa-chalkboard-teacher"></i>
+                    }
                   </div>
                   <div class="teacher-info">
                     <span class="teacher-name">{{ t.teacherName || 'معلم' }}</span>
@@ -195,84 +231,57 @@ import { SecretaryTeacherRequestStatus } from '@proxy/teachers/secretary-teacher
       direction: rtl;
     }
 
-    /* ── Header ── */
-    .page-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 2rem;
+    /* ── Identity card ── */
+    .id-card {
+      display: flex; align-items: center; gap: 1rem;
+      background: #fff; border-radius: 16px; border: 1.5px solid #f0f0f0;
+      padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .id-avatar {
       position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.5rem;
-    }
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.07);
-      pointer-events: none;
-    }
-    .b1 { width: 200px; height: 200px; top: -70px; right: -60px; }
-    .b2 { width: 140px; height: 140px; bottom: -50px; left: -30px; }
-
-    .avatar-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      position: relative;
-      z-index: 1;
-    }
-    .avatar {
-      width: 80px; height: 80px; border-radius: 50%;
-      background: rgba(255,255,255,0.2);
-      border: 3px solid rgba(255,255,255,0.5);
+      flex-shrink: 0; width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.8rem; font-weight: 800; color: #fff;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      font-size: 1.5rem; font-weight: 800; color: #fff;
     }
-    .role-badge {
-      display: flex; align-items: center; gap: 0.35rem;
-      background: rgba(255,255,255,0.18);
-      color: rgba(255,255,255,0.92);
-      padding: 0.3rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.75rem; font-weight: 600;
-      border: 1px solid rgba(255,255,255,0.25);
+    .id-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .avatar-edit {
+      position: absolute; bottom: -2px; left: -2px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #fff; color: #667eea; border: 2px solid #764ba2;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; cursor: pointer; padding: 0;
     }
+    .avatar-edit:active { transform: scale(0.92); }
 
-    .header-info {
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+    /* Photo editor */
+    .edit-cancel { margin-right: auto; background: none; border: none; color: #667eea; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+    .photo-card { background: #fff; border-radius: 16px; border: 1.5px solid #eef0f6; padding: 1.1rem; display: flex; flex-direction: column; gap: 0.75rem; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+    .photo-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .photo-preview { width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; overflow: hidden; background: #f0f0f5; border: 1.5px solid #e0e0f0; display: flex; align-items: center; justify-content: center; color: #9090aa; font-size: 1.3rem; }
+    .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-btn { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; background: rgba(102,126,234,.1); border: 1.5px solid rgba(102,126,234,.25); color: #667eea; border-radius: 12px; padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 700; min-height: 44px; }
+    .photo-remove { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; background: rgba(239,68,68,.08); border: 1.5px solid rgba(239,68,68,.2); color: #dc2626; border-radius: 12px; padding: 0.5rem 0.75rem; font-size: 0.78rem; font-weight: 700; min-height: 44px; }
+    .photo-err { color: #dc2626; font-size: 0.75rem; margin: 0; }
+    .photo-save { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border: none; border-radius: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 0.88rem; font-weight: 700; cursor: pointer; min-height: 48px; }
+    .photo-save:disabled { opacity: 0.6; cursor: not-allowed; }
+    .spinner-xs { width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .id-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+    .id-name { margin: 0; font-size: 1.15rem; font-weight: 800; color: #1a1a2e; }
+    .id-role {
+      display: inline-flex; align-items: center; gap: 0.3rem; align-self: flex-start;
+      background: rgba(102,126,234,0.1); color: #667eea;
+      padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.72rem; font-weight: 700;
     }
-    .user-name {
-      margin: 0;
-      font-size: 1.3rem; font-weight: 800; color: #fff;
+    .id-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.1rem; }
+    .id-chip {
+      font-size: 0.72rem; font-weight: 600; color: #555;
+      background: #f4f5fb; border: 1px solid #e8e8f0;
+      padding: 0.15rem 0.55rem; border-radius: 10px;
     }
-    .user-code {
-      font-size: 0.82rem; font-weight: 600;
-      color: rgba(255,255,255,0.7);
-      background: rgba(255,255,255,0.12);
-      padding: 0.15rem 0.6rem; border-radius: 12px;
-    }
-    .user-email, .user-username {
-      font-size: 0.78rem;
-      color: rgba(255,255,255,0.65);
-    }
-
-    .logout-btn {
-      position: absolute; top: max(1rem, env(safe-area-inset-top, 0px)); left: 1rem;
-      z-index: 2;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: rgba(255,255,255,0.9);
-      padding: 0.4rem 0.875rem; border-radius: 12px;
-      font-size: 0.8rem; font-weight: 600; cursor: pointer;
-      display: flex; align-items: center; gap: 0.35rem;
-      transition: background 0.15s;
-    }
-    .logout-btn:hover { background: rgba(255,255,255,0.25); }
+    .id-chip--code { color: #667eea; background: rgba(102,126,234,0.08); border-color: rgba(102,126,234,0.18); }
+    .id-chip--email { color: #9090aa; font-weight: 500; }
 
     /* ── Stats ── */
     .stats-row {
@@ -400,7 +409,9 @@ import { SecretaryTeacherRequestStatus } from '@proxy/teachers/secretary-teacher
       background: linear-gradient(135deg, #667eea, #764ba2);
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 1rem;
+      overflow: hidden;
     }
+    .teacher-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     .teacher-info { flex: 1; min-width: 0; }
     .teacher-name {
       display: block; font-size: 0.95rem; font-weight: 700; color: #1a1a2e;
@@ -439,10 +450,54 @@ export class SecretaryProfileComponent implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly secretarySvc   = inject(SecretaryTeacherService);
+  private readonly imageCrop      = inject(ImageCropService);
   loading  = signal(true);
   userInfo = signal<CurrentUserActorDto | null>(null);
   teachers = signal<SecretaryTeacherDto[]>([]);
   requests = signal<SecretaryTeacherRequestDto[]>([]);
+
+  // Photo editing
+  editingPhoto    = signal(false);
+  editPhoto       = signal('');
+  photoProcessing = signal(false);
+  photoSaving     = signal(false);
+  photoError      = signal<string | null>(null);
+
+  toggleEdit(): void {
+    if (!this.editingPhoto()) {
+      this.editPhoto.set(this.userInfo()?.photoUrl || '');
+      this.photoError.set(null);
+    }
+    this.editingPhoto.set(!this.editingPhoto());
+  }
+
+  async onPhotoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.photoProcessing.set(true);
+    try {
+      const cropped = await this.imageCrop.crop(file, { size: 320, quality: 0.8 });
+      if (cropped) this.editPhoto.set(cropped);
+    }
+    catch { this.photoError.set('تعذّر معالجة الصورة · Could not process image'); }
+    finally { this.photoProcessing.set(false); input.value = ''; }
+  }
+
+  async savePhoto(): Promise<void> {
+    this.photoSaving.set(true);
+    this.photoError.set(null);
+    try {
+      await lastValueFrom(this.currentUserSvc.updateMyPhoto({ photoUrl: this.editPhoto() || undefined }));
+      const info = await lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo());
+      this.userInfo.set(info);
+      this.editingPhoto.set(false);
+    } catch (err: any) {
+      this.photoError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ · Error saving');
+    } finally {
+      this.photoSaving.set(false);
+    }
+  }
 
   pendingRequests  = () => this.requests().filter(r => r.status === SecretaryTeacherRequestStatus.Pending).length;
   approvedRequests = () => this.requests().filter(r => r.status === SecretaryTeacherRequestStatus.Approved).length;

@@ -1,15 +1,7 @@
 <div class="qr-page" dir="rtl">
 
-  <!-- Hero Header -->
-  <div class="hero-header">
-    <button class="back-btn" (click)="goBack()">
-      <i class="fas fa-arrow-right"></i>
-    </button>
-    <div class="hero-text">
-      <h1><i class="fas fa-qrcode me-2"></i>رمز هويتي</h1>
-      <p>اعرض هذا الرمز لولي الأمر لإضافتك</p>
-    </div>
-  </div>
+  <!-- Header -->
+  <app-page-header [title]="'رمز QR الخاص بي'" [titleEn]="'My QR'" [backTo]="'/student'"></app-page-header>
 
   <!-- Loading -->
   <div *ngIf="loading()" class="loading-state">

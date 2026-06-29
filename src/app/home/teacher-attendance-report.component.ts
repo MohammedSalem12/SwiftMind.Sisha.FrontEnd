@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
 
@@ -8,6 +7,7 @@ import { AttendanceService } from '@proxy/attendances';
 import { StudentAttendanceReportDto } from '@proxy/attendances/dtos/models';
 import { CurrentUserInfoService } from '@proxy/common';
 import { TeacherService } from '@proxy/teachers';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface CourseOption { id: string; name: string; nameAr: string; }
 
@@ -15,12 +15,11 @@ interface CourseOption { id: string; name: string; nameAr: string; }
   selector: 'app-teacher-attendance-report',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   templateUrl: './teacher-attendance-report.component.html',
   styleUrls: ['./teacher-attendance-report.component.scss'],
 })
 export class TeacherAttendanceReportComponent implements OnInit {
-  private readonly router             = inject(Router);
   private readonly attendanceSvc      = inject(AttendanceService);
   private readonly teacherSvc         = inject(TeacherService);
   private readonly currentUserInfoSvc = inject(CurrentUserInfoService);
@@ -121,6 +120,4 @@ export class TeacherAttendanceReportComponent implements OnInit {
   }
 
   courseName(c: CourseOption): string { return c.nameAr || c.name; }
-
-  goBack(): void { this.router.navigate(['/teacher']); }
 }

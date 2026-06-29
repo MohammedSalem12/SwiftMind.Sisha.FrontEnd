@@ -18,25 +18,21 @@
 
   @if (!loading()) {
 
-    <!-- ─── Hero header ─── -->
-    <div class="hero">
-      <div class="hero-blob hero-blob-1"></div>
-      <div class="hero-blob hero-blob-2"></div>
-
-      <div class="hero-top">
-        <!-- Back button -->
-        <a class="btn-back" routerLink="/students">
-          <i class="fas fa-arrow-right"></i>
+    <!-- ─── Page header ─── -->
+    <app-page-header
+      [title]="'بيانات الطالب'"
+      [titleEn]="'Student Details'"
+      [backTo]="'/students'">
+      @if (canEdit()) {
+        <a ph-actions class="ph-action" [routerLink]="['/students', studentId(), 'edit']"
+           aria-label="تعديل · Edit">
+          <i class="fas fa-edit"></i>
         </a>
-        <!-- Edit button (admin only) -->
-        @if (canEdit()) {
-          <a class="btn-edit" [routerLink]="['/students', studentId(), 'edit']">
-            <i class="fas fa-edit"></i>
-            <span>تعديل</span>
-          </a>
-        }
-      </div>
+      }
+    </app-page-header>
 
+    <!-- ─── Hero header (white content card) ─── -->
+    <div class="hero">
       <div class="hero-body">
         <!-- Avatar -->
         <div class="hero-avatar">

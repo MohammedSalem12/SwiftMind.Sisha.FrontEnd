@@ -1,32 +1,32 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Location } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
 
 import { ExamGradeService } from '@proxy/exam-grades';
 import { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
 import { ParentService } from '@proxy/parents';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-child-grades',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   templateUrl: './child-grades.component.html',
   styleUrls: ['./child-grades.component.scss'],
 })
 export class ChildGradesComponent implements OnInit {
   private readonly route   = inject(ActivatedRoute);
   private readonly router  = inject(Router);
-  private readonly location = inject(Location);
   private readonly examGradeService      = inject(ExamGradeService);
   private readonly parentService         = inject(ParentService);
   private readonly currentUserInfoService = inject(CurrentUserInfoService);
 
   studentId  = signal<string>('');
   childName  = signal<string>('');
+  childPhoto = signal<string>('');
   childCode  = signal<string>('');
   childGrade = signal<string>('');
   grades     = signal<ExamGradeDto[]>([]);
@@ -60,6 +60,7 @@ export class ChildGradesComponent implements OnInit {
       const child = (children as any[]).find(c => c.studentId === this.studentId());
       if (child) {
         this.childName.set(child.studentName || '');
+        this.childPhoto.set(child.studentPhotoUrl || '');
         this.childCode.set(child.studentCode || '');
         this.childGrade.set(child.gradeName || '');
       }
@@ -104,6 +105,4 @@ export class ChildGradesComponent implements OnInit {
   navigateTo(tab: string): void {
     this.router.navigate(['..', tab], { relativeTo: this.route });
   }
-
-  goBack(): void { this.location.back(); }
 }

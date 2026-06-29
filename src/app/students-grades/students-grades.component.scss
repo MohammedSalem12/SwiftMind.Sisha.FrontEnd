@@ -7,65 +7,10 @@
   direction: rtl;
 }
 
-// ─── Page Header ───────────────────────────────────────────────────────
-.page-header {
-  background: linear-gradient(135deg, var(--ngx-primary) 0%, var(--ngx-hero-end) 100%);
-  padding: 2rem 1.5rem;
-  color: white;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    pointer-events: none;
-  }
-
-  .header-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .header-icon {
-    width: 60px;
-    height: 60px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 0.25rem;
-  }
-
-  p {
-    margin: 0;
-    opacity: 0.9;
-    font-size: 1rem;
-  }
-}
-
 // ─── Filters Section ───────────────────────────────────────────────────
 .filters-section {
   max-width: 1200px;
-  margin: -1.5rem auto 2rem;
+  margin: 1.5rem auto 2rem;
   padding: 0 1.5rem;
   display: flex;
   align-items: center;
@@ -533,56 +478,12 @@
   }
 }
 
-// ─── Floating Action Button ─────────────────────────────────────────────
-.fab-add {
-  position: fixed;
-  left: 2rem;
-  bottom: 2rem;
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, var(--ngx-primary) 0%, var(--ngx-hero-end) 100%);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(51, 102, 255, 0.4);
-  transition: all 0.3s ease;
-  z-index: 1000;
-
-  &:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 20px rgba(51, 102, 255, 0.5);
-  }
-
-  &:active {
-    transform: translateY(0) scale(0.98);
-  }
-}
-
 // ─── Responsive Design ─────────────────────────────────────────────────
 @media (max-width: 768px) {
-  .page-header {
-    padding: 1.5rem 1rem;
-
-    .header-content {
-      flex-direction: column;
-      text-align: center;
-      gap: 1rem;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-    }
-  }
-
   .filters-section {
     flex-direction: column;
     align-items: stretch;
-    margin: -1rem 1rem 1.5rem;
+    margin: 1rem 1rem 1.5rem;
 
     .search-box {
       min-width: auto;
@@ -630,29 +531,9 @@
     padding: 1.5rem 1rem;
     flex-wrap: wrap;
   }
-
-  .fab-add {
-    left: 1rem;
-    bottom: 1rem;
-    width: 48px;
-    height: 48px;
-    font-size: 1.125rem;
-  }
 }
 
 @media (max-width: 480px) {
-  .page-header {
-    padding: 1.25rem 0.75rem;
-
-    h1 {
-      font-size: 1.25rem;
-    }
-
-    p {
-      font-size: 0.875rem;
-    }
-  }
-
   .student-meta .meta-item {
     font-size: 0.8rem;
   }

@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
@@ -8,6 +7,7 @@ import type { EnrollmentRequestDto } from '@proxy/student-enrollments/models';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { StudentService } from '@proxy/students';
 import type { ParentStudentDto } from '@proxy/parents/models';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 type Tab = 'pending' | 'finished';
 
@@ -15,19 +15,14 @@ type Tab = 'pending' | 'finished';
   selector: 'app-student-my-requests',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="requests-page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-text">
-          <span class="header-title">طلباتي · My Requests</span>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'طلباتي'"
+        [titleEn]="'My Requests'"></app-page-header>
 
       <!-- Tabs -->
       <div class="tabs-bar">
@@ -234,21 +229,6 @@ type Tab = 'pending' | 'finished';
       padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     }
 
-    /* Header */
-    .page-header {
-      background: $pg;
-      padding: 1rem;
-      display: flex; align-items: center; gap: 0.85rem;
-    }
-    .back-btn {
-      width: 40px; height: 40px;
-      background: rgba(255,255,255,0.2); border: none; border-radius: 50%;
-      color: #fff; font-size: 1rem; cursor: pointer; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .header-text { display: flex; flex-direction: column; }
-    .header-title { color: #fff; font-size: 1.1rem; font-weight: 700; }
-
     /* Tabs */
     .tabs-bar {
       display: flex;
@@ -367,7 +347,6 @@ type Tab = 'pending' | 'finished';
   `],
 })
 export class StudentMyRequestsComponent implements OnInit {
-  private readonly router                 = inject(Router);
   private readonly enrollmentRequestSvc   = inject(EnrollmentRequestService);
   private readonly studentService         = inject(StudentService);
 
@@ -436,6 +415,4 @@ export class StudentMyRequestsComponent implements OnInit {
       this.pendingParentLinks.set(pending || []);
     } catch (err) { console.error(err); }
   }
-
-  goBack(): void { this.router.navigate(['/student']); }
 }

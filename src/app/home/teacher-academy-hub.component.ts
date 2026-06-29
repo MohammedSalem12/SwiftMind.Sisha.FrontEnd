@@ -7,21 +7,18 @@ import { AcademyService } from '@proxy/academies';
 import type { AcademyDto, AcademyMemberDto } from '@proxy/academies/models';
 import { AcademyTeacherStatus } from '@proxy/academies/academy-teacher-status.enum';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-teacher-academy-hub',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   template: `
     <div class="hub-page" dir="rtl">
-      <div class="page-header">
-        <button class="btn-back" (click)="router.navigate(['/teacher'])">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <h1><i class="fas fa-university me-2"></i>أكاديميتي</h1>
-      </div>
+      <app-page-header [title]="'أكاديميتي'" [titleEn]="'My Academy'" [backTo]="'/teacher'"></app-page-header>
 
+      <div class="hub-body">
       <div *ngIf="loading()" class="loading-state">
         <div class="spinner"></div>
         <p>جاري التحميل...</p>
@@ -110,17 +107,12 @@ import { CurrentUserInfoService } from '@proxy/common';
         </ng-container>
 
       </ng-container>
+      </div>
     </div>
   `,
   styles: [`
-    .hub-page { padding: 16px; max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', sans-serif; }
-    .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-    .btn-back {
-      background: #f5f5f5; border: none; border-radius: 50%;
-      width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: #555;
-    }
-    .page-header h1 { font-size: 22px; font-weight: 700; color: #333; margin: 0; }
+    .hub-page { max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', sans-serif; }
+    .hub-body { padding: 16px; }
     .loading-state { text-align: center; padding: 40px; color: #666; }
     .spinner {
       width: 36px; height: 36px;

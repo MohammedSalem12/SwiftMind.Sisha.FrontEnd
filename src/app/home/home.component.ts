@@ -122,7 +122,8 @@ export class HomeComponent implements OnInit {
           const isAdmin       = has('admin');
           const isAdvertiser  = has('advertiser');
           const isPartner     = has('partner');
-          const knownRoles  = ['student','teacher','parent','admin','secretary','advertiser','partner'];
+          const isMarketer    = has('marketer');
+          const knownRoles  = ['student','teacher','parent','admin','secretary','advertiser','partner','marketer'];
           const hasKnown    = roles.some(r => knownRoles.includes(r));
 
           if (isAdmin) {
@@ -151,7 +152,7 @@ export class HomeComponent implements OnInit {
             return;
           }
 
-          if (isStudent || isParent || isTeacher || isSecretary || isAdvertiser || isPartner) {
+          if (isStudent || isParent || isTeacher || isSecretary || isAdvertiser || isPartner || isMarketer) {
             this.redirecting.set(true);
           }
 
@@ -159,6 +160,7 @@ export class HomeComponent implements OnInit {
           else if (isParent)      this.router.navigate(['/parent']);
           else if (isTeacher)     this.router.navigate(['/teacher']);
           else if (isSecretary)   this.router.navigate(['/secretary']);
+          else if (isMarketer)    this.router.navigate(['/marketer']);
           else if (isPartner)     this.router.navigate(['/partner/dashboard']);
           else if (isAdvertiser)  this.router.navigate(['/ads/my']);
         } catch (error) {

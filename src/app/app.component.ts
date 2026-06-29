@@ -8,7 +8,7 @@ import { filter } from 'rxjs';
 import { ToastContainerComponent } from './shared/toast-container.component';
 import { BottomNavComponent } from './shared/bottom-nav.component';
 import { RealtimeNotificationService } from './shared/services/realtime-notification.service';
-import { PushNotificationService } from './shared/services/push-notification.service';
+import { SessionCountdownService } from './shared/services/session-countdown.service';
 import { SidebarNotificationDirective } from './shared/sidebar-notification.directive';
 import { TopBarComponent } from './shared/top-bar.component';
 import { ServerOfflineOverlayComponent } from './shared/components/server-offline-overlay.component';
@@ -45,12 +45,9 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/complete-profil
     }
   `,
   styles: [`
-    /* Reserve space for fixed top bar on mobile */
-    @media (max-width: 767px) {
-      .app-content {
-        padding-top: calc(48px + env(safe-area-inset-top, 0px));
-      }
-    }
+    /* The global purple top-bar is hidden on mobile now that every page has its
+       own sticky app-page-header (which owns the safe-area top inset), so no
+       top offset is reserved here. */
 
     /* Reserve space for fixed bottom nav — only when nav is visible */
     .app-content {
@@ -87,7 +84,7 @@ export class AppComponent implements OnInit {
   private readonly oauthService = inject(OAuthService);
   private readonly router = inject(Router);
   private readonly realtimeNotificationService = inject(RealtimeNotificationService);
-  private readonly pushNotificationService = inject(PushNotificationService);
+  private readonly countdownNotifier = inject(SessionCountdownService);
   readonly serverOffline = inject(ServerOfflineService);
   readonly registerModal = inject(RegisterModalService);
   readonly biometricService = inject(BiometricService);
@@ -119,7 +116,16 @@ export class AppComponent implements OnInit {
     if (Capacitor.isNativePlatform()) {
       import('@capacitor/app').then(({ App }) => {
         App.addListener('appStateChange', async ({ isActive }) => {
-          if (isActive && this.oauthService.hasValidAccessToken()) {
+          if (!isActive) return;
+          // If the session expired while the app was backgrounded, send the user to
+          // login instead of leaving them on a stale, half-loaded page.
+          const onAuth = AUTH_PATHS.some(p => this.router.url.startsWith(p));
+          if (!onAuth && !this.oauthService.hasValidAccessToken()) {
+            this.oauthService.logOut(true);
+            this.router.navigate(['/login']);
+            return;
+          }
+          if (this.oauthService.hasValidAccessToken()) {
             const enabled = await this.biometricService.isEnabled();
             if (enabled) {
               this.biometricService.lock();
@@ -134,6 +140,16 @@ export class AppComponent implements OnInit {
             const refMatch = url.match(/[?&]ref=(REF-[0-9A-Fa-f]{8})/i);
             const queryParams = refMatch ? { ref: refMatch[1] } : {};
             this.router.navigate(['/register'], { queryParams });
+            return;
+          }
+          // Countdown notification tap: kai://session?route=/student/today-sessions
+          if (/^kai:\/\/session/.test(url)) {
+            const routeMatch = url.match(/[?&]route=([^&]+)/);
+            const target = routeMatch ? decodeURIComponent(routeMatch[1]) : '/student/today-sessions';
+            // Only allow internal app paths (avoid open-redirect via crafted deep links).
+            if (target.startsWith('/')) {
+              this.router.navigateByUrl(target);
+            }
           }
         });
       });
@@ -145,6 +161,8 @@ export class AppComponent implements OnInit {
       }
       if (event.type === 'logout') {
         this.realtimeNotificationService.disconnect();
+        // Stop polling and remove any live session-countdown notification.
+        void this.countdownNotifier.stopAutoSync();
         // unregisterCurrentToken() is called in the logout patch (app.config.ts)
         // BEFORE tokens are cleared, so we don't repeat it here.
       }
@@ -176,9 +194,12 @@ export class AppComponent implements OnInit {
   }
 
   private initRealtime(): void {
+    // SignalR live notifications only. Push notification init is deliberately
+    // NOT started here: requesting native push permission during the post-login
+    // navigation raced the Capacitor Activity lifecycle and crashed the plugin
+    // (NPE in getPermissionStates). It is now gated behind the first visit to
+    // the notifications screen (NotificationsComponent.ngOnInit), where the app
+    // is idle and the bridge is stable.
     this.realtimeNotificationService.connect();
-    this.pushNotificationService.initialize().catch(err =>
-      console.warn('[PushNotifications] unhandled init error:', err)
-    );
   }
 }

@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ParentService } from '@proxy/parents';
 import { StudentService } from '@proxy/students';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-parents',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PageHeaderComponent],
   templateUrl: './parents.component.html',
   styleUrls: ['./parents.component.scss']
 })

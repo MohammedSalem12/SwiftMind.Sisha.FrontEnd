@@ -9,47 +9,33 @@ $purple-end: #764ba2;
   background: #f4f5fb;
 }
 
-// ─── Hero ──────────────────────────────────────────────
-.hero {
-  background: linear-gradient(145deg, $purple-start 0%, $purple-end 100%);
-  padding: calc(env(safe-area-inset-top, 0px) + 0.6rem) 1.25rem 0.7rem;
-  position: relative;
-  overflow: hidden;
+// ─── Course info card ──────────────────────────────────
+.course-hero {
   display: flex;
   align-items: center;
   gap: 0.875rem;
+  background: linear-gradient(145deg, $purple-start 0%, $purple-end 100%);
+  margin: 0.875rem 1rem 0;
+  padding: 0.875rem 1rem;
+  border-radius: 16px;
   flex-shrink: 0;
 }
 
-.hero-blob {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  pointer-events: none;
-}
-.b1 { width: 220px; height: 220px; top: -80px; right: -60px; }
-.b2 { width: 140px; height: 140px; bottom: -50px; left: -30px; }
-
-.back-btn {
-  flex-shrink: 0;
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
+.course-hero-icon {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
   border: 1.5px solid rgba(255, 255, 255, 0.25);
-  color: #fff;
-  font-size: 1rem;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  z-index: 1;
-  transition: background 0.15s;
-  &:active { background: rgba(255, 255, 255, 0.28); }
+  flex-shrink: 0;
+  i { font-size: 1.15rem; color: #fff; }
 }
 
-.hero-text {
-  flex: 1; z-index: 1; min-width: 0;
+.course-hero-text {
+  flex: 1; min-width: 0;
 
-  h1 {
-    font-size: 1.1rem;
+  h2 {
+    font-size: 1.05rem;
     font-weight: 800;
     color: #fff;
     margin: 0 0 0.2rem;
@@ -59,7 +45,7 @@ $purple-end: #764ba2;
   }
 }
 
-.hero-academy-tag {
+.course-academy-tag {
   font-size: 0.65rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.78);
@@ -70,13 +56,13 @@ $purple-end: #764ba2;
   i { font-size: 0.58rem; }
 }
 
-.hero-chips {
+.course-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
 }
 
-.hero-chip {
+.course-chip {
   font-size: 0.65rem;
   font-weight: 600;
   background: rgba(255, 255, 255, 0.2);
@@ -90,23 +76,12 @@ $purple-end: #764ba2;
   i { font-size: 0.55rem; }
 }
 
-.hero-skeleton {
+.course-skeleton {
   height: 22px;
   width: 140px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.2);
   animation: pulse 1.4s ease-in-out infinite;
-}
-
-.hero-icon {
-  z-index: 1;
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  i { font-size: 1.15rem; color: #fff; }
 }
 
 @keyframes pulse {

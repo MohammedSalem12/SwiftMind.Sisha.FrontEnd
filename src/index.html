@@ -6,12 +6,52 @@
     <base href="/" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#667eea" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Pre-bootstrap splash: inline styles so it paints on the first frame,
+         before any bundle/CDN CSS loads. Angular removes it automatically when
+         it bootstraps and replaces the <app-root> contents. -->
+    <style>
+      #kai-splash {
+        position: fixed; inset: 0; z-index: 99999;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Arial, sans-serif;
+      }
+      #kai-splash .kai-logo {
+        width: 84px; height: 84px; border-radius: 24px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1.5px solid rgba(255, 255, 255, 0.3);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px; font-weight: 800; color: #fff; letter-spacing: 1px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+      }
+      #kai-splash .kai-spin {
+        width: 30px; height: 30px; border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.25);
+        border-top-color: #fff;
+        animation: kai-splash-spin 0.9s linear infinite;
+      }
+      #kai-splash .kai-title {
+        font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, 0.85);
+        letter-spacing: 0.2px;
+      }
+      @keyframes kai-splash-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) {
+        #kai-splash .kai-spin { animation-duration: 2.4s; }
+      }
+    </style>
   </head>
   <body class="bg-light">
     <app-root>
-      <div class="donut centered"></div>
+      <div id="kai-splash">
+        <div class="kai-logo">KAI</div>
+        <div class="kai-spin"></div>
+        <div class="kai-title">نظام المتابعة الذكية للتعلم</div>
+      </div>
     </app-root>
   </body>
 </html>

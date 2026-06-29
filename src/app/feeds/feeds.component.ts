@@ -6,12 +6,14 @@ import { RouterModule } from '@angular/router';
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import { FeedService } from '@proxy/feeds';
 import type { FeedDto } from '@proxy/feeds/dtos/models';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-feeds',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PullToRefreshDirective, PageHeaderComponent],
   templateUrl: './feeds.component.html',
   styleUrls: ['./feeds.component.scss'],
   providers: [ListService],
@@ -27,6 +29,11 @@ export class FeedsComponent implements OnInit {
 
   ngOnInit(): void {
     this.hookList();
+  }
+
+  refreshData(e: { complete: () => void }): void {
+    this.list.get();
+    e.complete();
   }
 
   hookList() {

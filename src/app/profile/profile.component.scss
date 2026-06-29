@@ -24,65 +24,122 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── Header ─── */
-.profile-header {
-  padding: 2.5rem 1.5rem 3.5rem;
-  text-align: center;
+/* ─── Identity card ─── */
+.id-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.id-avatar-wrap {
   position: relative;
+  flex-shrink: 0;
 }
 
-.header-inner {
-  max-width: 480px;
-  margin: 0 auto;
-}
-
-.avatar-wrap {
+.id-avatar {
   position: relative;
-  display: inline-block;
-  margin-bottom: 1rem;
-}
-
-.avatar {
-  width: 88px;
-  height: 88px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: var(--ngx-hero-gradient);
   color: white;
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(51, 102, 255, 0.35);
-  border: 4px solid white;
+  box-shadow: 0 6px 18px rgba(51, 102, 255, 0.3);
+
+  img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 }
+
+.avatar-edit {
+  position: absolute; bottom: -2px; left: -2px;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #fff; color: #667eea; border: 2px solid #764ba2;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; cursor: pointer; padding: 0;
+  &:active { transform: scale(0.92); }
+}
+
+.photo-card {
+  display: flex; flex-direction: column; gap: 0.75rem;
+
+  .photo-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .photo-preview {
+    width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; overflow: hidden;
+    background: #f0f0f5; border: 1.5px solid #e0e0f0;
+    display: flex; align-items: center; justify-content: center; color: #9090aa; font-size: 1.3rem;
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+  .photo-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;
+    background: rgba(102,126,234,.1); border: 1.5px solid rgba(102,126,234,.25);
+    color: #667eea; border-radius: 12px; padding: 0.5rem 0.85rem;
+    font-size: 0.8rem; font-weight: 700; min-height: 44px;
+  }
+  .photo-remove {
+    display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer;
+    background: rgba(239,68,68,.08); border: 1.5px solid rgba(239,68,68,.2);
+    color: #dc2626; border-radius: 12px; padding: 0.5rem 0.75rem;
+    font-size: 0.78rem; font-weight: 700; min-height: 44px;
+  }
+  .photo-err { color: #dc2626; font-size: 0.75rem; margin: 0; }
+  .photo-save {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.75rem; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+    font-size: 0.88rem; font-weight: 700; cursor: pointer; min-height: 48px;
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+  .spinner-xs {
+    width: 14px; height: 14px; border: 2px solid currentColor;
+    border-top-color: transparent; border-radius: 50%;
+    animation: spin 0.7s linear infinite; display: inline-block;
+  }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .role-icon-badge {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   border: 2px solid white;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.user-name {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1a202c;
-  margin: 0 0 0.5rem;
+.id-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
 }
 
-.role-badge {
+.id-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+.id-role-badge {
   display: inline-block;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   padding: 0.25rem 0.85rem;
   border: 1.5px solid;
@@ -93,8 +150,8 @@
 /* ─── Body ─── */
 .profile-body {
   max-width: 480px;
-  margin: -1.5rem auto 0;
-  padding: 0 1rem;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
 /* ─── Info Cards ─── */
@@ -353,6 +410,5 @@
 
 /* ─── Responsive ─── */
 @media (max-width: 520px) {
-  .profile-header { padding: 2rem 1rem 3rem; }
-  .avatar { width: 76px; height: 76px; font-size: 1.75rem; }
+  .id-avatar { width: 64px; height: 64px; font-size: 1.45rem; }
 }

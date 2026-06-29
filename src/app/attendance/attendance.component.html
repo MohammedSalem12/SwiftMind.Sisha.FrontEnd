@@ -1,28 +1,10 @@
 <div class="attendance-page" dir="rtl">
 
-  <!-- Hero Header -->
-  <div class="hero">
-    <div class="hero-blob b1"></div>
-    <div class="hero-blob b2"></div>
-    @if (lockedCourseId()) {
-      <button class="back-btn" (click)="goBack()">
-        <i class="fas fa-arrow-right"></i>
-      </button>
-    }
-    <div class="hero-text">
-      @if (academy()) {
-        <div class="hero-academy-tag">
-          <i class="fas fa-university"></i>
-          {{ academy()!.nameAr || academy()!.nameEn }}
-        </div>
-      }
-      <h1>تسجيل الحضور والغياب</h1>
-      <p>Attendance · {{ selectedCourseName() || 'اختر المقرر وسجّل الحضور' }}</p>
-    </div>
-    <div class="hero-icon">
-      <i class="fas fa-clipboard-check"></i>
-    </div>
-  </div>
+  <!-- Header -->
+  <app-page-header
+    [title]="'تسجيل الحضور'"
+    [titleEn]="'Attendance'"
+    (back)="goBack()"></app-page-header>
 
   <!-- Academy context banner -->
   @if (academy() && lockedCourseId()) {
@@ -55,17 +37,18 @@
           }
         </div>
       } @else {
-        <select class="field-input"
-          [ngModel]="selectedCourseId()"
-          (ngModelChange)="onCourseChange($event)"
+        <ion-select class="field-select"
+          interface="alert"
+          [interfaceOptions]="{ header: 'المقرر الدراسي · Course' }"
+          okText="اختيار" cancelText="إلغاء"
+          placeholder="-- اختر المقرر --"
+          [value]="selectedCourseId()"
+          (ionChange)="onCourseChange($any($event).detail.value)"
           [disabled]="loading()">
-          <option value="">-- اختر المقرر --</option>
           @for (c of courses(); track c.id) {
-            <option [value]="c.id">
-              {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' — ' + c.gradeName : '' }}
-            </option>
+            <ion-select-option [value]="c.id">{{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' — ' + c.gradeName : '' }}</ion-select-option>
           }
-        </select>
+        </ion-select>
       }
     </div>
 
@@ -75,17 +58,18 @@
         <label class="field-label">
           <i class="fas fa-users"></i> المجموعة · Group
         </label>
-        <select class="field-input"
-          [ngModel]="selectedGroupId()"
-          (ngModelChange)="onGroupChange($event)"
+        <ion-select class="field-select"
+          interface="alert"
+          [interfaceOptions]="{ header: 'المجموعة · Group' }"
+          okText="اختيار" cancelText="إلغاء"
+          placeholder="-- اختر المجموعة --"
+          [value]="selectedGroupId()"
+          (ionChange)="onGroupChange($any($event).detail.value)"
           [disabled]="loading()">
-          <option value="">-- اختر المجموعة --</option>
           @for (g of groups(); track g.id) {
-            <option [value]="g.id">
-              {{ g.name }}{{ g.teacherName ? ' — ' + g.teacherName : '' }}
-            </option>
+            <ion-select-option [value]="g.id">{{ g.name }}{{ g.teacherName ? ' — ' + g.teacherName : '' }}</ion-select-option>
           }
-        </select>
+        </ion-select>
       </div>
     }
 
@@ -96,43 +80,48 @@
           <i class="fas fa-calendar-alt"></i> التاريخ · Date
         </label>
         <div class="week-nav-row">
-          <button class="week-nav-btn" (click)="prevWeek()">
+          <ion-button class="week-nav-btn" fill="clear" (click)="prevWeek()">
             <i class="fas fa-chevron-right"></i>
-          </button>
+          </ion-button>
           <div class="week-nav-label">
             <i class="fas fa-calendar-week"></i>
             <span>{{ weekLabel() }}</span>
             @if (weekOffset() !== 0) {
-              <button class="week-today-btn" (click)="goToCurrentWeek()">اليوم</button>
+              <ion-button class="week-today-btn" size="small" fill="solid" (click)="goToCurrentWeek()">اليوم</ion-button>
             }
           </div>
-          <button class="week-nav-btn" (click)="nextWeek()">
+          <ion-button class="week-nav-btn" fill="clear" (click)="nextWeek()">
             <i class="fas fa-chevron-left"></i>
-          </button>
+          </ion-button>
         </div>
         <div class="schedule-dates-pills">
           @for (sd of scheduleDates(); track sd.date) {
-            <button
+            <ion-button
               class="schedule-date-pill"
+              size="small"
+              [fill]="attendanceDate() === sd.date ? 'solid' : 'outline'"
               [class.schedule-date-pill--active]="attendanceDate() === sd.date"
               (click)="selectScheduleDate(sd.date)">
               {{ sd.label }}
-            </button>
+            </ion-button>
           }
         </div>
       </div>
     }
 
-    <!-- Date picker fallback (only when group selected but no schedule dates) -->
-    @if (selectedGroupId() && scheduleDates().length === 0) {
-      <div class="field-group">
-        <label class="field-label">
-          <i class="fas fa-calendar-alt"></i> التاريخ · Date
-        </label>
-        <input class="field-input"
-          type="date"
-          [ngModel]="attendanceDate()"
-          (ngModelChange)="onDateChange($event)" />
+    <!-- No schedule set for the selected group → guide the teacher to set it first -->
+    @if (selectedGroupId() && selectedGroupHasNoSchedule()) {
+      <div class="no-schedule-notice">
+        <div class="nsn-icon"><i class="fas fa-calendar-plus"></i></div>
+        <div class="nsn-text">
+          <strong>لم يتم تحديد جدول لهذه المجموعة</strong>
+          <span>عيّن جدول الحصص أولاً حتى تتمكن من تسجيل الحضور.</span>
+          <small>No schedule set for this group — add the weekly schedule first to take attendance.</small>
+        </div>
+        <button type="button" class="nsn-btn" (click)="goSetSchedule()">
+          <i class="fas fa-calendar-alt"></i>
+          تعيين الجدول · Set Schedule
+        </button>
       </div>
     }
   </div>
@@ -149,7 +138,7 @@
   <!-- Loading state -->
   @if (loading()) {
     <div class="loading-area">
-      <div class="spinner"></div>
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
       <span>جاري التحميل...</span>
     </div>
   }
@@ -164,7 +153,7 @@
   }
 
   <!-- No students -->
-  @if (selectedCourseId() && selectedGroupId() && students().length === 0 && !loading()) {
+  @if (selectedCourseId() && selectedGroupId() && !selectedGroupHasNoSchedule() && students().length === 0 && !loading()) {
     <div class="empty-state empty-state--warning">
       <i class="fas fa-user-slash"></i>
       <p>لا يوجد طلاب مسجلون في هذا المقرر</p>
@@ -173,7 +162,25 @@
   }
 
   <!-- Students section -->
-  @if (students().length > 0 && !loading()) {
+  @if (students().length > 0 && !loading() && !selectedGroupHasNoSchedule()) {
+
+    <!-- Find student: name / external (StudentCode) / internal (TeacherStudentCode) / QR -->
+    <div class="att-find-bar">
+      <ion-searchbar
+        class="att-find-search"
+        [value]="listSearch()"
+        (ionInput)="listSearch.set($any($event).detail.value || '')"
+        placeholder="ابحث بالاسم أو الكود الداخلي / الخارجي · name or code"
+        [animated]="true"></ion-searchbar>
+      @if (qrSupported()) {
+        <ion-button class="att-find-qr" (click)="scanToFilter()" [disabled]="scanning()" title="بحث بمسح QR">
+          <i class="fas fa-qrcode"></i>
+        </ion-button>
+      }
+    </div>
+    @if (listSearch() && filteredStudents().length === 0) {
+      <div class="att-find-empty"><i class="fas fa-user-slash"></i> لا يوجد طالب مطابق · No match</div>
+    }
 
     <!-- Stats Bar (collapsible) -->
     <div class="stats-bar">
@@ -239,37 +246,80 @@
       }
     </div>
 
-    <!-- Bulk actions bar -->
-    <div class="bulk-actions-bar">
-      <div class="bulk-top-row">
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll()" />
-          <span>تحديد الكل · Select All</span>
-        </label>
-        @if (selectedCount() > 0) {
-          <span class="selected-badge">{{ selectedCount() }} محدد</span>
-        }
-      </div>
-      <div class="bulk-buttons">
-        <button
-          class="btn-bulk btn-mark-selected"
-          (click)="markSelectedAbsent()"
-          [disabled]="saving() || selectedCount() === 0">
-          <i class="fas fa-user-times"></i>
-          <span>غياب المحددين</span>
+    <!-- Attendance mode toggle (per session) — Ionic segment -->
+    <ion-segment class="mode-segment" [value]="attendanceMode()" (ionChange)="setMode($any($event).detail.value)">
+      <ion-segment-button value="absentees">
+        <ion-label><i class="fas fa-user-xmark"></i> تسجيل الغياب</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="attendees">
+        <ion-label><i class="fas fa-user-check"></i> تسجيل الحضور</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- Mode A: all present, mark the absentees -->
+    @if (attendanceMode() === 'absentees') {
+      <div class="bulk-actions-bar">
+        <div class="bulk-top-row">
+          <ion-checkbox class="checkbox-label" labelPlacement="end" justify="start"
+            [checked]="allSelected()" (ionChange)="toggleSelectAll()">
+            تحديد الكل · Select All
+          </ion-checkbox>
           @if (selectedCount() > 0) {
-            <span class="count-badge">({{ selectedCount() }})</span>
+            <span class="selected-badge">{{ selectedCount() }} محدد</span>
           }
-        </button>
-        <button
-          class="btn-bulk btn-mark-all"
-          (click)="markAllAbsent()"
-          [disabled]="saving()">
-          <i class="fas fa-times-circle"></i>
-          <span>غياب الكل</span>
-        </button>
+        </div>
+        <div class="bulk-buttons">
+          <ion-button
+            class="btn-bulk btn-mark-selected"
+            expand="block"
+            (click)="markSelectedAbsent()"
+            [disabled]="saving() || selectedCount() === 0">
+            <i class="fas fa-user-times" style="margin-inline-end:.4rem"></i>
+            غياب المحددين
+            @if (selectedCount() > 0) { &nbsp;({{ selectedCount() }}) }
+          </ion-button>
+          <ion-button
+            class="btn-bulk btn-mark-all"
+            expand="block"
+            (click)="markAllAbsent()"
+            [disabled]="saving()">
+            <i class="fas fa-times-circle" style="margin-inline-end:.4rem"></i>
+            غياب الكل
+          </ion-button>
+        </div>
       </div>
-    </div>
+    }
+
+    <!-- Mode B: mark attendees via search / QR; finalize → remaining become absent -->
+    @if (attendanceMode() === 'attendees') {
+      <div class="attendees-bar">
+        <div class="att-search-row">
+          <ion-searchbar class="att-search" [value]="attSearch()"
+                 (ionInput)="attSearch.set($any($event).detail.value || '')"
+                 (keyup.enter)="markPresentByValue(attSearch())"
+                 placeholder="ابحث أو امسح كود الطالب · search/scan"></ion-searchbar>
+          @if (qrSupported()) {
+            <ion-button class="att-scan-btn" (click)="startScan()" [disabled]="scanning()" title="مسح QR">
+              <i class="fas fa-qrcode"></i>
+            </ion-button>
+          }
+        </div>
+        <div class="att-actions-row">
+          <span class="att-counter"><i class="fas fa-user-check"></i> {{ markedCount() }} / {{ students().length }} حاضر</span>
+          <ion-button class="att-finalize" (click)="finalizeAttendees()" [disabled]="saving()">
+            <i class="fas fa-save" style="margin-inline-end:.4rem"></i> حفظ الحضور
+          </ion-button>
+        </div>
+      </div>
+
+      @if (scanning()) {
+        <div class="scan-overlay">
+          <video id="att-scan-video" class="scan-video" muted playsinline></video>
+          <div class="scan-frame"></div>
+          <ion-button class="scan-close" fill="solid" (click)="stopScan()"><i class="fas fa-times" style="margin-inline-end:.4rem"></i> إغلاق · Close</ion-button>
+        </div>
+      }
+    }
 
     <!-- Message bar -->
     @if (message()) {
@@ -286,64 +336,89 @@
     <!-- Saving overlay -->
     @if (saving()) {
       <div class="saving-bar">
-        <div class="mini-spinner"></div>
+        <ion-spinner name="dots" color="primary" style="width:22px;height:22px"></ion-spinner>
         <span>جاري الحفظ وإرسال الإشعارات...</span>
       </div>
     }
 
     <!-- Student cards -->
     <div class="student-cards">
-      @for (s of students(); track s.enrollmentId; let i = $index) {
-        <div class="student-card"
-          [class.card-absent]="s.isAbsent"
-          [class.card-selected]="s.selected && !s.isAbsent">
+      @for (s of filteredStudents(); track s.enrollmentId; let i = $index) {
+        <ion-card class="student-card"
+          [class.card-absent]="attendanceMode() === 'absentees' && s.isAbsent"
+          [class.card-present]="attendanceMode() === 'attendees' && isPresent(s.enrollmentId)"
+          [class.card-selected]="attendanceMode() === 'absentees' && s.selected && !s.isAbsent">
           <div class="card-main-row">
-            <label class="card-check">
-              <input type="checkbox" [checked]="s.selected" (change)="toggleSelect(i)" />
-            </label>
+            @if (attendanceMode() === 'absentees') {
+              <ion-checkbox class="card-check" [checked]="s.selected" (ionChange)="toggleSelect(i)"></ion-checkbox>
+            }
             <div class="avatar" [class.avatar-absent]="s.isAbsent">
-              {{ s.studentName.charAt(0) }}
+              @if (s.photoUrl) {
+                <img [src]="s.photoUrl" alt="" />
+              } @else {
+                {{ s.studentName.charAt(0) }}
+              }
             </div>
             <div class="card-info">
               <span class="student-name">{{ s.studentName }}</span>
-              @if (s.studentCode) {
-                <span class="card-code">{{ s.studentCode }}</span>
-              }
+              <span class="card-codes">
+                @if (s.studentCode) {
+                  <span class="card-code" title="الكود الخارجي · External"><i class="fas fa-id-card"></i> {{ s.studentCode }}</span>
+                }
+                @if (s.teacherStudentCode) {
+                  <span class="card-code card-code--internal" title="الكود الداخلي · Internal"><i class="fas fa-user-tag"></i> {{ s.teacherStudentCode }}</span>
+                }
+              </span>
             </div>
-            <button
-              class="btn-toggle-compact"
-              [class.btn-compact-absent]="!s.isAbsent"
-              [class.btn-compact-present]="s.isAbsent"
-              (click)="toggleStudentAbsent(s, i)"
-              [disabled]="saving()">
-              <i class="fas" [class.fa-user-times]="!s.isAbsent" [class.fa-user-check]="s.isAbsent"></i>
-              <span>{{ s.isAbsent ? 'إلغاء' : 'غياب' }}</span>
-            </button>
+            @if (attendanceMode() === 'absentees') {
+              <ion-button
+                class="btn-toggle-compact"
+                size="small"
+                [class.btn-compact-absent]="!s.isAbsent"
+                [class.btn-compact-present]="s.isAbsent"
+                (click)="toggleStudentAbsent(s, i)"
+                [disabled]="saving()">
+                <i class="fas" [class.fa-user-times]="!s.isAbsent" [class.fa-user-check]="s.isAbsent" style="margin-inline-end:.3rem"></i>
+                {{ s.isAbsent ? 'إلغاء' : 'غياب' }}
+              </ion-button>
+            } @else {
+              <ion-button
+                class="btn-toggle-compact"
+                size="small"
+                [class.btn-compact-present]="isPresent(s.enrollmentId)"
+                [class.btn-compact-unmarked]="!isPresent(s.enrollmentId)"
+                (click)="togglePresent(s)"
+                [disabled]="saving()">
+                <i class="fas" [class.fa-check]="isPresent(s.enrollmentId)" [class.fa-circle]="!isPresent(s.enrollmentId)" style="margin-inline-end:.3rem"></i>
+                {{ isPresent(s.enrollmentId) ? 'حاضر' : 'تحديد حاضر' }}
+              </ion-button>
+            }
           </div>
-        </div>
+        </ion-card>
       }
     </div>
 
     <!-- Pagination -->
     @if (totalPages() > 1) {
       <div class="pagination-bar">
-        <button class="page-btn" (click)="goToPage(page() - 1)" [disabled]="page() <= 1 || loading()">
+        <ion-button class="page-btn" fill="clear" (click)="goToPage(page() - 1)" [disabled]="page() <= 1 || loading()">
           <i class="fas fa-chevron-right"></i>
-        </button>
+        </ion-button>
         <div class="page-numbers">
           @for (p of [].constructor(totalPages()); track $index) {
-            <button
+            <ion-button
               class="page-num"
+              fill="clear"
               [class.page-num--active]="page() === $index + 1"
               (click)="goToPage($index + 1)"
               [disabled]="loading()">
               {{ $index + 1 }}
-            </button>
+            </ion-button>
           }
         </div>
-        <button class="page-btn" (click)="goToPage(page() + 1)" [disabled]="page() >= totalPages() || loading()">
+        <ion-button class="page-btn" fill="clear" (click)="goToPage(page() + 1)" [disabled]="page() >= totalPages() || loading()">
           <i class="fas fa-chevron-left"></i>
-        </button>
+        </ion-button>
       </div>
     }
 

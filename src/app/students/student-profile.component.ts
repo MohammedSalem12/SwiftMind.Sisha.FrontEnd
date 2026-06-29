@@ -10,38 +10,53 @@ import { StudentService } from '@proxy/students';
 import { StudentDto } from '@proxy/students/models';
 import { ParentStudentDto } from '@proxy/parents/models';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
+import { ImageCropService } from '../shared/services/image-crop.service';
 
 @Component({
   selector: 'app-student-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="avatar-wrap">
-          <div class="avatar"><span>{{ initials() }}</span></div>
-          <div class="role-badge"><i class="fas fa-graduation-cap"></i> طالب · Student</div>
-        </div>
-        <div class="header-info">
-          <h1 class="user-name">{{ student()?.firstName }} {{ student()?.lastName }}</h1>
-          @if (student()?.studentCode) {
-            <span class="user-code">{{ student()?.studentCode }}</span>
-          }
-          @if (userInfo()?.email) {
-            <span class="user-email">{{ userInfo()?.email }}</span>
-          }
-          @if (userInfo()?.currentGrade) {
-            <span class="grade-badge">{{ gradeName(userInfo()?.currentGrade) }}</span>
-          }
-        </div>
-        <button class="logout-btn" (click)="logout()">
-          <i class="fas fa-sign-out-alt"></i> خروج
+      <app-page-header [title]="'ملفي الشخصي'" [titleEn]="'My Profile'" [backTo]="'/student'">
+        <button ph-actions class="ph-action" (click)="logout()" aria-label="تسجيل الخروج">
+          <i class="fas fa-sign-out-alt"></i>
         </button>
+      </app-page-header>
+
+      <!-- Identity card -->
+      <div class="section">
+        <div class="id-card">
+          <div class="id-avatar">
+            @if (student()?.photoUrl) { <img [src]="student()!.photoUrl" alt="" /> }
+            @else { <span>{{ initials() }}</span> }
+            <button class="avatar-edit" (click)="toggleProfileEdit()" aria-label="تعديل الصورة">
+              <i class="fas fa-camera"></i>
+            </button>
+          </div>
+          <div class="id-info">
+            <h1 class="id-name">{{ student()?.firstName }} {{ student()?.lastName }}</h1>
+            <div class="id-role"><i class="fas fa-graduation-cap"></i> طالب · Student</div>
+            @if (student()?.statusMessage) {
+              <span class="id-status"><i class="fas fa-quote-right"></i> {{ student()?.statusMessage }}</span>
+            }
+            <div class="id-chips">
+              @if (student()?.studentCode) {
+                <span class="id-chip id-chip--code">{{ student()?.studentCode }}</span>
+              }
+              @if (userInfo()?.currentGrade) {
+                <span class="id-chip">{{ gradeName(userInfo()?.currentGrade) }}</span>
+              }
+              @if (userInfo()?.email) {
+                <span class="id-chip id-chip--email">{{ userInfo()?.email }}</span>
+              }
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Shimmer -->
@@ -55,6 +70,48 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       }
 
       @if (!loading()) {
+
+        <!-- Photo & status editor -->
+        @if (editingProfile()) {
+          <div class="section">
+            <div class="section-title">
+              <i class="fas fa-id-badge"></i> صورتي وحالتي · Photo & Status
+              <button class="edit-loc-btn" (click)="toggleProfileEdit()">
+                <i class="fas fa-times"></i> إلغاء · Cancel
+              </button>
+            </div>
+            <div class="loc-edit-card">
+              <div class="photo-row">
+                <div class="photo-preview">
+                  @if (editPhoto()) { <img [src]="editPhoto()" alt="" /> }
+                  @else { <i class="fas fa-user"></i> }
+                </div>
+                <label class="photo-btn">
+                  @if (photoProcessing()) { <span class="spinner-xs"></span> }
+                  @else { <i class="fas fa-image"></i> }
+                  {{ editPhoto() ? 'تغيير · Change' : 'إضافة صورة · Add' }}
+                  <input type="file" accept="image/*" hidden (change)="onPhotoSelected($event)" />
+                </label>
+                @if (editPhoto()) {
+                  <button type="button" class="photo-remove" (click)="editPhoto.set('')">
+                    <i class="fas fa-trash"></i> إزالة
+                  </button>
+                }
+              </div>
+              <div class="loc-field-body">
+                <label>حالتي (اختياري) · Status message</label>
+                <input class="loc-input" maxlength="140"
+                  [ngModel]="editStatus()" (ngModelChange)="editStatus.set($event)"
+                  placeholder="اكتب حالتك أو هدفك الدراسي... · Share a short status..." />
+              </div>
+              @if (profileSaveError()) { <p class="loc-error">{{ profileSaveError() }}</p> }
+              <button class="loc-save-btn" [disabled]="profileSaving()" (click)="saveProfile()">
+                @if (profileSaving()) { <span class="spinner-xs"></span> } @else { <i class="fas fa-check-circle"></i> }
+                حفظ · Save
+              </button>
+            </div>
+          </div>
+        }
 
         <!-- Quick actions -->
         <div class="section">
@@ -195,7 +252,7 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
               @for (p of parents(); track p.parentId) {
                 <div class="list-row">
                   <div class="list-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
-                    <i class="fas fa-user-shield"></i>
+                    @if (p.parent?.photoUrl) { <img [src]="p.parent!.photoUrl" alt="" /> } @else { <i class="fas fa-user-shield"></i> }
                   </div>
                   <div class="list-info">
                     <span class="list-name">{{ p.parent?.fullName || p.parent?.firstName }}</span>
@@ -223,47 +280,70 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
 
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 2rem;
-      position:relative; overflow:hidden;
-      display:flex; flex-direction:column; align-items:center; text-align:center; gap:.5rem;
+    /* Identity card */
+    .id-card {
+      display:flex; align-items:center; gap:1rem;
+      background:#fff; border-radius:16px; border:1.5px solid #f0f0f0;
+      padding:1rem; box-shadow:0 2px 12px rgba(0,0,0,.06);
     }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .avatar-wrap { display:flex; flex-direction:column; align-items:center; gap:.5rem; position:relative; z-index:1; }
-    .avatar {
-      width:80px; height:80px; border-radius:50%;
-      background:rgba(255,255,255,.2); border:3px solid rgba(255,255,255,.5);
+    .id-avatar {
+      position:relative; flex-shrink:0;
+      width:72px; height:72px; border-radius:50%;
+      background:linear-gradient(135deg,#667eea,#764ba2);
       display:flex; align-items:center; justify-content:center;
-      font-size:1.8rem; font-weight:800; color:#fff;
+      font-size:1.5rem; font-weight:800; color:#fff; overflow:visible;
     }
-    .role-badge {
-      display:flex; align-items:center; gap:.35rem;
-      background:rgba(255,255,255,.18); color:rgba(255,255,255,.92);
-      padding:.3rem .75rem; border-radius:20px;
-      font-size:.75rem; font-weight:600; border:1px solid rgba(255,255,255,.25);
+    .id-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+    .id-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:.3rem; }
+    .id-name { margin:0; font-size:1.15rem; font-weight:800; color:#1a1a2e; }
+    .id-role {
+      display:inline-flex; align-items:center; gap:.3rem; align-self:flex-start;
+      background:rgba(102,126,234,.1); color:#667eea;
+      padding:.2rem .6rem; border-radius:12px; font-size:.72rem; font-weight:700;
     }
-    .header-info { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:.2rem; }
-    .user-name { margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
-    .user-code {
-      font-size:.82rem; font-weight:600; color:rgba(255,255,255,.7);
-      background:rgba(255,255,255,.12); padding:.15rem .6rem; border-radius:12px;
+    .id-status {
+      font-size:.76rem; color:#6b7280; font-style:italic;
+      display:flex; align-items:center; gap:.3rem;
     }
-    .user-email { font-size:.78rem; color:rgba(255,255,255,.65); }
-    .grade-badge {
-      font-size:.78rem; font-weight:600; color:rgba(255,255,255,.9);
-      background:rgba(255,255,255,.2); padding:.2rem .65rem; border-radius:12px;
+    .id-status i { font-size:.58rem; opacity:.5; }
+    .id-chips { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.1rem; }
+    .id-chip {
+      font-size:.72rem; font-weight:600; color:#555;
+      background:#f4f5fb; border:1px solid #e8e8f0;
+      padding:.15rem .55rem; border-radius:10px;
     }
-    .logout-btn {
-      position:absolute; top:max(1rem,env(safe-area-inset-top,0px)); left:1rem; z-index:2;
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:rgba(255,255,255,.9); padding:.4rem .875rem; border-radius:12px;
-      font-size:.8rem; font-weight:600; cursor:pointer;
-      display:flex; align-items:center; gap:.35rem;
-    }
+    .id-chip--code { color:#667eea; background:rgba(102,126,234,.08); border-color:rgba(102,126,234,.18); }
+    .id-chip--email { color:#9090aa; font-weight:500; }
 
+    .avatar-edit {
+      position:absolute; bottom:-2px; left:-2px;
+      width:26px; height:26px; border-radius:50%;
+      background:#fff; color:#667eea; border:2px solid #764ba2;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.65rem; cursor:pointer; padding:0;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .avatar-edit:active { transform:scale(.92); }
+
+    .photo-row { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+    .photo-preview {
+      width:64px; height:64px; border-radius:50%; flex-shrink:0; overflow:hidden;
+      background:#f0f0f5; border:1.5px solid #e0e0f0;
+      display:flex; align-items:center; justify-content:center; color:#9090aa; font-size:1.3rem;
+    }
+    .photo-preview img { width:100%; height:100%; object-fit:cover; }
+    .photo-btn {
+      display:inline-flex; align-items:center; gap:.4rem; cursor:pointer;
+      background:rgba(102,126,234,.1); border:1.5px solid rgba(102,126,234,.25);
+      color:#667eea; border-radius:12px; padding:.5rem .85rem;
+      font-size:.8rem; font-weight:700; min-height:44px;
+    }
+    .photo-remove {
+      display:inline-flex; align-items:center; gap:.35rem; cursor:pointer;
+      background:rgba(239,68,68,.08); border:1.5px solid rgba(239,68,68,.2);
+      color:#dc2626; border-radius:12px; padding:.5rem .75rem;
+      font-size:.78rem; font-weight:700; min-height:44px;
+    }
     .shimmer-area { padding:1rem; display:flex; flex-direction:column; gap:.75rem; }
     .shimmer-row { display:flex; gap:.5rem; }
     .shimmer-action {
@@ -314,9 +394,10 @@ import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt
       padding:.875rem; box-shadow:0 2px 8px rgba(0,0,0,.04);
     }
     .list-avatar {
-      width:44px; height:44px; border-radius:50%; flex-shrink:0;
+      width:44px; height:44px; border-radius:50%; flex-shrink:0; overflow:hidden;
       display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem;
     }
+    .list-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
     .list-info { flex:1; min-width:0; }
     .list-name { display:block; font-size:.95rem; font-weight:700; color:#1a1a2e; }
     .list-sub { display:block; font-size:.75rem; color:#9090aa; margin-top:.1rem; }
@@ -435,6 +516,7 @@ export class StudentProfileComponent implements OnInit {
   private readonly authService    = inject(AuthService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
   private readonly studentSvc     = inject(StudentService);
+  private readonly imageCrop      = inject(ImageCropService);
   loading  = signal(true);
   userInfo = signal<CurrentUserActorDto | null>(null);
   student  = signal<StudentDto | null>(null);
@@ -442,6 +524,14 @@ export class StudentProfileComponent implements OnInit {
   promotionLoading = signal(false);
   promotionMsg = signal<string | null>(null);
   promotionSuccess = signal(false);
+
+  // Photo + status editing
+  editingProfile = signal(false);
+  editPhoto = signal('');
+  editStatus = signal('');
+  photoProcessing = signal(false);
+  profileSaving = signal(false);
+  profileSaveError = signal<string | null>(null);
 
   // Location editing
   editingLocation = signal(false);
@@ -514,6 +604,46 @@ export class StudentProfileComponent implements OnInit {
       this.promotionSuccess.set(false);
     } finally {
       this.promotionLoading.set(false);
+    }
+  }
+
+  toggleProfileEdit(): void {
+    if (!this.editingProfile()) {
+      const s = this.student();
+      this.editPhoto.set(s?.photoUrl || '');
+      this.editStatus.set(s?.statusMessage || '');
+      this.profileSaveError.set(null);
+    }
+    this.editingProfile.set(!this.editingProfile());
+  }
+
+  async onPhotoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.photoProcessing.set(true);
+    try {
+      const cropped = await this.imageCrop.crop(file, { size: 320, quality: 0.8 });
+      if (cropped) this.editPhoto.set(cropped);
+    } catch { this.profileSaveError.set('تعذّر معالجة الصورة · Could not process image'); }
+    finally { this.photoProcessing.set(false); }
+  }
+
+  async saveProfile(): Promise<void> {
+    this.profileSaving.set(true);
+    this.profileSaveError.set(null);
+    try {
+      const updated = await lastValueFrom(this.studentSvc.updateMyProfile({
+        photoUrl: this.editPhoto() || undefined,
+        statusMessage: this.editStatus().trim() || undefined,
+      }));
+      if (updated) this.student.set(updated);
+      this.editingProfile.set(false);
+    } catch (err: any) {
+      this.profileSaveError.set(err?.error?.error?.message || 'حدث خطأ أثناء الحفظ · Error saving');
+    } finally {
+      this.profileSaving.set(false);
     }
   }
 

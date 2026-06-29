@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
 
@@ -12,6 +11,7 @@ import { GroupService } from '@proxy/groups';
 import { GroupWithSchedulesDto } from '@proxy/groups/dtos/models';
 import { AcademyService } from '@proxy/academies';
 import { RestService } from '@abp/ng.core';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface CourseOption {
   id: string;
@@ -28,25 +28,12 @@ type Period = 'today' | 'current-week' | 'week' | 'month' | 'quarter' | '6months
   selector: 'app-absence-report',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="rpt-page" dir="rtl">
 
-      <!-- ── Hero ── -->
-      <div class="hero">
-        <div class="hero-blob b1"></div>
-        <div class="hero-blob b2"></div>
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="hero-text">
-          <h1>تقرير الغياب</h1>
-          <p>Absence Report · {{ periodLabel() }}</p>
-        </div>
-        <div class="hero-icon">
-          <i class="fas fa-chart-bar"></i>
-        </div>
-      </div>
+      <!-- Header -->
+      <app-page-header [title]="'تقرير الغياب'" [titleEn]="'Absence Report'" [backTo]="'/student'"></app-page-header>
 
       <!-- ── Period selector ── -->
       <div class="period-strip">
@@ -257,33 +244,6 @@ type Period = 'today' | 'current-week' | 'week' | 'month' | 'quarter' | '6months
       padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     }
 
-    /* ── Hero ── */
-    .hero {
-      background: linear-gradient(145deg, var(--g1) 0%, var(--g2) 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 1.5rem;
-      position: relative; overflow: hidden;
-      display: flex; align-items: center; gap: 0.875rem;
-    }
-    .hero-blob { position: absolute; border-radius: 50%; background: rgba(255,255,255,.07); pointer-events: none; }
-    .b1 { width: 200px; height: 200px; top: -70px; right: -50px; }
-    .b2 { width: 130px; height: 130px; bottom: -50px; left: -25px; }
-    .back-btn {
-      flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%;
-      background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.25);
-      color: #fff; font-size: 1rem; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; z-index: 1; transition: background .15s;
-      &:active { background: rgba(255,255,255,.28); }
-    }
-    .hero-text { flex: 1; z-index: 1; min-width: 0; }
-    .hero-text h1 { font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0 0 .15rem; }
-    .hero-text p { font-size: .72rem; color: rgba(255,255,255,.65); margin: 0; }
-    .hero-icon {
-      z-index: 1; width: 52px; height: 52px; border-radius: 50%;
-      background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.25);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      i { font-size: 1.3rem; color: #fff; }
-    }
-
     /* ── Period strip ── */
     .period-strip {
       display: flex; gap: .5rem; padding: .875rem 1rem;
@@ -465,7 +425,6 @@ type Period = 'today' | 'current-week' | 'week' | 'month' | 'quarter' | '6months
   `],
 })
 export class AbsenceReportComponent implements OnInit {
-  private readonly router             = inject(Router);
   private readonly attendanceSvc      = inject(AttendanceService);
   private readonly teacherSvc         = inject(TeacherService);
   private readonly secretaryTeacherSvc = inject(SecretaryTeacherService);
@@ -757,10 +716,6 @@ export class AbsenceReportComponent implements OnInit {
     if (pct >= 90) return 'excellent';
     if (pct >= 75) return 'good';
     return 'poor';
-  }
-
-  goBack(): void {
-    this.router.navigate(['/teacher']);
   }
 
   exportCsv(): void {

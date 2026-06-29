@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface PromotionDto {
   id: string;
@@ -25,19 +25,14 @@ interface PromotionDto {
   selector: 'app-promotion-requests',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
-      <div class="page-header">
-        <button class="back-btn" (click)="router.navigate(['/'])">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="header-text">
-          <span class="header-title">طلبات الترويج · Promotion Requests</span>
-          <span class="header-sub">مراجعة واعتماد طلبات ترويج المعلمين</span>
-        </div>
-      </div>
+      <app-page-header
+        [title]="'طلبات الترقية'"
+        [titleEn]="'Promotion Requests'"
+        [backTo]="'/'"></app-page-header>
 
       <!-- Tabs -->
       <div class="tabs">
@@ -108,19 +103,6 @@ interface PromotionDto {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1rem) 1rem 1.25rem;
-      display:flex; align-items:center; gap:.75rem;
-    }
-    .back-btn {
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:#fff; width:40px; height:40px; border-radius:12px;
-      display:flex; align-items:center; justify-content:center; cursor:pointer;
-    }
-    .header-text { display:flex; flex-direction:column; }
-    .header-title { font-size:1.1rem; font-weight:800; color:#fff; }
-    .header-sub { font-size:.75rem; color:rgba(255,255,255,.7); }
 
     .tabs {
       display:flex; gap:.5rem; padding:.75rem 1rem 0;
@@ -198,7 +180,6 @@ interface PromotionDto {
 })
 export class PromotionRequestsComponent implements OnInit {
   private readonly rest = inject(RestService);
-  readonly router = inject(Router);
 
   loading = signal(true);
   actionLoading = signal(false);

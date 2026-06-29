@@ -11,6 +11,7 @@ import type { StudentDto } from '@proxy/students';
 import { StudentService } from '@proxy/students';
 import type { ExamGradeDto } from '@proxy/exam-grades/dtos';
 import { ExamGradeService } from '@proxy/exam-grades';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 type StudentWithGrades = StudentDto & { lastTwoGrades?: ExamGradeDto[] };
 
@@ -18,7 +19,7 @@ type StudentWithGrades = StudentDto & { lastTwoGrades?: ExamGradeDto[] };
   selector: 'app-students-grades',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   templateUrl: './students-grades.component.html',
   styleUrls: ['./students-grades.component.scss'],
   providers: [ListService],

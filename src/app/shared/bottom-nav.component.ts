@@ -8,6 +8,7 @@ import { ROLES } from '../route.provider';
 import { RealtimeNotificationService } from './services/realtime-notification.service';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { SecretaryTeacherService } from '@proxy/teachers';
+import { CurrentUserInfoService } from '@proxy/common';
 
 interface NavItem {
   path: string;
@@ -29,6 +30,7 @@ function getRoleHomePath(roles: string[]): string {
   if (roles.includes(ROLES.TEACHER))    return '/teacher';
   if (roles.includes(ROLES.PARENT))     return '/parent';
   if (roles.includes(ROLES.SECRETARY))  return '/secretary';
+  if (roles.includes(ROLES.MARKETER))   return '/marketer';
   if (roles.includes(ROLES.ADMIN))      return '/';
   if (roles.includes(ROLES.ADVERTISER)) return '/ads/my';
   if (roles.includes('PARTNER'))       return '/partner/dashboard';
@@ -56,12 +58,14 @@ function getRoleRequestsPath(roles: string[]): string {
 
 function getSecondaryItems(roles: string[]): SecondaryItem[] {
   if (roles.includes(ROLES.ADMIN)) return [
+    // Enrollment requests moved here from the bottom bar (المعلمون took its slot).
+    { path: '/enrollment-requests',  label: 'طلبات الالتحاق',      labelEn: 'Enrollment Requests', icon: 'fas fa-clipboard-list' },
     { path: '/students',             label: 'الطلاب',              labelEn: 'Students',           icon: 'fas fa-user-graduate' },
-    { path: '/teachers',             label: 'المعلمون',             labelEn: 'Teachers',           icon: 'fas fa-chalkboard-teacher' },
     { path: '/parents',              label: 'أولياء الأمور',       labelEn: 'Parents',            icon: 'fas fa-users-cog' },
     { path: '/courses',              label: 'المقررات',             labelEn: 'Courses',            icon: 'fas fa-book' },
     { path: '/ads/admin',            label: 'إدارة الإعلانات',     labelEn: 'Ads Management',     icon: 'fas fa-bullhorn' },
     { path: '/ads/advertisers',      label: 'إدارة المعلنين',      labelEn: 'Advertisers',        icon: 'fas fa-store' },
+    { path: '/marketers-admin',      label: 'المسوّقون',           labelEn: 'Marketers',          icon: 'fas fa-bullhorn' },
     { path: '/academic-terms',       label: 'الفصول الدراسية',     labelEn: 'Semesters',          icon: 'fas fa-calendar-alt' },
     { path: '/registration-requests', label: 'طلبات التسجيل',       labelEn: 'Registration',       icon: 'fas fa-user-plus' },
   ];
@@ -70,6 +74,14 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
   ];
   if (roles.includes(ROLES.SECRETARY)) return [
     { path: '/students',             label: 'الطلاب',              labelEn: 'Students',           icon: 'fas fa-user-graduate' },
+  ];
+  if (roles.includes(ROLES.STUDENT)) return [
+    // Requests lives in the account menu now — My Teachers took its bottom-bar slot.
+    { path: '/student/requests',     label: 'طلباتي',              labelEn: 'My Requests',        icon: 'fas fa-clipboard-list' },
+  ];
+  if (roles.includes(ROLES.MARKETER)) return [
+    { path: '/marketer/teachers',    label: 'معلميني',             labelEn: 'My Teachers',        icon: 'fas fa-chalkboard-teacher' },
+    { path: '/marketer/fees',        label: 'أرباحي',              labelEn: 'My Fees',            icon: 'fas fa-coins' },
   ];
   if (roles.includes(ROLES.PARENT)) return [
     { path: '/parent/home',          label: 'لوحة التفاصيل',       labelEn: 'Dashboard',          icon: 'fas fa-th-large' },
@@ -92,8 +104,9 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       <div class="mn-inner">
 
         <!-- 5 core tabs -->
-        @for (item of coreNav(); track item.path) {
-          <a class="mn-tab" [routerLink]="item.path" [class.active]="isActive(item.path)">
+        @for (item of coreNav(); track item.path; let i = $index) {
+          <a class="mn-tab" [routerLink]="item.path" [class.active]="isActive(item.path)"
+             [style.--tab-color]="tabColor(i).color" [style.--tab-bg]="tabColor(i).bg">
             <div class="mn-icon-wrap">
               <i [class]="item.icon"></i>
               @if (badge(item) > 0) {
@@ -105,12 +118,22 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           </a>
         }
 
-        <!-- More tab -->
-        <button class="mn-tab" (click)="toggleMore()" [class.active]="showMore()">
+        <!-- Account tab — user avatar (opens account menu) -->
+        <button class="mn-tab mn-tab-me" (click)="toggleMore()" [class.active]="showMore()"
+                [style.--tab-color]="'#7c3aed'" [style.--tab-bg]="'rgba(124,58,237,0.16)'"
+                aria-label="حسابي · My account">
           <div class="mn-icon-wrap">
-            <i class="fas fa-ellipsis-h"></i>
+            <div class="mn-avatar" [class.active]="showMore()">
+              @if (userPhoto()) {
+                <img [src]="userPhoto()" alt="" referrerpolicy="no-referrer" />
+              } @else if (userInitials() !== '?') {
+                <span>{{ userInitials() }}</span>
+              } @else {
+                <i class="fas fa-user"></i>
+              }
+            </div>
           </div>
-          <span class="mn-label">المزيد</span>
+          <span class="mn-label">حسابي</span>
           @if (showMore()) { <span class="mn-bar"></span> }
         </button>
 
@@ -123,11 +146,21 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       <div class="more-sheet" dir="rtl">
         <div class="more-handle"></div>
 
+        <div class="more-title">
+          <span>حسابي</span>
+          <span class="more-title-en">My Account</span>
+        </div>
+
         <!-- Profile row -->
         <a class="more-profile" [routerLink]="profilePath()" (click)="showMore.set(false)">
           <div class="more-avatar">
-            @if (userInitials() !== '?') { <span>{{ userInitials() }}</span> }
-            @else { <i class="fas fa-user"></i> }
+            @if (userPhoto()) {
+              <img [src]="userPhoto()" alt="" referrerpolicy="no-referrer" />
+            } @else if (userInitials() !== '?') {
+              <span>{{ userInitials() }}</span>
+            } @else {
+              <i class="fas fa-user"></i>
+            }
           </div>
           <div class="more-profile-info">
             <span class="more-profile-name">{{ displayName() || 'مستخدم' }}</span>
@@ -250,6 +283,17 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
               <div class="more-item-text">
                 <span>لوحة الشريك</span>
                 <span class="more-item-en">Partner Dashboard</span>
+              </div>
+            </a>
+          }
+
+          <!-- Role management links (admin: Students/Teachers/Parents/Courses/Marketers/…; secretary/teacher: Students; parent: dashboards) -->
+          @for (item of secondaryNav(); track item.path) {
+            <a class="more-item" [routerLink]="item.path" (click)="showMore.set(false)">
+              <div class="more-item-icon more-icon-purple"><i [class]="item.icon"></i></div>
+              <div class="more-item-text">
+                <span>{{ item.label }}</span>
+                <span class="more-item-en">{{ item.labelEn }}</span>
               </div>
             </a>
           }
@@ -377,8 +421,13 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       <!-- User profile footer -->
       <div class="dn-user">
         <div class="dn-user-avatar">
-          @if (userInitials() !== '?') { <span>{{ userInitials() }}</span> }
-          @else { <i class="fas fa-user"></i> }
+          @if (userPhoto()) {
+            <img [src]="userPhoto()" alt="" referrerpolicy="no-referrer" />
+          } @else if (userInitials() !== '?') {
+            <span>{{ userInitials() }}</span>
+          } @else {
+            <i class="fas fa-user"></i>
+          }
         </div>
         <div class="dn-user-info">
           <p class="dn-user-name">{{ displayName() || 'مستخدم' }}</p>
@@ -434,22 +483,26 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       transition: color 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
-    .mn-tab.active { color: #5b21b6; }
+    .mn-tab.active { color: var(--tab-color, #5b21b6); }
 
     .mn-icon-wrap {
       position: relative;
-      width: 44px; height: 28px;
+      width: 48px; height: 32px;
       display: flex; align-items: center; justify-content: center;
-      border-radius: 14px;
-      transition: background 0.2s;
+      border-radius: 16px;
+      transition: background 0.2s, transform 0.2s;
     }
     .mn-tab.active .mn-icon-wrap {
-      background: rgba(91,33,182,0.12);
+      background: var(--tab-bg, rgba(91,33,182,0.16));
+      transform: translateY(-1px);
     }
-    .mn-icon-wrap i { font-size: 1.25rem; }
+    /* Each tab keeps its own accent colour so the bar reads colourful;
+       inactive icons are slightly dimmed, the active one is full-strength. */
+    .mn-icon-wrap i { font-size: 1.45rem; color: var(--tab-color, #9ca3af); opacity: 0.78; }
+    .mn-tab.active .mn-icon-wrap i { opacity: 1; }
 
     .mn-label {
-      font-size: 0.65rem;
+      font-size: 0.72rem;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
@@ -465,7 +518,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       transform: translateX(-50%);
       width: 24px; height: 3px;
       border-radius: 0 0 3px 3px;
-      background: linear-gradient(90deg, #7c3aed, #5b21b6);
+      background: var(--tab-color, #5b21b6);
     }
 
     .mn-badge {
@@ -483,21 +536,24 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       box-shadow: 0 1px 4px rgba(239,68,68,0.3);
     }
 
-    .mn-avatar-sm {
-      width: 28px; height: 28px;
+    /* Account tab avatar (replaces the old "More" ellipsis) */
+    .mn-avatar {
+      width: 26px; height: 26px;
       border-radius: 50%;
+      overflow: hidden;
       background: linear-gradient(135deg, #7c3aed, #5b21b6);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem; font-weight: 700;
-      border: 2px solid rgba(255,255,255,0.9);
-      box-shadow: 0 1px 4px rgba(124,58,237,0.25);
+      font-size: 0.62rem; font-weight: 800; line-height: 1;
+      box-shadow: 0 1px 4px rgba(124,58,237,0.28);
+      transition: box-shadow 0.2s, transform 0.2s;
     }
-    .mn-tab.active .mn-avatar-sm {
-      box-shadow: 0 2px 8px rgba(124,58,237,0.45);
+    .mn-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mn-avatar i { font-size: 0.85rem; opacity: 1; color: #fff; }
+    .mn-avatar.active {
+      transform: translateY(-1px) scale(1.04);
+      box-shadow: 0 0 0 2px #fff, 0 2px 10px rgba(124,58,237,0.5);
     }
-
-    /* Profile tab avatar */
 
     /* ═══════════════════════════════════════════════════════
        DESKTOP SIDEBAR  (≥ 768px)
@@ -623,11 +679,12 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       background: rgba(0,0,0,0.15);
     }
     .dn-user-avatar {
-      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; overflow: hidden;
       background: linear-gradient(135deg, #7c3aed, #5b21b6);
       color: #fff; display: flex; align-items: center; justify-content: center;
       font-size: 0.85rem; font-weight: 700;
     }
+    .dn-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .dn-user-info { flex: 1; min-width: 0; }
     .dn-user-name {
       margin: 0; font-size: 0.82rem; font-weight: 600; color: #fff;
@@ -701,6 +758,17 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       margin: 0.25rem auto 0.75rem;
     }
 
+    .more-title {
+      display: flex; align-items: baseline; gap: 0.5rem;
+      padding: 0 0.25rem 0.5rem;
+    }
+    .more-title > span:first-child {
+      font-size: 1.05rem; font-weight: 800; color: #1a202c;
+    }
+    .more-title-en {
+      font-size: 0.72rem; font-weight: 500; color: #9ca3af;
+    }
+
     .more-profile {
       display: flex;
       align-items: center;
@@ -713,6 +781,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     .more-avatar {
       width: 44px; height: 44px;
       border-radius: 50%;
+      overflow: hidden;
       background: linear-gradient(135deg, #667eea, #764ba2);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
@@ -720,6 +789,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       flex-shrink: 0;
       box-shadow: 0 2px 8px rgba(102,126,234,0.3);
     }
+    .more-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .more-profile-info {
       flex: 1; min-width: 0;
       display: flex; flex-direction: column;
@@ -809,6 +879,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   private readonly realtimeSvc         = inject(RealtimeNotificationService);
   private readonly enrollmentSvc       = inject(EnrollmentRequestService);
   private readonly secretaryTeacherSvc = inject(SecretaryTeacherService);
+  private readonly currentUserInfoSvc  = inject(CurrentUserInfoService);
   private readonly destroyRef = inject(DestroyRef);
 
   private notifEffect = effect(() => {
@@ -828,6 +899,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   userInitials  = signal('?');
   displayName   = signal('');
   userEmail     = signal('');
+  userPhoto     = signal('');
 
   profilePath      = signal('/profile');
   coreNav          = signal<NavItem[]>([]);
@@ -897,6 +969,16 @@ export class BottomNavComponent implements OnInit, OnDestroy {
         this.userInitials.set(initials);
         this.displayName.set(full);
         this.userEmail.set(cu?.email || '');
+        // Show a real photo if the profile/config exposes one; otherwise the
+        // initials avatar is used. (No extra network call — read from config only.)
+        const photo = cu?.picture || cu?.photoUrl || cu?.avatarUrl
+          || cu?.extraProperties?.['picture'] || cu?.extraProperties?.['photoUrl'] || '';
+        this.userPhoto.set(typeof photo === 'string' ? photo : '');
+        // Resolve the real profile photo (entity for student/teacher/parent,
+        // Identity ExtraProperties for secretary/admin) so the account avatar shows it.
+        lastValueFrom(this.currentUserInfoSvc.getCurrentUserActorInfo({ skipHandleError: true }))
+          .then(info => { if (info?.photoUrl) this.userPhoto.set(info.photoUrl); })
+          .catch(() => { /* keep initials */ });
 
         // Core nav items — role-aware paths resolved AFTER user is loaded
         const homePath     = getRoleHomePath(roles);
@@ -914,6 +996,8 @@ export class BottomNavComponent implements OnInit, OnDestroy {
         this.isParentRole.set(isParent);
         this.isPartnerRole.set(isPartner);
 
+        const isMarketer = roles.includes(ROLES.MARKETER);
+
         if (isAdvertiser) {
           // Advertiser gets minimal nav: My Ads, Create Ad, Redeem, Notifications
           this.coreNav.set([
@@ -922,11 +1006,28 @@ export class BottomNavComponent implements OnInit, OnDestroy {
             { path: '/ads/redeem',    label: 'استبدال',      labelEn: 'Redeem',        icon: 'fas fa-qrcode' },
             { path: '/notifications', label: 'إشعارات',     labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' },
           ]);
+        } else if (isMarketer) {
+          // Marketer: Home, My Teachers, Onboard a teacher, Notifications
+          this.coreNav.set([
+            { path: '/marketer',          label: 'الرئيسية',   labelEn: 'Home',          icon: 'fas fa-home' },
+            { path: '/marketer/teachers', label: 'معلميني',     labelEn: 'My Teachers',   icon: 'fas fa-chalkboard-teacher' },
+            { path: '/marketer/onboard',  label: 'تسجيل معلم', labelEn: 'Onboard',       icon: 'fas fa-user-plus' },
+            { path: '/notifications',     label: 'إشعارات',    labelEn: 'Notifications', icon: 'fas fa-bell', badge: 'notifications' },
+          ]);
         } else {
           const isParent = roles.includes(ROLES.PARENT);
+          const isAdmin  = roles.includes(ROLES.ADMIN);
           this.coreNav.set([
             { path: homePath,         label: 'الرئيسية',    labelEn: 'Home',          icon: 'fas fa-home' },
-            { path: requestsPath,     label: 'طلباتي',      labelEn: 'Requests',      icon: 'fas fa-clipboard-list', badge: 'requests' },
+            // Students & admins get "المعلمون / Teachers" in the bottom bar (more important);
+            // Requests moves to the account menu (see getSecondaryItems). Parent has no
+            // teachers list, so it (and other roles) keep Requests in the bar.
+            ...(isStudent
+              ? [{ path: '/student/teachers', label: 'المعلمون', labelEn: 'Teachers', icon: 'fas fa-chalkboard-teacher' }]
+              : isAdmin
+              ? [{ path: '/teachers', label: 'المعلمون', labelEn: 'Teachers', icon: 'fas fa-chalkboard-teacher' }]
+              : [{ path: requestsPath, label: 'طلباتي', labelEn: 'Requests', icon: 'fas fa-clipboard-list', badge: 'requests' as const }]
+            ),
             // Students & Teachers get Academies in core nav
             ...(isStudent
               ? [{ path: '/academies',         label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
@@ -955,6 +1056,19 @@ export class BottomNavComponent implements OnInit, OnDestroy {
       ]);
       this.pendingRequestsCount.set((enroll?.length || 0) + (link?.length || 0));
     } catch { /* silent */ }
+  }
+
+  // Per-tab accent colours (positional) so the bottom bar reads colourful.
+  private readonly TAB_COLORS = [
+    { color: '#7c3aed', bg: 'rgba(124,58,237,0.16)' }, // 1st (Home)          — purple
+    { color: '#2563eb', bg: 'rgba(37,99,235,0.16)'  }, // 2nd (Teachers/Requests) — blue
+    { color: '#0d9488', bg: 'rgba(13,148,136,0.16)' }, // 3rd (Academies/Today)— teal
+    { color: '#f59e0b', bg: 'rgba(245,158,11,0.16)' }, // 4th (Notifications) — amber
+    { color: '#db2777', bg: 'rgba(219,39,119,0.16)' }, // 5th (fallback)      — pink
+  ];
+
+  tabColor(index: number): { color: string; bg: string } {
+    return this.TAB_COLORS[index % this.TAB_COLORS.length];
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

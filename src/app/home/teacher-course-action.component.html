@@ -1,41 +1,37 @@
 <div class="action-page" dir="rtl">
 
-  <!-- Hero Header -->
-  <div class="hero">
-    <div class="hero-blob b1"></div>
-    <div class="hero-blob b2"></div>
-    <button class="back-btn" (click)="goBack()">
-      <i class="fas fa-arrow-right"></i>
-    </button>
-    <div class="hero-text">
+  <!-- Header -->
+  <app-page-header [title]="'إجراءات المقرر'" [titleEn]="'Course Actions'" [backTo]="'/teacher'"></app-page-header>
+
+  <!-- Course info -->
+  <div class="course-hero">
+    <div class="course-hero-icon"><i class="fas fa-book-open"></i></div>
+    <div class="course-hero-text">
       @if (academy()) {
-        <div class="hero-academy-tag">
+        <div class="course-academy-tag">
           <i class="fas fa-university"></i>
           {{ academy()!.nameAr || academy()!.nameEn }}
         </div>
       }
       @if (loading()) {
-        <div class="hero-skeleton"></div>
+        <div class="course-skeleton"></div>
       } @else {
-        <h1>{{ course()?.nameAr || course()?.nameEn || 'المقرر' }}</h1>
-        <div class="hero-chips">
+        <h2>{{ course()?.nameAr || course()?.nameEn || 'المقرر' }}</h2>
+        <div class="course-chips">
           @if (course()?.code) {
-            <span class="hero-chip">{{ course()!.code }}</span>
+            <span class="course-chip">{{ course()!.code }}</span>
           }
           @if (course()?.gradeName) {
-            <span class="hero-chip">{{ course()!.gradeName }}</span>
+            <span class="course-chip">{{ course()!.gradeName }}</span>
           }
           @if (studentCount() !== null) {
-            <span class="hero-chip"><i class="fas fa-user-graduate"></i> {{ studentCount() }}</span>
+            <span class="course-chip"><i class="fas fa-user-graduate"></i> {{ studentCount() }}</span>
           }
           @if (groupCount() !== null) {
-            <span class="hero-chip"><i class="fas fa-layer-group"></i> {{ groupCount() }}</span>
+            <span class="course-chip"><i class="fas fa-layer-group"></i> {{ groupCount() }}</span>
           }
         </div>
       }
-    </div>
-    <div class="hero-icon">
-      <i class="fas fa-book-open"></i>
     </div>
   </div>
 

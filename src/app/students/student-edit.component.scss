@@ -1,51 +1,7 @@
 .student-edit-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-
-  .page-header {
-    margin-bottom: 2rem;
-
-    .back-nav {
-      margin-bottom: 1rem;
-    }
-
-    .btn-back {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: transparent;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      color: #6b7280;
-      cursor: pointer;
-      transition: all 0.2s;
-
-      &:hover {
-        background: #f9fafb;
-        color: #111827;
-        border-color: #d1d5db;
-      }
-
-      i {
-        font-size: 0.875rem;
-      }
-    }
-
-    h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #111827;
-      margin: 0 0 0.5rem 0;
-    }
-
-    .subtitle {
-      color: #6b7280;
-      font-size: 1rem;
-      margin: 0;
-    }
-  }
+  padding: 1.5rem 2rem 2rem;
 
   .loading-container {
     display: flex;

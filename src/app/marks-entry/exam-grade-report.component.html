@@ -1,14 +1,9 @@
 <div class="report-page" dir="rtl">
 
-  <!-- Hero -->
-  <div class="report-hero">
-    <button class="btn-back" (click)="goBack()"><i class="fas fa-arrow-right"></i></button>
-    <div class="report-hero-info">
-      <h1>تقرير الدرجات</h1>
-      <p>Grades Report</p>
-    </div>
-    <div class="report-hero-icon"><i class="fas fa-chart-bar"></i></div>
-  </div>
+  <!-- Header -->
+  <app-page-header
+    [title]="'تقرير الدرجات'"
+    [titleEn]="'Grade Report'"></app-page-header>
 
   <!-- Context info -->
   @if (examName() || courseName() || groupName()) {

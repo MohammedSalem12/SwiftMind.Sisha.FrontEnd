@@ -104,6 +104,9 @@
 }
 
 .role-card {
+  position: relative;
+  overflow: hidden;
+  ion-ripple-effect { color: rgba(102, 126, 234, 0.28); }
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -287,6 +290,20 @@
   }
 }
 
+// Ionic native picker styled to match the boxed .field-input
+ion-select.ion-select-field {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --placeholder-color: #9ca3af;
+  --placeholder-opacity: 1;
+  width: 100%;
+  min-height: 1.4rem;
+  font-size: 16px;        // prevent iOS zoom
+  color: #1f2937;
+  direction: rtl;
+}
+
 /* ─── Field Sub Hint ─── */
 .field-sub-hint {
   display: block;
@@ -323,6 +340,81 @@
   margin-bottom: 1rem;
 
   i { flex-shrink: 0; }
+}
+
+/* ─── Info bar (optional-fields hint) ─── */
+.info-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 10px;
+  color: #1d4ed8;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+
+  i { flex-shrink: 0; margin-top: 0.15rem; }
+}
+
+/* ─── Teacher optional photo ─── */
+.photo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.photo-preview {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: #f1f5f9;
+  border: 1.5px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+  i { font-size: 1.5rem; color: #94a3b8; }
+}
+
+.photo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1rem;
+  background: #f5f3ff;
+  border: 1.5px solid #ddd6fe;
+  border-radius: 10px;
+  color: #6d28d9;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  .spinner-sm {
+    border-color: rgba(109, 40, 217, 0.3);
+    border-top-color: #6d28d9;
+  }
+}
+
+.photo-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  background: transparent;
+  border: 1.5px solid #fecaca;
+  border-radius: 10px;
+  color: #dc2626;
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
 /* ─── Submit Button ─── */

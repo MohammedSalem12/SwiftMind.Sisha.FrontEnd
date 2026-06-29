@@ -5,53 +5,59 @@ import { lastValueFrom } from 'rxjs';
 import { AttendanceService } from '@proxy/attendances';
 import { StudentAttendanceReportDto } from '@proxy/attendances/dtos/models';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-student-my-attendance',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- ── Header ── -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
+      <app-page-header
+        [title]="'سجل الحضور'"
+        [titleEn]="'Attendance Record'"></app-page-header>
 
-        <div class="header-top">
-          <div class="header-title">
-            <h1>سجل الحضور</h1>
-            <p>Attendance Record</p>
-          </div>
-          <!-- Overall circular progress -->
-          <div class="avg-circle">
-            <svg viewBox="0 0 44 44" class="circle-svg">
-              <circle cx="22" cy="22" r="18" class="circle-bg"/>
-              <circle cx="22" cy="22" r="18" class="circle-fill"
-                      [style.stroke-dasharray]="overallCircle() + ' 113'"
-                      [style.stroke]="overallColor()"/>
-            </svg>
-            <div class="circle-inner">
-              <span class="circle-val">{{ overallPct() | number:'1.0-0' }}<small>%</small></span>
+      <!-- ── Summary block ── -->
+      @if (!loading() && reports().length > 0) {
+        <div class="summary-block">
+          <div class="blob b1"></div>
+          <div class="blob b2"></div>
+
+          <div class="summary-top">
+            <div class="period-chip">
+              <i class="fas fa-calendar-day"></i>
+              <span>{{ periodLabel() }}</span>
+            </div>
+            <!-- Overall circular progress -->
+            <div class="avg-circle">
+              <svg viewBox="0 0 44 44" class="circle-svg">
+                <circle cx="22" cy="22" r="18" class="circle-bg"/>
+                <circle cx="22" cy="22" r="18" class="circle-fill"
+                        [style.stroke-dasharray]="overallCircle() + ' 113'"
+                        [style.stroke]="overallColor()"/>
+              </svg>
+              <div class="circle-inner">
+                <span class="circle-val">{{ overallPct() | number:'1.0-0' }}<small>%</small></span>
+              </div>
             </div>
           </div>
-        </div>
 
-        @if (!loading() && reports().length > 0) {
           <div class="header-stats">
             <div class="hstat">
               <span class="hstat-val">{{ totalDays() }}</span>
-              <span class="hstat-lbl">إجمالي الأيام</span>
+              <span class="hstat-lbl">أيام حتى اليوم</span>
             </div>
             <div class="hstat-sep"></div>
             <div class="hstat">
-              <span class="hstat-val" style="color:#86efac">{{ totalPresent() }}</span>
+              <span class="hstat-val" style="color:#16a34a">{{ totalPresent() }}</span>
               <span class="hstat-lbl">حضور</span>
             </div>
             <div class="hstat-sep"></div>
             <div class="hstat">
-              <span class="hstat-val" style="color:#fca5a5">{{ totalAbsent() }}</span>
+              <span class="hstat-val" style="color:#dc2626">{{ totalAbsent() }}</span>
               <span class="hstat-lbl">غياب</span>
             </div>
             <div class="hstat-sep"></div>
@@ -60,8 +66,8 @@ import { CurrentUserInfoService } from '@proxy/common';
               <span class="hstat-lbl">مقرر</span>
             </div>
           </div>
-        }
-      </div>
+        </div>
+      }
 
       <!-- ── Loading ── -->
       @if (loading()) {
@@ -145,47 +151,54 @@ import { CurrentUserInfoService } from '@proxy/common';
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
 
-    /* ── Header ── */
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.1rem) 1.25rem 1.5rem;
+    /* ── Summary block ── */
+    .summary-block {
+      background:#fff;
+      margin:.75rem 1rem 0; border-radius:18px;
+      padding:1.1rem 1.25rem 1.25rem;
       position:relative; overflow:hidden;
+      border:1.5px solid #eef0f6;
+      box-shadow:0 2px 10px rgba(0,0,0,.05);
     }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:130px; height:130px; bottom:-50px; left:-25px; }
+    .blob { display:none; }
 
-    .header-top {
+    .summary-top {
       position:relative; z-index:1;
       display:flex; align-items:center; justify-content:space-between; gap:1rem;
     }
-    .header-title h1 { margin:0; font-size:1.4rem; font-weight:800; color:#fff; }
-    .header-title p  { margin:.15rem 0 0; font-size:.78rem; color:rgba(255,255,255,.6); }
+
+    .period-chip {
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.35rem .7rem;
+      background:rgba(102,126,234,.1); border-radius:999px;
+      font-size:.74rem; font-weight:600; color:#667eea;
+    }
+    .period-chip i { font-size:.72rem; opacity:.85; }
 
     /* Circular progress */
     .avg-circle { position:relative; width:72px; height:72px; flex-shrink:0; }
     .circle-svg { position:absolute; inset:0; transform:rotate(-90deg); }
-    .circle-bg   { fill:none; stroke:rgba(255,255,255,.2); stroke-width:3.5; }
+    .circle-bg   { fill:none; stroke:#eef0f6; stroke-width:3.5; }
     .circle-fill { fill:none; stroke-width:3.5; stroke-linecap:round;
                    transition:stroke-dasharray .6s ease; }
     .circle-inner {
       position:absolute; inset:0;
       display:flex; align-items:center; justify-content:center;
     }
-    .circle-val { font-size:1.05rem; font-weight:800; color:#fff; line-height:1; }
+    .circle-val { font-size:1.05rem; font-weight:800; color:#1a1a2e; line-height:1; }
     .circle-val small { font-size:.6rem; font-weight:600; }
 
-    /* Header stats */
+    /* Stats */
     .header-stats {
       position:relative; z-index:1;
       display:flex; align-items:center; justify-content:space-around;
-      margin-top:1.1rem; background:rgba(255,255,255,.1);
+      margin-top:1.1rem; background:#f6f7fb;
       border-radius:14px; padding:.75rem .5rem;
     }
     .hstat { display:flex; flex-direction:column; align-items:center; gap:.1rem; }
-    .hstat-val { font-size:1.05rem; font-weight:800; color:#fff; }
-    .hstat-lbl { font-size:.65rem; color:rgba(255,255,255,.65); }
-    .hstat-sep { width:1px; height:28px; background:rgba(255,255,255,.2); }
+    .hstat-val { font-size:1.05rem; font-weight:800; color:#1a1a2e; }
+    .hstat-lbl { font-size:.65rem; color:#9090aa; }
+    .hstat-sep { width:1px; height:28px; background:#e6e8f0; }
 
     /* ── Section title bar ── */
     .section-title-bar {
@@ -299,6 +312,13 @@ export class StudentMyAttendanceComponent implements OnInit {
 
   loading = signal(true);
   reports = signal<StudentAttendanceReportDto[]>([]);
+
+  // The report covers the current month up to today (server caps the day count at today).
+  periodLabel = computed(() => {
+    const now = new Date();
+    const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    return `${months[now.getMonth()]} ${now.getFullYear()} · حتى اليوم ${now.getDate()}`;
+  });
 
   totalDays    = computed(() => this.reports().reduce((s, r) => s + r.totalDaysInMonth, 0));
   totalPresent = computed(() => this.reports().reduce((s, r) => s + r.attendedDays, 0));

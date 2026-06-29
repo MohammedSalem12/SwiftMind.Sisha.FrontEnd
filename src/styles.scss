@@ -313,8 +313,26 @@ input, textarea, select {
 .grade-chip { background: var(--ngx-primary-light) !important; color: var(--ngx-primary) !important; }
 .day-chip   { background: var(--ngx-primary-light) !important; color: var(--ngx-primary) !important; }
 
-// Spinner color
-.spinner { border-top-color: var(--ngx-primary) !important; }
+// ─── Branded "KAI pulse" loader ────────────────────────────────────────────
+// Globally rebrands every <div class="spinner"></div> (used across ~45 screens)
+// from the generic rotating arc into the KAI logo gently breathing inside a
+// purple badge with an expanding halo. !important overrides the per-component
+// scoped .spinner styles. Width/height are intentionally NOT overridden, so each
+// screen keeps its own sizing (page loaders ~40px, inline ones ~16px).
+@keyframes kai-pulse {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0     rgba(102, 126, 234, 0.45); }
+  50%      { transform: scale(1.07); box-shadow: 0 0 0 0.85em rgba(102, 126, 234, 0);    }
+}
+.spinner {
+  border: none !important;
+  border-radius: 30% !important;
+  background:
+    url('/assets/images/logo/logo-light-thumbnail2.png') center / 60% no-repeat,
+    linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.30) !important;
+  animation: kai-pulse 1.5s ease-in-out infinite !important;
+  box-sizing: border-box !important;
+}
 
 // Nav active color
 .nav-item.active, .nav-item.active .nav-icon i {
@@ -752,6 +770,12 @@ button.lpx-sidebar-toggle {
 
 @media (max-width: 767px) {
 
+  // Larger mobile type scale: the app's rem sizes are based on the html root.
+  // Raising the root ~+10% on phones scales the whole type scale up to match
+  // modern apps (names ~15.5px, secondary ~12.5px, nav labels ~12px), with
+  // spacing scaling proportionally. Desktop keeps the 15px base.
+  html { font-size: 16.5px; }
+
   .page-container { padding: 0.75rem; }
 
   .stats-row {
@@ -959,4 +983,36 @@ input:focus-visible {
   .hide-on-mobile {
     display: none !important;
   }
+}
+
+// ── Ionic native picker, themed to sit inside an existing boxed field ──
+// Add class "ion-select-field" to an <ion-select> that already carries the
+// form's own box class (.field-input / .form-select / etc.).
+ion-select.ion-select-field {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --placeholder-color: #9ca3af;
+  --placeholder-opacity: 1;
+  width: 100%;
+  font-size: 16px;       // prevents iOS auto-zoom
+  color: var(--ngx-text, #1f2937);
+}
+
+/* ─── Ionic overlay positioning fix ──────────────────────────────────────────
+   This app has no <ion-app> wrapper and scrolls at the document level. Ionic
+   overlays (ion-select's alert/action-sheet, popovers, etc.) are position:absolute
+   and expect an <ion-app> as their offset parent; appended to <body> they otherwise
+   anchor to the document top and appear at the TOP of long/scrolled pages. Forcing
+   fixed positioning centers them in the viewport. */
+ion-alert,
+ion-action-sheet,
+ion-popover,
+ion-modal,
+ion-picker,
+ion-loading,
+ion-toast {
+  position: fixed !important;
+  inset: 0;
+  z-index: 100000;
 }

@@ -1,32 +1,19 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-support',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
       <!-- Header -->
-      <div class="page-header">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="header-row">
-          <button class="btn-back" (click)="goBack()">
-            <i class="fas fa-arrow-right"></i>
-          </button>
-          <div class="header-text">
-            <h1>الدعم الفني</h1>
-            <p>Support</p>
-          </div>
-          <div class="header-icon">
-            <i class="fas fa-headset"></i>
-          </div>
-        </div>
-      </div>
+      <app-page-header [title]="'الدعم الفني'" [titleEn]="'Support'"></app-page-header>
 
       <!-- Contact Info -->
       <div class="section">
@@ -41,15 +28,24 @@ import { FormsModule } from '@angular/forms';
               <span class="contact-value ltr">support&#64;swiftmind.dev</span>
             </div>
           </div>
-          <div class="contact-item">
+          <a class="contact-item" href="tel:+201019322902">
+            <div class="contact-icon" style="background:rgba(102,126,234,.12);color:#667eea">
+              <i class="fas fa-phone-alt"></i>
+            </div>
+            <div class="contact-text">
+              <span class="contact-label">الهاتف · Phone</span>
+              <span class="contact-value ltr">+20 101 932 2902</span>
+            </div>
+          </a>
+          <a class="contact-item" href="https://wa.me/201019322902" target="_blank" rel="noopener">
             <div class="contact-icon" style="background:rgba(16,185,129,.12);color:#059669">
               <i class="fab fa-whatsapp"></i>
             </div>
             <div class="contact-text">
               <span class="contact-label">واتساب · WhatsApp</span>
-              <span class="contact-value ltr">+966 XX XXX XXXX</span>
+              <span class="contact-value ltr">+20 101 932 2902</span>
             </div>
-          </div>
+          </a>
           <div class="contact-item">
             <div class="contact-icon" style="background:rgba(245,158,11,.12);color:#d97706">
               <i class="fas fa-clock"></i>
@@ -117,34 +113,6 @@ import { FormsModule } from '@angular/forms';
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
 
-    .page-header {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      padding:calc(env(safe-area-inset-top,0px) + 1.25rem) 1.25rem 2rem;
-      position:relative; overflow:hidden;
-    }
-    .blob { position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-    .b1 { width:200px; height:200px; top:-70px; right:-60px; }
-    .b2 { width:140px; height:140px; bottom:-50px; left:-30px; }
-    .header-row {
-      position:relative; z-index:1;
-      display:flex; align-items:center; gap:1rem;
-    }
-    .btn-back {
-      width:40px; height:40px; border-radius:12px;
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      color:#fff; font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; flex-shrink:0;
-    }
-    .header-text { flex:1; }
-    .header-text h1 { margin:0; font-size:1.4rem; font-weight:800; color:#fff; }
-    .header-text p { margin:.15rem 0 0; font-size:.82rem; color:rgba(255,255,255,.7); }
-    .header-icon {
-      width:48px; height:48px; border-radius:14px;
-      background:rgba(255,255,255,.15);
-      display:flex; align-items:center; justify-content:center;
-      color:rgba(255,255,255,.9); font-size:1.3rem; flex-shrink:0;
-    }
-
     .section { padding:1rem 1rem 0; }
     .section-title {
       display:flex; align-items:center; gap:.5rem; font-size:.8rem; font-weight:700;
@@ -158,7 +126,10 @@ import { FormsModule } from '@angular/forms';
       display:flex; align-items:center; gap:.65rem;
       padding:.75rem .85rem; background:#fff; border-radius:14px;
       border:1.5px solid #f0f0f5; box-shadow:0 2px 6px rgba(0,0,0,.03);
+      text-decoration:none; color:inherit;
+      -webkit-tap-highlight-color:transparent; transition:transform .12s, border-color .15s;
     }
+    a.contact-item:active { transform:scale(.99); border-color:rgba(102,126,234,.3); }
     .contact-icon {
       width:42px; height:42px; border-radius:12px; flex-shrink:0;
       display:flex; align-items:center; justify-content:center; font-size:1.1rem;
@@ -218,8 +189,6 @@ import { FormsModule } from '@angular/forms';
   `],
 })
 export class SupportComponent {
-  private readonly location = inject(Location);
-
   subject = '';
   message = '';
   sending = signal(false);
@@ -267,6 +236,4 @@ export class SupportComponent {
     this.sending.set(false);
     setTimeout(() => this.successMsg.set(''), 5000);
   }
-
-  goBack(): void { this.location.back(); }
 }

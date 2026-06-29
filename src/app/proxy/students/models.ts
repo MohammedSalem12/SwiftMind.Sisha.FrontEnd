@@ -29,6 +29,7 @@ export interface CreateUpdateStudentDto {
 export interface GroupChangeRequestDto extends FullAuditedEntityDto<string> {
   studentId?: string;
   studentName?: string;
+  studentPhotoUrl?: string;
   courseId?: string;
   courseName?: string;
   fromGroupId?: string;
@@ -46,6 +47,7 @@ export interface GroupChangeRequestDto extends FullAuditedEntityDto<string> {
 export interface PromotionRequestDto extends FullAuditedEntityDto<string> {
   studentId?: string;
   studentName?: string;
+  studentPhotoUrl?: string;
   studentCode?: string;
   fromGrade: number;
   toGrade: number;
@@ -53,6 +55,11 @@ export interface PromotionRequestDto extends FullAuditedEntityDto<string> {
   toGradeName?: string;
   status?: PromotionRequestStatus;
   initiatorType?: string;
+}
+
+export interface RequestParentLinkDto {
+  parentCode: string;
+  relationshipType?: string;
 }
 
 export interface StudentDto extends ExtensibleAuditedEntityDto<string> {
@@ -67,4 +74,11 @@ export interface StudentDto extends ExtensibleAuditedEntityDto<string> {
   government?: string;
   town?: string;
   referralCode?: string;
+  photoUrl?: string;
+  statusMessage?: string;
+}
+
+export interface UpdateStudentProfileDto {
+  photoUrl?: string;
+  statusMessage?: string;
 }

@@ -5,10 +5,13 @@
 // ============================================================
 
 :root {
-  // ── Primary palette ──────────────────────────────────────
-  --ngx-primary:          #3366ff;
-  --ngx-primary-hover:    #1a45cc;
-  --ngx-primary-light:    #e8eeff;
+  // ── Primary palette (SwiftMind purple — canonical brand) ──
+  --ngx-primary:          #667eea;
+  --ngx-primary-hover:    #5a70d6;   // darker purple for hover
+  --ngx-primary-active:   #4f63c0;   // pressed/active state
+  --ngx-primary-light:    #eef0fd;   // tint for backgrounds/pills
+  --ngx-primary-rgb:      102, 126, 234;
+  --ngx-secondary-purple: #764ba2;   // gradient end / accent
   --ngx-success:          #00d68f;
   --ngx-success-light:    #e5fff7;
   --ngx-warning:          #ffaa00;
@@ -73,12 +76,12 @@
   // ── Transitions ──────────────────────────────────────────
   --ngx-transition:       0.15s ease-out;
 
-  // ── Hero gradient (replaces purple — uses ngx-admin blue) ─
-  --ngx-hero-start:       #3366ff;
-  --ngx-hero-end:         #1a45cc;
+  // ── Hero / brand gradient (purple — matches avatars & top-bar) ─
+  --ngx-hero-start:       #667eea;
+  --ngx-hero-end:         #764ba2;
   --ngx-hero-gradient:    linear-gradient(135deg, var(--ngx-hero-start) 0%, var(--ngx-hero-end) 100%);
 
   // ── Bottom nav ───────────────────────────────────────────
   --ngx-bottom-nav-bg:    #ffffff;
-  --ngx-bottom-nav-active:#3366ff;
+  --ngx-bottom-nav-active:#667eea;
 }

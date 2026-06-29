@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
+import { PullToRefreshDirective } from '../shared/directives/pull-to-refresh.directive';
 
 import { SecretaryTeacherService } from '@proxy/teachers';
 import type { SecretaryTeacherDto } from '@proxy/teachers';
@@ -10,14 +12,15 @@ import { OfflineCacheService } from '../shared/services/offline-cache.service';
 import { OfflineBannerComponent } from '../shared/components/offline-banner.component';
 import { DidYouKnowComponent } from '../shared/components/did-you-know.component';
 import { ActiveSemesterComponent } from '../shared/components/active-semester.component';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-secretary-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, OfflineBannerComponent, DidYouKnowComponent, ActiveSemesterComponent],
+  imports: [CommonModule, IonicModule, PullToRefreshDirective, OfflineBannerComponent, DidYouKnowComponent, ActiveSemesterComponent, PageHeaderComponent],
   template: `
-    <div class="secretary-home" dir="rtl">
+    <div class="secretary-home" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
 
       <app-active-semester />
 
@@ -25,21 +28,18 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
         <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
       }
 
-      <!-- Hero (hidden on mobile - info in top bar) -->
-      <div class="hero hide-on-mobile">
-        <div class="hero-blob hero-blob-1"></div>
-        <div class="hero-blob hero-blob-2"></div>
-        <div class="hero-content">
-          <div class="hero-greeting">
-            <span class="hero-hello">مرحباً،</span>
-            <span class="hero-name">{{ secretaryName() || 'السكرتير' }}</span>
-          </div>
-          <p class="hero-sub">اختر معلماً لعرض مقرراته وإدارة الحضور والدرجات</p>
-          <p class="hero-sub-en">Select a teacher to manage their courses</p>
+      <!-- Header -->
+      <app-page-header [title]="'الرئيسية'" [titleEn]="'Home'" [showBack]="false"></app-page-header>
+
+      <!-- Identity card -->
+      <div class="id-card">
+        <div class="id-avatar">@if (userPhoto()) { <img [src]="userPhoto()" alt="" /> } @else { {{ getInitials(secretaryName()) }} }</div>
+        <div class="id-body">
+          <span class="id-hello">مرحباً،</span>
+          <span class="id-name">{{ secretaryName() || 'السكرتير' }}</span>
+          <span class="id-sub">اختر معلماً لإدارة الحضور والدرجات · Select a teacher to manage</span>
         </div>
-        <div class="hero-icon">
-          <i class="fas fa-user-tie"></i>
-        </div>
+        <div class="id-role-ic"><i class="fas fa-user-tie"></i></div>
       </div>
 
       <app-did-you-know [role]="'SECRETARY'" />
@@ -72,9 +72,13 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
         @if (teachersExpanded()) {
           <div class="teachers-grid collapsible-content">
             @for (t of teachers(); track t.id) {
-              <button class="teacher-card" (click)="goToTeacherCourses(t)">
+              <button class="teacher-card ion-activatable" (click)="goToTeacherCourses(t)">
                 <div class="teacher-card-icon">
-                  <i class="fas fa-chalkboard-teacher"></i>
+                  @if (t.teacherPhotoUrl) {
+                    <img [src]="t.teacherPhotoUrl" alt="" />
+                  } @else {
+                    <i class="fas fa-chalkboard-teacher"></i>
+                  }
                 </div>
                 <div class="teacher-card-body">
                   <div class="teacher-name">{{ t.teacherName }}</div>
@@ -87,6 +91,7 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
                 <div class="teacher-card-arrow">
                   <i class="fas fa-chevron-left"></i>
                 </div>
+                <ion-ripple-effect></ion-ripple-effect>
               </button>
             }
           </div>
@@ -94,48 +99,52 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
       }
 
       <!-- Quick Actions -->
+      <div class="section-label">
+        <i class="fas fa-bolt"></i>
+        <span>إجراءات سريعة · Quick Actions</span>
+      </div>
       <div class="quick-actions">
-        <button class="qa-btn" (click)="goToLinkTeacher()">
-          <i class="fas fa-user-plus"></i>
-          <div class="qa-text">
-            <span>ربط معلم جديد</span>
+        <button class="qa-btn qa-link" (click)="goToLinkTeacher()">
+          <span class="qa-ic"><i class="fas fa-user-plus"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">ربط معلم جديد</span>
             <span class="qa-en">Link Teacher</span>
-          </div>
+          </span>
         </button>
-        <button class="qa-btn qa-btn-requests" (click)="goToRequests()">
-          <i class="fas fa-paper-plane"></i>
-          <div class="qa-text">
-            <span>طلباتي</span>
+        <button class="qa-btn qa-req" (click)="goToRequests()">
+          <span class="qa-ic"><i class="fas fa-paper-plane"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">طلباتي</span>
             <span class="qa-en">My Requests</span>
-          </div>
+          </span>
         </button>
-        <button class="qa-btn qa-btn-announce" (click)="goToAnnounce()">
-          <i class="fas fa-bullhorn"></i>
-          <div class="qa-text">
-            <span>إعلان للطلاب</span>
+        <button class="qa-btn qa-ann" (click)="goToAnnounce()">
+          <span class="qa-ic"><i class="fas fa-bullhorn"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">إعلان للطلاب</span>
             <span class="qa-en">Announce</span>
-          </div>
+          </span>
         </button>
-        <button class="qa-btn qa-btn-schedule" (click)="goToScheduleOverview()">
-          <i class="fas fa-calendar-alt"></i>
-          <div class="qa-text">
-            <span>جدول المعلمين</span>
+        <button class="qa-btn qa-sched" (click)="goToScheduleOverview()">
+          <span class="qa-ic"><i class="fas fa-calendar-alt"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">جدول المعلمين</span>
             <span class="qa-en">Schedule</span>
-          </div>
+          </span>
         </button>
-        <button class="qa-btn qa-btn-bulk" (click)="goToBulkAttendance()">
-          <i class="fas fa-clipboard-list"></i>
-          <div class="qa-text">
-            <span>حضور جماعي</span>
+        <button class="qa-btn qa-bulk" (click)="goToBulkAttendance()">
+          <span class="qa-ic"><i class="fas fa-clipboard-list"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">حضور جماعي</span>
             <span class="qa-en">Bulk Attendance</span>
-          </div>
+          </span>
         </button>
-        <button class="qa-btn qa-btn-reports" (click)="goToReports()">
-          <i class="fas fa-chart-bar"></i>
-          <div class="qa-text">
-            <span>تقارير (تصدير)</span>
+        <button class="qa-btn qa-rep" (click)="goToReports()">
+          <span class="qa-ic"><i class="fas fa-chart-bar"></i></span>
+          <span class="qa-text">
+            <span class="qa-ar">تقارير (تصدير)</span>
             <span class="qa-en">Reports (Export)</span>
-          </div>
+          </span>
         </button>
       </div>
 
@@ -160,42 +169,39 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
       padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     }
 
-    /* ── Hero ── */
-    .hero {
-      background: linear-gradient(145deg, var(--grad-start) 0%, var(--grad-end) 100%);
-      padding: calc(env(safe-area-inset-top, 0px) + 0.6rem) 1.25rem 0.7rem;
-      position: relative;
-      overflow: hidden;
+    /* ── Identity card (relocated greeting) ── */
+    .id-card {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: .75rem;
+      background: var(--white);
+      margin: .75rem 1rem 0;
+      padding: .85rem 1rem;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
     }
-    .hero-blob {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,.07);
-      pointer-events: none;
-    }
-    .hero-blob-1 { width: 220px; height: 220px; top: -80px; right: -60px; }
-    .hero-blob-2 { width: 140px; height: 140px; bottom: -50px; left: -30px; }
-
-    .hero-content { z-index: 1; }
-    .hero-greeting { display: flex; flex-direction: column; margin-bottom: .35rem; }
-    .hero-hello { font-size: .75rem; color: rgba(255,255,255,.75); }
-    .hero-name  { font-size: 1.1rem; font-weight: 800; color: var(--white); line-height: 1.2; }
-    .hero-sub   { font-size: .85rem; color: rgba(255,255,255,.8); margin: 0; }
-    .hero-sub-en { font-size: .72rem; color: rgba(255,255,255,.55); margin: .1rem 0 0; }
-
-    .hero-icon {
-      z-index: 1;
-      width: 42px; height: 42px; border-radius: 50%;
-      background: rgba(255,255,255,.15);
-      border: 1.5px solid rgba(255,255,255,.25);
-      display: flex; align-items: center; justify-content: center;
+    .id-avatar {
       flex-shrink: 0;
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.05rem; font-weight: 800;
+      overflow: hidden;
     }
-    .hero-icon i { font-size: 1.1rem; color: var(--white); }
+    .id-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .id-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .12rem; }
+    .id-hello { font-size: .72rem; color: var(--text-light); }
+    .id-name  { font-size: 1.02rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
+    .id-sub   { font-size: .72rem; color: var(--text-mid); }
+    .id-role-ic {
+      flex-shrink: 0;
+      width: 42px; height: 42px; border-radius: 12px;
+      background: rgba(102,126,234,.1);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .id-role-ic i { font-size: 1.05rem; color: var(--grad-start); }
 
     /* ── Skeleton shimmer ── */
     .loading-area {
@@ -265,6 +271,8 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
     }
 
     .teacher-card {
+      position: relative;
+      overflow: hidden;
       display: flex;
       align-items: center;
       gap: .75rem;
@@ -289,8 +297,10 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
       width: 48px; height: 48px; border-radius: 14px;
       background: linear-gradient(135deg, rgba(102,126,234,.12), rgba(118,75,162,.12));
       display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
     }
     .teacher-card-icon i { font-size: 1.2rem; color: var(--grad-start); }
+    .teacher-card-icon img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
     .teacher-card-body { flex: 1; min-width: 0; }
 
@@ -310,33 +320,51 @@ import { ActiveSemesterComponent } from '../shared/components/active-semester.co
 
     .teacher-card-arrow { flex-shrink: 0; color: var(--text-light); font-size: .9rem; }
 
-    /* ── Inline quick actions ── */
+    /* ── Quick actions — responsive card grid (2 cols mobile, 3 desktop) ── */
     .quick-actions {
-      padding: 0 1rem .5rem;
-      display: flex;
-      gap: .75rem;
+      padding: 0 1rem 1rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: .7rem;
     }
     .qa-btn {
-      flex: 1;
       display: flex; align-items: center; gap: .6rem;
-      padding: .75rem 1rem;
-      border: none; border-radius: 14px; cursor: pointer;
-      font-weight: 700; font-size: .85rem; color: var(--white);
-      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
-      box-shadow: 0 3px 12px rgba(0,0,0,.15);
+      padding: .8rem .75rem;
+      border: none; border-radius: 16px; cursor: pointer;
+      background: var(--white);
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      text-align: right;
+      min-height: 64px;
+      width: 100%;
       transition: transform .15s, box-shadow .15s;
+      -webkit-tap-highlight-color: transparent;
     }
     .qa-btn:active { transform: scale(.97); box-shadow: 0 1px 6px rgba(0,0,0,.1); }
-    .qa-btn i { font-size: 1rem; flex-shrink: 0; }
-    .qa-btn-reports { background: linear-gradient(135deg, #f093fb, #f5576c); }
-    .qa-btn-enrollment { background: linear-gradient(135deg, #10b981, #059669); }
-    .qa-btn-course { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-    .qa-btn-group { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .qa-btn-announce { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-    .qa-btn-schedule { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
-    .qa-btn-bulk { background: linear-gradient(135deg, #10b981, #047857); }
-    .qa-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
-    .qa-en { font-size: .65rem; font-weight: 500; opacity: .85; }
+
+    .qa-ic {
+      flex-shrink: 0;
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.05rem;
+    }
+    .qa-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+    .qa-ar {
+      font-size: .82rem; font-weight: 700; color: var(--text-dark);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .qa-en { font-size: .62rem; font-weight: 500; color: var(--text-light); }
+
+    /* per-action accent on the icon tile */
+    .qa-link  .qa-ic { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .qa-req   .qa-ic { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .qa-ann   .qa-ic { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .qa-sched .qa-ic { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+    .qa-bulk  .qa-ic { background: linear-gradient(135deg, #10b981, #047857); }
+    .qa-rep   .qa-ic { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+    @media (min-width: 768px) {
+      .quick-actions { grid-template-columns: repeat(3, 1fr); }
+    }
 
     /* ── Collapsible toggle ── */
     .section-label--toggle {
@@ -371,6 +399,7 @@ export class SecretaryHomeComponent implements OnInit {
   teachers = signal<SecretaryTeacherDto[]>([]);
   loading = signal(false);
   secretaryName = signal<string>('');
+  userPhoto = signal('');
   teachersExpanded = signal(true);
   offline = signal(false);
   offlineLastUpdated = signal('');
@@ -391,7 +420,16 @@ export class SecretaryHomeComponent implements OnInit {
     try {
       const info = await lastValueFrom(this.currentUserService.getCurrentUserActorInfo());
       this.secretaryName.set(info?.actorName ?? '');
+      this.userPhoto.set(info?.photoUrl || '');
     } catch { /* silent */ }
+  }
+
+  async refreshData(e: { complete: () => void }): Promise<void> {
+    try {
+      await Promise.all([this.loadTeachers(), this.loadSecretaryName()]);
+    } finally {
+      e.complete();
+    }
   }
 
   private async loadTeachers() {
@@ -417,6 +455,15 @@ export class SecretaryHomeComponent implements OnInit {
       this.offline.set(true);
       this.offlineLastUpdated.set(this.cache.getLastUpdatedLabel(this.CACHE_KEY));
     }
+  }
+
+  getInitials(name: string | undefined): string {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0]?.[0]?.toUpperCase() || '?';
   }
 
   goToRequests() {

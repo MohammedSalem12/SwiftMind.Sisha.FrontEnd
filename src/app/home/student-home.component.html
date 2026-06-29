@@ -1,28 +1,41 @@
-<div class="student-home" dir="rtl">
+<div class="student-home" dir="rtl" appPullToRefresh (appPullToRefresh)="refreshData($event)">
 
   <app-active-semester />
+
+  <!-- Active (live) session banner — visible on all sizes incl. mobile -->
+  @if (nextSession()?.isNow) {
+    <button class="live-session-banner" (click)="goTodaySessions()">
+      <span class="live-dot"></span>
+      <div class="live-text">
+        <span class="live-title">حصتك الآن مباشرة · Your session is live</span>
+        <span class="live-sub">{{ nextSession()?.courseName }}<span *ngIf="nextSession()?.groupName"> · {{ nextSession()?.groupName }}</span></span>
+      </div>
+      <i class="fas fa-chevron-left live-arrow"></i>
+    </button>
+  }
 
   @if (offline()) {
     <app-offline-banner [lastUpdated]="offlineLastUpdated()" />
   }
 
-  <!-- Hero (hidden on mobile - info moved to top bar) -->
-  <div class="hero hide-on-mobile">
-    <div class="hero-blob hero-blob-1"></div>
-    <div class="hero-blob hero-blob-2"></div>
+  <!-- Header -->
+  <app-page-header [title]="'الرئيسية'" [titleEn]="'Home'" [showBack]="false">
+    <button ph-actions class="ph-action" (click)="goProfile()" aria-label="الملف الشخصي · Profile">
+      <i class="fas fa-graduation-cap"></i>
+    </button>
+  </app-page-header>
 
-    <div class="hero-main-row">
-      <div class="hero-content">
-        <span class="hero-hello">مرحباً،</span>
-        <span class="hero-name">{{ studentName() || 'الطالب' }}</span>
-        @if (gradeName()) {
-          <span class="hero-grade">{{ gradeName() }}</span>
-        }
-      </div>
-      <div class="hero-icon" (click)="goProfile()">
-        <i class="fas fa-graduation-cap"></i>
-      </div>
+  <!-- Identity card -->
+  <div class="id-card" (click)="goProfile()">
+    <div class="id-avatar">@if (userPhoto()) { <img [src]="userPhoto()" alt="" /> } @else { {{ getInitials(studentName()) }} }</div>
+    <div class="id-body">
+      <span class="id-hello">مرحباً،</span>
+      <span class="id-name">{{ studentName() || 'الطالب' }}</span>
+      @if (gradeName()) {
+        <span class="id-chip"><i class="fas fa-graduation-cap"></i> {{ gradeName() }}</span>
+      }
     </div>
+    <i class="fas fa-chevron-left id-arrow"></i>
   </div>
 
   <app-did-you-know [role]="'STUDENT'" />
@@ -54,7 +67,7 @@
     @if (coursesExpanded()) {
       <div class="courses-grid collapsible-content">
         @for (course of enrolledCourses(); track course.id) {
-          <div class="course-card" [class.course-card--pending]="course.hasPendingRequest && !course.isEnrolled" (click)="viewCourse(course)">
+          <div class="course-card ion-activatable" [class.course-card--pending]="course.hasPendingRequest && !course.isEnrolled" (click)="viewCourse(course)">
             <div class="course-card-icon" [class.course-card-icon--pending]="course.hasPendingRequest && !course.isEnrolled">
               <i class="fas" [class.fa-book]="course.isEnrolled" [class.fa-clock]="!course.isEnrolled"></i>
             </div>
@@ -75,6 +88,7 @@
             } @else {
               <div class="status-badge status-pending">قيد المراجعة</div>
             }
+            <ion-ripple-effect></ion-ripple-effect>
           </div>
         }
       </div>
@@ -99,7 +113,7 @@
             </div>
             <button class="enroll-btn" (click)="goEnroll(course)">
               <i class="fas fa-user-plus"></i>
-              تسجيل
+              عرض المدرسين
             </button>
           </div>
         }
@@ -123,7 +137,7 @@
   }
 
   <!-- FAB: Session Timer + Link Parent -->
-  <div class="fab-wrap">
+  <div class="fab-wrap" appFixedToBody>
     @if (nextSession()) {
       <div class="fab-session" (click)="goTodaySessions()">
         <div class="fab-session-ring" [class.fab-session--now]="nextSession()!.isNow">
@@ -135,7 +149,7 @@
         </div>
       </div>
     }
-    <a class="fab-link-parent" routerLink="/student/requests">
+    <a class="fab-link-parent" routerLink="/student/link-parent">
       <i class="fas fa-user-shield"></i>
       <span>ربط ولي أمر</span>
     </a>

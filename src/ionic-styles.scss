@@ -41,21 +41,21 @@ ion-header {
   }
 }
 
-/* Make Ionic work well with the existing Egyptian theme */
+/* Wire Ionic palette to the SwiftMind purple brand (matches --ngx-* tokens) */
 :root {
-  --ion-color-primary: var(--ancient-gold, #d4af37);
-  --ion-color-primary-rgb: 212, 175, 55;
-  --ion-color-primary-contrast: #000000;
-  --ion-color-primary-contrast-rgb: 0, 0, 0;
-  --ion-color-primary-shade: #bb9930;
-  --ion-color-primary-tint: #dab849;
-  
-  --ion-color-secondary: var(--lapis, #0b3b5c);
-  --ion-color-secondary-rgb: 11, 59, 92;
+  --ion-color-primary: #667eea;
+  --ion-color-primary-rgb: 102, 126, 234;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #5a70ce;
+  --ion-color-primary-tint: #758aec;
+
+  --ion-color-secondary: #764ba2;
+  --ion-color-secondary-rgb: 118, 75, 162;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #0a3451;
-  --ion-color-secondary-tint: #23506c;
+  --ion-color-secondary-shade: #68428f;
+  --ion-color-secondary-tint: #835dab;
 }
 
 /* Ensure mobile platforms get proper styling */

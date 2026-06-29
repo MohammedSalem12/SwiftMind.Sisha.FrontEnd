@@ -1,21 +1,9 @@
 <div class="marks-page" dir="rtl">
 
-  <!-- Top Bar -->
-  <div class="top-bar-fixed">
-    <button class="top-back-btn" (click)="goBack()">
-      <i class="fas fa-arrow-right"></i>
-    </button>
-    <div class="top-bar-title">
-      <h1>إدخال الدرجات</h1>
-      <p>Marks Entry</p>
-    </div>
-    @if (isAcademyCourse()) {
-      <span class="top-academy-tag">
-        <i class="fas fa-university"></i>
-        {{ selectedCourse()?.academyName }}
-      </span>
-    }
-  </div>
+  <!-- Header -->
+  <app-page-header
+    [title]="'إدخال الدرجات'"
+    [titleEn]="'Marks Entry'"></app-page-header>
 
   <!-- Academy context banner -->
   @if (isAcademyCourse() && lockedCourseId()) {
@@ -51,17 +39,17 @@
           }
         </div>
       } @else {
-        <select class="field-input"
+        <ion-select class="field-input ion-select-field"
+          interface="action-sheet" placeholder="-- اختر المقرر --" cancelText="إلغاء"
           [ngModel]="selectedCourseId()"
           (ngModelChange)="onCourseChange($event)"
           [disabled]="loading()">
-          <option value="">-- اختر المقرر --</option>
           @for (c of courses(); track c.id) {
-            <option [value]="c.id">
+            <ion-select-option [value]="c.id">
               {{ c.nameAr || c.nameEn }}{{ c.gradeName ? ' · ' + c.gradeName : '' }}{{ c.academyName ? ' · ' + c.academyName : '' }}
-            </option>
+            </ion-select-option>
           }
-        </select>
+        </ion-select>
       }
     </div>
 
@@ -76,17 +64,17 @@
             <i class="fas fa-plus"></i> تقييم جديد
           </button>
         </div>
-        <select class="field-input"
+        <ion-select class="field-input ion-select-field"
+          interface="action-sheet" placeholder="-- اختر التقييم --" cancelText="إلغاء"
           [ngModel]="selectedExamId()"
           (ngModelChange)="onExamChange($event)"
           [disabled]="loading()">
-          <option value="">-- اختر التقييم --</option>
           @for (e of exams(); track e.id) {
-            <option [value]="e.id">
+            <ion-select-option [value]="e.id">
               {{ e.examName }}{{ e.groupName ? ' (' + e.groupName + ')' : '' }}
-            </option>
+            </ion-select-option>
           }
-        </select>
+        </ion-select>
       </div>
     }
 
@@ -96,15 +84,16 @@
         <label class="field-label">
           <i class="fas fa-users"></i> المجموعة · Group <span class="opt-tag">اختياري</span>
         </label>
-        <select class="field-input"
+        <ion-select class="field-input ion-select-field"
+          interface="action-sheet" placeholder="الكل" cancelText="إلغاء"
           [ngModel]="selectedGroupId()"
           (ngModelChange)="onGroupChange($event)"
           [disabled]="loading()">
-          <option value="">الكل</option>
+          <ion-select-option [value]="''">الكل</ion-select-option>
           @for (g of groups(); track g.id) {
-            <option [value]="g.id">{{ g.name }}</option>
+            <ion-select-option [value]="g.id">{{ g.name }}</ion-select-option>
           }
-        </select>
+        </ion-select>
       </div>
     }
 
@@ -180,7 +169,7 @@
   <!-- Loading -->
   @if (loading()) {
     <div class="loading-area">
-      <div class="spinner"></div>
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
       <span>جاري التحميل...</span>
     </div>
   }

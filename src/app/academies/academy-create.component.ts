@@ -8,30 +8,22 @@ import { lastValueFrom } from 'rxjs';
 import { AcademyService } from '@proxy/academies';
 import type { CreateAcademyDto, AcademyDto } from '@proxy/academies/models';
 import { CurrentUserInfoService } from '@proxy/common';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 @Component({
   selector: 'app-academy-create',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="ac-page" dir="rtl">
 
-      <!-- Hero header -->
-      <div class="hero">
-        <div class="hero-blob b1"></div>
-        <div class="hero-blob b2"></div>
-        <button class="back-btn" (click)="goBack()">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <div class="hero-text">
-          <h1>{{ isEdit() ? 'تعديل الأكاديمية' : 'إنشاء أكاديمية' }}</h1>
-          <p>{{ isEdit() ? 'Edit Academy' : 'Create a New Academy' }}</p>
-        </div>
-        <div class="hero-icon">
-          <i class="fas" [class]="isEdit() ? 'fas fa-pen' : 'fas fa-university'"></i>
-        </div>
-      </div>
+      <!-- Header -->
+      <app-page-header
+        [title]="isEdit() ? 'تعديل الأكاديمية' : 'إنشاء أكاديمية'"
+        [titleEn]="isEdit() ? 'Edit Academy' : 'Create a New Academy'"
+        (back)="goBack()">
+      </app-page-header>
 
       <!-- Loading existing data -->
       @if (loadingData()) {
@@ -111,19 +103,6 @@ import { CurrentUserInfoService } from '@proxy/common';
   `,
   styles: [`
     .ac-page { direction: rtl; min-height: 100vh; background: #f4f5fb; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
-
-    /* Hero */
-    .hero { background: linear-gradient(145deg, #667eea 0%, #764ba2 100%); padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem 1.5rem; position: relative; overflow: hidden; display: flex; align-items: center; gap: 0.875rem; }
-    .hero-blob { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.07); pointer-events: none; }
-    .b1 { width: 200px; height: 200px; top: -70px; right: -50px; }
-    .b2 { width: 130px; height: 130px; bottom: -50px; left: -25px; }
-    .back-btn { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.25); color: #fff; font-size: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1; transition: background 0.15s; }
-    .back-btn:active { background: rgba(255,255,255,0.28); }
-    .hero-text { flex: 1; z-index: 1; min-width: 0; }
-    .hero-text h1 { font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0 0 0.15rem; }
-    .hero-text p { font-size: 0.72rem; color: rgba(255,255,255,0.65); margin: 0; }
-    .hero-icon { z-index: 1; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .hero-icon i { font-size: 1.3rem; color: #fff; }
 
     /* Loading */
     .loading-area { padding: 1.25rem 1rem; display: flex; flex-direction: column; gap: 1.1rem; }

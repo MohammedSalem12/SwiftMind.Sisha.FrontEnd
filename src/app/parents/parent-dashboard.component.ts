@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { Router, RouterModule } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 // ── DTOs matching GET /api/app/parent/dashboard ──
 
@@ -15,6 +16,7 @@ interface ParentDashboardDto {
 
 interface ChildDashboardDto {
   studentName: string;
+  studentPhotoUrl?: string;
   studentCode: string;
   currentGrade: number;
   gradeName: string;
@@ -44,7 +46,7 @@ interface ChildActivityDto {
   selector: 'app-parent-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   templateUrl: './parent-dashboard.component.html',
   styleUrls: ['./parent-dashboard.component.scss'],
 })
@@ -163,10 +165,6 @@ export class ParentDashboardComponent implements OnInit {
 
   goToLinkChild(): void {
     this.router.navigate(['/parent/link-child']);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/parent']);
   }
 
   trackByIndex = (i: number) => i;

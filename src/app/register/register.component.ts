@@ -1,21 +1,25 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { UserRegistrationService } from '@proxy/controllers';
 import { UserRegistrationType } from '@proxy/domain/shared/enums/user-registration-type.enum';
 import type { UserRegStudentDto, UserRegTeacherDto, UserRegParentDto, UserRegSecretaryDto } from '@proxy/common/models';
 import { GradeService } from '@proxy/grades';
-import { AuthService } from '@abp/ng.core';
+import { AuthService, ConfigStateService } from '@abp/ng.core';
+import { Capacitor } from '@capacitor/core';
 import { lastValueFrom } from 'rxjs';
 import { AuthRedirectService } from '../shared/services/auth-redirect.service';
+import { ImageCropService } from '../shared/services/image-crop.service';
 import { EGYPT_GOVERNORATES_LIST, getDistricts } from '../shared/constants/egypt-districts';
+import { environment } from '../../environments/environment';
 
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-register',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, IonicModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
 })
@@ -25,6 +29,8 @@ export class RegisterComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
+  private readonly configState = inject(ConfigStateService);
+  private readonly imageCrop = inject(ImageCropService);
 
   UserRegistrationType = UserRegistrationType;
 
@@ -88,7 +94,12 @@ export class RegisterComponent implements OnInit {
     referralCode: '',
     government: '',
     town: '',
+    bio: '',
+    photoUrl: '',
   };
+
+  // Teacher-only optional profile photo handling.
+  photoProcessing = signal(false);
 
   readonly governorates = EGYPT_GOVERNORATES_LIST;
   private readonly govSignal = signal('');
@@ -149,6 +160,32 @@ export class RegisterComponent implements OnInit {
     this.govSignal.set(gov);
   }
 
+  /** Teacher optional photo: read, resize to a small base64 JPEG, store on the form. */
+  async onPhotoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.error.set('الرجاء اختيار صورة صحيحة · Please select a valid image');
+      input.value = '';
+      return;
+    }
+    this.photoProcessing.set(true);
+    try {
+      const cropped = await this.imageCrop.crop(file, { size: 320, quality: 0.8 });
+      if (cropped) this.form.photoUrl = cropped;
+    } catch {
+      this.error.set('تعذّر معالجة الصورة · Could not process image');
+    } finally {
+      this.photoProcessing.set(false);
+      input.value = '';
+    }
+  }
+
+  removePhoto(): void {
+    this.form.photoUrl = '';
+  }
+
   selectRole(type: UserRegistrationType): void {
     this.form.userType = type;
     this.error.set(null);
@@ -202,19 +239,19 @@ export class RegisterComponent implements OnInit {
       switch (this.form.userType!) {
         case UserRegistrationType.Student:
           result = await lastValueFrom(this.userRegSvc.registerStudent(
-            { ...base, grade: Number(this.form.grade), referralCode: this.form.referralCode.trim() || undefined, government: this.form.government || undefined, town: this.form.town || undefined } as UserRegStudentDto,
+            { ...base, grade: Number(this.form.grade), referralCode: this.form.referralCode.trim() || undefined, government: this.form.government || undefined, town: this.form.town || undefined, photoUrl: this.form.photoUrl || undefined } as UserRegStudentDto,
             { skipHandleError: true }
           ));
           break;
         case UserRegistrationType.Teacher:
           result = await lastValueFrom(this.userRegSvc.registerTeacher(
-            base as UserRegTeacherDto,
+            { ...base, bio: this.form.bio.trim() || undefined, photoUrl: this.form.photoUrl || undefined } as UserRegTeacherDto,
             { skipHandleError: true }
           ));
           break;
         case UserRegistrationType.Parent:
           result = await lastValueFrom(this.userRegSvc.registerParent(
-            base as UserRegParentDto,
+            { ...base, photoUrl: this.form.photoUrl || undefined } as UserRegParentDto,
             { skipHandleError: true }
           ));
           break;
@@ -231,7 +268,14 @@ export class RegisterComponent implements OnInit {
       this.successUserName.set(this.form.userName.trim());
       this.successPassword.set(this.form.password);
       this.successFullName.set(this.form.fullName.trim());
-      this.step.set('success');
+
+      // Auto-login the newly created user and route straight to their dashboard,
+      // instead of sending them back to the login form.
+      const loggedIn = await this.autoLogin(this.form.userName.trim(), this.form.password);
+      if (!loggedIn) {
+        // Fallback: show the success screen with credentials for manual login.
+        this.step.set('success');
+      }
     } catch (e: any) {
       console.error('Registration error:', e);
       const body = e?.error;
@@ -247,6 +291,34 @@ export class RegisterComponent implements OnInit {
       this.error.set(msg);
     } finally {
       this.registering.set(false);
+    }
+  }
+
+  /**
+   * Logs the freshly-registered user in via the OAuth password grant and navigates
+   * to the home dashboard (which redirects per role). Returns false on failure so
+   * the caller can fall back to the success screen for manual login.
+   */
+  private async autoLogin(username: string, password: string): Promise<boolean> {
+    try {
+      await this.authService.loginUsingGrant('password', {
+        username,
+        password,
+        scope: environment.oAuthConfig?.scope ?? undefined,
+        client_id: environment.oAuthConfig?.clientId ?? undefined,
+      } as any);
+
+      try { await lastValueFrom(this.configState.refreshAppState()); } catch { /* non-fatal */ }
+
+      if (!Capacitor.isNativePlatform()) {
+        window.location.href = '/';
+      } else {
+        await this.router.navigateByUrl('/');
+      }
+      return true;
+    } catch (e) {
+      console.warn('Auto-login after registration failed; showing success screen.', e);
+      return false;
     }
   }
 }

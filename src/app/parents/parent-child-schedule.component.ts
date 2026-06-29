@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { RestService } from '@abp/ng.core';
 import { EnrollmentRequestService } from '@proxy/student-enrollments';
 import { EnrollmentRequestStatus } from '@proxy/enums/enrollment-request-status.enum';
 import { GroupService } from '@proxy/groups';
+import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 const DAY_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
@@ -25,13 +26,10 @@ interface ScheduleItem {
   selector: 'app-parent-child-schedule',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
-      <div class="page-header">
-        <button class="back-btn" (click)="router.navigate(['/parent'])"><i class="fas fa-arrow-right"></i></button>
-        <h1>جدول {{ childName() || 'الطالب' }} · Schedule</h1>
-      </div>
+      <app-page-header [title]="'جدول الطالب'" [titleEn]="'Child Schedule'" [backTo]="'/parent'"></app-page-header>
       <div class="page-body">
         <div class="day-tabs">
           @for (d of days; track d.i) {
@@ -71,9 +69,6 @@ interface ScheduleItem {
   `,
   styles: [`
     .page { min-height:100vh; background:#f5f5f7; }
-    .page-header { background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:20px 16px 16px; display:flex; align-items:center; gap:12px; }
-    .page-header h1 { font-size:18px; margin:0; font-weight:600; }
-    .back-btn { background:rgba(255,255,255,.2); border:none; color:white; width:36px; height:36px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; }
     .page-body { padding:16px; }
     .day-tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:12px; }
     .day-tab {
@@ -101,7 +96,6 @@ interface ScheduleItem {
   `],
 })
 export class ParentChildScheduleComponent implements OnInit {
-  readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly rest = inject(RestService);
   private readonly enrollmentSvc = inject(EnrollmentRequestService);

@@ -11,6 +11,7 @@ export interface CurrentUserActorDto {
   email?: string;
   currentGrade?: number;
   linkedStudentIds: string[];
+  photoUrl?: string;
 }
 
 export interface RegisterUserDto {
@@ -36,6 +37,10 @@ export interface RegisterUserDto {
   responsibilities?: string;
 }
 
+export interface UpdateUserPhotoDto {
+  photoUrl?: string;
+}
+
 export interface UserRegBaseDto {
   userName: string;
   firstName: string;
@@ -45,6 +50,7 @@ export interface UserRegBaseDto {
 }
 
 export interface UserRegParentDto extends UserRegBaseDto {
+  photoUrl?: string;
 }
 
 export interface UserRegSecretaryDto extends UserRegBaseDto {
@@ -55,9 +61,12 @@ export interface UserRegStudentDto extends UserRegBaseDto {
   referralCode?: string;
   government?: string;
   town?: string;
+  photoUrl?: string;
 }
 
 export interface UserRegTeacherDto extends UserRegBaseDto {
+  bio?: string;
+  photoUrl?: string;
 }
 
 export interface UserRegistrationResultDto {
