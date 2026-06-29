@@ -173,6 +173,19 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
 
         <div class="more-divider"></div>
 
+        <!-- Catchy CTA: teacher self-promotion (moved here from the profile page) -->
+        @if (isTeacherRole()) {
+          <a class="more-promote" routerLink="/teacher/promotion" (click)="showMore.set(false)">
+            <div class="more-promote-glow"></div>
+            <div class="more-promote-icon"><i class="fas fa-crown"></i></div>
+            <div class="more-promote-text">
+              <span class="more-promote-title">روّج لنفسك <span class="more-promote-en">Promote Yourself</span></span>
+              <span class="more-promote-sub">تصدّر نتائج البحث في منطقتك واحصل على طلاب أكثر</span>
+            </div>
+            <i class="fas fa-chevron-left more-promote-arrow"></i>
+          </a>
+        }
+
         <!-- Menu items -->
         <div class="more-items">
           @if (isAdvertiserRole()) {
@@ -810,6 +823,62 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       margin: 0.65rem 0;
     }
 
+    /* Catchy teacher self-promotion CTA */
+    .more-promote {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 0.85rem;
+      margin-bottom: 0.6rem;
+      border-radius: 16px;
+      text-decoration: none;
+      overflow: hidden;
+      background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 45%, #9333ea 100%);
+      box-shadow: 0 8px 22px rgba(124, 58, 237, 0.35);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .more-promote:active { transform: scale(0.985); }
+    /* sheen that sweeps across to draw the eye */
+    .more-promote-glow {
+      position: absolute; top: 0; bottom: 0; left: -60%;
+      width: 50%;
+      background: linear-gradient(100deg, transparent, rgba(255,255,255,0.28), transparent);
+      transform: skewX(-18deg);
+      animation: promoSheen 3.2s ease-in-out infinite;
+    }
+    @keyframes promoSheen {
+      0%, 60% { left: -60%; }
+      100% { left: 130%; }
+    }
+    .more-promote-icon {
+      position: relative; z-index: 1; flex-shrink: 0;
+      width: 46px; height: 46px; border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #fff; font-size: 1.25rem;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+      animation: promoBob 2.4s ease-in-out infinite;
+    }
+    @keyframes promoBob {
+      0%, 100% { transform: translateY(0) rotate(-4deg); }
+      50% { transform: translateY(-3px) rotate(4deg); }
+    }
+    .more-promote-text { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .more-promote-title {
+      font-size: 0.95rem; font-weight: 800; color: #fff; line-height: 1.2;
+      display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap;
+    }
+    .more-promote-en { font-size: 0.66rem; font-weight: 600; color: rgba(255,255,255,0.7); }
+    .more-promote-sub {
+      font-size: 0.72rem; font-weight: 500; color: rgba(255,255,255,0.85);
+      line-height: 1.25;
+    }
+    .more-promote-arrow { position: relative; z-index: 1; color: rgba(255,255,255,0.85); font-size: 0.8rem; flex-shrink: 0; }
+    @media (prefers-reduced-motion: reduce) {
+      .more-promote-glow, .more-promote-icon { animation: none; }
+    }
+
     .more-items {
       display: flex;
       flex-direction: column;
@@ -910,6 +979,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   isSecretaryRole = signal(false);
   isParentRole = signal(false);
   isPartnerRole = signal(false);
+  isTeacherRole = signal(false);
 
   private readonly NAV_HIDDEN_PATHS = ['/complete-profile', '/login', '/register', '/pending-approval'];
   isAuthenticated = signal(false);
@@ -995,6 +1065,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
         this.isSecretaryRole.set(isSecretary);
         this.isParentRole.set(isParent);
         this.isPartnerRole.set(isPartner);
+        this.isTeacherRole.set(isTeacher);
 
         const isMarketer = roles.includes(ROLES.MARKETER);
 

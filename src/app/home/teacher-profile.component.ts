@@ -108,10 +108,6 @@ import { ImageCropService } from '../shared/services/image-crop.service';
               <div class="action-icon" style="background:rgba(245,158,11,.12);color:#d97706"><i class="fas fa-university"></i></div>
               <span class="al">الأكاديميات</span><span class="ae">Academies</span>
             </a>
-            <a class="action-btn" routerLink="/teacher/promotion">
-              <div class="action-icon" style="background:rgba(245,158,11,.12);color:#f59e0b"><i class="fas fa-crown"></i></div>
-              <span class="al">ترويج</span><span class="ae">Promote</span>
-            </a>
           </div>
         </div>
 

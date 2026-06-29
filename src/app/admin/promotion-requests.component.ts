@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
@@ -19,13 +20,20 @@ interface PromotionDto {
   endDate?: string;
   rejectionReason?: string;
   creationTime: string;
+  paymentMethod?: number;
+  paymentReference?: string;
+}
+
+interface PaymentInfoDto {
+  instaPayAddress: string;
+  vodafoneCashNumber: string;
 }
 
 @Component({
   selector: 'app-promotion-requests',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
@@ -33,6 +41,53 @@ interface PromotionDto {
         [title]="'طلبات الترقية'"
         [titleEn]="'Promotion Requests'"
         [backTo]="'/'"></app-page-header>
+
+      <!-- Payment receiving accounts -->
+      <div class="accounts-card">
+        <button class="accounts-head" (click)="accountsOpen.set(!accountsOpen())">
+          <span class="accounts-title">
+            <i class="fas fa-wallet"></i>
+            حسابات استلام الدفع · Payment Accounts
+          </span>
+          <i class="fas" [class.fa-chevron-down]="!accountsOpen()" [class.fa-chevron-up]="accountsOpen()"></i>
+        </button>
+
+        @if (accountsOpen()) {
+          <div class="accounts-body">
+            <div class="acc-field">
+              <label>عنوان إنستاباي · InstaPay address</label>
+              <input
+                type="text"
+                inputmode="email"
+                placeholder="name@instapay"
+                [ngModel]="instaPay()"
+                (ngModelChange)="instaPay.set($event)" />
+            </div>
+
+            <div class="acc-field">
+              <label>رقم فودافون كاش · Vodafone Cash number</label>
+              <input
+                type="tel"
+                inputmode="tel"
+                placeholder="01XXXXXXXXX"
+                [ngModel]="vodafone()"
+                (ngModelChange)="vodafone.set($event)" />
+            </div>
+
+            <button class="acc-save" [disabled]="savingAccounts()" (click)="saveAccounts()">
+              @if (savingAccounts()) {
+                <i class="fas fa-spinner fa-spin"></i> جارٍ الحفظ · Saving…
+              } @else {
+                <i class="fas fa-save"></i> حفظ · Save
+              }
+            </button>
+
+            @if (accountsMsg()) {
+              <div class="acc-msg" [class.acc-msg-err]="accountsErr()">{{ accountsMsg() }}</div>
+            }
+          </div>
+        }
+      </div>
 
       <!-- Tabs -->
       <div class="tabs">
@@ -84,6 +139,21 @@ interface PromotionDto {
               }
             </div>
 
+            @if (p.paymentReference || p.paymentMethod !== undefined) {
+              <div class="pay-block" [class.pay-block-pending]="p.status === 0">
+                <div class="pay-method">
+                  <i class="fas fa-money-bill-wave"></i>
+                  {{ paymentMethodLabel(p.paymentMethod) }}
+                </div>
+                @if (p.paymentReference) {
+                  <div class="pay-ref">
+                    <span class="pay-ref-label">مرجع الدفع · Payment ref</span>
+                    <span class="pay-ref-value">{{ p.paymentReference }}</span>
+                  </div>
+                }
+              </div>
+            }
+
             @if (p.status === 0) {
               <div class="req-actions">
                 <button class="action-approve" [disabled]="actionLoading()" (click)="approve(p.id)">
@@ -103,6 +173,35 @@ interface PromotionDto {
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; }
+
+    .accounts-card {
+      margin:.75rem 1rem 0; background:#fff; border-radius:14px;
+      border:1.5px solid #e0e0f0; overflow:hidden;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+    }
+    .accounts-head {
+      width:100%; min-height:48px; padding:.75rem 1rem; border:none; cursor:pointer;
+      background:linear-gradient(135deg,#667eea,#764ba2); color:#fff;
+      display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+    }
+    .accounts-title { display:flex; align-items:center; gap:.5rem; font-size:.85rem; font-weight:700; }
+    .accounts-body { padding:1rem; display:flex; flex-direction:column; gap:.75rem; }
+    .acc-field { display:flex; flex-direction:column; gap:.3rem; }
+    .acc-field label { font-size:.76rem; font-weight:700; color:#555; }
+    .acc-field input {
+      font-size:16px; padding:.65rem .75rem; border:1.5px solid #e0e0f0; border-radius:10px;
+      background:#fafaff; color:#1a1a2e; min-height:44px; width:100%; box-sizing:border-box;
+    }
+    .acc-field input:focus { outline:none; border-color:#667eea; background:#fff; }
+    .acc-save {
+      min-height:44px; padding:.65rem; border:none; border-radius:10px;
+      background:linear-gradient(135deg,#667eea,#764ba2); color:#fff;
+      font-size:.85rem; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:.4rem;
+    }
+    .acc-save:disabled { opacity:.6; cursor:not-allowed; }
+    .acc-msg { font-size:.78rem; font-weight:600; color:#059669; text-align:center; }
+    .acc-msg-err { color:#dc2626; }
 
     .tabs {
       display:flex; gap:.5rem; padding:.75rem 1rem 0;
@@ -160,6 +259,25 @@ interface PromotionDto {
     .req-row.rej { color:#dc2626; }
     .req-row.rej i { color:#dc2626; }
 
+    .pay-block {
+      margin-bottom:.5rem; padding:.6rem .7rem; border-radius:10px;
+      background:#f6f7fd; border:1.5px solid #e0e0f0;
+      display:flex; flex-direction:column; gap:.4rem;
+    }
+    .pay-block-pending { background:rgba(102,126,234,.07); border-color:rgba(102,126,234,.35); }
+    .pay-method {
+      font-size:.8rem; font-weight:700; color:#4a4a6a;
+      display:flex; align-items:center; gap:.4rem;
+    }
+    .pay-method i { color:#667eea; font-size:.78rem; }
+    .pay-ref { display:flex; align-items:center; justify-content:space-between; gap:.5rem; flex-wrap:wrap; }
+    .pay-ref-label { font-size:.72rem; color:#9090aa; font-weight:600; }
+    .pay-ref-value {
+      font-family:'Courier New',ui-monospace,monospace; font-size:.95rem; font-weight:700;
+      color:#667eea; letter-spacing:.5px; user-select:all;
+      background:#fff; padding:.25rem .55rem; border-radius:8px; border:1px solid rgba(102,126,234,.25);
+    }
+
     .req-actions { display:flex; gap:.5rem; }
     .action-approve {
       flex:1; padding:.6rem; border:none; border-radius:10px;
@@ -187,6 +305,14 @@ export class PromotionRequestsComponent implements OnInit {
   pendingList = signal<PromotionDto[]>([]);
   allList = signal<PromotionDto[]>([]);
 
+  // Payment receiving accounts
+  accountsOpen = signal(false);
+  instaPay = signal('');
+  vodafone = signal('');
+  savingAccounts = signal(false);
+  accountsMsg = signal<string | null>(null);
+  accountsErr = signal(false);
+
   readonly currentList = () => this.tab() === 'pending' ? this.pendingList() : this.allList();
 
   readonly statusLabels: Record<number, string> = {
@@ -194,6 +320,10 @@ export class PromotionRequestsComponent implements OnInit {
   };
 
   statusLabel(s: number): string { return this.statusLabels[s] ?? '?'; }
+
+  paymentMethodLabel(m: number | undefined): string {
+    return m === 1 ? 'فودافون كاش · Vodafone Cash' : 'إنستاباي · InstaPay';
+  }
 
   getInitials(name: string): string {
     return (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -207,6 +337,44 @@ export class PromotionRequestsComponent implements OnInit {
       this.pendingList.set(list ?? []);
     } catch (e) { console.error(e); }
     finally { this.loading.set(false); }
+
+    await this.loadPaymentInfo();
+  }
+
+  async loadPaymentInfo(): Promise<void> {
+    try {
+      const info = await lastValueFrom(
+        this.rest.request<void, PaymentInfoDto>({ method: 'GET', url: '/api/app/teacher-promotion/payment-info' })
+      );
+      this.instaPay.set(info?.instaPayAddress ?? '');
+      this.vodafone.set(info?.vodafoneCashNumber ?? '');
+    } catch (e) { console.error(e); }
+  }
+
+  async saveAccounts(): Promise<void> {
+    this.savingAccounts.set(true);
+    this.accountsMsg.set(null);
+    this.accountsErr.set(false);
+    try {
+      await lastValueFrom(
+        this.rest.request<PaymentInfoDto, void>({
+          method: 'PUT',
+          url: '/api/app/teacher-promotion/payment-info',
+          body: {
+            instaPayAddress: this.instaPay(),
+            vodafoneCashNumber: this.vodafone(),
+          },
+        })
+      );
+      this.accountsErr.set(false);
+      this.accountsMsg.set('تم الحفظ بنجاح · Saved successfully');
+    } catch (e: any) {
+      console.error(e);
+      this.accountsErr.set(true);
+      this.accountsMsg.set(e?.error?.error?.message || 'حدث خطأ · Error saving');
+    } finally {
+      this.savingAccounts.set(false);
+    }
   }
 
   async loadAll(): Promise<void> {

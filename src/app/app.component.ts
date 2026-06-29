@@ -158,6 +158,9 @@ export class AppComponent implements OnInit {
     this.oauthService.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
       if (event.type === 'token_received' || event.type === 'silently_refreshed') {
         this.initRealtime();
+        // Drive the Android session-countdown notification from the app shell so it
+        // no longer depends on the (retired) top-bar being mounted. Idempotent.
+        this.countdownNotifier.startAutoSync();
       }
       if (event.type === 'logout') {
         this.realtimeNotificationService.disconnect();

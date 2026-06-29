@@ -26,7 +26,14 @@ interface PromotionDto {
   startDate?: string;
   endDate?: string;
   rejectionReason?: string;
+  paymentMethod?: number;
+  paymentReference?: string;
   creationTime: string;
+}
+
+interface PaymentInfo {
+  instaPayAddress: string;
+  vodafoneCashNumber: string;
 }
 
 @Component({
@@ -70,6 +77,22 @@ interface PromotionDto {
                   <div class="promo-row"><i class="fas fa-stop"></i> حتى {{ activePromotion()!.endDate | date:'yyyy-MM-dd' }}</div>
                 }
               </div>
+
+              @if (activePromotion()!.status === 0) {
+                <div class="pay-instructions">
+                  <div class="pi-title"><i class="fas fa-hand-holding-usd"></i> أكمل الدفع · Complete payment</div>
+                  <div class="pi-row"><span>المبلغ · Amount</span><b>{{ activePromotion()!.amountEGP }} ج.م</b></div>
+                  <div class="pi-row"><span>الطريقة · Method</span><b>{{ methodLabel(activePromotion()!.paymentMethod) }}</b></div>
+                  @if (accountForMethod(activePromotion()!.paymentMethod)) {
+                    <div class="pi-row"><span>حوّل إلى · Send to</span><b class="pi-acct">{{ accountForMethod(activePromotion()!.paymentMethod) }}</b></div>
+                  }
+                  <div class="pi-ref">
+                    <span class="pi-ref-label"><i class="fas fa-receipt"></i> اكتب هذا المرجع في ملاحظة التحويل · Use as transfer note</span>
+                    <span class="pi-ref-code">{{ activePromotion()!.paymentReference }}</span>
+                  </div>
+                  <p class="pi-hint">سيطابق الأدمن المرجع مع التحويلات الواردة ثم يفعّل ترويجك.</p>
+                </div>
+              }
             </div>
           </div>
         }
@@ -135,6 +158,30 @@ interface PromotionDto {
                   <span class="loc-warn"><i class="fas fa-exclamation-triangle"></i> يجب تحديد موقعك أولاً من صفحة الملف الشخصي</span>
                 }
               </div>
+            </div>
+
+            <!-- Payment method -->
+            <div class="pay-card">
+              <label><i class="fas fa-wallet"></i> طريقة الدفع · Payment Method</label>
+              <div class="pay-methods">
+                <button type="button" class="pay-opt" [class.pay-sel]="selectedMethod() === 0" (click)="selectedMethod.set(0)">
+                  <i class="fas fa-bolt"></i>
+                  <span class="pay-opt-name">إنستاباي</span>
+                  <span class="pay-opt-en">InstaPay</span>
+                </button>
+                <button type="button" class="pay-opt" [class.pay-sel]="selectedMethod() === 1" (click)="selectedMethod.set(1)">
+                  <i class="fas fa-mobile-alt"></i>
+                  <span class="pay-opt-name">فودافون كاش</span>
+                  <span class="pay-opt-en">Vodafone Cash</span>
+                </button>
+              </div>
+              @if (accountForMethod(selectedMethod())) {
+                <div class="pay-acct">
+                  <span class="pay-acct-label">حوّل إلى · Send to:</span>
+                  <span class="pay-acct-val">{{ accountForMethod(selectedMethod()) }}</span>
+                </div>
+              }
+              <p class="pay-note"><i class="fas fa-receipt"></i> بعد الإرسال ستحصل على رقم مرجعي — اكتبه في ملاحظة التحويل ليتمكن الأدمن من تأكيد دفعتك.</p>
             </div>
 
             <!-- Submit -->
@@ -281,6 +328,56 @@ interface PromotionDto {
       display:flex; align-items:center; gap:.3rem;
     }
 
+    /* Payment method selector */
+    .pay-card {
+      background:#fff; border-radius:14px; border:1.5px solid #e0e0f0;
+      padding:1rem; margin-bottom:.75rem;
+    }
+    .pay-card > label { font-size:.75rem; font-weight:600; color:#667eea; display:flex; align-items:center; gap:.35rem; margin-bottom:.6rem; }
+    .pay-methods { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+    .pay-opt {
+      display:flex; flex-direction:column; align-items:center; gap:.2rem;
+      padding:.75rem .5rem; border-radius:12px; cursor:pointer;
+      background:#f7f7fc; border:2px solid #ececf6; color:#555;
+      min-height:72px; transition:all .15s;
+    }
+    .pay-opt i { font-size:1.4rem; color:#9aa; }
+    .pay-opt-name { font-size:.82rem; font-weight:700; color:#1a1a2e; }
+    .pay-opt-en { font-size:.66rem; color:#9090aa; }
+    .pay-sel { background:rgba(102,126,234,.08); border-color:#667eea; }
+    .pay-sel i { color:#667eea; }
+    .pay-acct {
+      margin-top:.7rem; padding:.6rem .75rem; border-radius:10px;
+      background:rgba(16,185,129,.08); border:1px dashed rgba(16,185,129,.35);
+      display:flex; flex-direction:column; gap:.15rem;
+    }
+    .pay-acct-label { font-size:.68rem; color:#059669; font-weight:600; }
+    .pay-acct-val { font-size:.95rem; font-weight:800; color:#047857; direction:ltr; text-align:right; word-break:break-all; }
+    .pay-note { font-size:.72rem; color:#9090aa; margin:.6rem 0 0; display:flex; align-items:flex-start; gap:.35rem; line-height:1.4; }
+    .pay-note i { color:#f59e0b; margin-top:2px; }
+
+    /* Pending-payment instructions inside the status card */
+    .pay-instructions {
+      margin-top:.85rem; padding-top:.75rem; border-top:1px dashed #e6e6f2;
+      display:flex; flex-direction:column; gap:.4rem;
+    }
+    .pi-title { font-size:.82rem; font-weight:800; color:#d97706; display:flex; align-items:center; gap:.4rem; }
+    .pi-row { display:flex; justify-content:space-between; align-items:center; font-size:.8rem; color:#555; }
+    .pi-row b { color:#1a1a2e; font-weight:700; }
+    .pi-acct { direction:ltr; word-break:break-all; }
+    .pi-ref {
+      margin-top:.35rem; padding:.65rem .75rem; border-radius:12px;
+      background:linear-gradient(135deg,#fff7ed,#fef3c7); border:1.5px solid #fcd34d;
+      display:flex; flex-direction:column; gap:.3rem; align-items:center; text-align:center;
+    }
+    .pi-ref-label { font-size:.68rem; color:#b45309; font-weight:700; display:flex; align-items:center; gap:.3rem; }
+    .pi-ref-code {
+      font-family:'Courier New', monospace; font-size:1.15rem; font-weight:800; letter-spacing:.06em;
+      color:#92400e; background:#fff; padding:.3rem .9rem; border-radius:8px; border:1px solid #fcd34d;
+      user-select:all;
+    }
+    .pi-hint { font-size:.7rem; color:#9090aa; margin:.2rem 0 0; text-align:center; }
+
     .error-banner {
       background:rgba(239,68,68,.08); color:#dc2626; border:1px solid rgba(239,68,68,.15);
       padding:.6rem .85rem; border-radius:10px; font-size:.82rem; font-weight:600;
@@ -333,9 +430,11 @@ export class TeacherPromotionComponent implements OnInit {
   submitError = signal<string | null>(null);
   submitSuccess = signal(false);
   selectedDuration = signal(1);
+  selectedMethod = signal(0); // 0 = InstaPay, 1 = Vodafone Cash
   teacherGov = signal('');
   teacherTown = signal('');
   myPromotions = signal<PromotionDto[]>([]);
+  paymentInfo = signal<PaymentInfo | null>(null);
 
   readonly highlightedTiers: PricingTier[] = [
     { durationMonths: 1, amountEGP: 100, discountPercent: 0, pricePerMonth: 100 },
@@ -371,12 +470,25 @@ export class TeacherPromotionComponent implements OnInit {
     return this.statusLabels[status] ?? 'غير معروف';
   }
 
+  methodLabel(m: number | undefined): string {
+    return m === 1 ? 'فودافون كاش · Vodafone Cash' : 'إنستاباي · InstaPay';
+  }
+
+  /** The account a teacher should send payment to, for the given method. */
+  accountForMethod(m: number | undefined): string {
+    const info = this.paymentInfo();
+    if (!info) return '';
+    return m === 1 ? info.vodafoneCashNumber : info.instaPayAddress;
+  }
+
   async ngOnInit(): Promise<void> {
     try {
-      const [info, promotions] = await Promise.all([
+      const [info, promotions, payInfo] = await Promise.all([
         lastValueFrom(this.currentUserSvc.getCurrentUserActorInfo()),
         lastValueFrom(this.rest.request<void, PromotionDto[]>({ method: 'GET', url: '/api/app/teacher-promotion/my-promotions' })),
+        lastValueFrom(this.rest.request<void, PaymentInfo>({ method: 'GET', url: '/api/app/teacher-promotion/payment-info' })).catch(() => null),
       ]);
+      this.paymentInfo.set(payInfo ?? null);
 
       // Get teacher's location from actor info or fetch teacher
       if (info) {
@@ -415,6 +527,7 @@ export class TeacherPromotionComponent implements OnInit {
             durationMonths: this.selectedDuration(),
             government: this.teacherGov(),
             town: this.teacherTown(),
+            paymentMethod: this.selectedMethod(),
           },
         })
       );
