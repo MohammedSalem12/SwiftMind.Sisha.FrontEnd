@@ -74,6 +74,10 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
   if (roles.includes(ROLES.SECRETARY)) return [
     { path: '/students',             label: 'الطلاب',              labelEn: 'Students',           icon: 'fas fa-user-graduate' },
   ];
+  if (roles.includes(ROLES.STUDENT)) return [
+    // Requests lives in the account menu now — My Teachers took its bottom-bar slot.
+    { path: '/student/requests',     label: 'طلباتي',              labelEn: 'My Requests',        icon: 'fas fa-clipboard-list' },
+  ];
   if (roles.includes(ROLES.MARKETER)) return [
     { path: '/marketer/teachers',    label: 'معلميني',             labelEn: 'My Teachers',        icon: 'fas fa-chalkboard-teacher' },
     { path: '/marketer/fees',        label: 'أرباحي',              labelEn: 'My Fees',            icon: 'fas fa-coins' },
@@ -212,13 +216,6 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
 
           <!-- Student-specific -->
           @if (isStudentRole()) {
-            <a class="more-item" routerLink="/student/teachers" (click)="showMore.set(false)">
-              <div class="more-item-icon more-icon-purple"><i class="fas fa-chalkboard-teacher"></i></div>
-              <div class="more-item-text">
-                <span>معلمو صفّي</span>
-                <span class="more-item-en">My Teachers</span>
-              </div>
-            </a>
             <a class="more-item" routerLink="/student/invite-friends" (click)="showMore.set(false)">
               <div class="more-item-icon more-icon-blue"><i class="fas fa-address-book"></i></div>
               <div class="more-item-text">
@@ -1020,7 +1017,12 @@ export class BottomNavComponent implements OnInit, OnDestroy {
           const isParent = roles.includes(ROLES.PARENT);
           this.coreNav.set([
             { path: homePath,         label: 'الرئيسية',    labelEn: 'Home',          icon: 'fas fa-home' },
-            { path: requestsPath,     label: 'طلباتي',      labelEn: 'Requests',      icon: 'fas fa-clipboard-list', badge: 'requests' },
+            // Students get "My Teachers" in the bottom bar (more important); Requests
+            // moves to the account menu (see getSecondaryItems). Other roles keep Requests.
+            ...(isStudent
+              ? [{ path: '/student/teachers', label: 'معلمو صفّي', labelEn: 'My Teachers', icon: 'fas fa-chalkboard-teacher' }]
+              : [{ path: requestsPath, label: 'طلباتي', labelEn: 'Requests', icon: 'fas fa-clipboard-list', badge: 'requests' as const }]
+            ),
             // Students & Teachers get Academies in core nav
             ...(isStudent
               ? [{ path: '/academies',         label: 'الأكاديميات', labelEn: 'Academies', icon: 'fas fa-university' }]
@@ -1054,7 +1056,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   // Per-tab accent colours (positional) so the bottom bar reads colourful.
   private readonly TAB_COLORS = [
     { color: '#7c3aed', bg: 'rgba(124,58,237,0.16)' }, // 1st (Home)          — purple
-    { color: '#2563eb', bg: 'rgba(37,99,235,0.16)'  }, // 2nd (Requests)      — blue
+    { color: '#2563eb', bg: 'rgba(37,99,235,0.16)'  }, // 2nd (Teachers/Requests) — blue
     { color: '#0d9488', bg: 'rgba(13,148,136,0.16)' }, // 3rd (Academies/Today)— teal
     { color: '#f59e0b', bg: 'rgba(245,158,11,0.16)' }, // 4th (Notifications) — amber
     { color: '#db2777', bg: 'rgba(219,39,119,0.16)' }, // 5th (fallback)      — pink
