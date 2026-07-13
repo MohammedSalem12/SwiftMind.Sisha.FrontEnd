@@ -4,12 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
 import { SecretaryTeacherService } from '@proxy/teachers';
 import { AttendanceService } from '@proxy/attendances';
+import { AttendanceStatus } from '@proxy/enums';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 
 interface StudentRow {
   studentId: string;
   studentName: string;
   enrollmentId: string;
+  groupId?: string;
   isAbsent: boolean;
   attendanceId?: string;
   marked: boolean;
@@ -186,9 +188,11 @@ export class SecretaryBulkAttendanceComponent implements OnInit {
         studentId: s.studentId,
         studentName: s.fullName || `${s.firstName} ${s.lastName}`,
         enrollmentId: s.enrollmentId,
-        isAbsent: s.isAbsent ?? false,
+        groupId: s.groupId,
+        // Absent and Excused both mean the student missed the session.
+        isAbsent: s.status === AttendanceStatus.Absent || s.status === AttendanceStatus.Excused,
         attendanceId: s.attendanceId,
-        marked: !!s.attendanceId,
+        marked: s.status !== undefined && s.status !== AttendanceStatus.NotYet,
       })));
     } catch (e) {
       console.error('Error loading students:', e);
@@ -208,25 +212,72 @@ export class SecretaryBulkAttendanceComponent implements OnInit {
       this.saveResult.set('لا توجد تغييرات لحفظها · No changes to save');
       return;
     }
+
     this.saving.set(true);
+    const isoDate = new Date(this.selectedDate).toISOString();
+
+    // A student can only be marked once their group's session exists, so open a session for every
+    // group represented in the selection. Groups that don't meet on this date are rejected by the
+    // server — those students simply can't be marked, which is the correct outcome.
+    const groupIds = [...new Set(toMark.map(s => s.groupId).filter(Boolean))] as string[];
+    const unscheduledGroups = new Set<string>();
+
+    await Promise.all(
+      groupIds.map(async groupId => {
+        try {
+          await lastValueFrom(
+            this.attendanceService.startSession({ groupId, date: isoDate } as any),
+          );
+        } catch {
+          unscheduledGroups.add(groupId);
+        }
+      }),
+    );
+
+    // Re-read the roster so every markable student now carries an attendanceId.
+    await this.loadStudents();
+    const rosterById = new Map(this.students().map(s => [s.enrollmentId, s]));
+
     let success = 0;
     let fail = 0;
+    let skipped = 0;
+
     for (const s of toMark) {
+      if (s.groupId && unscheduledGroups.has(s.groupId)) {
+        skipped++;
+        continue;
+      }
+
+      const row = rosterById.get(s.enrollmentId);
+      if (!row?.attendanceId) {
+        skipped++;
+        continue;
+      }
+
       try {
-        await lastValueFrom(this.attendanceService.create({
-          enrollmentId: s.enrollmentId,
-          date: new Date(this.selectedDate).toISOString(),
-          isAbsent: true,
-          note: 'سجّل بواسطة السكرتير',
-        } as any));
-        s.marked = true;
+        await lastValueFrom(
+          this.attendanceService.setStatus({
+            attendanceId: row.attendanceId,
+            status: AttendanceStatus.Absent,
+            note: 'سجّل بواسطة السكرتير',
+          } as any),
+        );
+        row.marked = true;
+        row.isAbsent = true;
         success++;
       } catch {
         fail++;
       }
     }
+
+    this.students.update(list => [...list]);
     this.saving.set(false);
-    this.saveResult.set(`تم تسجيل غياب ${success} طالب · Marked ${success} students absent` +
-      (fail > 0 ? ` (${fail} فشل)` : ''));
+
+    let message = `تم تسجيل غياب ${success} طالب · Marked ${success} students absent`;
+    if (fail > 0) message += ` (${fail} فشل)`;
+    if (skipped > 0) {
+      message += ` — تم تخطي ${skipped} (لا توجد حصة مجدولة في هذا اليوم)`;
+    }
+    this.saveResult.set(message);
   }
 }

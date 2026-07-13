@@ -71,9 +71,11 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
   ];
   if (roles.includes(ROLES.TEACHER)) return [
     { path: '/students',             label: 'طلابي',               labelEn: 'My Students',        icon: 'fas fa-user-graduate' },
+    { path: '/fees',                 label: 'رسوم الطلاب',          labelEn: 'Student Fees',       icon: 'fas fa-money-bill-wave' },
   ];
   if (roles.includes(ROLES.SECRETARY)) return [
     { path: '/students',             label: 'الطلاب',              labelEn: 'Students',           icon: 'fas fa-user-graduate' },
+    { path: '/fees',                 label: 'رسوم الطلاب',          labelEn: 'Student Fees',       icon: 'fas fa-money-bill-wave' },
   ];
   if (roles.includes(ROLES.STUDENT)) return [
     // Requests lives in the account menu now — My Teachers took its bottom-bar slot.
@@ -84,6 +86,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     { path: '/marketer/fees',        label: 'أرباحي',              labelEn: 'My Fees',            icon: 'fas fa-coins' },
   ];
   if (roles.includes(ROLES.PARENT)) return [
+    { path: '/parent/enroll',        label: 'تسجيل ابنك في مقرر',  labelEn: 'Enroll your child',  icon: 'fas fa-graduation-cap' },
     { path: '/parent/home',          label: 'لوحة التفاصيل',       labelEn: 'Dashboard',          icon: 'fas fa-th-large' },
     { path: '/parent-dashboard',     label: 'متابعة الأبناء',      labelEn: 'Children Stats',     icon: 'fas fa-chart-bar' },
   ];
@@ -120,7 +123,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
 
         <!-- Account tab — user avatar (opens account menu) -->
         <button class="mn-tab mn-tab-me" (click)="toggleMore()" [class.active]="showMore()"
-                [style.--tab-color]="'#7c3aed'" [style.--tab-bg]="'rgba(124,58,237,0.16)'"
+                [style.--tab-color]="'#a78bfa'" [style.--tab-bg]="'rgba(167,139,250,0.16)'"
                 aria-label="حسابي · My account">
           <div class="mn-icon-wrap">
             <div class="mn-avatar" [class.active]="showMore()">
@@ -387,6 +390,19 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
           </a>
         }
 
+        <!-- Teacher self-promotion CTA -->
+        @if (isTeacherRole()) {
+          <a class="dn-item" routerLink="/teacher/promotion" [class.active]="isActive('/teacher/promotion')">
+            <div class="dn-item-icon">
+              <i class="fas fa-crown"></i>
+            </div>
+            <div class="dn-item-text">
+              <span class="dn-item-label">روّج لنفسك</span>
+              <span class="dn-item-label-en">Promote Yourself</span>
+            </div>
+          </a>
+        }
+
         <!-- Settings link -->
         <a class="dn-item" routerLink="/settings" [class.active]="isActive('/settings')">
           <div class="dn-item-icon">
@@ -458,23 +474,34 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     /* ═══════════════════════════════════════════════════════
        MOBILE BOTTOM NAV  (< 768px)
     ═══════════════════════════════════════════════════════ */
+    /* The <nav> is now just a transparent positioner — the visible bar is
+       .mn-inner, a floating dark pill inset from the screen edges. */
     .mobile-nav {
       display: none;
       position: fixed;
       bottom: 0; left: 0; right: 0;
       z-index: 1000;
-      background: #ffffff;
-      border-top: 1px solid #e5e7eb;
-      box-shadow: 0 -2px 16px rgba(0,0,0,0.06);
-      padding-bottom: max(4px, env(safe-area-inset-bottom));
+      background: transparent;
+      border-top: none;
+      box-shadow: none;
+      padding: 0 12px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      pointer-events: none; /* gutter around the pill stays tappable-through */
     }
 
     .mn-inner {
+      pointer-events: auto;
       display: flex;
       align-items: stretch;
-      height: 58px;
+      height: 62px;
       width: 100%;
-      padding: 0;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 0 6px;
+      background: #1c1c1e;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 34px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.30);
     }
 
     .mn-tab {
@@ -485,37 +512,35 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 4px;
       text-decoration: none;
-      color: #9ca3af;
+      color: rgba(255,255,255,0.88);
       background: transparent;
       border: none;
       cursor: pointer;
-      padding: 6px 0 4px;
+      margin: 6px 0;
+      padding: 4px 0;
+      border-radius: 26px;
       min-width: 0;
-      transition: color 0.2s;
+      transition: color 0.22s, background 0.22s;
       -webkit-tap-highlight-color: transparent;
     }
-    .mn-tab.active { color: var(--tab-color, #5b21b6); }
+    /* Active tab sits inside its own lighter capsule, icon + label tinted. */
+    .mn-tab.active {
+      color: var(--tab-color, #60a5fa);
+      background: rgba(255,255,255,0.10);
+    }
 
     .mn-icon-wrap {
       position: relative;
-      width: 48px; height: 32px;
+      width: 40px; height: 26px;
       display: flex; align-items: center; justify-content: center;
-      border-radius: 16px;
-      transition: background 0.2s, transform 0.2s;
     }
-    .mn-tab.active .mn-icon-wrap {
-      background: var(--tab-bg, rgba(91,33,182,0.16));
-      transform: translateY(-1px);
-    }
-    /* Each tab keeps its own accent colour so the bar reads colourful;
-       inactive icons are slightly dimmed, the active one is full-strength. */
-    .mn-icon-wrap i { font-size: 1.45rem; color: var(--tab-color, #9ca3af); opacity: 0.78; }
-    .mn-tab.active .mn-icon-wrap i { opacity: 1; }
+    /* Icon inherits the tab colour: white when idle, accent when active. */
+    .mn-icon-wrap i { font-size: 1.32rem; color: currentColor; }
 
     .mn-label {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
@@ -525,14 +550,8 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       line-height: 1;
     }
 
-    .mn-bar {
-      position: absolute;
-      top: 0; left: 50%;
-      transform: translateX(-50%);
-      width: 24px; height: 3px;
-      border-radius: 0 0 3px 3px;
-      background: var(--tab-color, #5b21b6);
-    }
+    /* The old top indicator bar is replaced by the active capsule. */
+    .mn-bar { display: none; }
 
     .mn-badge {
       position: absolute;
@@ -545,7 +564,7 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
       border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
       padding: 0 3px;
-      border: 2px solid white;
+      border: 2px solid #1c1c1e;
       box-shadow: 0 1px 4px rgba(239,68,68,0.3);
     }
 
@@ -564,8 +583,8 @@ function getSecondaryItems(roles: string[]): SecondaryItem[] {
     .mn-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .mn-avatar i { font-size: 0.85rem; opacity: 1; color: #fff; }
     .mn-avatar.active {
-      transform: translateY(-1px) scale(1.04);
-      box-shadow: 0 0 0 2px #fff, 0 2px 10px rgba(124,58,237,0.5);
+      transform: scale(1.04);
+      box-shadow: 0 0 0 2px #1c1c1e, 0 2px 10px rgba(124,58,237,0.5);
     }
 
     /* ═══════════════════════════════════════════════════════
@@ -1130,12 +1149,14 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   }
 
   // Per-tab accent colours (positional) so the bottom bar reads colourful.
+  // Tuned for the dark floating pill — the 600-weight shades used on the old
+  // white bar go muddy against #1c1c1e, so these are the 400-weight variants.
   private readonly TAB_COLORS = [
-    { color: '#7c3aed', bg: 'rgba(124,58,237,0.16)' }, // 1st (Home)          — purple
-    { color: '#2563eb', bg: 'rgba(37,99,235,0.16)'  }, // 2nd (Teachers/Requests) — blue
-    { color: '#0d9488', bg: 'rgba(13,148,136,0.16)' }, // 3rd (Academies/Today)— teal
-    { color: '#f59e0b', bg: 'rgba(245,158,11,0.16)' }, // 4th (Notifications) — amber
-    { color: '#db2777', bg: 'rgba(219,39,119,0.16)' }, // 5th (fallback)      — pink
+    { color: '#a78bfa', bg: 'rgba(167,139,250,0.16)' }, // 1st (Home)              — purple
+    { color: '#60a5fa', bg: 'rgba(96,165,250,0.16)'  }, // 2nd (Teachers/Requests) — blue
+    { color: '#2dd4bf', bg: 'rgba(45,212,191,0.16)'  }, // 3rd (Academies/Today)   — teal
+    { color: '#fbbf24', bg: 'rgba(251,191,36,0.16)'  }, // 4th (Notifications)     — amber
+    { color: '#f472b6', bg: 'rgba(244,114,182,0.16)' }, // 5th (fallback)          — pink
   ];
 
   tabColor(index: number): { color: string; bg: string } {

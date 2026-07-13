@@ -94,3 +94,22 @@
   .groups-grid { grid-template-columns: 1fr; }
   .teacher-row { padding: 0.85rem 1rem; }
 }
+
+/* Quota-exceeded call to action inside the error banner */
+.quota-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  margin-inline-start: .75rem;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-weight: 700;
+  font-size: .82rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.quota-cta:active { opacity: .88; }

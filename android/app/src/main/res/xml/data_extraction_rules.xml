@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ (dataExtractionRules). Covers both cloud backup and direct
+  device-to-device transfer, which is a separate path from fullBackupContent
+  and is NOT covered by android:allowBackup="false".
+
+  Same reasoning as backup_rules.xml: never let OAuth tokens or biometric state
+  leave the device that authenticated.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="CapacitorStorage.xml" />
+        <exclude domain="database" path="webview.db" />
+        <exclude domain="file" path="app_webview" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="CapacitorStorage.xml" />
+        <exclude domain="database" path="webview.db" />
+        <exclude domain="file" path="app_webview" />
+    </device-transfer>
+</data-extraction-rules>

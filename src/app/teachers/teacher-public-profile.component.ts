@@ -4,7 +4,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RestService } from '@abp/ng.core';
 import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
+import { CurrentUserInfoService } from '@proxy/common';
+import { TeacherRatingService } from '@proxy/teacher-ratings';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
+import { StarRatingComponent } from '../shared/components/star-rating.component';
+import { RateModalComponent, RateSubmitEvent } from '../shared/components/rate-modal.component';
 
 interface PublicCourse {
   id: string;
@@ -23,13 +27,15 @@ interface TeacherPublicProfile {
   government: string;
   town: string;
   courses: PublicCourse[];
+  averageRating: number;
+  ratingCount: number;
 }
 
 @Component({
   selector: 'app-teacher-public-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, IonicModule, PageHeaderComponent],
+  imports: [CommonModule, IonicModule, PageHeaderComponent, StarRatingComponent, RateModalComponent],
   template: `
     <div class="page" dir="rtl">
 
@@ -51,8 +57,15 @@ interface TeacherPublicProfile {
           <div class="role-badge"><i class="fas fa-chalkboard-teacher"></i> معلم · Teacher</div>
           <h1 class="t-name">{{ profile()?.displayName }}</h1>
           <span class="t-code">{{ profile()?.teacherCode }}</span>
+          <app-star-rating [value]="profile()?.averageRating ?? 0" [count]="profile()?.ratingCount ?? 0"></app-star-rating>
           @if (profile()?.government) {
             <span class="t-loc"><i class="fas fa-map-marker-alt"></i> {{ profile()?.government }}{{ profile()?.town ? ' · ' + profile()?.town : '' }}</span>
+          }
+          @if (isParent()) {
+            <button class="rate-btn" (click)="openRate()">
+              <i class="fas fa-star"></i>
+              {{ myRating() > 0 ? 'عدّل تقييمك · Edit rating' : 'قيّم المعلم · Rate teacher' }}
+            </button>
           }
         }
       </div>
@@ -118,10 +131,32 @@ interface TeacherPublicProfile {
       }
 
       <div style="height:calc(80px + env(safe-area-inset-bottom,0px))"></div>
+
+      <!-- Rate modal (PARENT only) -->
+      <app-rate-modal
+        [open]="showRate()"
+        [title]="'قيّم المعلم · Rate teacher'"
+        [initialStars]="myRating()"
+        [initialComment]="myComment()"
+        [submitting]="rating()"
+        [error]="rateError()"
+        (submitted)="submitRating($event)"
+        (closed)="showRate.set(false)">
+      </app-rate-modal>
     </div>
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
+    .rate-btn {
+      margin-top:.5rem; position:relative; z-index:1;
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.55rem 1.1rem; border-radius:14px; min-height:44px;
+      background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none;
+      font-size:.82rem; font-weight:700; cursor:pointer;
+      box-shadow:0 4px 14px rgba(102,126,234,.3);
+      -webkit-tap-highlight-color:transparent; transition:transform .15s;
+    }
+    .rate-btn:active { transform:scale(.97); }
     .page-header {
       background:#fff;
       border:1.5px solid #eef0f6;
@@ -217,18 +252,31 @@ interface TeacherPublicProfile {
   `],
 })
 export class TeacherPublicProfileComponent implements OnInit {
-  private readonly route   = inject(ActivatedRoute);
-  private readonly router  = inject(Router);
-  private readonly restSvc = inject(RestService);
+  private readonly route     = inject(ActivatedRoute);
+  private readonly router    = inject(Router);
+  private readonly restSvc   = inject(RestService);
+  private readonly userSvc   = inject(CurrentUserInfoService);
+  private readonly ratingSvc = inject(TeacherRatingService);
 
   loading = signal(true);
   error   = signal<string | null>(null);
   profile = signal<TeacherPublicProfile | null>(null);
 
+  isParent  = signal(false);
+  showRate  = signal(false);
+  rating    = signal(false);
+  rateError = signal<string | null>(null);
+  myRating  = signal(0);
+  myComment = signal('');
+
+  private teacherId = '';
+
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.error.set('معلم غير معروف · Unknown teacher'); this.loading.set(false); return; }
+    this.teacherId = id;
     await this.load(id);
+    await this.loadParentContext(id);
   }
 
   private async load(id: string): Promise<void> {
@@ -247,6 +295,45 @@ export class TeacherPublicProfileComponent implements OnInit {
       this.error.set('حدث خطأ أثناء تحميل الملف · Error loading profile');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private async loadParentContext(id: string): Promise<void> {
+    try {
+      const info = await lastValueFrom(this.userSvc.getCurrentUserActorInfo());
+      const roles = (info?.userRoles || []).map(r => (r || '').toUpperCase());
+      if (!roles.includes('PARENT')) return;
+      this.isParent.set(true);
+      await this.refreshSummary(id);
+    } catch { /* guest / not authenticated — silent */ }
+  }
+
+  private async refreshSummary(id: string): Promise<void> {
+    try {
+      const summary = await lastValueFrom(this.ratingSvc.getSummary(id));
+      this.profile.update(p => p ? { ...p, averageRating: summary.averageRating, ratingCount: summary.ratingCount } : p);
+      this.myRating.set(summary.myRating?.stars ?? 0);
+      this.myComment.set(summary.myRating?.comment ?? '');
+    } catch { /* silent */ }
+  }
+
+  openRate(): void {
+    this.rateError.set(null);
+    this.showRate.set(true);
+  }
+
+  async submitRating(ev: RateSubmitEvent): Promise<void> {
+    this.rating.set(true);
+    this.rateError.set(null);
+    try {
+      await lastValueFrom(this.ratingSvc.rate({ teacherId: this.teacherId, stars: ev.stars, comment: ev.comment }));
+      await this.refreshSummary(this.teacherId);
+      this.showRate.set(false);
+    } catch (e: any) {
+      console.error('[TeacherPublicProfile] rate error:', e);
+      this.rateError.set(e?.error?.error?.message || 'حدث خطأ أثناء إرسال التقييم · Error submitting rating');
+    } finally {
+      this.rating.set(false);
     }
   }
 

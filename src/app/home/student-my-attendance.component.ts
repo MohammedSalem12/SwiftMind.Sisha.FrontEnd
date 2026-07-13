@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 
 import { AttendanceService } from '@proxy/attendances';
-import { StudentAttendanceReportDto } from '@proxy/attendances/dtos/models';
+import { MyTodaySessionDto, StudentAttendanceReportDto } from '@proxy/attendances/dtos/models';
+import { AttendanceStatus } from '@proxy/enums';
 import { CurrentUserInfoService } from '@proxy/common';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 
@@ -11,7 +13,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
   selector: 'app-student-my-attendance',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, PageHeaderComponent],
+  imports: [CommonModule, IonicModule, PageHeaderComponent],
   template: `
     <div class="page" dir="rtl">
 
@@ -21,6 +23,53 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
         [titleEn]="'Attendance Record'"></app-page-header>
 
       <!-- ── Summary block ── -->
+      @if (todaySessions().length > 0) {
+        <div class="today-block">
+          <div class="today-head">
+            <i class="fas fa-calendar-check"></i>
+            <span>حصص اليوم · Today's sessions</span>
+          </div>
+
+          @for (s of todaySessions(); track s.groupSessionId) {
+            <div class="today-card">
+              <div class="today-info">
+                <span class="today-course">{{ s.courseNameAr || s.courseNameEn }}</span>
+                <span class="today-meta">
+                  <i class="fas fa-users"></i> {{ s.groupName }}
+                  <span class="dot">·</span>
+                  <i class="fas fa-clock"></i> {{ formatTime(s.startTime) }} - {{ formatTime(s.endTime) }}
+                </span>
+              </div>
+
+              @if (s.isSelfReported) {
+                <span class="today-chip chip-pending">
+                  <i class="fas fa-hourglass-half"></i> بانتظار تأكيد المعلم
+                </span>
+              } @else if (s.status === AttendanceStatus.Present) {
+                <span class="today-chip chip-present"><i class="fas fa-check"></i> حاضر</span>
+              } @else if (s.status === AttendanceStatus.Absent) {
+                <span class="today-chip chip-absent"><i class="fas fa-xmark"></i> غائب</span>
+              } @else if (s.status === AttendanceStatus.Excused) {
+                <span class="today-chip chip-excused"><i class="fas fa-notes-medical"></i> بعذر</span>
+              } @else if (s.canSelfCheckIn) {
+                <ion-button size="small" class="checkin-btn"
+                            (click)="selfCheckIn(s)" [disabled]="checkingIn() === s.groupSessionId">
+                  @if (checkingIn() === s.groupSessionId) {
+                    <ion-spinner name="crescent"></ion-spinner>
+                  } @else {
+                    <i class="fas fa-hand" style="margin-inline-end:.3rem"></i> أنا حاضر
+                  }
+                </ion-button>
+              }
+            </div>
+          }
+
+          @if (checkInMessage()) {
+            <p class="today-msg" [class.today-msg--err]="checkInError()">{{ checkInMessage() }}</p>
+          }
+        </div>
+      }
+
       @if (!loading() && reports().length > 0) {
         <div class="summary-block">
           <div class="blob b1"></div>
@@ -304,14 +353,62 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
     .empty-state h3 { font-size:1.1rem; font-weight:700; color:#1a1a2e; margin:0 0 .4rem; }
     .empty-state p   { font-size:.88rem; color:#555; margin:0 0 .2rem; }
     .empty-state span{ font-size:.78rem; color:#9090aa; }
+
+    /* ── Today's sessions / self check-in ── */
+    .today-block {
+      background:#fff; border-radius:16px; padding:.9rem;
+      margin-bottom:1rem; box-shadow:0 2px 12px rgba(0,0,0,.05);
+      border:1px solid #eef0f6;
+    }
+    .today-head {
+      display:flex; align-items:center; gap:.45rem;
+      font-size:.85rem; font-weight:700; color:#4c1d95; margin-bottom:.6rem;
+    }
+    .today-card {
+      display:flex; align-items:center; justify-content:space-between; gap:.6rem;
+      padding:.6rem .5rem; border-radius:12px; background:#faf9ff;
+      border:1px solid #f0edff;
+    }
+    .today-card + .today-card { margin-top:.5rem; }
+    .today-info { display:flex; flex-direction:column; gap:.2rem; min-width:0; }
+    .today-course { font-size:.9rem; font-weight:700; color:#1a1a2e; }
+    .today-meta { font-size:.72rem; color:#6b7280; display:flex; align-items:center; gap:.3rem; flex-wrap:wrap; }
+    .today-meta .dot { opacity:.5; }
+
+    .today-chip {
+      display:inline-flex; align-items:center; gap:.3rem; white-space:nowrap;
+      font-size:.72rem; font-weight:700; padding:.35rem .6rem; border-radius:999px;
+    }
+    .chip-pending  { background:#fffbeb; color:#92400e; border:1px solid #fde68a; }
+    .chip-present  { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+    .chip-absent   { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+    .chip-excused  { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+
+    /* 44px min tap target */
+    ion-button.checkin-btn {
+      --background:linear-gradient(135deg,#667eea,#764ba2);
+      --color:#fff; --border-radius:12px;
+      min-height:44px; font-weight:700; margin:0;
+    }
+
+    .today-msg { margin:.6rem 0 0; font-size:.78rem; color:#047857; text-align:center; }
+    .today-msg--err { color:#b91c1c; }
   `],
 })
 export class StudentMyAttendanceComponent implements OnInit {
   private readonly attendanceSvc  = inject(AttendanceService);
   private readonly currentUserSvc = inject(CurrentUserInfoService);
 
+  // Exposed so the template can compare against the enum rather than magic numbers.
+  protected readonly AttendanceStatus = AttendanceStatus;
+
   loading = signal(true);
   reports = signal<StudentAttendanceReportDto[]>([]);
+
+  todaySessions = signal<MyTodaySessionDto[]>([]);
+  checkingIn = signal<string | null>(null);
+  checkInMessage = signal<string | null>(null);
+  checkInError = signal(false);
 
   // The report covers the current month up to today (server caps the day count at today).
   periodLabel = computed(() => {
@@ -356,6 +453,43 @@ export class StudentMyAttendanceComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+
+    await this.loadTodaySessions();
+  }
+
+  /** Sessions only exist once a teacher opens attendance, so this is often empty. */
+  private async loadTodaySessions(): Promise<void> {
+    try {
+      const sessions = await lastValueFrom(this.attendanceSvc.getMyTodaySessions());
+      this.todaySessions.set(sessions ?? []);
+    } catch (e) {
+      console.error('Error loading today sessions', e);
+      this.todaySessions.set([]);
+    }
+  }
+
+  async selfCheckIn(session: MyTodaySessionDto): Promise<void> {
+    this.checkingIn.set(session.groupSessionId);
+    this.checkInMessage.set(null);
+    try {
+      await lastValueFrom(
+        this.attendanceSvc.selfCheckIn({ groupSessionId: session.groupSessionId } as any),
+      );
+      await this.loadTodaySessions();
+      this.checkInError.set(false);
+      this.checkInMessage.set('تم إرسال طلب الحضور — بانتظار تأكيد المعلم');
+    } catch (e: any) {
+      this.checkInError.set(true);
+      this.checkInMessage.set(e?.error?.error?.message || 'تعذر تسجيل الحضور');
+    } finally {
+      this.checkingIn.set(null);
+    }
+  }
+
+  /** "09:30:00" → "09:30" */
+  formatTime(value?: string): string {
+    if (!value) return '';
+    return value.slice(0, 5);
   }
 
   private level(r: StudentAttendanceReportDto): string {

@@ -1,3 +1,4 @@
+import type { PromotionPaymentMethod } from './promotion-payment-method.enum';
 import type { CreationAuditedEntityDto, EntityDto, ExtensibleAuditedEntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { SecretaryTeacherRequestStatus } from './secretary-teacher-request-status.enum';
 import type { UnenrollRequestStatus } from './unenroll-request-status.enum';
@@ -13,6 +14,7 @@ export interface CreateTeacherPromotionDto {
   durationMonths: number;
   government?: string;
   town?: string;
+  paymentMethod?: PromotionPaymentMethod;
 }
 
 export interface CreateUpdateTeacherDto {
@@ -26,6 +28,11 @@ export interface CreateUpdateTeacherDto {
   town?: string;
   bio?: string;
   photoUrl?: string;
+}
+
+export interface PromotionPaymentInfoDto {
+  instaPayAddress?: string;
+  vodafoneCashNumber?: string;
 }
 
 export interface PromotionPricingDto {
@@ -90,6 +97,8 @@ export interface TeacherCardDto {
   government?: string;
   town?: string;
   courseCount: number;
+  averageRating: number;
+  ratingCount: number;
 }
 
 export interface TeacherDashboardAbsentDto {
@@ -174,6 +183,8 @@ export interface TeacherPromotionDto extends FullAuditedEntityDto<string> {
   startDate?: string;
   endDate?: string;
   rejectionReason?: string;
+  paymentMethod?: PromotionPaymentMethod;
+  paymentReference?: string;
 }
 
 export interface TeacherPublicProfileDto {
@@ -185,6 +196,8 @@ export interface TeacherPublicProfileDto {
   government?: string;
   town?: string;
   courses: CourseDto[];
+  averageRating: number;
+  ratingCount: number;
 }
 
 export interface TeacherUnenrollRequestDto extends EntityDto<string> {
@@ -197,6 +210,11 @@ export interface TeacherUnenrollRequestDto extends EntityDto<string> {
   rejectionReason?: string;
   processedAt?: string;
   creationTime?: string;
+}
+
+export interface UpdatePromotionPaymentInfoDto {
+  instaPayAddress?: string;
+  vodafoneCashNumber?: string;
 }
 
 export interface UpdateTeacherProfileDto {

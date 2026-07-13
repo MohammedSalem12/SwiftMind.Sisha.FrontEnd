@@ -12,12 +12,13 @@ import { ParentService } from '@proxy/parents';
 import { AuthService } from '@abp/ng.core';
 import { RegisterPromptComponent } from '../shared/components/register-prompt.component';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
+import { StarRatingComponent } from '../shared/components/star-rating.component';
 
 @Component({
   selector: 'app-academies-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, RegisterPromptComponent, PageHeaderComponent],
+  imports: [CommonModule, RouterModule, FormsModule, RegisterPromptComponent, PageHeaderComponent, StarRatingComponent],
   template: `
     <div class="page" dir="rtl">
 
@@ -40,6 +41,15 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
                  [ngModel]="searchQuery()"
                  (ngModelChange)="searchQuery.set($event)" />
         </div>
+      </div>
+
+      <!-- Sort chips -->
+      <div class="sort-strip">
+        <span class="sort-label"><i class="fas fa-sort"></i> ترتيب:</span>
+        <button class="sort-chip" [class.sort-chip--active]="sortBy() === 'default'" (click)="sortBy.set('default')">مقترح</button>
+        <button class="sort-chip" [class.sort-chip--active]="sortBy() === 'rating'" (click)="sortBy.set('rating')"><i class="fas fa-star"></i> الأعلى تقييماً</button>
+        <button class="sort-chip" [class.sort-chip--active]="sortBy() === 'members'" (click)="sortBy.set('members')">الأعضاء</button>
+        <button class="sort-chip" [class.sort-chip--active]="sortBy() === 'name'" (click)="sortBy.set('name')">الاسم</button>
       </div>
 
       <!-- ── Guest register prompt ── -->
@@ -168,11 +178,17 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
         <div class="a-card" (click)="goToProfile(academy)">
           <div class="a-card-row">
             <div class="a-avatar">
-              <i class="fas fa-university"></i>
+              @if ($any(academy).logoUrl) {
+                <img [src]="$any(academy).logoUrl" alt="" />
+              } @else {
+                <i class="fas fa-university"></i>
+              }
             </div>
             <div class="a-info">
               <h3>{{ academy.nameAr }}</h3>
               @if (academy.nameEn) { <span class="a-en">{{ academy.nameEn }}</span> }
+              <app-star-rating class="a-stars" size="sm"
+                [value]="academy.averageRating ?? 0" [count]="academy.ratingCount ?? 0"></app-star-rating>
             </div>
             @if (enrolled) { <span class="a-enrolled-badge"><i class="fas fa-check-circle"></i> منضم</span> }
             @if (academy.isActive) { <span class="a-active"></span> }
@@ -210,6 +226,25 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
 
     /* ── Search strip (below shared header) ── */
     .search-strip { padding:.75rem 1rem 0; }
+
+    /* ── Sort chips ── */
+    .sort-strip {
+      display:flex; align-items:center; gap:.4rem; padding:.6rem 1rem 0;
+      overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .sort-strip::-webkit-scrollbar { display:none; }
+    .sort-label { font-size:.72rem; font-weight:700; color:#9090aa; flex-shrink:0; display:flex; align-items:center; gap:.25rem; }
+    .sort-chip {
+      flex-shrink:0; border:1.5px solid #e5e7eb; background:#fff; color:#4a4a6a;
+      font-size:.74rem; font-weight:600; padding:.4rem .7rem; border-radius:20px;
+      min-height:34px; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap;
+      display:flex; align-items:center; gap:.25rem; transition:all .15s;
+    }
+    .sort-chip i { font-size:.66rem; }
+    .sort-chip--active {
+      background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border-color:transparent;
+      box-shadow:0 2px 8px rgba(102,126,234,.3);
+    }
     .header-search {
       display:flex; align-items:center;
       background:#fff; border:1.5px solid #ececf2;
@@ -355,18 +390,20 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       display:flex; align-items:center; gap:.75rem; padding:.875rem 1rem;
     }
     .a-avatar {
-      width:46px; height:46px; border-radius:14px; flex-shrink:0;
+      width:46px; height:46px; border-radius:14px; flex-shrink:0; overflow:hidden;
       background:linear-gradient(135deg,#667eea,#764ba2);
       display:flex; align-items:center; justify-content:center;
       color:#fff; font-size:1.15rem;
       box-shadow:0 3px 10px rgba(102,126,234,.3);
     }
+    .a-avatar img { width:100%; height:100%; object-fit:cover; }
     .a-info { flex:1; min-width:0; }
     .a-info h3 {
       margin:0; font-size:.92rem; font-weight:700; color:#1a1a2e;
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
     .a-en { font-size:.72rem; color:#9090aa; display:block; margin-top:.1rem; }
+    .a-stars { display:block; margin-top:.2rem; }
     .a-active {
       width:8px; height:8px; border-radius:50%; background:#4ade80;
       box-shadow:0 0 0 3px rgba(74,222,128,.2); flex-shrink:0;
@@ -420,6 +457,7 @@ export class AcademiesListComponent implements OnInit {
   loading     = signal(true);
   academies   = signal<AcademyDto[]>([]);
   searchQuery = signal('');
+  sortBy      = signal<'default' | 'rating' | 'members' | 'name'>('default');
   activeTab   = signal<'my' | 'browse'>('my');
 
   isStudent        = signal(false);
@@ -435,13 +473,33 @@ export class AcademiesListComponent implements OnInit {
 
   private applySearch(list: AcademyDto[]): AcademyDto[] {
     const q = this.searchQuery().toLowerCase().trim();
-    if (!q) return list;
-    return list.filter(a =>
+    const filtered = !q ? list : list.filter(a =>
       (a.nameAr || '').toLowerCase().includes(q) ||
       (a.nameEn || '').toLowerCase().includes(q) ||
       (a.code   || '').toLowerCase().includes(q) ||
       (a.supervisorName || '').toLowerCase().includes(q)
     );
+    return this.applySort(filtered);
+  }
+
+  private applySort(list: AcademyDto[]): AcademyDto[] {
+    const by = this.sortBy();
+    if (by === 'default') return list;
+    const copy = [...list];
+    switch (by) {
+      case 'rating':
+        copy.sort((a, b) =>
+          ((b as any).averageRating ?? 0) - ((a as any).averageRating ?? 0) ||
+          ((b as any).ratingCount ?? 0) - ((a as any).ratingCount ?? 0));
+        break;
+      case 'members':
+        copy.sort((a, b) => (b.memberCount ?? 0) - (a.memberCount ?? 0));
+        break;
+      case 'name':
+        copy.sort((a, b) => (a.nameAr || '').localeCompare(b.nameAr || '', 'ar'));
+        break;
+    }
+    return copy;
   }
 
   myAcademies = computed(() => {

@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AttendanceService } from '@proxy/attendances';
+import { AttendanceStatus } from '@proxy/enums';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CourseService } from '@proxy/courses';
 import { GroupService } from '@proxy/groups';
@@ -24,7 +25,11 @@ interface StudentEntry {
   teacherStudentCode: string;
   studentName: string;
   photoUrl: string;
+  status: AttendanceStatus;
+  /** Convenience mirror of status ∈ {Absent, Excused}; the roster UI is still absence-oriented. */
   isAbsent: boolean;
+  /** Student marked themselves present and no staff member has confirmed it yet. */
+  isSelfReported: boolean;
   attendanceId: string | null;
   selected: boolean;
 }
@@ -103,6 +108,13 @@ export class AttendanceComponent implements OnInit {
   groups = signal<GroupOption[]>([]);
   selectedGroupId = signal<string | null>(null);
   effectiveTeacherId = signal<string | null>(null);
+
+  // Attendance is session-based: nothing can be marked until the session for this group+date
+  // exists and its roster has been materialised. Null means "not started yet".
+  sessionId = signal<string | null>(null);
+  startingSession = signal(false);
+  pendingSelfCheckIns = signal(0);
+  sessionStarted = computed(() => this.sessionId() !== null);
 
   // The currently selected group, and whether it still has no schedule set.
   // Attendance is schedule-driven, so a group with no schedule must be set up first.
@@ -471,29 +483,45 @@ export class AttendanceComponent implements OnInit {
 
       this.totalStudentCount.set(response?.totalCount ?? 0);
 
-      const rawEntries: StudentEntry[] = (response?.items || []).map((item: any) => ({
-        enrollmentId: item.enrollmentId,
-        studentId: item.studentId,
-        studentCode: item.studentCode || '',
-        teacherStudentCode: item.teacherStudentCode || '',
-        studentName:
-          item.fullName ||
-          `${item.firstName || ''} ${item.lastName || ''}`.trim(),
-        photoUrl: item.photoUrl || '',
-        isAbsent: item.isAbsent,
-        attendanceId: item.attendanceId || null,
-        selected: false,
-      }));
+      const rawEntries: StudentEntry[] = (response?.items || []).map((item: any) => {
+        const status: AttendanceStatus = item.status ?? AttendanceStatus.NotYet;
+        return {
+          enrollmentId: item.enrollmentId,
+          studentId: item.studentId,
+          studentCode: item.studentCode || '',
+          teacherStudentCode: item.teacherStudentCode || '',
+          studentName:
+            item.fullName ||
+            `${item.firstName || ''} ${item.lastName || ''}`.trim(),
+          photoUrl: item.photoUrl || '',
+          status,
+          isAbsent: status === AttendanceStatus.Absent || status === AttendanceStatus.Excused,
+          isSelfReported: !!item.isSelfReported,
+          attendanceId: item.attendanceId || null,
+          selected: false,
+        };
+      });
 
-      // Deduplicate by studentId — prefer the row that has an absence record
+      // Deduplicate by studentId — prefer the row that has been decided
       const seen = new Map<string, StudentEntry>();
       for (const entry of rawEntries) {
         const prev = seen.get(entry.studentId);
-        if (!prev || (!prev.isAbsent && entry.isAbsent)) {
+        const prevDecided = prev && prev.status !== AttendanceStatus.NotYet;
+        const entryDecided = entry.status !== AttendanceStatus.NotYet;
+        if (!prev || (!prevDecided && entryDecided)) {
           seen.set(entry.studentId, entry);
         }
       }
       this.students.set(Array.from(seen.values()));
+
+      // The session exists once the roster has been materialised — any row with an attendanceId
+      // proves it. Everything that mutates attendance needs this id.
+      this.sessionId.set(
+        (response?.items || []).find((i: any) => i.groupSessionId)?.groupSessionId ?? null,
+      );
+      this.pendingSelfCheckIns.set(
+        this.students().filter(s => s.isSelfReported).length,
+      );
     } catch (e) {
       console.error('Failed to load students:', e);
       this.students.set([]);
@@ -515,103 +543,170 @@ export class AttendanceComponent implements OnInit {
     });
   }
 
+  /**
+   * Opens attendance for the selected group and date. Creates the session if it doesn't exist and
+   * materialises the roster (every enrolled student at NotYet). Re-running reconciles the roster:
+   * students who joined the group are added, students who left are removed, existing marks kept.
+   */
+  async startSession(): Promise<void> {
+    const groupId = this.selectedGroupId();
+    if (!groupId) {
+      this.showMessage('اختر المجموعة أولاً · Select a group first', 'error');
+      return;
+    }
+
+    this.startingSession.set(true);
+    this.message.set(null);
+    try {
+      const session: any = await lastValueFrom(
+        this.attendanceSvc.startSession(
+          { groupId, date: new Date(this.attendanceDate()).toISOString() } as any,
+          { skipHandleError: true },
+        ),
+      );
+
+      await this.loadStudents();
+
+      const parts = [`${session?.totalCount ?? 0} طالب`];
+      if (session?.addedCount) parts.push(`أضيف ${session.addedCount}`);
+      if (session?.removedCount) parts.push(`أزيل ${session.removedCount}`);
+      this.showMessage(`تم بدء تسجيل الحضور — ${parts.join(' · ')}`, 'success');
+    } catch (e: any) {
+      const msg =
+        e?.error?.error?.message ||
+        'تعذر بدء الحصة — تأكد أن المجموعة لديها حصة مجدولة في هذا اليوم';
+      this.showMessage(msg, 'error');
+    } finally {
+      this.startingSession.set(false);
+    }
+  }
+
   async markSelectedAbsent(): Promise<void> {
     const toMark = this.students().filter(s => s.selected && !s.isAbsent);
     if (toMark.length === 0) {
       this.showMessage('لا يوجد طلاب محددون غير مسجل غيابهم', 'error');
       return;
     }
-    await this.markAbsentBatch(toMark);
+    await this.bulkSetStatus(AttendanceStatus.Absent, toMark);
   }
 
   async markAllAbsent(): Promise<void> {
-    const toMark = this.students().filter(s => !s.isAbsent);
-    if (toMark.length === 0) {
-      this.showMessage('جميع الطلاب مسجلون كغائبين بالفعل', 'error');
-      return;
-    }
-    await this.markAbsentBatch(toMark);
+    await this.bulkSetStatus(AttendanceStatus.Absent);
   }
 
-  private async markAbsentBatch(toMark: StudentEntry[]): Promise<void> {
+  async markAllPresent(): Promise<void> {
+    await this.bulkSetStatus(AttendanceStatus.Present);
+  }
+
+  /** Sets a status for the whole roster, or just the given subset, in one request. */
+  private async bulkSetStatus(status: AttendanceStatus, subset?: StudentEntry[]): Promise<void> {
+    const sessionId = this.sessionId();
+    if (!sessionId) {
+      this.showMessage('ابدأ تسجيل الحضور أولاً · Start attendance first', 'error');
+      return;
+    }
+
     this.saving.set(true);
     this.message.set(null);
-    let successCount = 0;
-    let failCount = 0;
-
     try {
-      for (const s of toMark) {
-        try {
-          await lastValueFrom(
-            this.attendanceSvc.create(
-              {
-                enrollmentId: s.enrollmentId,
-                date: new Date(this.attendanceDate()).toISOString(),
-                isAbsent: true,
-                note: '--',
-              },
-              { skipHandleError: true }
-            )
-          );
-          successCount++;
-        } catch {
-          failCount++;
-        }
-      }
+      const changed: any = await lastValueFrom(
+        this.attendanceSvc.bulkSetStatus(
+          {
+            groupSessionId: sessionId,
+            status,
+            enrollmentIds: subset?.map(s => s.enrollmentId) ?? [],
+          } as any,
+          { skipHandleError: true },
+        ),
+      );
+
       await this.loadStudents();
-      const msg =
-        failCount > 0
-          ? `تم تسجيل غياب ${successCount} طالب — فشل ${failCount}`
-          : `تم تسجيل غياب ${successCount} طالب بنجاح وإرسال الإشعارات`;
-      this.showMessage(msg, failCount > 0 ? 'error' : 'success');
+
+      const label = status === AttendanceStatus.Present ? 'حضور' : 'غياب';
+      this.showMessage(`تم تسجيل ${label} ${changed ?? 0} طالب وإرسال الإشعارات`, 'success');
+    } catch (e: any) {
+      this.showMessage(e?.error?.error?.message || 'فشلت العملية، يرجى المحاولة مرة أخرى', 'error');
     } finally {
       this.saving.set(false);
     }
   }
 
+  /** Cycles a single student between Present and Absent. */
   async toggleStudentAbsent(student: StudentEntry, index: number): Promise<void> {
+    if (!student.attendanceId) {
+      this.showMessage('ابدأ تسجيل الحضور أولاً · Start attendance first', 'error');
+      return;
+    }
+
+    const next = student.isAbsent ? AttendanceStatus.Present : AttendanceStatus.Absent;
+    await this.setStudentStatus(student, next);
+  }
+
+  async setStudentStatus(student: StudentEntry, status: AttendanceStatus): Promise<void> {
+    if (!student.attendanceId) {
+      this.showMessage('ابدأ تسجيل الحضور أولاً · Start attendance first', 'error');
+      return;
+    }
+
     this.saving.set(true);
     this.message.set(null);
     try {
-      if (student.isAbsent) {
-        // Remove absence
-        if (student.attendanceId) {
-          await lastValueFrom(this.attendanceSvc.delete(student.attendanceId, { skipHandleError: true }));
-        } else {
-          // Fallback: search by enrollmentId + date
-          const records: any = await lastValueFrom(
-            this.attendanceSvc.getList({ skipCount: 0, maxResultCount: 100 } as any)
-          );
-          const targetDate = this.attendanceDate();
-          const record = (records?.items || []).find(
-            (r: any) =>
-              r.enrollmentId === student.enrollmentId &&
-              new Date(r.date).toISOString().slice(0, 10) === targetDate
-          );
-          if (record?.id) {
-            await lastValueFrom(this.attendanceSvc.delete(record.id, { skipHandleError: true }));
-          }
-        }
-        this.showMessage('تم إلغاء الغياب', 'success');
-      } else {
-        await lastValueFrom(
-          this.attendanceSvc.create(
-            {
-              enrollmentId: student.enrollmentId,
-              date: new Date(this.attendanceDate()).toISOString(),
-              isAbsent: true,
-              note: '--',
-            },
-            { skipHandleError: true }
-          )
-        );
-        this.showMessage('تم تسجيل الغياب وإرسال الإشعار', 'success');
-      }
+      await lastValueFrom(
+        this.attendanceSvc.setStatus(
+          { attendanceId: student.attendanceId, status } as any,
+          { skipHandleError: true },
+        ),
+      );
+
       await this.loadStudents();
+      this.showMessage(this.statusMessage(status), 'success');
     } catch (e: any) {
-      console.error('Toggle attendance failed:', e);
+      console.error('Set attendance status failed:', e);
       const msg = e?.error?.error?.message || 'فشلت العملية، يرجى المحاولة مرة أخرى';
       this.showMessage(msg, 'error');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  private statusMessage(status: AttendanceStatus): string {
+    switch (status) {
+      case AttendanceStatus.Present: return 'تم تسجيل الحضور وإرسال الإشعار';
+      case AttendanceStatus.Absent: return 'تم تسجيل الغياب وإرسال الإشعار';
+      case AttendanceStatus.Excused: return 'تم تسجيل الغياب بعذر';
+      default: return 'تم التحديث';
+    }
+  }
+
+  // ── Student self check-in review ────────────────────────────
+  async confirmAllSelfCheckIns(): Promise<void> {
+    await this.reviewSelfCheckIns(true);
+  }
+
+  async rejectAllSelfCheckIns(): Promise<void> {
+    await this.reviewSelfCheckIns(false);
+  }
+
+  private async reviewSelfCheckIns(confirm: boolean): Promise<void> {
+    const sessionId = this.sessionId();
+    if (!sessionId) return;
+
+    this.saving.set(true);
+    try {
+      const count: any = await lastValueFrom(
+        confirm
+          ? this.attendanceSvc.confirmAllSelfReported(sessionId, { skipHandleError: true })
+          : this.attendanceSvc.rejectAllSelfReported(sessionId, { skipHandleError: true }),
+      );
+      await this.loadStudents();
+      this.showMessage(
+        confirm
+          ? `تم تأكيد حضور ${count ?? 0} طالب`
+          : `تم رفض ${count ?? 0} طلب وتسجيلهم غائبين`,
+        'success',
+      );
+    } catch (e: any) {
+      this.showMessage(e?.error?.error?.message || 'فشلت العملية', 'error');
     } finally {
       this.saving.set(false);
     }
@@ -762,7 +857,41 @@ export class AttendanceComponent implements OnInit {
       this.listSearch.set(value);
       this.stopScan();
     } else {
-      this.markPresentByValue(value);
+      // A scanned code is verified by the server against this session's roster, so a code
+      // belonging to a student outside the group is rejected rather than silently ignored.
+      void this.markPresentByScan(value);
+    }
+  }
+
+  /**
+   * Server-verified present. Unlike the typed search (which matches locally, including by name),
+   * a scan resolves the code against the session roster and records who verified it.
+   */
+  async markPresentByScan(code: string): Promise<void> {
+    const sessionId = this.sessionId();
+    if (!sessionId) {
+      this.showMessage('ابدأ تسجيل الحضور أولاً · Start attendance first', 'error');
+      return;
+    }
+
+    this.saving.set(true);
+    try {
+      const row: any = await lastValueFrom(
+        this.attendanceSvc.scanQr({ groupSessionId: sessionId, code } as any, { skipHandleError: true }),
+      );
+
+      if (row?.enrollmentId) {
+        this.markedPresent.update(set => new Set(set).add(row.enrollmentId));
+      }
+      await this.loadStudents();
+      this.showMessage(`تم تسجيل حضور ${row?.fullName || code}`, 'success');
+      this.attSearch.set('');
+    } catch (e: any) {
+      const msg =
+        e?.error?.error?.message || `لم يتم العثور على طالب بهذا الكود في هذه الحصة: ${code}`;
+      this.showMessage(msg, 'error');
+    } finally {
+      this.saving.set(false);
     }
   }
 
@@ -800,10 +929,17 @@ export class AttendanceComponent implements OnInit {
   }
 
   async finalizeAttendees(): Promise<void> {
+    const sessionId = this.sessionId();
+    if (!sessionId) {
+      this.showMessage('ابدأ تسجيل الحضور أولاً · Start attendance first', 'error');
+      return;
+    }
+
     const marked = this.markedPresent();
     const list = this.students();
-    const toAbsent = list.filter(s => !marked.has(s.enrollmentId) && !s.isAbsent);
-    const toPresent = list.filter(s => marked.has(s.enrollmentId) && s.isAbsent);
+    const toPresent = list.filter(s => marked.has(s.enrollmentId) && s.status !== AttendanceStatus.Present);
+    const toAbsent = list.filter(s => !marked.has(s.enrollmentId) && s.status !== AttendanceStatus.Absent);
+
     if (toAbsent.length === 0 && toPresent.length === 0) {
       this.showMessage('لا تغييرات للحفظ · Nothing to save', 'error');
       return;
@@ -814,21 +950,28 @@ export class AttendanceComponent implements OnInit {
     this.saving.set(true);
     this.message.set(null);
     try {
-      for (const s of toAbsent) {
-        try {
-          await lastValueFrom(this.attendanceSvc.create(
-            { enrollmentId: s.enrollmentId, date: new Date(this.attendanceDate()).toISOString(), isAbsent: true, note: '--' },
-            { skipHandleError: true }));
-        } catch { /* continue */ }
+      // Two bulk calls rather than one request per student.
+      if (toPresent.length > 0) {
+        await lastValueFrom(this.attendanceSvc.bulkSetStatus({
+          groupSessionId: sessionId,
+          status: AttendanceStatus.Present,
+          enrollmentIds: toPresent.map(s => s.enrollmentId),
+        } as any, { skipHandleError: true }));
       }
-      for (const s of toPresent) {
-        if (s.attendanceId) {
-          try { await lastValueFrom(this.attendanceSvc.delete(s.attendanceId, { skipHandleError: true })); } catch { /* continue */ }
-        }
+
+      if (toAbsent.length > 0) {
+        await lastValueFrom(this.attendanceSvc.bulkSetStatus({
+          groupSessionId: sessionId,
+          status: AttendanceStatus.Absent,
+          enrollmentIds: toAbsent.map(s => s.enrollmentId),
+        } as any, { skipHandleError: true }));
       }
+
       await this.loadStudents();
       this.markedPresent.set(new Set());
       this.showMessage(`تم الحفظ: ${marked.size} حاضر · ${toAbsent.length} غائب`, 'success');
+    } catch (e: any) {
+      this.showMessage(e?.error?.error?.message || 'فشل الحفظ', 'error');
     } finally {
       this.saving.set(false);
     }

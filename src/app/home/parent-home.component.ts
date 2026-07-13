@@ -256,6 +256,7 @@ export class ParentHomeComponent implements OnInit {
 
   trackById = (_: number, item: ParentStudentDto) => item.studentId;
 
+  goToEnroll() { this.router.navigate(['/parent/enroll']); }
   goToMessageTeacher() { this.router.navigate(['/parent/message-teacher']); }
   goToAbsenceExcuse() { this.router.navigate(['/parent/absence-excuse']); }
   goToChildSchedule(studentId: string) { this.router.navigate(['/parent/child-schedule', studentId]); }

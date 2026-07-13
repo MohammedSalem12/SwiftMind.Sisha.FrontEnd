@@ -43,6 +43,8 @@ export class StudentCourseGroupsComponent implements OnInit {
   submitting = signal(false);
   error = signal<string | null>(null);
   successMessage = signal<string | null>(null);
+  /** Set when the backend rejects the enrolment because the free course quota is used up. */
+  quotaExceeded = signal(false);
 
   filteredTeachers = computed(() => {
     const q = this.searchQuery().trim().toLowerCase();
@@ -108,6 +110,7 @@ export class StudentCourseGroupsComponent implements OnInit {
     this.submitting.set(true);
     this.error.set(null);
     this.successMessage.set(null);
+    this.quotaExceeded.set(false);
     try {
       const userInfo = await lastValueFrom(this.currentUserInfoService.getCurrentUserActorInfo());
       if (!userInfo?.actorId) {
@@ -126,10 +129,25 @@ export class StudentCourseGroupsComponent implements OnInit {
       this.teacherGroups.set([]);
     } catch (err: any) {
       console.error('Error enrolling:', err);
+
+      // The free-course quota is exhausted. Send the student somewhere they can act,
+      // rather than showing a dead-end error.
+      if (err?.error?.error?.code === 'ENROLLMENT:COURSE_QUOTA_EXCEEDED') {
+        this.quotaExceeded.set(true);
+        this.error.set(
+          'استنفدت المقررات المجانية. اشترك للتسجيل في مقررات إضافية.',
+        );
+        return;
+      }
+
       this.error.set(err?.error?.error?.message || 'حدث خطأ أثناء إرسال طلب التسجيل');
     } finally {
       this.submitting.set(false);
     }
+  }
+
+  goToSubscription(): void {
+    this.router.navigate(['/student/subscription']);
   }
 
   goToRequests(): void {

@@ -78,6 +78,12 @@ export const appRoutes: Routes = [
     data: { roles: ['PARENT'] }
   },
   {
+    path: 'parent/child-subscription',
+    loadComponent: () => import('./home/parent-child-subscription.component').then(m => m.ParentChildSubscriptionComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
     path: 'parent/requests',
     loadComponent: () => import('./home/parent-requests.component').then(m => m.ParentRequestsComponent),
     canActivate: [roleGuard],
@@ -88,6 +94,18 @@ export const appRoutes: Routes = [
     loadComponent: () => import('./home/student-my-attendance.component').then(m => m.StudentMyAttendanceComponent),
     canActivate: [roleGuard],
     data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'student/subscription',
+    loadComponent: () => import('./students/student-subscription.component').then(m => m.StudentSubscriptionComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'admin/enrollment-subscriptions',
+    loadComponent: () => import('./students/admin-enrollment-subscriptions.component').then(m => m.AdminEnrollmentSubscriptionsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
   },
   {
     path: 'student/grades',
@@ -266,6 +284,12 @@ export const appRoutes: Routes = [
     data: { roles: ['ADMIN'] }
   },
   {
+    path: 'admin/child-subscriptions',
+    loadComponent: () => import('./admin/parent-child-subscriptions.component').then(m => m.ParentChildSubscriptionsComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
     path: 'registration-requests',
     loadComponent: () => import('./registration-requests/registration-requests.component').then(m => m.RegistrationRequestsComponent),
     canActivate: [roleGuard],
@@ -436,6 +460,12 @@ export const appRoutes: Routes = [
     data: { roles: ['PARENT'] }
   },
   {
+    path: 'parent/enroll',
+    loadComponent: () => import('./parents/parent-enroll.component').then(m => m.ParentEnrollComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['PARENT'] }
+  },
+  {
     path: 'parent/message-teacher',
     loadComponent: () => import('./parents/parent-message-teacher.component').then(m => m.ParentMessageTeacherComponent),
     canActivate: [roleGuard],
@@ -491,6 +521,12 @@ export const appRoutes: Routes = [
     loadChildren: () => import('./marks-entry/marks-entry.routes').then(m => m.marksEntryRoutes),
     canActivate: [roleGuard],
     data: { roles: ['TEACHER', 'ADMIN', 'SECRETARY'] }
+  },
+  {
+    path: 'fees',
+    loadComponent: () => import('./fees/fees.component').then(m => m.FeesComponent),
+    canActivate: [roleGuard],
+    data: { roles: ['TEACHER', 'SECRETARY', 'ADMIN'] }
   },
   {
     path: 'marketer',

@@ -31,11 +31,14 @@ export interface AcademyDto extends FullAuditedEntityDto<string> {
   nameEn?: string;
   description?: string;
   code?: string;
+  logoUrl?: string;
   supervisorTeacherId?: string;
   supervisorName?: string;
   isActive: boolean;
   memberCount: number;
   courseCount: number;
+  averageRating: number;
+  ratingCount: number;
 }
 
 export interface AcademyMemberDto {
@@ -49,6 +52,7 @@ export interface CreateAcademyDto {
   nameAr?: string;
   nameEn?: string;
   description?: string;
+  logoUrl?: string;
   supervisorTeacherCode?: string;
 }
 
@@ -56,4 +60,5 @@ export interface UpdateAcademyDto {
   nameAr: string;
   nameEn: string;
   description?: string;
+  logoUrl?: string;
 }

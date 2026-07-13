@@ -12,7 +12,7 @@ import { StudentService } from '@proxy/students';
 import { ExamGradeService } from '@proxy/exam-grades';
 import type { EnrollmentDto } from '@proxy/student-enrollments/dtos/models';
 import type { CourseDto } from '@proxy/courses/dtos/models';
-import type { AttendanceDto } from '@proxy/attendances/dtos/models';
+import type { StudentAttendanceReportDto } from '@proxy/attendances/dtos/models';
 import type { TeacherDto } from '@proxy/teachers/models';
 import type { StudentDto } from '@proxy/students/models';
 import type { ExamGradeDto } from '@proxy/exam-grades/dtos/models';
@@ -183,48 +183,52 @@ export class StudentDetailComponent implements OnInit {
       }
       this.teachers.set(teacherMap);
 
-      // fetch attendance pages (1000) and filter by enrollmentIds
       const enrollmentIds = enrolls.map(e => e.id).filter(Boolean);
-      const pageSize = 1000; let skip = 0; const allAtts: AttendanceDto[] = [];
-      while (true) {
-        const pageRes = await lastValueFrom(this.attendanceSvc.getList({ skipCount: skip, maxResultCount: pageSize } as any));
-        const pageItems = (pageRes as any).items ?? [];
-        allAtts.push(...pageItems);
-        if (pageItems.length < pageSize) break;
-        skip += pageSize;
-      }
-      const studentAtts = allAtts.filter(a => enrollmentIds.includes(a.enrollmentId || ''));
 
-  // compute overall totals
-  const total = studentAtts.length;
-  const abs = studentAtts.filter(a => a.isAbsent).length;
-  const pres = total - abs;
-  this.totalRecords.set(total);
-  this.totalAbsent.set(abs);
-  this.totalPresent.set(pres);
-
-      // compute last 6 months
+      // Attendance for the last 6 months, one scoped request per month. This used to page the
+      // entire attendance table (every student's rows) and filter client-side — the server now
+      // computes it against real recorded sessions and only returns this student's data.
       const now = new Date();
-      const months: { key: string; label: string; start: Date; end: Date }[] = [];
-      for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const start = new Date(d.getFullYear(), d.getMonth(), 1);
-        const end = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-        const label = start.toLocaleString(undefined, { month: 'short', year: 'numeric' });
-        months.push({ key: `${start.getFullYear()}-${start.getMonth() + 1}`, label, start, end });
-      }
-      const monthly = months.map(m => {
-        const records = studentAtts.filter(a => {
-          if (!a.date) return false;
-          const dt = new Date(a.date);
-          return dt >= m.start && dt < m.end;
-        });
-        const total = records.length;
-        const absents = records.filter(r => r.isAbsent).length;
-        const present = total - absents;
-        const percent = total === 0 ? 0 : Math.round((present / total) * 100);
-        return { month: m.label, percent };
+      const months = Array.from({ length: 6 }, (_, i) => {
+        const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+        return { date: d, label: d.toLocaleString(undefined, { month: 'short', year: 'numeric' }) };
       });
+
+      const monthReports = await Promise.all(
+        months.map(m =>
+          lastValueFrom(
+            this.attendanceSvc.getStudentAttendanceReport({
+              studentId,
+              date: m.date.toISOString(),
+              maxResultCount: 100,
+            } as any),
+          ).catch(() => null),
+        ),
+      );
+
+      const sumOf = (rows: StudentAttendanceReportDto[] | undefined, key: keyof StudentAttendanceReportDto) =>
+        (rows ?? []).reduce((acc, r) => acc + (Number(r[key]) || 0), 0);
+
+      let totalDecided = 0;
+      let totalPresent = 0;
+      let totalMissed = 0;
+
+      const monthly = months.map((m, i) => {
+        const rows = (monthReports[i] as any)?.items as StudentAttendanceReportDto[] | undefined;
+        const decided = sumOf(rows, 'totalDaysInMonth');
+        const present = sumOf(rows, 'attendedDays');
+        const missed = sumOf(rows, 'absentDays') + sumOf(rows, 'excusedDays');
+
+        totalDecided += decided;
+        totalPresent += present;
+        totalMissed += missed;
+
+        return { month: m.label, percent: decided === 0 ? 0 : Math.round((present / decided) * 100) };
+      });
+
+      this.totalRecords.set(totalDecided);
+      this.totalPresent.set(totalPresent);
+      this.totalAbsent.set(totalMissed);
       this.monthlyAttendance.set(monthly);
 
       // fetch exam grades (page through exam-grade and filter by enrollmentIds)

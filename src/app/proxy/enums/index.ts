@@ -2,6 +2,7 @@ export * from './ad-status.enum';
 export * from './ad-target-audience.enum';
 export * from './ad-type.enum';
 export * from './advertiser-type.enum';
+export * from './attendance-status.enum';
 export * from './coupon-status.enum';
 export * from './enrollment-request-initiator.enum';
 export * from './enrollment-request-status.enum';

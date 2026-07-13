@@ -34,6 +34,10 @@
     <!-- Error -->
     <div *ngIf="error()" class="error-banner">
       <i class="fas fa-exclamation-circle"></i> {{ error() }}
+      <!-- Quota exhausted: give the student a way forward, not just a message. -->
+      <button *ngIf="quotaExceeded()" type="button" class="quota-cta" (click)="goToSubscription()">
+        <i class="fas fa-crown"></i> اشترك الآن · Subscribe
+      </button>
     </div>
 
     <!-- Search Box -->

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext HTTP is denied everywhere. The backend is reached over HTTPS at
+  46-224-134-126.sslip.io with a genuine Let's Encrypt certificate, so no
+  exception is required — this file simply pins Android's secure default.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

@@ -1,4 +1,4 @@
-import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, ParentDashboardDto, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, SendMessageToTeacherDto, SubmitAbsenceExcuseDto, UpdateParentDto, UpdateParentProfileDto, UpdateParentStudentDto } from './models';
+import type { CreateParentDto, CreateParentStudentDto, GetParentsInput, LinkCandidateStudentDto, ParentDashboardDto, ParentDto, ParentLookupDto, ParentRegistrationResultDto, ParentStudentDto, RegisterParentDto, SendMessageToTeacherDto, SubmitAbsenceExcuseDto, UpdateParentDto, UpdateParentProfileDto, UpdateParentStudentDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -193,6 +193,15 @@ export class ParentService {
       method: 'DELETE',
       url: '/api/app/parent/student-from-parent',
       params: { parentId, studentId },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  searchStudentsForLinking = (query: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, LinkCandidateStudentDto[]>({
+      method: 'POST',
+      url: '/api/app/parent/search-students-for-linking',
+      params: { query },
     },
     { apiName: this.apiName,...config });
   

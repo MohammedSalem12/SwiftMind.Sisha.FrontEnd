@@ -70,6 +70,11 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
             <span>معلميني · My teachers</span>
             <ion-ripple-effect></ion-ripple-effect>
           </button>
+          <button class="mk-action ion-activatable" (click)="go('/marketer/leads')">
+            <i class="fas fa-address-book"></i>
+            <span>قائمة التسويق · Marketing list</span>
+            <ion-ripple-effect></ion-ripple-effect>
+          </button>
           <button class="mk-action ion-activatable" (click)="go('/marketer/fees')">
             <i class="fas fa-coins"></i>
             <span>أرباحي · My fees</span>

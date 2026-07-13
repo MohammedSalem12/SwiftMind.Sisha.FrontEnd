@@ -9,6 +9,7 @@ import { AcademyService } from '@proxy/academies';
 import type { CreateAcademyDto, AcademyDto } from '@proxy/academies/models';
 import { CurrentUserInfoService } from '@proxy/common';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
+import { ImageCropService } from '../shared/services/image-crop.service';
 
 @Component({
   selector: 'app-academy-create',
@@ -37,6 +38,31 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       <!-- Form -->
       @if (!loadingData()) {
         <div class="form-wrap">
+
+          <!-- Logo picker -->
+          <div class="logo-field">
+            <button type="button" class="logo-btn" (click)="logoInput.click()"
+                    [attr.aria-label]="'شعار الأكاديمية · Academy logo'">
+              @if (logoUrl()) {
+                <img class="logo-img" [src]="logoUrl()" alt="" />
+                <span class="logo-edit"><i class="fas fa-camera"></i></span>
+              } @else {
+                <i class="fas fa-university logo-placeholder"></i>
+                <span class="logo-add"><i class="fas fa-plus"></i></span>
+              }
+            </button>
+            <div class="logo-meta">
+              <span class="logo-title">شعار الأكاديمية · Academy Logo</span>
+              <span class="logo-hint">اختياري · اضغط لاختيار صورة</span>
+              @if (logoUrl()) {
+                <button type="button" class="logo-remove" (click)="removeLogo()">
+                  <i class="fas fa-trash-alt"></i> إزالة · Remove
+                </button>
+              }
+            </div>
+            <input #logoInput type="file" accept="image/*" hidden
+                   (change)="onLogoPicked($event)" />
+          </div>
 
           <div class="field-group">
             <label class="field-label">
@@ -116,6 +142,29 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
 
     /* Form */
     .form-wrap { padding: 1.25rem 1rem; display: flex; flex-direction: column; gap: 0; }
+
+    /* Logo picker */
+    .logo-field { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.4rem; }
+    .logo-btn {
+      position: relative; width: 84px; height: 84px; border-radius: 20px; flex-shrink: 0;
+      border: 2px dashed #cdd2f0; background: #fff; padding: 0; cursor: pointer; overflow: hidden;
+      display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent;
+    }
+    .logo-btn:active { transform: scale(0.97); }
+    .logo-img { width: 100%; height: 100%; object-fit: cover; }
+    .logo-placeholder { font-size: 1.9rem; color: #b9bfe6; }
+    .logo-add, .logo-edit {
+      position: absolute; bottom: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%;
+      background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; font-size: 0.65rem;
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(102,126,234,0.4);
+    }
+    .logo-meta { display: flex; flex-direction: column; gap: 0.2rem; }
+    .logo-title { font-size: 0.82rem; font-weight: 700; color: #4a4a6a; }
+    .logo-hint { font-size: 0.72rem; color: #9ca3af; }
+    .logo-remove {
+      align-self: flex-start; margin-top: 0.3rem; background: none; border: none; padding: 0;
+      color: #ef4444; font-size: 0.74rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;
+    }
     .field-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.1rem; }
     .field-label { font-size: 0.8rem; font-weight: 700; color: #4a4a6a; display: flex; align-items: center; gap: 0.35rem; }
     .field-label i { color: #667eea; font-size: 0.7rem; }
@@ -146,8 +195,10 @@ export class AcademyCreateComponent implements OnInit {
   private readonly location = inject(Location);
   private readonly academyService = inject(AcademyService);
   private readonly currentUserService = inject(CurrentUserInfoService);
+  private readonly imageCrop = inject(ImageCropService);
 
   form: CreateAcademyDto = { nameAr: '', nameEn: '', description: undefined, supervisorTeacherCode: undefined };
+  logoUrl = signal<string | null>(null);
   submitting = signal(false);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
@@ -182,6 +233,7 @@ export class AcademyCreateComponent implements OnInit {
         description: academy.description || undefined,
         supervisorTeacherCode: undefined,
       };
+      this.logoUrl.set((academy as any).logoUrl || null);
     } catch (err: any) {
       this.error.set('فشل تحميل بيانات الأكاديمية · Failed to load academy data');
     } finally {
@@ -190,6 +242,17 @@ export class AcademyCreateComponent implements OnInit {
   }
 
   goBack(): void { this.location.back(); }
+
+  async onLogoPicked(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // allow re-picking the same file
+    if (!file) return;
+    const dataUrl = await this.imageCrop.crop(file, { size: 256, quality: 0.85 });
+    if (dataUrl) this.logoUrl.set(dataUrl);
+  }
+
+  removeLogo(): void { this.logoUrl.set(null); }
 
   async submit(): Promise<void> {
     if (!this.form.nameAr?.trim() || !this.form.nameEn?.trim()) {
@@ -212,12 +275,15 @@ export class AcademyCreateComponent implements OnInit {
             nameAr: this.form.nameAr,
             nameEn: this.form.nameEn,
             description: this.form.description || undefined,
+            logoUrl: this.logoUrl() || undefined,
           } as any)
         );
         this.success.set('تم حفظ التعديلات بنجاح · Changes saved successfully');
         setTimeout(() => this.location.back(), 1000);
       } else {
-        const academy = await lastValueFrom(this.academyService.create(this.form));
+        const academy = await lastValueFrom(
+          this.academyService.create({ ...this.form, logoUrl: this.logoUrl() || undefined } as any)
+        );
         this.router.navigate(['/academies', academy.id, 'profile']);
       }
     } catch (err: any) {

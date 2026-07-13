@@ -700,7 +700,10 @@ export class ParentChildDetailComponent implements OnInit {
         })
       );
       // Recalculate attendance days based on schedule (default: Sat=6, Tue=2)
-      const recalculated = (result.items || []).map(r => this.recalcAttendance(r));
+      // No client-side recalculation: the server divides by the sessions actually recorded.
+      // This used to re-derive totals from an assumed Sat/Tue/Thu schedule, so a parent and a
+      // teacher could see different percentages for the same student in the same month.
+      const recalculated = result.items || [];
       this.attendanceReports.set(recalculated);
     } catch (error) {
       console.error('Error loading attendance:', error);
@@ -709,23 +712,6 @@ export class ParentChildDetailComponent implements OnInit {
     }
   }
 
-  private recalcAttendance(report: StudentAttendanceReportDto): StudentAttendanceReportDto {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const today = now.getDate();
-    // Default schedule days: Saturday (6), Tuesday (2), Thursday (4)
-    const scheduleDays = [6, 2, 4];
-    let totalDays = 0;
-    for (let day = 1; day <= today; day++) {
-      const d = new Date(year, month, day);
-      if (scheduleDays.includes(d.getDay())) totalDays++;
-    }
-    const absentDays = report.absentDays;
-    const attendedDays = Math.max(0, totalDays - absentDays);
-    const pct = totalDays > 0 ? Math.round(attendedDays / totalDays * 100) : 0;
-    return { ...report, totalDaysInMonth: totalDays, attendedDays, attendancePercentage: pct };
-  }
 
   private async loadGrades(): Promise<void> {
     this.gradesLoading.set(true);

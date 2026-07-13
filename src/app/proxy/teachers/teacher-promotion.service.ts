@@ -1,4 +1,4 @@
-import type { CreateTeacherPromotionDto, PromotionPricingDto, TeacherPromotionDto } from './models';
+import type { CreateTeacherPromotionDto, PromotionPaymentInfoDto, PromotionPricingDto, TeacherPromotionDto, UpdatePromotionPaymentInfoDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -42,6 +42,14 @@ export class TeacherPromotionService {
     { apiName: this.apiName,...config });
   
 
+  getPaymentInfo = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PromotionPaymentInfoDto>({
+      method: 'GET',
+      url: '/api/app/teacher-promotion/payment-info',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getPendingList = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, TeacherPromotionDto[]>({
       method: 'GET',
@@ -63,6 +71,15 @@ export class TeacherPromotionService {
       method: 'POST',
       url: `/api/app/teacher-promotion/${id}/reject`,
       params: { reason },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updatePaymentInfo = (input: UpdatePromotionPaymentInfoDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: '/api/app/teacher-promotion/payment-info',
+      body: input,
     },
     { apiName: this.apiName,...config });
 

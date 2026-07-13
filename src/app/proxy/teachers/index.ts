@@ -1,4 +1,5 @@
 export * from './models';
+export * from './promotion-payment-method.enum';
 export * from './secretary-teacher-request-status.enum';
 export * from './secretary-teacher.service';
 export * from './teacher-promotion-status.enum';

@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import { ConfigStateService } from '@abp/ng.core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ConfigStateService, RestService } from '@abp/ng.core';
 import { lastValueFrom } from 'rxjs';
 
 import { ParentService } from '@proxy/parents';
+import type { LinkCandidateStudentDto } from '@proxy/parents/models';
 import type { ParentDto } from '@proxy/parents/models';
 import { StudentService } from '@proxy/students';
 import type { StudentDto } from '@proxy/students/models';
@@ -22,6 +23,21 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
         [title]="'ربط طالب جديد'"
         [titleEn]="'Link a Child'"
         [backTo]="'/parent'"></app-page-header>
+
+      <!-- Freemium notice -->
+      <div *ngIf="linkStatus() as ls" class="plan-notice" [class.plan-notice--paid]="ls.nextChildRequiresPayment">
+        <i class="fas" [ngClass]="ls.nextChildRequiresPayment ? 'fa-crown' : 'fa-gift'"></i>
+        <div class="plan-notice-text">
+          <ng-container *ngIf="!ls.nextChildRequiresPayment">
+            <span class="plan-notice-title">الطفل الأول مجاني</span>
+            <span class="plan-notice-sub">First child is free · First child free</span>
+          </ng-container>
+          <ng-container *ngIf="ls.nextChildRequiresPayment">
+            <span class="plan-notice-title">طفل إضافي — اشتراك {{ ls.pricePerChildPerMonthEGP }} ج.م/شهر</span>
+            <span class="plan-notice-sub">Additional child — {{ ls.pricePerChildPerMonthEGP }} EGP/month subscription</span>
+          </ng-container>
+        </div>
+      </div>
 
       <!-- Success Message -->
       <div *ngIf="successMessage()" class="alert success">
@@ -55,27 +71,64 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
           <div class="search-icon">
             <i class="fas fa-search"></i>
           </div>
-          <h3>البحث بكود الطالب</h3>
-          <p>أدخل الكود الخاص بالطالب للبحث عنه</p>
-          
+          <h3>البحث عن الطالب</h3>
+          <p>ابحث بالاسم أو رقم الهاتف أو كود الطالب</p>
+
           <div class="input-group">
-            <input type="text" 
-                   [(ngModel)]="studentCode" 
-                   placeholder="مثال: STU-2024-001"
+            <input type="text"
+                   [(ngModel)]="studentCode"
+                   placeholder="الاسم أو الهاتف أو الكود · Name, phone or code"
                    [disabled]="searching()"
                    (keyup.enter)="searchStudent()">
-            <button class="search-btn" 
-                    (click)="searchStudent()" 
-                    [disabled]="!studentCode.trim() || searching()">
+            <button class="search-btn"
+                    (click)="searchStudent()"
+                    [disabled]="studentCode.trim().length < 3 || searching()">
               <span *ngIf="searching()" class="spinner"></span>
               <i *ngIf="!searching()" class="fas fa-search"></i>
             </button>
           </div>
-          
+
           <p class="hint">
             <i class="fas fa-info-circle"></i>
-            يمكنك الحصول على الكود من المدرسة أو من الطالب
+            اكتب 3 أحرف على الأقل · At least 3 characters
           </p>
+        </div>
+
+        <!-- Search results -->
+        <div class="results-list" *ngIf="results().length > 0">
+          <p class="results-count">{{ results().length }} نتيجة · results</p>
+
+          <button class="result-card"
+                  *ngFor="let r of results()"
+                  (click)="selectStudent(r)"
+                  [class.result-card--linked]="r.alreadyLinked"
+                  [disabled]="r.alreadyLinked">
+            <div class="result-avatar">
+              <img *ngIf="r.photoUrl" [src]="r.photoUrl" alt="" />
+              <span *ngIf="!r.photoUrl">{{ (r.fullName || '?').charAt(0) }}</span>
+            </div>
+
+            <div class="result-info">
+              <span class="result-name">{{ r.fullName }}</span>
+              <span class="result-line">
+                <i class="fas fa-graduation-cap"></i> {{ r.gradeName }}
+              </span>
+              <span class="result-line" *ngIf="r.address || r.town || r.government">
+                <i class="fas fa-location-dot"></i> {{ addressOf(r) }}
+              </span>
+              <span class="result-code">
+                <i class="fas fa-id-card"></i> {{ r.studentCode }}
+              </span>
+            </div>
+
+            <span class="result-chip" *ngIf="r.alreadyLinked">مرتبط بالفعل</span>
+            <i class="fas fa-chevron-left result-arrow" *ngIf="!r.alreadyLinked"></i>
+          </button>
+        </div>
+
+        <div class="no-results" *ngIf="searched() && results().length === 0 && !searching()">
+          <i class="fas fa-user-slash"></i>
+          <p>لم يتم العثور على طلاب مطابقين</p>
         </div>
       </div>
 
@@ -186,6 +239,43 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       min-height: 100vh;
       background: #f5f7fa;
       padding-bottom: 100px;
+    }
+
+    /* ─── Freemium notice ─── */
+    .plan-notice {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1rem;
+      padding: 0.85rem 1rem;
+      border-radius: 14px;
+      background: #ecfdf5;
+      border: 1.5px solid #a7f3d0;
+    }
+    .plan-notice--paid {
+      background: #fff7ed;
+      border-color: #fcd34d;
+    }
+    .plan-notice > i {
+      font-size: 1.4rem;
+      color: #059669;
+      flex-shrink: 0;
+    }
+    .plan-notice--paid > i { color: #d97706; }
+    .plan-notice-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+    .plan-notice-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #065f46;
+    }
+    .plan-notice--paid .plan-notice-title { color: #92400e; }
+    .plan-notice-sub {
+      font-size: 0.72rem;
+      color: #6b7280;
     }
 
     /* ─── Alerts ─── */
@@ -359,6 +449,60 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       gap: 0.5rem;
       margin: 0;
     }
+
+    /* ─── Search results ─── */
+    .results-list { margin-top: 1rem; }
+    .results-count {
+      font-size: .75rem; color: #9ca3af; margin: 0 0 .5rem; text-align: center;
+    }
+
+    .result-card {
+      width: 100%;
+      display: flex; align-items: center; gap: .75rem;
+      padding: .75rem;
+      min-height: 72px;              /* comfortably above the 44px tap target minimum */
+      background: #fff;
+      border: 1px solid #eef0f6;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      text-align: start;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .result-card + .result-card { margin-top: .5rem; }
+    .result-card:active:not(:disabled) { transform: scale(.99); }
+    .result-card--linked { opacity: .6; cursor: default; }
+
+    .result-avatar {
+      width: 48px; height: 48px; flex: 0 0 48px;
+      border-radius: 50%; overflow: hidden;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .result-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .result-info { display: flex; flex-direction: column; gap: .15rem; min-width: 0; flex: 1; }
+    .result-name { font-size: .92rem; font-weight: 700; color: #1a1a2e; }
+    .result-line, .result-code {
+      font-size: .72rem; color: #6b7280;
+      display: flex; align-items: center; gap: .35rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .result-code { color: #7c3aed; font-weight: 600; }
+
+    .result-chip {
+      font-size: .68rem; font-weight: 700; color: #047857;
+      background: #ecfdf5; border: 1px solid #a7f3d0;
+      padding: .25rem .5rem; border-radius: 999px; white-space: nowrap;
+    }
+    .result-arrow { color: #c7cbd6; }
+
+    .no-results {
+      text-align: center; padding: 1.5rem 1rem; color: #9ca3af;
+    }
+    .no-results i { font-size: 1.8rem; margin-bottom: .5rem; display: block; }
+    .no-results p { margin: 0; font-size: .85rem; }
 
     /* ─── QR Scanner ─── */
     .qr-card {
@@ -750,6 +894,8 @@ export class ParentLinkChildComponent implements OnInit, OnDestroy {
   @ViewChild('videoElement') videoRef!: ElementRef<HTMLVideoElement>;
   
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly rest = inject(RestService);
   private readonly configStateService = inject(ConfigStateService);
   private readonly parentService = inject(ParentService);
   private readonly studentService = inject(StudentService);
@@ -757,6 +903,8 @@ export class ParentLinkChildComponent implements OnInit, OnDestroy {
   private mediaStream: MediaStream | null = null;
 
   studentCode = '';
+  results = signal<LinkCandidateStudentDto[]>([]);
+  searched = signal(false);
   relationshipType = '';
   notes = '';
   isEmergencyContact = false;
@@ -770,6 +918,7 @@ export class ParentLinkChildComponent implements OnInit, OnDestroy {
   isScanning = signal(false);
   successMessage = signal('');
   errorMessage = signal('');
+  linkStatus = signal<{ freeQuota: number; linkedChildrenCount: number; pricePerChildPerMonthEGP: number; nextChildRequiresPayment: boolean } | null>(null);
 
   relationshipTypes = [
     { value: 'أب', label: 'أب', icon: 'fas fa-male' },
@@ -790,6 +939,17 @@ export class ParentLinkChildComponent implements OnInit, OnDestroy {
       } catch (error) {
         console.error('Error loading parent info:', error);
       }
+    }
+
+    // Load the freemium quota status so we can show the parent what the next link costs.
+    try {
+      const status = await lastValueFrom(
+        this.rest.request<void, { freeQuota: number; linkedChildrenCount: number; pricePerChildPerMonthEGP: number; nextChildRequiresPayment: boolean }>(
+          { method: 'GET', url: '/api/app/parent-child-subscription/my-child-link-status' })
+      );
+      this.linkStatus.set(status ?? null);
+    } catch (error) {
+      console.error('Error loading link status:', error);
     }
 
     // Pre-fill student code from ?code= query param (e.g. scanned QR)
@@ -911,28 +1071,62 @@ export class ParentLinkChildComponent implements OnInit, OnDestroy {
     this.searchStudent();
   }
 
+  /**
+   * Searches by name, phone, or student code. Code and phone match exactly; names match on a
+   * contains. A QR scan yields an exact code, so it lands on a single result and auto-selects.
+   */
   async searchStudent(): Promise<void> {
-    if (!this.studentCode.trim()) return;
+    const term = this.studentCode.trim();
+    if (term.length < 3) {
+      this.errorMessage.set('اكتب 3 أحرف على الأقل');
+      return;
+    }
+
     this.searching.set(true);
+    this.searched.set(false);
     this.errorMessage.set('');
     this.successMessage.set('');
     this.foundStudent.set(null);
+    this.results.set([]);
 
     try {
-      const student = await lastValueFrom(
-        this.studentService.getByStudentCode(this.studentCode.trim())
-      );
-      if (student) {
-        this.foundStudent.set(student);
-      } else {
-        this.errorMessage.set('لم يتم العثور على طالب بهذا الكود');
-      }
+      const found = await lastValueFrom(this.parentService.searchStudentsForLinking(term));
+      this.results.set(found ?? []);
+      this.searched.set(true);
+
+      // An exact code match is unambiguous — skip the picker.
+      const exact = (found ?? []).filter(r => r.studentCode === term && !r.alreadyLinked);
+      if (exact.length === 1) await this.selectStudent(exact[0]);
     } catch (error) {
       console.error('Error searching student:', error);
       this.errorMessage.set('حدث خطأ أثناء البحث');
     } finally {
       this.searching.set(false);
     }
+  }
+
+  /** Loads the full student record for the chosen candidate and moves to the link form. */
+  async selectStudent(candidate: LinkCandidateStudentDto): Promise<void> {
+    if (candidate.alreadyLinked) return;
+
+    this.searching.set(true);
+    this.errorMessage.set('');
+    try {
+      const student = await lastValueFrom(this.studentService.get(candidate.id));
+      this.foundStudent.set(student);
+      this.results.set([]);
+    } catch (error) {
+      console.error('Error loading student:', error);
+      this.errorMessage.set('تعذر تحميل بيانات الطالب');
+    } finally {
+      this.searching.set(false);
+    }
+  }
+
+  /** Prefers the free-text address; falls back to town/governorate. */
+  addressOf(r: LinkCandidateStudentDto): string {
+    if (r.address?.trim()) return r.address;
+    return [r.town, r.government].filter(v => v?.trim()).join('، ');
   }
 
   async linkChild(): Promise<void> {
@@ -959,6 +1153,18 @@ export class ParentLinkChildComponent implements OnInit, OnDestroy {
       this.clearStudent();
     } catch (error: any) {
       console.error('Error linking child:', error);
+      // First child is free; an extra child requires a paid subscription. The backend
+      // signals this with a specific error code — route the parent to the payment screen.
+      if (error?.error?.error?.code === 'Sesha:ChildLinkPaymentRequired') {
+        this.router.navigate(['/parent/child-subscription'], {
+          queryParams: {
+            studentId: student.id!,
+            studentName: this.getStudentName(),
+            studentCode: student.studentCode,
+          },
+        });
+        return;
+      }
       const msg = error?.error?.error?.message || 'حدث خطأ أثناء ربط الطالب';
       this.errorMessage.set(msg);
     } finally {

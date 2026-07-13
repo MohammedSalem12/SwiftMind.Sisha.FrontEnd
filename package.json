@@ -15,6 +15,8 @@
     "android:build": "npm run build && npx cap sync && npx cap open android",
     "android:apk": "npm run build && npx cap sync android && cd android && gradlew assembleDebug",
     "android:apk:prod": "npm run build:prod && npx cap sync android && cd android && gradlew assembleRelease",
+    "android:bundle:prod": "npm run build:prod && npx cap sync android && cd android && gradlew bundleRelease",
+    "android:play": "npm run android:bundle:prod",
     "android:run": "npm run build && npx cap run android",
     "ios:build": "npm run build && npx cap sync && npx cap open ios",
     "ios:run": "npm run build && npx cap run ios",

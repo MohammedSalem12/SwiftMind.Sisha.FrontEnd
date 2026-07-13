@@ -1,6 +1,6 @@
-import type { AttendanceDto, AttendanceReportResultDto, CreateUpdateAttendanceDto, GetAttendanceReportInput, GetStudentAttendanceStatusInput, StudentAttendanceStatusDto } from './dtos/models';
+import type { AttendanceReportResultDto, BulkSetAttendanceStatusInput, GetAttendanceReportInput, GetStudentAttendanceStatusInput, GroupSessionDto, MyTodaySessionDto, ScanAttendanceQrInput, SelfCheckInInput, SetAttendanceStatusInput, StartSessionInput, StudentAttendanceStatusDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
-import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
+import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
 @Injectable({
@@ -10,36 +10,27 @@ export class AttendanceService {
   apiName = 'Default';
   
 
-  create = (input: CreateUpdateAttendanceDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, AttendanceDto>({
+  bulkSetStatus = (input: BulkSetAttendanceStatusInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number>({
       method: 'POST',
-      url: '/api/app/attendance',
+      url: '/api/app/attendance/bulk-set-status',
       body: input,
     },
     { apiName: this.apiName,...config });
   
 
-  delete = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'DELETE',
-      url: `/api/app/attendance/${id}`,
+  confirmAllSelfReported = (groupSessionId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number>({
+      method: 'POST',
+      url: `/api/app/attendance/confirm-all-self-reported/${groupSessionId}`,
     },
     { apiName: this.apiName,...config });
   
 
-  get = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, AttendanceDto>({
+  getMyTodaySessions = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, MyTodaySessionDto[]>({
       method: 'GET',
-      url: `/api/app/attendance/${id}`,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, PagedResultDto<AttendanceDto>>({
-      method: 'GET',
-      url: '/api/app/attendance',
-      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      url: '/api/app/attendance/my-today-sessions',
     },
     { apiName: this.apiName,...config });
   
@@ -57,7 +48,7 @@ export class AttendanceService {
     this.restService.request<any, PagedResultDto<StudentAttendanceStatusDto>>({
       method: 'GET',
       url: '/api/app/attendance/student-attendance-status',
-      params: { date: input.date, studentCode: input.studentCode, courseId: input.courseId, teacherId: input.teacherId, search: input.search, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { date: input.date, studentCode: input.studentCode, courseId: input.courseId, teacherId: input.teacherId, groupId: input.groupId, search: input.search, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
@@ -71,10 +62,45 @@ export class AttendanceService {
     { apiName: this.apiName,...config });
   
 
-  update = (id: string, input: CreateUpdateAttendanceDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, AttendanceDto>({
-      method: 'PUT',
-      url: `/api/app/attendance/${id}`,
+  rejectAllSelfReported = (groupSessionId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number>({
+      method: 'POST',
+      url: `/api/app/attendance/reject-all-self-reported/${groupSessionId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  scanQr = (input: ScanAttendanceQrInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentAttendanceStatusDto>({
+      method: 'POST',
+      url: '/api/app/attendance/scan-qr',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  selfCheckIn = (input: SelfCheckInInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentAttendanceStatusDto>({
+      method: 'POST',
+      url: '/api/app/attendance/self-check-in',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  setStatus = (input: SetAttendanceStatusInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StudentAttendanceStatusDto>({
+      method: 'POST',
+      url: '/api/app/attendance/set-status',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  startSession = (input: StartSessionInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, GroupSessionDto>({
+      method: 'POST',
+      url: '/api/app/attendance/start-session',
       body: input,
     },
     { apiName: this.apiName,...config });

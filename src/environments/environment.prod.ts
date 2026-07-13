@@ -1,17 +1,21 @@
 // ============================================================
-// PRODUCTION environment
-//   Frontend: Firebase Hosting (sesha-9999.web.app)
-//   Backend: public HTTPS (currently the ngrok static tunnel → DB: Sesha_Staging)
+// PRODUCTION environment — self-hosted VPS (46.224.134.126)
+//   Frontend + Backend are served from the SAME origin by nginx on the VPS.
 //   Used by `npm run build:prod` (ng build --configuration production).
 //   Test counterpart: environment.ts
+//
+// Let's Encrypt cannot issue a certificate for a bare IP address, so the app is
+// reached through sslip.io — a wildcard DNS service that resolves
+// 46-224-134-126.sslip.io -> 46.224.134.126. That yields a real hostname and a
+// genuine, browser-trusted certificate.
+//
+// To move to a real domain: change the two constants below, re-issue the cert,
+// and re-run the DbMigrator (OpenIddict redirect URIs are seeded into the DB).
 // ============================================================
 import { Environment } from '@abp/ng.core';
 
-// Frontend production URL (Firebase hosting)
-const baseUrl = 'https://sesha-9999.web.app';
-
-// ngrok tunnel URL — update this each time you restart ngrok
-const backendUrl = 'https://overvaluable-nonequilateral-henriette.ngrok-free.dev';
+const baseUrl = 'https://46-224-134-126.sslip.io';
+const backendUrl = 'https://46-224-134-126.sslip.io';
 
 export const environment = {
   production: true,
@@ -31,11 +35,6 @@ export const environment = {
     automaticSilentRefresh: true,
     useSilentRefresh: false,
     timeoutFactor: 0.75,
-    // Override endpoints — discovery returns localhost URLs which don't work from Firebase
-    tokenEndpoint: `${backendUrl}/connect/token`,
-    userinfoEndpoint: `${backendUrl}/connect/userinfo`,
-    skipIssuerCheck: true,
-    strictDiscoveryDocumentValidation: false,
   },
   apis: {
     default: {
@@ -43,8 +42,8 @@ export const environment = {
       rootNamespace: 'SwiftMind.Sesha',
     },
   },
-  // Social login (must match the test env). Google OAuth client must list
-  // https://sesha-9999.web.app as an Authorized JavaScript origin.
+  // Social login. The Google OAuth client must list the origin above as an
+  // Authorized JavaScript origin.
   googleClientId: '1092548471447-c3m8tge7gh1tuiipvtcdnd1aohvs8a67.apps.googleusercontent.com',
   facebookAppId: 'YOUR_FACEBOOK_APP_ID', // TODO: set from your Meta app
 } as Environment;

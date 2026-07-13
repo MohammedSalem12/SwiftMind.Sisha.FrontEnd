@@ -674,10 +674,11 @@ body.auth-page {
 // Mobile: pad bottom for fixed bottom nav
 // Desktop: pad right for body so content clears the fixed right sidebar (248px)
 .app-content {
-  padding-bottom: 70px;
+  // Floating pill nav: 62px pill + 10px bottom gutter + breathing room
+  padding-bottom: 84px;
 
   @supports (padding-bottom: env(safe-area-inset-bottom)) {
-    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
   }
 }
 

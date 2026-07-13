@@ -7,15 +7,18 @@ import { RestService } from '@abp/ng.core';
 import { AcademyService } from '@proxy/academies';
 import { AcademyDto, AcademyCourseDto, AcademyMemberDto } from '@proxy/academies/models';
 import { AcademyTeacherStatus } from '@proxy/academies/academy-teacher-status.enum';
+import { AcademyRatingService } from '@proxy/academy-ratings';
 import { CurrentUserInfoService } from '@proxy/common';
 import { CurrentUserActorDto } from '@proxy/common/models';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
+import { StarRatingComponent } from '../shared/components/star-rating.component';
+import { RateModalComponent, RateSubmitEvent } from '../shared/components/rate-modal.component';
 
 @Component({
   selector: 'app-academy-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, PageHeaderComponent],
+  imports: [CommonModule, RouterModule, PageHeaderComponent, StarRatingComponent, RateModalComponent],
   template: `
     <div class="page" dir="rtl">
 
@@ -35,7 +38,11 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
         <div class="academy-banner">
           <div class="blob b1"></div><div class="blob b2"></div>
           <div class="academy-avatar">
-            <i class="fas fa-university"></i>
+            @if ($any(academy())?.logoUrl) {
+              <img [src]="$any(academy()).logoUrl" alt="" />
+            } @else {
+              <i class="fas fa-university"></i>
+            }
           </div>
           <h1 class="academy-name">{{ academy()!.nameAr }}</h1>
           @if (academy()!.nameEn) {
@@ -43,6 +50,15 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
           }
           @if (academy()!.code) {
             <span class="code-badge">{{ academy()!.code }}</span>
+          }
+          <div class="banner-rating">
+            <app-star-rating [value]="academy()!.averageRating ?? 0" [count]="academy()!.ratingCount ?? 0"></app-star-rating>
+          </div>
+          @if (isParent()) {
+            <button class="rate-btn" (click)="openRate()">
+              <i class="fas fa-star"></i>
+              {{ myRating() > 0 ? 'عدّل تقييمك · Edit rating' : 'قيّم الأكاديمية · Rate academy' }}
+            </button>
           }
         </div>
       }
@@ -261,10 +277,38 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       }
 
       <div style="height:calc(80px + env(safe-area-inset-bottom,0px))"></div>
+
+      <!-- Rate modal (PARENT only) -->
+      <app-rate-modal
+        [open]="showRate()"
+        [title]="'قيّم الأكاديمية · Rate academy'"
+        [initialStars]="myRating()"
+        [initialComment]="myComment()"
+        [submitting]="rating()"
+        [error]="rateError()"
+        (submitted)="submitRating($event)"
+        (closed)="showRate.set(false)">
+      </app-rate-modal>
     </div>
   `,
   styles: [`
     .page { min-height:100vh; background:#f4f5fb; direction:rtl; }
+
+    /* ── Rating in banner ── */
+    .banner-rating {
+      position:relative; z-index:1;
+      background:rgba(255,255,255,.16); padding:.25rem .6rem; border-radius:20px;
+    }
+    .rate-btn {
+      position:relative; z-index:1; margin-top:.2rem;
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.55rem 1.1rem; border-radius:14px; min-height:44px;
+      background:rgba(255,255,255,.95); color:#764ba2; border:none;
+      font-size:.82rem; font-weight:800; cursor:pointer;
+      box-shadow:0 4px 14px rgba(0,0,0,.15);
+      -webkit-tap-highlight-color:transparent; transition:transform .15s;
+    }
+    .rate-btn:active { transform:scale(.97); }
 
     /* ── Academy banner ── */
     .academy-banner {
@@ -278,12 +322,13 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
     .b2 { width:130px; height:130px; bottom:-50px; left:-25px; }
 
     .academy-avatar {
-      position:relative; z-index:1;
+      position:relative; z-index:1; overflow:hidden;
       width:72px; height:72px; border-radius:50%;
       background:rgba(255,255,255,.2); border:3px solid rgba(255,255,255,.45);
       display:flex; align-items:center; justify-content:center;
       font-size:1.8rem; color:#fff;
     }
+    .academy-avatar img { width:100%; height:100%; object-fit:cover; }
     .academy-name    { position:relative; z-index:1; margin:0; font-size:1.3rem; font-weight:800; color:#fff; }
     .academy-name-en { position:relative; z-index:1; margin:.1rem 0 0; font-size:.78rem; color:rgba(255,255,255,.65); }
     .code-badge {
@@ -455,6 +500,7 @@ export class AcademyProfileComponent implements OnInit {
   private readonly academySvc = inject(AcademyService);
   private readonly restSvc    = inject(RestService);
   private readonly userSvc    = inject(CurrentUserInfoService);
+  private readonly ratingSvc  = inject(AcademyRatingService);
 
   loading          = signal(true);
   academy          = signal<AcademyDto | null>(null);
@@ -463,6 +509,13 @@ export class AcademyProfileComponent implements OnInit {
   joining          = signal(false);
   joinError        = signal<string | null>(null);
   removingCourseId = signal<string | null>(null);
+
+  // Rating (PARENT)
+  showRate   = signal(false);
+  rating     = signal(false);
+  rateError  = signal<string | null>(null);
+  myRating   = signal(0);
+  myComment  = signal('');
 
   academyId = '';
   private userInfo: CurrentUserActorDto | null = null;
@@ -474,6 +527,9 @@ export class AcademyProfileComponent implements OnInit {
   actorId    = computed(() => this.userInfo?.actorId   || null);
 
   isStudent   = computed(() => this.userInfo?.actorType === 'Student');
+  isParent    = computed(() =>
+    (this.userInfo?.userRoles || []).some(r => (r || '').toUpperCase() === 'PARENT')
+  );
   isSupervisor = computed(() =>
     !!this.academy() && this.academy()!.supervisorTeacherId === this.userInfo?.actorId
   );
@@ -497,6 +553,11 @@ export class AcademyProfileComponent implements OnInit {
       this.academy.set(academyData);
       this.courses.set(coursesData ?? []);
 
+      // Load the parent's own rating for this academy
+      if (this.isParent()) {
+        await this.refreshRatingSummary();
+      }
+
       // Check membership for this specific academy (student or non-supervisor teacher)
       if (!this.isSupervisor()) {
         try {
@@ -513,6 +574,37 @@ export class AcademyProfileComponent implements OnInit {
       console.error('Error loading academy profile', e);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private async refreshRatingSummary(): Promise<void> {
+    try {
+      const summary = await lastValueFrom(this.ratingSvc.getSummary(this.academyId));
+      this.academy.update(a =>
+        a ? { ...a, averageRating: summary.averageRating, ratingCount: summary.ratingCount } : a
+      );
+      this.myRating.set(summary.myRating?.stars ?? 0);
+      this.myComment.set(summary.myRating?.comment ?? '');
+    } catch { /* silent */ }
+  }
+
+  openRate(): void {
+    this.rateError.set(null);
+    this.showRate.set(true);
+  }
+
+  async submitRating(ev: RateSubmitEvent): Promise<void> {
+    this.rating.set(true);
+    this.rateError.set(null);
+    try {
+      await lastValueFrom(this.ratingSvc.rate({ academyId: this.academyId, stars: ev.stars, comment: ev.comment }));
+      await this.refreshRatingSummary();
+      this.showRate.set(false);
+    } catch (err: any) {
+      console.error('[AcademyProfile] rate error:', err);
+      this.rateError.set(err?.error?.error?.message || 'حدث خطأ أثناء إرسال التقييم · Error submitting rating');
+    } finally {
+      this.rating.set(false);
     }
   }
 

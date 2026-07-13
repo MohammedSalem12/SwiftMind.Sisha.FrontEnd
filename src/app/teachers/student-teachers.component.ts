@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 
 import { PageHeaderComponent } from '../shared/components/page-header.component';
+import { StarRatingComponent } from '../shared/components/star-rating.component';
 
 interface TeacherCard {
   id: string;
@@ -17,13 +18,15 @@ interface TeacherCard {
   government: string;
   town: string;
   courseCount: number;
+  averageRating: number;
+  ratingCount: number;
 }
 
 @Component({
   selector: 'app-student-teachers',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, IonicModule, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, IonicModule, PageHeaderComponent, StarRatingComponent],
   template: `
     <div class="page" dir="rtl">
 
@@ -37,6 +40,15 @@ interface TeacherCard {
           <input class="search-input" type="text"
                  [ngModel]="search()" (ngModelChange)="search.set($event)"
                  placeholder="ابحث بالاسم أو الكود · Search by name or code" />
+        </div>
+
+        <!-- Sort chips -->
+        <div class="sort-strip">
+          <span class="sort-label"><i class="fas fa-sort"></i> ترتيب:</span>
+          <button class="sort-chip" [class.sort-chip--active]="sortBy() === 'default'" (click)="sortBy.set('default')">مقترح</button>
+          <button class="sort-chip" [class.sort-chip--active]="sortBy() === 'rating'" (click)="sortBy.set('rating')"><i class="fas fa-star"></i> الأعلى تقييماً</button>
+          <button class="sort-chip" [class.sort-chip--active]="sortBy() === 'courses'" (click)="sortBy.set('courses')">المقررات</button>
+          <button class="sort-chip" [class.sort-chip--active]="sortBy() === 'name'" (click)="sortBy.set('name')">الاسم</button>
         </div>
       }
 
@@ -79,6 +91,8 @@ interface TeacherCard {
               <div class="t-info">
                 <span class="t-name">{{ t.displayName }}</span>
                 <span class="t-code">{{ t.teacherCode }}</span>
+                <app-star-rating class="t-stars" size="sm"
+                  [value]="t.averageRating ?? 0" [count]="t.ratingCount ?? 0"></app-star-rating>
                 @if (t.bio) { <span class="t-bio">{{ t.bio }}</span> }
                 <div class="t-meta">
                   <span class="t-chip"><i class="fas fa-book-open"></i> {{ t.courseCount }} مقرر</span>
@@ -119,6 +133,24 @@ interface TeacherCard {
     }
     .search-input:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 3px rgba(102,126,234,.1); }
 
+    .sort-strip {
+      display:flex; align-items:center; gap:.4rem; padding:.6rem 1rem 0;
+      overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .sort-strip::-webkit-scrollbar { display:none; }
+    .sort-label { font-size:.72rem; font-weight:700; color:#9090aa; flex-shrink:0; display:flex; align-items:center; gap:.25rem; }
+    .sort-chip {
+      flex-shrink:0; border:1.5px solid #e5e7eb; background:#fff; color:#4a4a6a;
+      font-size:.74rem; font-weight:600; padding:.4rem .7rem; border-radius:20px;
+      min-height:34px; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap;
+      display:flex; align-items:center; gap:.25rem;
+    }
+    .sort-chip i { font-size:.66rem; }
+    .sort-chip--active {
+      background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border-color:transparent;
+      box-shadow:0 2px 8px rgba(102,126,234,.3);
+    }
+
     .list { padding:1rem; display:flex; flex-direction:column; gap:.75rem; }
     .shimmer-card {
       height:96px; border-radius:16px;
@@ -145,6 +177,7 @@ interface TeacherCard {
     .t-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:.2rem; }
     .t-name { font-size:1rem; font-weight:800; color:#1a1a2e; }
     .t-code { font-size:.72rem; font-weight:600; color:#667eea; }
+    .t-stars { display:block; }
     .t-bio {
       font-size:.78rem; color:#777; line-height:1.4;
       display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
@@ -175,14 +208,26 @@ export class StudentTeachersComponent implements OnInit {
   error    = signal<string | null>(null);
   teachers = signal<TeacherCard[]>([]);
   search   = signal('');
+  sortBy   = signal<'default' | 'rating' | 'courses' | 'name'>('default');
 
   filtered = computed(() => {
     const q = this.search().toLowerCase().trim();
-    if (!q) return this.teachers();
-    return this.teachers().filter(t =>
+    let list = !q ? this.teachers() : this.teachers().filter(t =>
       t.displayName.toLowerCase().includes(q) ||
       t.teacherCode.toLowerCase().includes(q)
     );
+    const by = this.sortBy();
+    if (by !== 'default') {
+      list = [...list];
+      if (by === 'rating') {
+        list.sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0) || (b.ratingCount ?? 0) - (a.ratingCount ?? 0));
+      } else if (by === 'courses') {
+        list.sort((a, b) => (b.courseCount ?? 0) - (a.courseCount ?? 0));
+      } else if (by === 'name') {
+        list.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || '', 'ar'));
+      }
+    }
+    return list;
   });
 
   async ngOnInit(): Promise<void> {

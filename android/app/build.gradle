@@ -48,8 +48,26 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // Apply the release signing config if available, otherwise fallback to debug for testing
-            signingConfig keystoreProperties.containsKey('storeFile') ? signingConfigs.release : signingConfigs.debug
+            // A release must never be debug-signed: Play rejects the upload, and the
+            // old silent fallback made that failure surface only at the Console.
+            signingConfig signingConfigs.release
+        }
+    }
+
+    // Store native libraries uncompressed and page-aligned. Required for the 16 KB
+    // page-size devices that Play mandates support for, and which the ML Kit /
+    // CameraX .so files in this app would otherwise fail to load on.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+
+    bundle {
+        // Ship every language in the base bundle. Splitting by language would let Play
+        // deliver an Arabic-less install to a device whose locale is not set to Arabic.
+        language {
+            enableSplit = false
         }
     }
 
@@ -57,6 +75,34 @@ android {
         variant.outputs.all {
             outputFileName = "KAI-${variant.name}-${defaultConfig.versionName}.apk"
         }
+    }
+}
+
+// Validate release signing before any task runs, so a misconfigured machine fails
+// here with an actionable message instead of silently producing a debug-signed
+// artifact that only gets rejected once it reaches the Play Console.
+gradle.taskGraph.whenReady { graph ->
+    def buildingRelease = graph.allTasks.any { it.name ==~ /(?i).*(assemble|bundle)Release.*/ }
+    if (!buildingRelease) {
+        return
+    }
+
+    if (!keystorePropertiesFile.exists()) {
+        throw new GradleException(
+            "Release signing is not configured: android/keystore.properties is missing.\n" +
+            "It is gitignored on purpose — the previous keystore was committed to a public\n" +
+            "repository and had to be replaced. Recreate it with:\n" +
+            "  storePassword=...\n  keyPassword=...\n  keyAlias=kai-upload\n  storeFile=app/kai-upload-key.jks"
+        )
+    }
+
+    def missing = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword'].findAll { !keystoreProperties.containsKey(it) }
+    if (missing) {
+        throw new GradleException("android/keystore.properties is missing required keys: ${missing.join(', ')}")
+    }
+
+    if (!rootProject.file(keystoreProperties['storeFile']).exists()) {
+        throw new GradleException("Keystore file not found: ${keystoreProperties['storeFile']}")
     }
 }
 

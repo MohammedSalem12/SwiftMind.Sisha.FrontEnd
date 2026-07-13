@@ -246,6 +246,51 @@
       }
     </div>
 
+    <!-- Session gate: nothing can be marked until the roster for this group+date exists. -->
+    @if (!sessionStarted()) {
+      <div class="session-gate">
+        <i class="fas fa-clipboard-list session-gate-icon"></i>
+        <p class="session-gate-title">لم يبدأ تسجيل الحضور لهذا اليوم</p>
+        <p class="session-gate-sub">Attendance has not been started for this session</p>
+        <ion-button class="session-gate-btn" expand="block"
+                    (click)="startSession()" [disabled]="startingSession() || !selectedGroupId()">
+          @if (startingSession()) {
+            <ion-spinner name="crescent" style="margin-inline-end:.5rem"></ion-spinner> جارٍ البدء…
+          } @else {
+            <i class="fas fa-play" style="margin-inline-end:.4rem"></i> بدء تسجيل الحضور · Start
+          }
+        </ion-button>
+      </div>
+    }
+
+    @if (sessionStarted()) {
+    <!-- Refresh the roster against current group membership without losing existing marks. -->
+    <div class="session-toolbar">
+      <span class="session-badge"><i class="fas fa-circle-check"></i> الحضور مفتوح</span>
+      <ion-button fill="clear" size="small" (click)="startSession()" [disabled]="startingSession()">
+        <i class="fas fa-rotate" style="margin-inline-end:.3rem"></i> تحديث القائمة
+      </ion-button>
+    </div>
+
+    <!-- Students who checked themselves in and are waiting on staff confirmation. -->
+    @if (pendingSelfCheckIns() > 0) {
+      <div class="selfcheck-bar">
+        <span class="selfcheck-count">
+          <i class="fas fa-hand"></i> {{ pendingSelfCheckIns() }} طلب تسجيل حضور ذاتي
+        </span>
+        <div class="selfcheck-actions">
+          <ion-button size="small" class="selfcheck-approve"
+                      (click)="confirmAllSelfCheckIns()" [disabled]="saving()">
+            <i class="fas fa-check" style="margin-inline-end:.3rem"></i> قبول الكل
+          </ion-button>
+          <ion-button size="small" class="selfcheck-reject" fill="outline"
+                      (click)="rejectAllSelfCheckIns()" [disabled]="saving()">
+            <i class="fas fa-xmark" style="margin-inline-end:.3rem"></i> رفض الكل
+          </ion-button>
+        </div>
+      </div>
+    }
+
     <!-- Attendance mode toggle (per session) — Ionic segment -->
     <ion-segment class="mode-segment" [value]="attendanceMode()" (ionChange)="setMode($any($event).detail.value)">
       <ion-segment-button value="absentees">
@@ -285,6 +330,14 @@
             [disabled]="saving()">
             <i class="fas fa-times-circle" style="margin-inline-end:.4rem"></i>
             غياب الكل
+          </ion-button>
+          <ion-button
+            class="btn-bulk btn-mark-all-present"
+            expand="block"
+            (click)="markAllPresent()"
+            [disabled]="saving()">
+            <i class="fas fa-check-circle" style="margin-inline-end:.4rem"></i>
+            حضور الكل
           </ion-button>
         </div>
       </div>
@@ -421,6 +474,8 @@
         </ion-button>
       </div>
     }
+
+    } <!-- /sessionStarted -->
 
   }
 

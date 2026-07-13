@@ -1,4 +1,6 @@
+import type { ChildSubscriptionPaymentMethod } from './child-subscription-payment-method.enum';
 import type { EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
+import type { ParentChildSubscriptionStatus } from './parent-child-subscription-status.enum';
 import type { ParentStudentLinkStatus } from '../enums/parent-student-link-status.enum';
 
 export interface ChildCourseDto {
@@ -9,6 +11,17 @@ export interface ChildCourseDto {
   teacherName?: string;
   latestGradePercentage?: number;
   absentDaysInCourse: number;
+}
+
+export interface ChildSubscriptionPaymentInfoDto {
+  instaPayAddress?: string;
+  vodafoneCashNumber?: string;
+}
+
+export interface ChildSubscriptionPricingDto {
+  durationMonths: number;
+  amountEGP: number;
+  pricePerMonth: number;
 }
 
 export interface ChildSummaryDto {
@@ -25,6 +38,12 @@ export interface ChildSummaryDto {
   totalCourses: number;
   courses: ChildCourseDto[];
   recentActivities: RecentActivityDto[];
+}
+
+export interface CreateParentChildSubscriptionDto {
+  studentId: string;
+  durationMonths: number;
+  paymentMethod?: ChildSubscriptionPaymentMethod;
 }
 
 export interface CreateParentDto {
@@ -55,6 +74,50 @@ export interface GetParentsInput extends PagedAndSortedResultRequestDto {
   email?: string;
   phoneNumber?: string;
   studentId?: string;
+}
+
+export interface LinkCandidateStudentDto {
+  id?: string;
+  studentCode?: string;
+  fullName?: string;
+  photoUrl?: string;
+  currentGrade: number;
+  gradeName?: string;
+  address?: string;
+  government?: string;
+  town?: string;
+  alreadyLinked: boolean;
+}
+
+export interface ParentChildLinkStatusDto {
+  freeQuota: number;
+  linkedChildrenCount: number;
+  pricePerChildPerMonthEGP: number;
+  nextChildRequiresPayment: boolean;
+}
+
+export interface ParentChildPaidLinkSettingsDto {
+  enabled: boolean;
+  freeQuota: number;
+  pricePerChildPerMonthEGP: number;
+}
+
+export interface ParentChildSubscriptionDto extends FullAuditedEntityDto<string> {
+  parentId?: string;
+  parentName?: string;
+  parentCode?: string;
+  studentId?: string;
+  studentName?: string;
+  studentCode?: string;
+  durationMonths: number;
+  amountEGP: number;
+  status?: ParentChildSubscriptionStatus;
+  isPaid: boolean;
+  startDate?: string;
+  endDate?: string;
+  rejectionReason?: string;
+  paymentMethod?: ChildSubscriptionPaymentMethod;
+  paymentReference?: string;
 }
 
 export interface ParentDashboardDto {
@@ -146,6 +209,10 @@ export interface SubmitAbsenceExcuseDto {
   date: string;
   reason: string;
   notes?: string;
+}
+
+export interface UpdateParentChildPaidLinkSettingsDto {
+  enabled: boolean;
 }
 
 export interface UpdateParentDto {

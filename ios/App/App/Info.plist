@@ -64,5 +64,10 @@
 			</array>
 		</dict>
 	</array>
+	<!--
+	  No App Transport Security exception is needed: the backend is reached over
+	  HTTPS at 46-224-134-126.sslip.io with a genuine Let's Encrypt certificate.
+	  ATS enforcement stays fully on, which is also what App Store review expects.
+	-->
 </dict>
 </plist>

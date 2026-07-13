@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 11 and below (fullBackupContent).
+
+  Backup is already disabled app-wide via android:allowBackup="false", so nothing
+  here should ever run. These exclusions exist so that if backup is re-enabled
+  later, the credential stores do not silently start syncing to Google Drive.
+
+  CapacitorStorage  — @capacitor/preferences: OAuth tokens, cached user, biometric flags
+  WebView databases — the OIDC library's token cache lives in WebView local storage
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="CapacitorStorage.xml" />
+    <exclude domain="database" path="webview.db" />
+    <exclude domain="file" path="app_webview" />
+</full-backup-content>
